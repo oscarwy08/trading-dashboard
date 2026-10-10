@@ -3,6 +3,24 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## Great reset (2026-10-10, v7 rules): fresh £200
+The first run (2026-10-09 20:22 UTC -> 2026-10-10 ~14:50 UK, v3-v7 with migrations; final numbers in the archive summary) was archived
+and the account restarted from scratch with all current rules (`great_reset.py 2026-10-10`, run in the box clone under the lock):
+- **Archive** (kept in the repo): `data/archive/trading-pre-reset-2026-10-10.db` (full old DB, VACUUMed),
+  `data/archive/dashboard-pre-reset-2026-10-10.json` (old docs/data.json) and `data/archive/trading-pre-reset-2026-10-10.md`
+  (final equity, trades, P&L per pot / account / pot x account, positions discarded, old scorecard).
+- **Cleared**: trades, positions, cash/acct_cash, equity history, transfers, signals, order queue, CORE plan/picks, DAY
+  day-start/halt/exit cooldowns + burst/momentum status (per-sub stats come from trades, so they restart at 0), RISK
+  peaks/halt/base/exits, the pending v6 £10 settlement. **Kept**: prices, fx, sentiment, daily_closes, universe/collector state.
+- **Fresh balances**: Crypto £100 (CORE 50 / DAY 30 = momentum 15 + burst 15 budget / RISK 20), Stocks £100 (CORE 50 / DAY 30 /
+  RISK 20). `account_split` is rewritten with opening = funding and no pending legs; an opening equity row (£200 + BTC price)
+  restarts the BTC benchmark and the chart at the reset time. CORE stocks were re-picked at the reset (init_core: tranche
+  building, ~1 tranche/asset/UK day; stock tranches wait for the market open); the Monday 09:00 UK rebalance re-picks weekly.
+- **One-off scripts can no longer touch the fresh state**: ci_cycle.sh does not run migrate_v5_xstocks.py /
+  migrate_v6_accounts.py any more and both skip when state `great_reset` exists; reset_sleeves.py is disabled (superseded).
+  scripts/ci_push.sh compares the DB reset marker (state `account_reset`) with main's before re-applying a cycle after a
+  push race and drops the cycle if they differ, so a concurrent runner can never resurrect the pre-reset run.
+
 ## v7 (2026-10-10): DAY pot = Momentum + Burst sub-strategies (paper only)
 The Day pot (£30 crypto + £30 stocks) is shared by two sub-strategies; each has a BUDGET of `share_pct` (50/50) of the
 DAY money (cash + positions) in each account and can only use what its own open positions leave free (never more than the
@@ -128,7 +146,7 @@ public repo **oscarwy08/trading-dashboard** (public => free Actions minutes). Si
 main
 ├── .github/workflows/cycle.yml   schedule */15 + workflow_dispatch; concurrency group 'trading-cycle' (no overlaps);
 │                                 permissions contents: write (+ pages: write); setup-python with pip cache
-├── scripts/ci_cycle.sh           collector -> ingest_sentiment -> trader -> maintenance -> dashboard -> daily_summary
+├── scripts/ci_cycle.sh           (no migrations since the great reset) collector -> ingest_sentiment -> trader -> maintenance -> dashboard -> daily_summary
 ├── scripts/ci_push.sh            commit data/ + docs/ and push with GITHUB_TOKEN (rebase/re-apply on races; squash)
 ├── *.py, config.yaml, requirements.txt, web/ (SPA templates), test/sim.py
 ├── data/trading.db               STATE (SQLite) - committed every cycle
@@ -194,7 +212,8 @@ universe_check.py     re-verify the stock universe: Yahoo history (>= 100 days) 
 markets.py            exchange sessions/holidays (US, LSE/AIM, ASX) used by trader/collector/dashboard (v5)
 migrate_v5_xstocks.py one-off xStocks -> normal tickers migration (idempotent; run by ci_cycle.sh)
 ingest_sentiment.py   loads data/sentiment/*.json into SQLite
-reset_sleeves.py      one-off account reset to £200 with the configured split (backs up the DB first)
+reset_sleeves.py      DISABLED (superseded by great_reset.py)
+great_reset.py        one-off great reset 2026-10-10: archive to data/archive/ + fresh £200 v7 start (refuses to run twice)
 test/sim.py           backtest-style dry run on a throwaway DB copy (simulated clock + synthetic prices); deletes the copy.
                       v4 adds RISK: breakout entries via the real screen, 12% stop, trailing take-profit, 7-day max hold,
                       max 5 open / 3 new per day / <= £8, drawdown-cap halt + RISK_RESUME, DAY ignores risk-only coins,

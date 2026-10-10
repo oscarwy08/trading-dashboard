@@ -15,7 +15,7 @@
     at the split, so per-account P&L = current equity - baseline (+ later transfers);
   * earlier equity rows get pro-forma per-account values (opening + realised + unrealised P&L of that account at that
     time, from the trade history and stored prices) so the account charts start at the beginning.
-Idempotent (state key 'account_split'). Usage: python3 migrate_v6_accounts.py   (backs up to data/trading.db.bak-pre-v6)."""
+Idempotent (state key 'account_split'); never runs after the great reset (state 'great_reset'). NOT run by ci_cycle.sh any more. Usage: python3 migrate_v6_accounts.py   (backs up to data/trading.db.bak-pre-v6)."""
 import json, re, sqlite3
 from bisect import bisect_right
 from datetime import datetime
@@ -122,7 +122,8 @@ def migrate(con, c=None):
 
 if __name__ == "__main__":
     con = db()
-    if con.execute("SELECT 1 FROM state WHERE key='account_split'").fetchone(): print("[migrate v6] already done")
+    if con.execute("SELECT 1 FROM state WHERE key='great_reset'").fetchone(): print("[migrate v6] skipped: fresh accounts since the great reset (no split needed)")
+    elif con.execute("SELECT 1 FROM state WHERE key='account_split'").fetchone(): print("[migrate v6] already done")
     else:
         con.close(); bak = DB.with_name(DB.name + ".bak-pre-v6")
         s = sqlite3.connect(DB); d = sqlite3.connect(bak); s.backup(d); d.close(); s.close(); print("backup", bak)

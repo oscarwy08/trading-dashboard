@@ -7,8 +7,8 @@ mkdir -p logs data/sentiment/processed data/sentiment/rejected
 export TZ=Europe/London
 fail=0
 echo "=== cycle $(date '+%F %T %Z') ==="
-${PY:-python} migrate_v5_xstocks.py || echo "::warning::v5 migration failed"   # one-off, idempotent (xStocks -> normal tickers)
-${PY:-python} migrate_v6_accounts.py || echo "::warning::v6 migration failed"   # one-off, idempotent (single cash -> Crypto + Stocks accounts)
+# one-off migrations (migrate_v5_xstocks.py, migrate_v6_accounts.py) are NOT run any more: both are done and the great reset
+# (2026-10-10, great_reset.py) started fresh v7 accounts - re-running them could only corrupt the fresh state.
 ${PY:-python} collector.py        || echo "::warning::collector failed"
 ${PY:-python} ingest_sentiment.py || echo "::warning::sentiment ingest failed"
 ${PY:-python} trader.py           || { echo "::error::trader failed"; fail=1; }

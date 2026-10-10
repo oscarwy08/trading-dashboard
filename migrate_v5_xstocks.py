@@ -20,6 +20,7 @@ def plain(a):
 def main():
     c = cfg(); con = db()
     if con.execute("SELECT 1 FROM state WHERE key='migrated_v5'").fetchone(): print("[migrate v5] already done"); return
+    if con.execute("SELECT 1 FROM state WHERE key='great_reset'").fetchone(): print("[migrate v5] skipped: account was reset after v5 (great reset)"); return
     con.close(); bak = DB.with_name(DB.name + ".bak-pre-v5"); shutil.copy2(DB, bak); con = db()
     rate = usd_gbp(con)[0]; ts = iso(); out = []
     lastpx = lambda a: (con.execute("SELECT price FROM prices WHERE asset=? AND source!='backfill' ORDER BY ts DESC LIMIT 1", (a,)).fetchone() or [None])[0]

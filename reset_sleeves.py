@@ -1,6 +1,7 @@
 """One-off: reset the paper account to a fresh £200 with CORE/DAY/RISK sleeves, each funded per account (config accounts.funding, v6).
 Backs up the DB first (sqlite online backup), keeps prices / sentiment / fx / collector state, wipes account tables."""
 import sqlite3, sys
+sys.exit("reset_sleeves.py is superseded by great_reset.py (2026-10-10): it does not clear the v7 DAY state and drops account_split. Use great_reset.py <tag>.")
 from common import DB, cfg, db, funding, iso, sync_pot_cash
 from trader import init_core
 
