@@ -1,5 +1,5 @@
 """RISK pot helpers (pure functions + DB reads, no network): crypto breakout screen from one CoinGecko markets snapshot
-and the daily-close breakout score for the speculative xStocks. Used by collector.py (screen -> which coins to price),
+and the daily-close breakout score for the speculative stocks (normal exchange tickers, v5). Used by collector.py (screen -> which coins to price),
 trader.py (entries) and dashboard.py (candidate table)."""
 import re
 from statistics import mean
@@ -59,7 +59,7 @@ def screen(rows, c, monad_extra=()):
     return sorted(out, key=lambda d: (not d["ok"], -d["score"]))
 
 def stock_score(con, sym, price_usd=None):
-    """Breakout score for an xStock from Yahoo daily closes (+ live price). Returns (score, ok, why) or (None, False, why)."""
+    """Breakout score for a stock from Yahoo daily closes (USD-converted) (+ live price). Returns (score, ok, why) or (None, False, why)."""
     closes = [r[0] for r in con.execute("SELECT close FROM daily_closes WHERE asset=? ORDER BY d DESC LIMIT 70", (sym,))][::-1]
     if len(closes) < 55: return None, False, "not enough daily history"
     p = price_usd or closes[-1]

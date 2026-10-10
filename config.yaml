@@ -12,6 +12,8 @@ fx:                             # USD->GBP rate, fetched every collector cycle (
 
 crypto:
   core_ids: [bitcoin, ethereum, ripple, worldcoin-wld, monad, solana]   # CoinGecko ids
+  watch_ids: {pax-gold: rwa, tether-gold: rwa, ondo-finance: rwa}   # always priced (Markets 'watch closely'); verified liquid 2026-10-10 (vol > $95M/day)
+  watch_themes: {rwa: "Real-world assets (tokenised)"}
   top_n: 15                     # plus top N by market cap (stables/wrapped excluded)
   exclude_symbols: [USDT, USDC, USDE, DAI, FDUSD, USDS, PYUSD, USD1, TUSD, BUSD, USDD, USDTB, BSC-USD,
                     STETH, WSTETH, WBTC, WETH, WEETH, CBBTC, WBETH, SUSDE, SUSDS, BUIDL, RSETH, LBTC, FIGR_HELOC, JITOSOL]
@@ -21,23 +23,46 @@ crypto:
     amount_mon: 100
 
 stocks:
-  watchlist: [SPYx, QQQx, NVDAx, TSLAx, AAPLx, MSTRx, COINx, HOODx, CRCLx, GOOGLx]   # always priced intraday (DAY pot + Markets)
+  # v5 (2026-10-10): broker-agnostic NORMAL exchange tickers (Yahoo Finance symbols) instead of xStocks (tokenised stocks
+  # are not available to UK residents). US tickers plain (NVDA), London (LSE main market + AIM) with suffix .L (RPI.L),
+  # Australia .AX (LYC.AX). Yahoo quotes UK shares in GBp (pence) - collector converts every quote to USD via the
+  # currency Yahoo reports (GBp /100 -> GBP -> USD), so the prices table stays USD and the trader's GBP prices are exact.
+  # Stock paper trades only happen while the listing exchange is open (markets.py: US 09:30-16:00 New York, LSE 08:00-16:30
+  # London, ASX 10:00-16:00 Sydney; weekends/holidays closed). Re-verify the universe: python3 universe_check.py
+  watchlist: [VUSA.L, EQQQ.L, ISF.L, NVDA, TSLA, AAPL, MSTR, COIN, HOOD, CRCL, GOOGL]   # always priced intraday (DAY pot + Markets)
+  # (UK retail cannot buy US-domiciled ETFs such as SPY/QQQ (no UK KID) -> UCITS equivalents VUSA.L / EQQQ.L / ISF.L)
   intraday_top_n: 8             # + the top N ranked universe names, the CORE picks and any held stock are priced intraday
-  daily_batch: 20               # universe daily closes (Yahoo, 1y) refreshed for at most N stale tickers per cycle (~once a day each)
+  daily_batch: 30               # universe daily closes (Yahoo, 1y) refreshed for at most N stale tickers per cycle (~once a day each)
   daily_max_age_h: 20
-  # CORE universe: forward-looking growth names that exist as xStocks. Verified 2026-10-09 against the public
-  # api.xstocks.fi/api/v2/public/assets list (all 1,319 listed) + a live xStocks quote + 6 months of Yahoo daily closes;
-  # all are deployed on Monad. Not available as xStocks (dropped): VST, CCJ, SPOT, RGTI. Re-check: python3 universe_check.py
+  costs:                        # broker-like paper costs for stocks (Trading 212-style; crypto keeps risk.fee_slippage_pct + gas)
+    spread_pct: 0.1             # per side: spread/slippage, no commission
+    fx_fee_pct: 0.15            # per side on non-GBP stocks (GBP account -> USD/AUD shares)
+    uk_stamp_duty_pct: 0.5      # UK buys only (SDRT); AIM shares and ETFs are exempt (stamp_exempt)
+    stamp_exempt: [ITM.L, SEE.L, FTC.L, AVCT.L, GHH.L, IQE.L, VUSA.L, EQQQ.L, ISF.L]   # AIM-quoted + ETFs
+  intraday_closed_refresh: true # outside market hours a stock is fetched only once after the close (no repeated calls)
+  # CORE universe by theme. watch: true = the user's 'watch closely' themes (highlighted on the dashboard). Every ticker
+  # verified 2026-10-10: >= 140 days of Yahoo daily history + liquidity (20-day average traded value >= $1M US / ~GBP 0.2M UK).
+  # Dropped on verification: AFC.L (no Yahoo data), AWE.L (delisted - bought by Qualcomm), GOLD (now Gold.com, not Barrick;
+  # Barrick = B), KSCP (< $1M/day, sub-$1), IKA.L KMK.L CPH2.L HVO.L RENX.L CLX.L NANO.L QBT.L TRCS.L ZOO.L PXEN.L SAR.L PHE.L
+  # EAAS.L POLB.L (illiquid: < GBP 0.2M/day). Not listed: Oxford Ionics (acquired by IonQ, never listed). Quantum eMotion = QNC
+  # (NYSE American; also QNC.V on TSXV). Lynas = LYC.AX (ASX; OTC ADR LYSDY not used: most UK brokers do not offer OTC).
   universe:
-    ai_semis:      {label: "AI chips & semis",            tickers: [NVDAx, AMDx, AVGOx, TSMx, MUx, ARMx, ASMLx, MRVLx, ANETx, CRDOx, ALABx, QCOMx, LRCXx, AMATx, KLACx, SMCIx, INTCx]}
-    ai_platforms:  {label: "AI platforms & big tech",     tickers: [PLTRx, MSFTx, METAx, GOOGLx, AMZNx, ORCLx, CRWVx, NBISx, APPx]}
-    crypto_linked: {label: "Crypto-linked",               tickers: [COINx, MSTRx, HOODx, CRCLx, MARAx, RIOTx, IRENx, GLXYx, CORZx, BMNRx, CLSKx, HUTx, WULFx]}
-    energy_infra:  {label: "Energy, nuclear & AI power",  tickers: [CEGx, GEVx, OKLOx, SMRx, NNEx, VRTx, ETNx, TLNx, FSLRx, UUUUx, BWXTx, PWRx, NEEx]}
-    cloud_software: {label: "Cloud, software & cyber",    tickers: [CRWDx, SNOWx, NETx, DDOGx, NOWx, PANWx, SHOPx, ZSx, MDBx, CRMx, ADBEx, TEAMx]}
-    consumer_tech: {label: "Consumer tech & platforms",   tickers: [AAPLx, TSLAx, NFLXx, UBERx, RDDTx, RBLXx, DASHx, ABNBx]}
-    space_defense: {label: "Space & defence tech",        tickers: [RKLBx, ASTSx, LUNRx, KTOSx, AVAVx, RDWx]}
-    quantum:       {label: "Quantum computing",           tickers: [IONQx, QUBTx]}
-    fintech:       {label: "Fintech",                     tickers: [SOFIx, AFRMx, XYZx, PYPLx]}
+    ai_semis:      {label: "AI chips & semis",            tickers: [NVDA, AMD, AVGO, TSM, MU, ARM, ASML, MRVL, ANET, CRDO, ALAB, QCOM, LRCX, AMAT, KLAC, SMCI, INTC]}
+    ai_platforms:  {label: "AI platforms & big tech",     tickers: [PLTR, MSFT, META, GOOGL, AMZN, ORCL, CRWV, NBIS, APP]}
+    crypto_linked: {label: "Crypto-linked",               tickers: [COIN, MSTR, HOOD, CRCL, MARA, RIOT, IREN, GLXY, CORZ, BMNR, CLSK, HUT, WULF]}
+    energy_infra:  {label: "Energy, nuclear & AI power",  tickers: [CEG, GEV, VST, CCJ, OKLO, SMR, NNE, VRT, ETN, TLN, FSLR, BWXT, PWR, NEE]}
+    cloud_software: {label: "Cloud, software & cyber",    tickers: [CRWD, SNOW, NET, DDOG, NOW, PANW, SHOP, ZS, MDB, CRM, ADBE, TEAM]}
+    consumer_tech: {label: "Consumer tech & platforms",   tickers: [AAPL, TSLA, NFLX, UBER, RDDT, RBLX, DASH, ABNB, SPOT]}
+    space_defense: {label: "Space & defence tech",        tickers: [RKLB, ASTS, LUNR, KTOS, AVAV, RDW]}
+    fintech:       {label: "Fintech",                     tickers: [SOFI, AFRM, XYZ, PYPL]}
+    photonics:     {label: "Photonics & optical",          watch: true, tickers: [COHR, LITE, IPGP, AAOI, POET, LWLG, FN, CIEN, LPTH, AXTI, GHH.L, IQE.L]}
+    quantum:       {label: "Quantum computing",           watch: true, tickers: [IONQ, RGTI, QBTS, QUBT, ARQQ, LAES, INFQ, XNDU, HQ, QNC]}
+    robotics:      {label: "Robotics & automation",       watch: true, tickers: [ISRG, SYM, TER, ROK, PATH, SERV, RR, PRCT]}
+    metals_rwa:    {label: "Real assets: gold, silver & royalties", watch: true, tickers: [NEM, B, AEM, WPM, FNV, RGLD, PAAS, AG, HL, FRES.L, EDV.L, HOC.L]}
+    rare_earths:   {label: "Rare earths & critical minerals", watch: true, tickers: [MP, LYC.AX, USAR, UUUU, PRE.L, RBW.L]}
+    farmland:      {label: "Land & farmland REITs",       watch: true, tickers: [FPI, LAND]}
+    uk_early:      {label: "British early-stage (LSE/AIM)", watch: true, tickers: [RPI.L, CWR.L, ITM.L, SEE.L, FTC.L, OXIG.L, ONT.L, SSIT.L, AVCT.L, OXB.L]}
+    global_small:  {label: "Global early-stage small caps", watch: true, tickers: [SOUN, BBAI, RCAT, ACHR, JOBY, SIDU, NVTS, PL, BKSY]}
 
 strategy:                       # shared signal model (used by the DAY sleeve for entries/exits, shown on dashboard)
   focus_assets: [MON, WLD, XRP]
@@ -57,7 +82,7 @@ core:                           # CORE pot: long holds, staggered entry, weekly 
   max_pick_pct: 10              # cap per pick if only a few stocks are eligible (rest stays in cash)
   max_per_theme: 2              # diversification across stocks.universe themes
   score_weights: {momentum: 0.55, quality: 0.30, sentiment: 0.15}   # composite, see stockrank.py
-  stock_exclude: [SPYx, QQQx]   # index ETFs: CORE picks single stocks only (edit to allow)
+  stock_exclude: [VUSA.L, EQQQ.L, ISF.L]   # index ETFs: CORE picks single stocks only (edit to allow)
   tranches: 5                   # build each position in ~5 tranches (target/5 per tranche, >= risk.min_trade_size)
   max_tranches_per_day: 1       # per asset per UK day
   dip_vs_avg24_pct: 0           # tranche fires when price <= 24h average * (1 - x%) ("buy the dip") ...
@@ -91,7 +116,11 @@ riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mi
       refresh_h: 6
       dex_check_usd: 200
       max_impact_pct: 3
-  stocks: [IONQx, QUBTx, RKLBx, ASTSx, LUNRx, RDWx, OKLOx, SMRx, NNEx, UUUUx, IRENx, CORZx, WULFx, CLSKx, BMNRx, MARAx, RIOTx, HUTx, CRWVx, NBISx, SOFIx, HOODx]
+  # RISK stock universe (v5) = the riskier 'watch closely' themes + small caps from photonics/robotics; only names with a
+  # daily breakout (or held / top-scored) are priced intraday; trades only while their exchange is open
+  stock_themes: [quantum, uk_early, rare_earths, global_small]
+  stocks: [AAOI, POET, LWLG, LPTH, AXTI, GHH.L, IQE.L, SERV, RR]   # extra small caps (photonics / robotics)
+  stock_intraday_n: 8           # + held + breakout-ok names
   # breakout + sentiment entry: score -1..1 per candidate (see trader.risk_score), combined with fresh sentiment like DAY
   entry_score: 0.45             # combined score needed to buy
   confirm_momentum: 0.0         # intraday momentum (4h/24h/EMA, same model as DAY) must be >= this (needs >= 2h history)

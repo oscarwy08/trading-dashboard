@@ -1,4 +1,4 @@
-"""CORE stock selection (no network): ranks the xStock universe (config stocks.universe, grouped by theme) from the daily
+"""CORE stock selection (no network): ranks the stock universe (normal exchange tickers, v5) (config stocks.universe, grouped by theme) from the daily
 closes stored by collector.py (table daily_closes, Yahoo daily closes of the underlying), picks the CORE stocks and
 builds the display-only 'investment plans' for bigger top-ups.
 
@@ -23,6 +23,16 @@ def themes(c):
     for k, v in (c["stocks"].get("universe") or {}).items():
         for s in v.get("tickers", []): out.setdefault(s, (k, v.get("label", k)))
     return out
+
+def watch_themes(c):
+    """theme keys marked 'watch: true' (the user's 'watch closely' themes)."""
+    return {k for k, v in (c["stocks"].get("universe") or {}).items() if v.get("watch")}
+
+def risk_stocks(c):
+    """RISK pot stock universe: riskpot.stock_themes (all tickers of those themes) + riskpot.stocks (extra names)."""
+    R = c.get("riskpot") or {}; U = c["stocks"].get("universe") or {}
+    out = [t for k in R.get("stock_themes") or [] for t in (U.get(k) or {}).get("tickers", [])]
+    return list(dict.fromkeys(out + list(R.get("stocks") or [])))
 
 def closes(con, asset, days=400):
     since = (datetime.now(timezone.utc) - timedelta(days=days)).date().isoformat()

@@ -4,6 +4,10 @@ built, pick count fitted to min trade size), min trade sizes, and simulated Mona
 v4: RISK pot - synthetic small-cap coins run through the real breakout screen (riskpot.screen): entry on breakout,
 12% stop, trailing take-profit, 7-day max hold, max 5 open / 3 new per day / <= £8 each, drawdown-cap halt + RISK_RESUME,
 DAY ignores risk-only coins, cash reconciliation for all three pots, TRANSFER between pots (rebased stats).
+v5: stocks are normal exchange tickers with real market hours (markets.py): synthetic stock prices only move while the
+listing exchange is open; checks that no stock trade happens outside its session (US / LSE / ASX, weekends), that rebalance
+orders decided while a market is closed are QUEUED and filled at the open, that DAY stock positions are flat at the close,
+plus unit checks of the calendar (DST gap, holidays), the pence -> pounds conversion and the broker-like stock costs.
 Usage: python3 test/sim.py [--keep]   (writes only to data/sim.db, deleted at the end unless --keep; logs/sim_cycles.log)."""
 import io, json, os, random, sqlite3, sys, contextlib
 from datetime import datetime, timedelta, timezone
@@ -14,7 +18,7 @@ os.environ["TRADING_DB"] = str(SIM); os.environ["TRADING_LOG"] = str(HERE / "log
 sys.path.insert(0, str(HERE))
 if SIM.exists(): SIM.unlink()
 src = sqlite3.connect(HERE / "data" / "trading.db"); dst = sqlite3.connect(SIM); src.backup(dst); dst.close(); src.close()
-import common, trader, stockrank, riskpot, rebalance_pots, dashboard
+import common, trader, stockrank, riskpot, rebalance_pots, dashboard, markets, collector
 from common import LON
 trend = (sqlite3.connect(SIM).execute("SELECT value FROM state WHERE key='stock_trends'").fetchone() or [None])[0]
 c = common.cfg()
@@ -72,7 +76,7 @@ t = T0; steps = 0
 while t <= END:
     common._NOW = t
     for a, (p, k) in list(last.items()):
-        L = lt(t); stock_open = L.weekday() < 5 and (14 * 60 + 30) <= L.hour * 60 + L.minute < 21 * 60
+        L = lt(t); stock_open = markets.is_open(a, t)
         if k == "stock" and not stock_open: r = 0
         else:
             if steps % 24 == 0: drift[a] = rng.gauss(0, 0.0015)
@@ -148,6 +152,27 @@ while t <= END:
 # ---------------- post-run checks ----------------
 tr = [dict(r) for r in common.db().execute("SELECT * FROM trades ORDER BY id")]
 for x in tr: x["L"] = lt(datetime.fromisoformat(x["ts"]))
+# v5: market hours / queue / costs / conversion
+closed_trades = [(f"{x['L']:%a %d %H:%M}", x["asset"], x["side"], x["reason"][:50]) for x in tr if x["klass"] == "stock" and x["side"] in ("BUY", "SELL")
+                 and not markets.is_open(x["asset"], datetime.fromisoformat(x["ts"])) and "already closed" not in x["reason"]]
+queued = [x for x in tr if "[queued" in x["reason"]]
+stock_tr = [x for x in tr if x["klass"] == "stock" and x["side"] in ("BUY", "SELL")]
+print("v5 stock trades:", len(stock_tr), "| outside market hours:", closed_trades[:5], "| queued orders filled at the open:",
+      [(f"{x['L']:%a %d %H:%M}", x["asset"], x["side"], round(x["value"], 2)) for x in queued])
+print("v5 DAY stock trades:", [(f"{x['L']:%a %d %H:%M}", x["asset"], x["side"], x["reason"][:40]) for x in tr if x["sleeve"] == "day" and x["klass"] == "stock"][:8])
+assert not closed_trades, "stock trade outside market hours"
+assert all((x["gas"] or 0) == 0 for x in stock_tr), "stocks pay no gas"
+fxr = con.execute("SELECT rate FROM fx ORDER BY ts DESC LIMIT 1").fetchone()[0]
+assert abs(collector.usd_factor(con, "GBp") - 0.01 / fxr) < 1e-12 and abs(collector.usd_factor(con, "GBP") - 1 / fxr) < 1e-12, "pence conversion"
+assert abs(664.5 * collector.usd_factor(con, "GBp") * fxr - 6.645) < 1e-9, "664.5p -> £6.645"
+cp = lambda a, sd: round(trader.cost_pct(c, a, "stock", sd) * 100, 4)
+assert (cp("NVDA", "BUY"), cp("RPI.L", "BUY"), cp("RPI.L", "SELL"), cp("ITM.L", "BUY"), round(trader.cost_pct(c, "BTC", "crypto", "BUY") * 100, 4)) == (0.25, 0.6, 0.1, 0.1, 0.3), "stock costs"
+from datetime import date as _d
+o_, c_ = markets.session("US", _d(2026, 10, 27)); assert (lt(o_).hour, lt(o_).minute, lt(c_).hour) == (13, 30, 20), "US/UK DST gap"
+o_, c_ = markets.session("US", _d(2026, 10, 12)); assert (lt(o_).hour, lt(o_).minute, lt(c_).hour) == (14, 30, 21), "US session in UK time"
+assert markets.session("US", _d(2026, 11, 26)) is None and markets.session("LSE", _d(2026, 12, 28)) is None and markets.session("LSE", _d(2026, 10, 10)) is None, "holidays/weekend"
+assert lt(markets.session("US", _d(2026, 11, 27))[1]).hour == 18, "early close day after Thanksgiving (13:00 NY = 18:00 UK)"
+print("v5 unit checks ok: calendar (DST gap 13:30-20:00 UK, holidays, early close), GBp->£, costs NVDA 0.25% / RPI.L buy 0.6% (stamp) / ITM.L (AIM) 0.1%")
 for x in tr:
     if x["sleeve"] == "day" and x["side"] == "BUY" and not (8 * 60 <= x["L"].hour * 60 + x["L"].minute < 21 * 60):
         checks["entry_window_violation"].append(x["L"].isoformat())

@@ -6,7 +6,8 @@
 #   1. sync the clone to origin/main (picks up sentiment / KILL / RISK_RESUME pushed meanwhile)
 #   2. if .github/workflows/cycle.yml is missing, try to install it from scripts/github-workflow-cycle.yml
 #      (succeeds automatically once the token has the Workflows permission)
-#   3. handover: if the workflow exists and a cycle.yml run has succeeded in the last 3 h -> Actions is live: comment out
+#   3. handover: if the workflow exists and a SCHEDULED cycle.yml run (event=schedule; a manual workflow_dispatch does
+#      not prove the cron works) has succeeded in the last 3 h -> Actions is live: comment out
 #      this cron entry and stop. If the workflow exists but Actions has not succeeded yet -> skip (avoid two writers)
 #      for up to 90 min after the workflow appeared, then fall back to running the cycle here.
 #   4. run ci_cycle.sh + ci_push.sh, then mirror the repo into /workspace/trading (pull_state.sh).
@@ -27,7 +28,7 @@ if [ ! -f "$WF" ] && [ -f "$PENDING" ]; then
   else G reset -q --hard origin/main; rm -rf .github; log "workflow push rejected (token lacks 'Workflows: Read and write') - cycle runs on the box"; fi
 fi
 if [ -f "$WF" ]; then
-  ok=$(api "/actions/workflows/cycle.yml/runs?status=success&per_page=1" | python3 -c 'import json,sys,datetime as D
+  ok=$(api "/actions/workflows/cycle.yml/runs?status=success&event=schedule&per_page=1" | python3 -c 'import json,sys,datetime as D
 try:
     r=json.load(sys.stdin)["workflow_runs"][0]; t=D.datetime.fromisoformat(r["updated_at"].replace("Z","+00:00"))
     print(1 if D.datetime.now(D.timezone.utc)-t < D.timedelta(hours=3) else 0)
@@ -37,11 +38,7 @@ except Exception: print(0)')
     crontab -l 2>/dev/null | sed -E 's@^([^#].*box_cycle\.sh.*)$@#REMOVED-v4 (GitHub Actions live) \1@' | crontab -
     exit 0
   fi
-  since=$(api "/commits?path=$WF&per_page=1" | python3 -c 'import json,sys,datetime as D
-try: print(int(D.datetime.fromisoformat(json.load(sys.stdin)[0]["commit"]["committer"]["date"].replace("Z","+00:00")).timestamp()))
-except Exception: print(0)')
-  if [ $(( $(date +%s) - since )) -lt 5400 ]; then log "workflow present, waiting for the first successful Actions run - skip"; exit 0; fi
-  log "WARNING: workflow present for > 90 min but no successful Actions run - running the cycle on the box as fallback"
+  log "workflow present but no successful SCHEDULED Actions run in the last 3 h - running the cycle on the box"
 fi
 log "cycle on the box (interim)"
 PY=python3 bash scripts/ci_cycle.sh; rc=$?

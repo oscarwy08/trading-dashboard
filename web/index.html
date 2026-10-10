@@ -118,11 +118,12 @@
 
   <!-- ===================== MARKETS ===================== -->
   <section class="tab" id="tab-markets" data-tab="markets">
-    <div class="card"><div class="card-h"><div><h2>Markets</h2><p class="explain">Prices in £ (converted live from $). Tap a row for the chart, trades, signal reasons and news sentiment.</p></div>
+    <div class="card"><div class="card-h"><div><h2>Markets</h2><p class="explain">Grouped by theme (★ = watch closely). Prices in £ (converted live from $ / pence). Tap a row for the chart, trades, signal reasons and news sentiment.</p></div>
       <div class="tools"><input id="asset-q" type="search" placeholder="Search" autocomplete="off" aria-label="Search assets">
+        <select id="mk-theme" aria-label="Theme"><option value="">All themes</option></select>
         <div class="seg" id="asset-filter"><button data-f="all" class="on">All</button><button data-f="crypto">Crypto</button><button data-f="stock">Stocks</button><button data-f="held">Held</button></div></div></div>
-      <div class="tw"><table id="asset-table" class="tbl clickable"></table></div>
-      <div class="note" id="mk-note"></div></div>
+      <div class="note" id="mk-note"></div>
+      <div id="mk-groups"></div></div>
   </section>
 
   <!-- ===================== SENTIMENT ===================== -->

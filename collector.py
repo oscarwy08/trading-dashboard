@@ -1,4 +1,4 @@
-"""Price collector: CoinGecko (crypto), KyberSwap (MON/USDC on Monad), xStocks (+Yahoo fallback), USD->GBP FX,
+"""Price collector: CoinGecko (crypto), KyberSwap (MON/USDC on Monad), stocks (Yahoo, normal exchange tickers, v5), USD->GBP FX,
 Monad gas price (simulated network fee), daily closes of the CORE stock universe (Yahoo) + ranking.
 All asset prices are stored in raw USD; the FX rate is stored in table fx and applied by trader/dashboard."""
 import json, time, requests
@@ -99,14 +99,15 @@ def crypto(con, c, ts, status):
     ids = {x["id"] for x in top}
     held = {r[0]: (st_get(con, f"cgid:{r[0]}") or (con.execute("SELECT value FROM state WHERE key=?", (f"cgid:{r[0]}",)).fetchone() or [None])[0])
             for r in con.execute("SELECT DISTINCT asset FROM positions WHERE klass='crypto'")}
-    need = [i for i in list(cc["core_ids"]) + [v for v in held.values() if v] if i not in ids]
+    wids = list((cc.get("watch_ids") or {}).keys())          # always-priced watch coins (tokenised gold, RWA tokens)
+    need = [i for i in list(cc["core_ids"]) + wids + [v for v in held.values() if v] if i not in ids]
     extra = []
     if need:
         time.sleep(2); extra = get(f"{CG}/coins/markets", {"vs_currency": "usd", "ids": ",".join(dict.fromkeys(need)), "price_change_percentage": PCT}) or []
     base = [x for x in top if x["symbol"].upper() not in ex and "USD" not in x["symbol"].upper()][:cc["top_n"]]
     by_id = {x["id"]: x for x in top + extra}
     rows = {x["id"]: x for x in base}
-    for i in cc["core_ids"]:
+    for i in list(cc["core_ids"]) + wids:
         if i in by_id: rows[i] = by_id[i]
     base_syms = {x["symbol"].upper() for x in rows.values()}
     # ---- RISK screen ----
@@ -132,9 +133,12 @@ def crypto(con, c, ts, status):
     for a, i in held.items():                     # held coins are always priced (even if they left the top 300)
         if i and i in by_id and i not in rows: rows[i] = by_id[i]; risk_syms.add(a) if a not in base_syms else None
     st_set(con, "risk_only", sorted(risk_syms))
+    from stockrank import themes, risk_stocks
+    stock_syms = {s.upper() for s in list(themes(c)) + risk_stocks(c) + list(c["stocks"]["watchlist"])}
     seen = set()
     for x in rows.values():
         sym = x["symbol"].upper()
+        if sym in stock_syms: continue                # a coin with the same symbol as a stock ticker (e.g. ONDO.L / B / PL) - skip
         if sym in seen: continue                  # symbol clash between two coins: keep the first (base/higher ranked)
         seen.add(sym)
         con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (ts, sym, "crypto",
@@ -183,45 +187,88 @@ def fxrate(con, c, ts, status):
     status["fx"] = f"ok (GBP/USD {1/rate:.4f} via {src}" + (f", er-api {1/er:.4f}" if alt else "") + ")"
 
 def yahoo(sym, rng="1d", interval="15m"):
+    """Yahoo Finance chart API -> (result, [(epoch, close in the QUOTE currency)]). result['meta']['currency'] tells the
+    currency: 'GBp' (pence) for most London shares, 'GBP' for some ETFs, 'USD', 'AUD', ..."""
     d = get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}", {"range": rng, "interval": interval})
     r = d["chart"]["result"][0]
     return r, [(t, p) for t, p in zip(r["timestamp"], r["indicators"]["quote"][0]["close"]) if p]
 
+def usd_factor(con, cur):
+    """USD per 1 unit of a Yahoo quote currency. GBp (pence) = 0.01 GBP. GBP uses OUR stored USD->GBP rate (table fx) so the
+    trader's GBP price (usd x the same rate) equals the London quote exactly; other currencies via Yahoo '<CUR>USD=X'
+    (cached hourly in state fxx:<CUR>). Returns None if unknown."""
+    cur = (cur or "USD").strip()
+    if cur == "USD": return 1.0
+    if cur in ("GBp", "GBX", "GBP"):
+        r = con.execute("SELECT rate FROM fx WHERE pair='USDGBP' AND rate>0 ORDER BY ts DESC LIMIT 1").fetchone()
+        return ((0.01 if cur != "GBP" else 1.0) / r[0]) if r else None
+    k = f"fxx:{cur.upper()}"; cache = st_get(con, k)
+    if cache and datetime.fromisoformat(cache["ts"]) > datetime.now(timezone.utc) - timedelta(hours=1): return cache["f"]
+    try:
+        f = float(yahoo(f"{cur.upper()}USD=X", "5d", "1d")[0]["meta"]["regularMarketPrice"])
+        if not 0 < f < 1000: raise ValueError(f)
+        st_set(con, k, dict(ts=iso(), f=f)); return f
+    except Exception as e:
+        L.warning("fx %s->USD failed: %s", cur, e); return cache["f"] if cache else None
+
+def stock_meta(con, sym, meta):
+    """Remember currency / exchange / name per ticker (state stock_meta) for the dashboard and the trader's cost model."""
+    sm = st_get(con, "stock_meta") or {}
+    sm[sym] = dict(cur=meta.get("currency"), ex=meta.get("fullExchangeName") or meta.get("exchangeName"),
+                   name=meta.get("longName") or meta.get("shortName"), tz=meta.get("exchangeTimezoneName"))
+    st_set(con, "stock_meta", sm)
+
 def intraday_stocks(con, c, risk=True):
-    """xStocks priced every cycle: the fixed watchlist + current CORE picks + held stocks + the top N of the latest
-    universe ranking (the rest of the universe only needs daily closes for the weekly ranking - keeps API calls low)."""
+    """Stocks priced intraday: the fixed watchlist + current CORE picks + held stocks + the top N of the latest universe
+    ranking (+ RISK pot: held, today's daily-breakout names and the top riskpot.stock_intraday_n by breakout score).
+    The rest of the universe only needs daily closes - keeps Yahoo calls low."""
+    import riskpot, stockrank
     out = list(c["stocks"]["watchlist"])
-    def st(k):
-        r = con.execute("SELECT value FROM state WHERE key=?", (k,)).fetchone()
-        try: return json.loads(r[0]) if r else None
-        except Exception: return None
-    out += (st("core_stocks") or {}).get("picks", [])
+    out += (st_get(con, "core_stocks") or {}).get("picks", [])
     out += [r[0] for r in con.execute("SELECT DISTINCT asset FROM positions WHERE klass='stock'")]
-    if risk: out += list((c.get("riskpot") or {}).get("stocks") or [])          # RISK pot speculative xStocks
-    rk = (st("stock_rank") or {}).get("data") or {}
-    top = sorted([s for s, r in rk.items() if r.get("eligible")], key=lambda s: -rk[s]["score"])[:int(c["stocks"].get("intraday_top_n", 8))]
-    return list(dict.fromkeys(out + top))
+    rk = (st_get(con, "stock_rank") or {}).get("data") or {}
+    out += sorted([s for s, r in rk.items() if r.get("eligible")], key=lambda s: -rk[s]["score"])[:int(c["stocks"].get("intraday_top_n", 8))]
+    if risk:
+        sc = []
+        for s in stockrank.risk_stocks(c):
+            v, ok, _ = riskpot.stock_score(con, s)
+            if v is not None: sc.append((not ok, -v, s))
+        n = int((c.get("riskpot") or {}).get("stock_intraday_n", 8))
+        out += [s for bad, _, s in sorted(sc) if not bad] + [s for _, _, s in sorted(sc)[:n]]
+    return list(dict.fromkeys(out))
 
 def stock_quote(sym):
-    d = get(f"https://api.xstocks.fi/api/v2/public/assets/{sym}/price-data", tries=2)
-    price = (d or {}).get("quote")
-    if price: return sym, price, "xstocks"
-    try: return sym, yahoo(sym.rstrip("x"))[0]["meta"]["regularMarketPrice"], "yahoo"     # e.g. weekends: xStocks quote is null
-    except Exception as e: L.error("stock %s: all sources failed: %s", sym, e); return sym, None, None
+    """(sym, price in quote currency, meta) from Yahoo (regularMarketPrice: real-time for US, ~15 min delayed for London)."""
+    try:
+        r = yahoo(sym)[0]; return sym, r["meta"]["regularMarketPrice"], r["meta"]
+    except Exception as e:
+        L.error("stock %s: Yahoo quote failed: %s", sym, e); return sym, None, None
 
 def stocks(con, c, ts, status):
-    """Intraday xStocks quotes, fetched in parallel (8 threads; DB writes stay on the main thread)."""
+    """Intraday stock quotes (Yahoo, 8 threads; DB writes on the main thread), converted to USD (prices table is USD).
+    Market-hours aware: a ticker is fetched while its exchange is open, and once more after the close (to capture the
+    closing price); otherwise skipped (saves calls nights/weekends - the trader does not trade closed markets anyway)."""
     from concurrent.futures import ThreadPoolExecutor
+    import markets
     syms = intraday_stocks(con, c)
     base = set(intraday_stocks(con, c, risk=False))
     st_set(con, "risk_only_stocks", sorted(set(syms) - base))      # priced only for the RISK pot (DAY ignores them)
-    with ThreadPoolExecutor(8) as ex: res = list(ex.map(stock_quote, syms))
-    ok = fb = 0
-    for sym, price, src in res:
+    now_ = datetime.now(timezone.utc); todo = []
+    for s in syms:
+        if markets.is_open(s, now_): todo.append(s); continue
+        lc = markets.last_close(s, now_)
+        last = con.execute("SELECT MAX(ts) FROM prices WHERE asset=? AND source='yahoo'", (s,)).fetchone()[0]
+        if not last or (lc and datetime.fromisoformat(last) < lc + timedelta(minutes=25)): todo.append(s)   # closing price (Yahoo LSE delay ~15 min)
+    with ThreadPoolExecutor(8) as ex: res = list(ex.map(stock_quote, todo))
+    ok = 0
+    for sym, price, meta in res:
         if not price: continue
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (ts, sym, "stock", price, None, None, None, None, src))
-        ok += 1; fb += src == "yahoo"
-    status["stocks"] = f"{ok}/{len(syms)} ok, {fb} via Yahoo fallback"
+        f = usd_factor(con, meta.get("currency"))
+        if not f: L.warning("stock %s: unknown currency %s", sym, meta.get("currency")); continue
+        stock_meta(con, sym, meta)
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (ts, sym, "stock", price * f, None, None, None, None, "yahoo"))
+        ok += 1
+    status["stocks"] = f"{ok}/{len(todo)} quotes ok (Yahoo), {len(syms) - len(todo)} skipped (market closed, closing price stored)"
 
 def gas(con, c, ts, status):
     """Simulated Monad network fee per swap: eth_gasPrice (public RPC) * gas_per_swap, MON -> USD (latest MON price) -> GBP.
@@ -247,20 +294,24 @@ def gas(con, c, ts, status):
         L.warning("gas price failed: %s", e); status["gas"] = f"FAILED ({e}); trader uses fallback"
 
 def daily(con, c, status):
-    """Daily closes (Yahoo, 1 year) for the CORE universe, at most stocks.daily_batch stale tickers per cycle so the whole
+    """Daily closes (Yahoo, 1 year; converted to USD) for the CORE universe + RISK stocks, at most stocks.daily_batch stale tickers per cycle so the whole
     universe refreshes over a few cycles each day without hammering the API. Then re-ranks (state 'stock_rank')."""
     from stockrank import rank, themes
-    S_ = c["stocks"]; uni = list(themes(c)); maxh = float(S_.get("daily_max_age_h", 20)); n = int(S_.get("daily_batch", 20))
+    from stockrank import risk_stocks
+    S_ = c["stocks"]; uni = list(dict.fromkeys(list(themes(c)) + risk_stocks(c) + list(S_["watchlist"]))); maxh = float(S_.get("daily_max_age_h", 20)); n = int(S_.get("daily_batch", 20))
     cut = (datetime.now(timezone.utc) - timedelta(hours=maxh)).isoformat()
     last = {r[0][len("dfetch:"):]: r[1] for r in con.execute("SELECT key, value FROM state WHERE key LIKE 'dfetch:%'")}
     todo = sorted([s for s in uni if last.get(s, "") < cut], key=lambda s: last.get(s, ""))[:n]
     ok = 0
     for sym in todo:
         try:
-            r, pts = yahoo(sym.rstrip("x"), "1y", "1d")
+            r, pts = yahoo(sym, "1y", "1d")
+            f = usd_factor(con, r["meta"].get("currency"))     # whole history at today's FX: returns stay in local currency
+            if not f: raise ValueError(f"unknown currency {r['meta'].get('currency')}")
+            stock_meta(con, sym, r["meta"])
             for t, p in pts:
                 con.execute("INSERT OR REPLACE INTO daily_closes VALUES(?,?,?)",
-                            (sym, datetime.fromtimestamp(t, timezone.utc).date().isoformat(), p))
+                            (sym, datetime.fromtimestamp(t, timezone.utc).date().isoformat(), p * f))
             con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"dfetch:{sym}", iso())); ok += 1
             time.sleep(0.4)
         except Exception as e:
@@ -276,7 +327,7 @@ def backfill(con, c, crypto_rows, cg_limit=3):
     CoinGecko for crypto (a few per run, focus coins first, to respect free-tier rate limits)."""
     focus = c["strategy"]["focus_assets"]
     coins = sorted(crypto_rows.values(), key=lambda x: x["symbol"].upper() not in focus)
-    todo = [(s, "stock", s.rstrip("x")) for s in intraday_stocks(con, c)]
+    todo = [(s, "stock", s) for s in intraday_stocks(con, c)]
     todo += [(x["symbol"].upper(), "crypto", x["id"]) for x in coins]
     done = cg = 0
     for asset, klass, ref in todo:
@@ -289,7 +340,8 @@ def backfill(con, c, crypto_rows, cg_limit=3):
                 if not d: L.info("backfill %s deferred (rate limit)", asset); break
                 pts = [(t / 1000, p) for t, p in d["prices"]]
             else:
-                pts = yahoo(ref, "5d", "60m")[1]
+                r_, pts = yahoo(ref, "5d", "60m"); f = usd_factor(con, r_["meta"].get("currency")) or 1.0
+                pts = [(t_, p * f) for t_, p in pts]
             first = con.execute("SELECT MIN(ts) FROM prices WHERE asset=?", (asset,)).fetchone()[0]
             for t, p in pts:
                 tsx = datetime.fromtimestamp(t, timezone.utc).replace(microsecond=0).isoformat()

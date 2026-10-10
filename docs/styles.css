@@ -155,3 +155,9 @@ input[type=search]{min-width:0;width:100%}.tools{width:100%}#updated-ago{display
 .stat-row{grid-template-columns:1fr 1fr}.kv{grid-template-columns:1fr}.kv>div:nth-child(odd){margin-top:6px}}
 /* v4: Risk pot */
 .tag.risk{color:#f91880;border-color:rgba(249,24,128,.5)}.tag.xfer{color:var(--mut2);border-style:dashed}
+/* v5: markets grouped by theme, watch-closely themes */
+.mk-group { margin-top: 18px; }
+.mk-group h3 { font-size: 15px; margin: 0 0 6px; display: flex; gap: 8px; align-items: center; }
+.mk-group.watch h3 { color: var(--hi); }
+.tag.watch { background: rgba(29,155,240,.15); color: #1D9BF0; border-color: rgba(29,155,240,.4); }
+#mk-theme { max-width: 220px; }

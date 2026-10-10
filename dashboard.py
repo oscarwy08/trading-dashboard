@@ -6,7 +6,10 @@ from bisect import bisect_right
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from common import KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, cfg, db, now, rebase, start_cash, transfer_adj, usd_gbp
-import stockrank
+import markets, stockrank
+
+def plain(a):   # v5: xStock name -> normal ticker (AMDx -> AMD); historical orders keep the xStock name, alias links them
+    m = re.match(r"^([A-Z][A-Z0-9.]*)x$", a or ""); return m.group(1) if m else a
 
 OUT = SITE                # docs/ in the repo (GitHub Pages); override with SITE_DIR
 WEB = ROOT / "web"
@@ -178,7 +181,7 @@ def build(con):
                    price=sig(r["price"]), fill=sig(r["fill"]), usd=sig(r["price_usd"]), fx=sig(r["usd_gbp"], 5),
                    value=r2(r["value"]), fee=round(r["cost"], 4) if r["cost"] is not None else None, pnl=r2(r["pnl"]),
                    gas=sig(r["gas"], 3) if r["gas"] is not None else None,
-                   reason=r["reason"] or "")
+                   reason=r["reason"] or "", alias=plain(r["asset"]) if plain(r["asset"]) != r["asset"] else None)
               for r in con.execute("SELECT * FROM trades ORDER BY id DESC LIMIT ?", (MAX_TRADES,))]
     POTN = dict(core="Core pot", day="Day pot", risk="Risk pot")
     for i, r in enumerate(con.execute("SELECT rowid, * FROM transfers ORDER BY ts")):   # cash moves between pots (no fees)
@@ -198,7 +201,22 @@ def build(con):
     core_t.update({s_: w * 100 for s_, w in stockrank.pick_weights(c, picks).items()})
     try: ranked = stockrank.rank(con, c)
     except Exception: ranked = {}
-    th = stockrank.themes(c)
+    th = stockrank.themes(c); watch = stockrank.watch_themes(c); rset = set(stockrank.risk_stocks(c))
+    smeta = json.loads((con.execute("SELECT value FROM state WHERE key='stock_meta'").fetchone() or ["{}"])[0]) or {}
+    CC = c["crypto"]; cth = CC.get("watch_themes") or {}
+    cg_sym = {json.loads(v) if v.startswith('"') else v: k[5:] for k, v in con.execute("SELECT key, value FROM state WHERE key LIKE 'cgid:%'")}
+    ctheme = {cg_sym[i]: tk for i, tk in (CC.get("watch_ids") or {}).items() if i in cg_sym}     # e.g. PAXG -> rwa
+    t_mk = now()
+    def tinfo(a, k):
+        if k == "stock":
+            tk, tl = th.get(a, (None, None))
+            if not tk and a in c["stocks"]["watchlist"]: tk, tl = "watchlist", "Market watchlist"
+            if not tk and a in rset: tk, tl = "risk_extra", "Risk pot small caps"
+            m = smeta.get(a) or {}
+            return dict(tk=tk, theme=tl, watch=tk in watch, ex=markets.exchange(a), open=markets.is_open(a, t_mk), cur=m.get("cur"),
+                        name=m.get("name"), risk_u=a in rset)
+        tk = ctheme.get(a)
+        return dict(tk=tk or "crypto", theme=cth.get(tk) if tk else "Crypto", watch=bool(tk), ex="crypto", open=True)
     # ---- asset table ----
     assets = []
     for a, r in sorted(lp.items()):
@@ -212,7 +230,17 @@ def build(con):
                            reason=s["reason"] if s else None,
                            sent=dict(s=se["s"], c=se["c"], t=se["t"]) if se else None,
                            pos=bool(a in pos_by), held=pos_by.get(a, []), core_t=core_t.get(a), spark=spark_pts,
-                           theme=th[a][1] if a in th else None, rank=(ranked.get(a) or {}).get("score")))
+                           rank=(ranked.get(a) or {}).get("score"), **tinfo(a, r["klass"])))
+    have = {x["a"] for x in assets}       # universe stocks without intraday prices: last daily close (Markets shows every theme)
+    for a in list(th) + [x for x in stockrank.risk_stocks(c) if x not in th]:
+        if a in have: continue
+        dc = con.execute("SELECT d, close FROM daily_closes WHERE asset=? ORDER BY d DESC LIMIT 22", (a,)).fetchall()
+        if not dc: continue
+        usd = dc[0][1]; chg = round((usd / dc[1][1] - 1) * 100, 2) if len(dc) > 1 and dc[1][1] else None
+        assets.append(dict(a=a, k="stock", focus=False, usd=sig(usd), gbp=sig(usd * rate) if rate else None, chg=chg, chg_d=True,
+                           src="daily close " + dc[0][0], t=ep(dc[0][0] + "T21:00:00+00:00"), score=None, mom=None, sent_used=None,
+                           action=None, reason=None, sent=None, pos=a in pos_by, held=pos_by.get(a, []), core_t=core_t.get(a),
+                           spark=[sig(x[1], 5) for x in reversed(dc)], rank=(ranked.get(a) or {}).get("score"), **tinfo(a, "stock")))
 
     # ---- risk / status ----
     risk = json.loads((con.execute("SELECT value FROM state WHERE key='risk'").fetchone() or ["{}"])[0])
@@ -245,7 +273,8 @@ def build(con):
         max_per_theme=int(K.get("max_per_theme", 2)), weights=K.get("score_weights"),
         ranking=[dict(a=a, **{k: v for k, v in r.items() if k not in ("close", "n")}, pick=a in picks)
                  for a, r in sorted(ranked.items(), key=lambda kv: (not kv[1]["eligible"], -kv[1]["score"]))],
-        universe=[dict(key=k, label=v.get("label", k), tickers=v.get("tickers", [])) for k, v in (c["stocks"].get("universe") or {}).items()],
+        universe=[dict(key=k, label=v.get("label", k), tickers=v.get("tickers", []), watch=bool(v.get("watch"))) for k, v in (c["stocks"].get("universe") or {}).items()],
+        queue=json.loads((con.execute("SELECT value FROM state WHERE key='order_queue'").fetchone() or ["[]"])[0]) or [],
         would_pick=stockrank.select(c, ranked, stockrank.n_picks(c, ceq)) if ranked else [],
         plans=stockrank.plans(c, ranked, ceq, {a: p["value"] or 0 for a, p in cpos.items()}, cash_now.get("core", 0)) if ranked else [],
         last_rebalance=ep(last_rb.strip('"')) if last_rb else None, next_rebalance=int(rb_at.timestamp()), rebalance_log=rblog,
@@ -267,7 +296,7 @@ def build(con):
         resume_pending=RISK_RESUME.exists(), cands=rst.get("cands") or [], status_t=ep(rst["ts"]) if rst.get("ts") else None,
         screen=dict(t=ep(rsc["ts"]) if rsc.get("ts") else None, universe=rsc.get("universe"), liquid=rsc.get("liquid"), ok=rsc.get("ok"),
                     monad=rsc.get("monad"), top=[{k: (sig(v, 4) if isinstance(v, float) else v) for k, v in d.items()} for d in (rsc.get("top") or [])[:25]]),
-        stocks=RP.get("stocks") or [],
+        stocks=stockrank.risk_stocks(c), stock_themes=RP.get("stock_themes") or [],
         rules=dict(entry=RP.get("entry_score"), pos_pct=RP.get("position_pct"), max_pos=RP.get("max_position_gbp"), max_open=RP.get("max_open"),
                    per_day=RP.get("max_new_per_day"), stop=RP.get("stop_loss_pct"), trail_after=RP.get("trail_after_pct"), trail=RP.get("trail_pct"),
                    hold=RP.get("max_hold_days"), cap=RP.get("drawdown_cap_pct"), cooldown=RP.get("cooldown_h"), top_n=RC.get("top_n"),
@@ -283,7 +312,10 @@ def build(con):
                paid=sig(gas_tot[0], 4), fees=r2(gas_tot[1]), n=gas_tot[2])
     return dict(
         v=4, gas=gas, generated=n_ep, updated=updated, currency="GBP", start=start,
-        sleeves=sleeves, focus=focus, transfers=transfers,
+        sleeves=sleeves, focus=focus, transfers=transfers, markets=markets.status(t_now),
+        themes=[dict(key=k, label=v.get("label", k), watch=bool(v.get("watch")), n=len(v.get("tickers", []))) for k, v in (c["stocks"].get("universe") or {}).items()]
+               + [dict(key=k, label=l, watch=True, n=sum(1 for x in (CC.get("watch_ids") or {}).values() if x == k)) for k, l in cth.items()],
+        costs=c["stocks"].get("costs"), migrated=json.loads((con.execute("SELECT value FROM state WHERE key='migrated_v5'").fetchone() or ["null"])[0]),
         fx=dict(rate=sig(rate, 6), gbpusd=round(1 / rate, 4) if rate else None, t=ep(fx[1]) if fx else None,
                 source=fx[2] if fx else None, stale=bool(fx[3]) if fx else True,
                 alt=round(1 / fx_alt["alt_rate"], 4) if fx_alt and fx_alt["alt_rate"] else None,

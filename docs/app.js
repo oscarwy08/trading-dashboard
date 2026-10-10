@@ -11,7 +11,7 @@ let D = null, lastGen = null, loadErr = null;
 const S = {tab: 'overview', aSort: {k: 'a', d: 1}, tSort: {k: 't', d: -1}, pSort: {k: 'value', d: -1}, rSort: {k: 'score', d: -1},
   rcSort: {k: 'comb', d: -1}, rsSort: {k: 'score', d: -1},
   filter: 'all', q: '', eqRange: 'ALL', ccy: 'gbp', ptype: 'candle', dRange: 'ALL', open: null,
-  tAsset: '', tSide: '', tSleeve: '', tFrom: '', tTo: '', tLimit: 50, sLimit: 15, sAsset: '', pPot: '', rTheme: ''};
+  tAsset: '', tSide: '', tSleeve: '', tFrom: '', tTo: '', tLimit: 50, sLimit: 15, sAsset: '', pPot: '', rTheme: '', mTheme: ''};
 const POT = {core: 'Core pot', day: 'Day pot', risk: 'Risk pot'};
 const POTS = ['core', 'day', 'risk'];
 const potTag = s => s ? `<span class="tag ${s === 'core' ? 'blue' : s === 'risk' ? 'risk' : ''}">${esc(POT[s] || s)}</span>` : '';
@@ -77,8 +77,10 @@ const assetBy = a => (D.assets || []).find(x => x.a === a);
 const posAll = a => (D.positions || []).filter(x => x.asset === a);
 const posBy = a => { const l = posAll(a); return l.find(x => x.sleeve === 'day') || l.find(x => x.sleeve === 'risk') || l[0]; };
 const posVal = a => { const l = posAll(a); return l.length ? l.reduce((s, p) => s + (p.value || 0), 0) : null; };
+const watchOf = a => { const u = ((D.sleeves.core || {}).universe || []).find(x => x.tickers.includes(a)); return !!(u && u.watch); };
 const themeOf = a => { const r = ((D.sleeves.core || {}).ranking || []).find(x => x.a === a); return r ? r.theme_label : (assetBy(a) || {}).theme || null; };
-const kindOf = a => { const x = assetBy(a); return x ? x.k : /x$/.test(a) ? 'stock' : 'crypto'; };
+const kindOf = a => { const x = assetBy(a); return x ? x.k : /x$|\.[A-Z]+$/.test(a) ? 'stock' : 'crypto'; };
+const watchMark = r => r && r.watch ? '<span class="tag watch" title="Watch closely">★ watch</span>' : '';
 const assetCell = (a, sub) => `<div class="asset"><span class="ic">${esc(a.replace(/x$/, '').slice(0, 4))}</span><div><div class="nm">${esc(a)}</div><div class="sb">${esc(sub ?? (kindOf(a) === 'stock' ? (themeOf(a) || 'Stock') : 'Crypto'))}</div></div></div>`;
 const assetLink = a => `<a href="#asset=${encodeURIComponent(a)}" class="nm" style="color:var(--hi);font-weight:700">${esc(a)}</a>`;
 function fxAt(t) {
@@ -100,7 +102,7 @@ function spark(vals) {
   const col = v[v.length - 1] >= v[0] ? C.green : C.red;
   return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><polyline fill="none" stroke="${col}" stroke-width="1.6" points="${pts}"/></svg>`;
 }
-const sideTag = a => a ? `<span class="tag ${a === 'BUY' ? 'buy' : a === 'SELL' ? 'sell' : a === 'TRANSFER' ? 'xfer' : ''}">${esc(a === 'BUY' ? 'Buy' : a === 'SELL' ? 'Sell' : a === 'HOLD' ? 'Hold' : a === 'SKIP' ? 'Skip' : a === 'TRANSFER' ? 'Transfer' : a)}</span>` : '<span class="muted">-</span>';
+const sideTag = a => a ? `<span class="tag ${a === 'BUY' ? 'buy' : a === 'SELL' ? 'sell' : a === 'TRANSFER' || a === 'CONVERT' ? 'xfer' : ''}">${esc(a === 'BUY' ? 'Buy' : a === 'SELL' ? 'Sell' : a === 'HOLD' ? 'Hold' : a === 'SKIP' ? 'Skip' : a === 'TRANSFER' ? 'Transfer' : a === 'CONVERT' ? 'Convert' : a)}</span>` : '<span class="muted">-</span>';
 const pnlCell = (v, pct) => isNum(v) ? `<span class="${cls(v)}">${fM(v, true)}${isNum(pct) ? ` <span style="opacity:.85">(${fPct(pct)})</span>` : ''}</span>` : '<span class="muted">-</span>';
 
 /* ---------- generic sortable table ---------- */
@@ -280,9 +282,11 @@ function renderCore() {
   $('#picks-sub').textContent = `${picks.length} stocks, ${c.stock_pct}% of the pot split equally (each ~${fM((c.equity || 0) * (c.stock_pct || 0) / 100 / Math.max(picks.length, 1))}). Number of picks is fitted so each one is at least £${c.min_pick} (min trade £${D.risk.limits.min_trade}).`;
   const same = (c.would_pick || []).join(',') === picks.join(',');
   $('#core-picks').innerHTML = (picks.length ? picks.map(a => { const r = info[a] || {}, live = (c.ranking || []).find(x => x.a === a) || r;
-    return `<div class="pick"><div class="pick-h"><span><span class="nm">${assetLink(a)}</span> <span class="tag">${esc(r.theme_label || themeOf(a) || '')}</span></span>` +
+    return `<div class="pick"><div class="pick-h"><span><span class="nm">${assetLink(a)}</span> <span class="tag">${esc(r.theme_label || themeOf(a) || '')}</span>${watchOf(a) ? ' <span class="tag watch">★ watch</span>' : ''} <span class="muted small">${esc((assetBy(a) || {}).name || '')}</span></span>` +
       `<span>${scoreBar(live.score)}</span></div><div class="why">Why: ${esc(r.why || '-')}</div></div>`; }).join('') : '<div class="muted">No stock picks (none eligible).</div>') +
-    (!same && (c.would_pick || []).length ? `<div class="note">If the stocks were re-picked right now: <b>${(c.would_pick || []).map(esc).join(', ')}</b> (applied at the next rebalance).</div>` : '');
+    (!same && (c.would_pick || []).length ? `<div class="note">If the stocks were re-picked right now: <b>${(c.would_pick || []).map(a => esc(a) + (themeOf(a) ? ' <span class="muted">(' + esc(themeOf(a)) + ')</span>' : '')).join(', ')}</b> (applied at the next rebalance).</div>` : '') +
+    ((c.queue || []).length ? `<div class="note"><b>Queued stock orders</b> (decided while the market was closed; filled at the next open): ${(c.queue).map(o => `${esc(o.side)} ${esc(o.a)} ${o.value ? fM(o.value) : Math.round((o.frac || 0) * 100) + '%'} - ${esc(o.reason)}`).join('; ')}</div>` : '') +
+    `<div class="note">${marketLine()}</div>`;
   // plans
   $('#plans').innerHTML = (c.plans || []).map(p => {
     const rows = p.rows.filter(r => r.buy > 0), skip = p.rows.filter(r => r.skip).length;
@@ -293,7 +297,7 @@ function renderCore() {
       (skip ? `<div class="note">${skip} small top-up${skip > 1 ? 's' : ''} under £${D.risk.limits.min_trade} skipped.</div>` : '') + '</div>'; }).join('') || '<div class="muted">No plans yet (needs stock price history).</div>';
   // ranking
   const sel = $('#rank-theme'), th = (c.universe || []).map(u => u.label);
-  if ([...sel.options].length !== th.length + 1) { sel.innerHTML = '<option value="">All themes</option>' + th.map(t => `<option>${esc(t)}</option>`).join(''); sel.value = S.rTheme; }
+  if ([...sel.options].length !== th.length + 1) { sel.innerHTML = '<option value="">All themes</option>' + (c.universe || []).map(u => `<option value="${esc(u.label)}">${u.watch ? '★ ' : ''}${esc(u.label)}</option>`).join(''); sel.value = S.rTheme; }
   const rows = (c.ranking || []).filter(r => !S.rTheme || r.theme_label === S.rTheme).map((r, i) => Object.assign({}, r));
   const order = (c.ranking || []).filter(r => r.eligible).map(r => r.a);
   const pc = v => isNum(v) ? `<span class="${cls(v)}">${fPct(v * 100, 0)}</span>` : '<span class="muted">n/a</span>';
@@ -388,22 +392,47 @@ function renderRiskPot() {
 }
 
 /* ---------- markets ---------- */
+function marketLine() {
+  const M = D.markets || {};
+  return Object.values(M).map(m => `<span class="tag ${m.open ? 'buy' : ''}">${esc(m.label)}: ${m.open ? 'open, closes ' + fT(m.closes) : 'closed, opens ' + fTs(m.next_open)}</span>`).join(' ');
+}
 function renderMarkets() {
   const q = S.q.trim().toLowerCase();
-  const rows = (D.assets || []).filter(a => (S.filter === 'all' || (S.filter === 'held' ? a.pos : a.k === S.filter)) && (!q || a.a.toLowerCase().includes(q) || (a.theme || '').toLowerCase().includes(q)));
+  const sel = $('#mk-theme'), TH = D.themes || [];
+  if (sel && [...sel.options].length !== TH.length + 3) {
+    sel.innerHTML = '<option value="">All themes</option><option value="*watch">★ Watch closely (all)</option>' +
+      TH.map(t => `<option value="${esc(t.key)}">${t.watch ? '★ ' : ''}${esc(t.label)}</option>`).join('');
+    sel.value = S.mTheme || '';
+  }
+  const rows = (D.assets || []).filter(a => (S.filter === 'all' || (S.filter === 'held' ? a.pos : a.k === S.filter)) &&
+    (!S.mTheme || (S.mTheme === '*watch' ? a.watch : a.tk === S.mTheme)) &&
+    (!q || a.a.toLowerCase().includes(q) || (a.theme || '').toLowerCase().includes(q) || (a.name || '').toLowerCase().includes(q)));
   const cols = [
-    {k: 'a', l: 'Asset', asc: 1, f: r => assetCell(r.a, r.k === 'stock' ? (r.theme || 'Stock') : 'Crypto')},
-    {k: 'gbp', l: 'Price', num: 1, f: r => `${fP(r.gbp)}<div class="muted small">${fP(r.usd, '$')}</div>`},
-    {k: 'chg', l: '24h', num: 1, f: r => `<span class="${cls(r.chg)}">${fPct(r.chg)}</span>`},
-    {k: 'spark', l: 'Last 48h', nosort: 1, f: r => spark(r.spark)},
+    {k: 'a', l: 'Asset', asc: 1, f: r => assetCell(r.a, r.k === 'stock' ? [r.name, r.ex === 'LSE' ? 'London' : r.ex === 'ASX' ? 'ASX' : 'US'].filter(Boolean).join(' · ') : 'Crypto')},
+    {k: 'gbp', l: 'Price', num: 1, f: r => `${fP(r.gbp)}<div class="muted small">${r.cur && r.cur !== 'USD' ? esc(r.cur === 'GBp' ? 'quoted in pence' : r.cur) : fP(r.usd, '$')}</div>`},
+    {k: 'chg', l: '24h', num: 1, f: r => `<span class="${cls(r.chg)}">${fPct(r.chg)}</span>${r.chg_d ? '<div class="muted small">last day</div>' : ''}`},
+    {k: 'spark', l: 'Trend', nosort: 1, f: r => spark(r.spark)},
     {k: 'score', l: 'Signal', f: r => scoreBar(r.score, r.action === 'BUY' || r.action === 'SELL' ? sideTag(r.action) : '')},
-    {k: 'sent', l: 'Sentiment', sv: r => r.sent ? r.sent.s : null, f: r => r.sent ? `<span class="${cls(r.sent.s)}">${r.sent.s >= 0 ? '+' : ''}${r.sent.s.toFixed(2)}</span> <span class="muted small">${esc(ago(r.sent.t))}</span>` : '<span class="muted">-</span>'},
-    {k: 'pos', l: 'Held', sv: r => posVal(r.a), f: r => r.pos ? (r.held || []).map(potTag).join(' ') : '<span class="muted">-</span>'},
-    {k: 'core_t', l: 'Core target', num: 1, f: r => isNum(r.core_t) ? r.core_t.toFixed(1) + '%' : '<span class="muted">-</span>'},
+    {k: 'rank', l: 'Core score', num: 1, f: r => isNum(r.rank) ? r.rank.toFixed(2) : '<span class="muted">-</span>'},
+    {k: 'open', l: 'Market', sv: r => r.open ? 1 : 0, f: r => r.k === 'crypto' ? '<span class="muted">24/7</span>' : r.open ? '<span class="up">open</span>' : '<span class="muted">closed</span>'},
+    {k: 'pos', l: 'Held', sv: r => posVal(r.a), f: r => (r.pos ? (r.held || []).map(potTag).join(' ') : '') + (r.risk_u ? ' <span class="tag" title="in the Risk pot stock universe">risk</span>' : '') || '<span class="muted">-</span>'},
   ];
-  table($('#asset-table'), cols, rows, S.aSort, renderMarkets, {key: r => r.a, onRow: openAsset, empty: 'No assets match'});
+  const order = TH.map(t => t.key).concat(['watchlist', 'risk_extra', 'crypto']);
+  const grp = {}; rows.forEach(r => (grp[r.tk || 'crypto'] = grp[r.tk || 'crypto'] || []).push(r));
+  const keys = Object.keys(grp).sort((x, y) => {
+    const wx = (TH.find(t => t.key === x) || {}).watch ? 0 : 1, wy = (TH.find(t => t.key === y) || {}).watch ? 0 : 1;
+    return wx - wy || order.indexOf(x) - order.indexOf(y); });
+  const box = $('#mk-groups'); box.innerHTML = keys.length ? '' : '<p class="muted">No assets match</p>';
+  keys.forEach(k => {
+    const t = TH.find(x => x.key === k), lbl = t ? t.label : k === 'crypto' ? 'Crypto' : grp[k][0].theme || k;
+    const d = document.createElement('div'); d.className = 'mk-group' + (t && t.watch ? ' watch' : '');
+    d.innerHTML = `<h3>${t && t.watch ? '<span class="tag watch">★ watch closely</span> ' : ''}${esc(lbl)} <span class="muted small">${grp[k].length}</span></h3><div class="tw"><table class="tbl clickable"></table></div>`;
+    box.appendChild(d);
+    table($('table', d), cols, grp[k], S.aSort, renderMarkets, {key: r => r.a, onRow: openAsset, empty: 'No assets'});
+  });
   const l = D.risk.limits;
-  $('#mk-note').textContent = `Signal = the Day pot's momentum + sentiment score (-1 to +1): it buys at ≥ ${l.buy} (≥ ${l.focus_buy} for MON, WLD, XRP) and sells at ≤ ${l.sell}. Stocks are priced live for the Core picks, held stocks and the top-ranked watchlist names; the full watchlist is ranked daily on the Core pot tab.`;
+  $('#mk-note').innerHTML = `${marketLine()}<br>Stocks are normal exchange shares (US tickers, London .L incl. AIM, Australia .AX), priced from Yahoo Finance; London quotes in pence are converted to £. Stock trades only happen while that exchange is open (US 14:30-21:00 UK, London 08:00-16:30 UK; no weekends/holidays) - orders decided while closed are queued for the open. ` +
+    `Signal = the Day pot's momentum + sentiment score (-1 to +1): it buys at ≥ ${l.buy} (≥ ${l.focus_buy} for MON, WLD, XRP) and sells at ≤ ${l.sell}. Names without a live price show the last daily close. Core score = the weekly stock ranking (Core pot tab).`;
 }
 
 /* ---------- sentiment ---------- */
@@ -433,7 +462,7 @@ function sentItem(s, showAsset = true) {
 
 /* ---------- orders ---------- */
 function orderRows() {
-  return (D.trades || []).filter(t => (!S.tAsset || t.asset === S.tAsset) && (!S.tSide || t.side === S.tSide) && (!S.tSleeve || t.sleeve === S.tSleeve) &&
+  return (D.trades || []).filter(t => (!S.tAsset || t.asset === S.tAsset || t.alias === S.tAsset) && (!S.tSide || t.side === S.tSide) && (!S.tSleeve || t.sleeve === S.tSleeve) &&
     (!S.tFrom || ymd.format(t.t * 1000) >= S.tFrom) && (!S.tTo || ymd.format(t.t * 1000) <= S.tTo));
 }
 const orderCols = (withAsset = true) => [
@@ -502,7 +531,7 @@ function showDrawer(a) {
   if (first) $('.drawer-panel').scrollTop = 0;
   const p = posBy(a), se = sentLatest(a);
   $('#d-title').innerHTML = `${esc(a)} ${posAll(a).map(x => potTag(x.sleeve)).join(' ')}`;
-  $('#d-sub').textContent = A ? `${A.k === 'stock' ? 'xStock (on-chain share)' + (A.theme ? ' · ' + A.theme : '') : 'Crypto'} · price from ${A.src} · ${ago(A.t)}` : '';
+  $('#d-sub').textContent = A ? `${A.k === 'stock' ? (A.name ? A.name + ' · ' : '') + (A.ex === 'LSE' ? 'London share (LSE/AIM)' : A.ex === 'ASX' ? 'ASX share' : 'US share') + (A.theme ? ' · ' + A.theme : '') + (A.open ? ' · market open' : ' · market closed') : 'Crypto' + (A && A.watch ? ' · ' + A.theme : '')} · price from ${A.src} · ${ago(A.t)}` : '';
   const k = [['Price', fP(A && A.gbp), ''], ['Price in $', fP(A && A.usd, '$'), ''], ['24h', fPct(A && A.chg), cls(A && A.chg)],
     ['Signal', A && isNum(A.score) ? (A.score >= 0 ? '+' : '') + A.score.toFixed(2) : '-', cls(A && A.score)],
     ['Sentiment', se ? (se.s >= 0 ? '+' : '') + se.s.toFixed(2) : '-', cls(se && se.s)],
@@ -526,7 +555,7 @@ function renderPriceChart(a, p) {
   const times = bars.map(b => b.time);
   const snap = t => { const h = t - t % 3600; let best = times[0]; for (const x of times) { if (Math.abs(x - h) < Math.abs(best - h)) best = x; } return best; };
   const t0 = times[0] - 3600, t1 = times[times.length - 1] + 3600;
-  s.setMarkers((D.trades || []).filter(t => t.asset === a && t.t >= t0 && t.t <= t1).map(t => ({time: snap(t.t), position: t.side === 'BUY' ? 'belowBar' : 'aboveBar',
+  s.setMarkers((D.trades || []).filter(t => (t.asset === a || t.alias === a) && t.side !== 'CONVERT' && t.t >= t0 && t.t <= t1).map(t => ({time: snap(t.t), position: t.side === 'BUY' ? 'belowBar' : 'aboveBar',
     color: t.side === 'BUY' ? C.green : C.red, shape: t.side === 'BUY' ? 'arrowUp' : 'arrowDown',
     text: t.side === 'BUY' ? `B ${fM(t.value)}` : `S ${isNum(t.pnl) ? fM(t.pnl, true) : ''}`})).sort((x, y) => x.time - y.time));
   if (p) { const f = usd ? (p.now_usd && p.now ? p.now_usd / p.now : 1) : 1, tg = p.sleeve;
@@ -613,6 +642,7 @@ function wire() {
   $$('#eq-range button').forEach(b => b.onclick = () => { S.eqRange = b.dataset.r; seg('eq-range', 'r', S.eqRange); if (D && charts.eq) setRange(charts.eq, D.equity.t, S.eqRange); });
   $$('#pf-pot button').forEach(b => b.onclick = () => { S.pPot = b.dataset.s; seg('pf-pot', 's', S.pPot); renderPortfolio(); });
   $('#rank-theme').onchange = e => { S.rTheme = e.target.value; renderCore(); };
+  $('#mk-theme').onchange = e => { S.mTheme = e.target.value; renderMarkets(); };
   $$('#asset-filter button').forEach(b => b.onclick = () => { S.filter = b.dataset.f; seg('asset-filter', 'f', S.filter); renderMarkets(); });
   $('#asset-q').oninput = e => { S.q = e.target.value; renderMarkets(); };
   $('#sent-asset').onchange = e => { S.sAsset = e.target.value; S.sLimit = 15; renderSentiment(); };

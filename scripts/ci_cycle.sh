@@ -7,6 +7,7 @@ mkdir -p logs data/sentiment/processed data/sentiment/rejected
 export TZ=Europe/London
 fail=0
 echo "=== cycle $(date '+%F %T %Z') ==="
+${PY:-python} migrate_v5_xstocks.py || echo "::warning::v5 migration failed"   # one-off, idempotent (xStocks -> normal tickers)
 ${PY:-python} collector.py        || echo "::warning::collector failed"
 ${PY:-python} ingest_sentiment.py || echo "::warning::sentiment ingest failed"
 ${PY:-python} trader.py           || { echo "::error::trader failed"; fail=1; }

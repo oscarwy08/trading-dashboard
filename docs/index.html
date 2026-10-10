@@ -8,9 +8,9 @@
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%274%27 fill=%27%231D9BF0%27/%3E%3C/svg%3E">
 <title>Paper Trader - £200 paper account</title>
-<link rel="stylesheet" href="styles.css?v=d9fcc84e7d">
+<link rel="stylesheet" href="styles.css?v=2be53aab5b">
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js" crossorigin="anonymous"></script>
-<script src="app.js?v=ff75bd6990" defer></script>
+<script src="app.js?v=581cbed97f" defer></script>
 </head>
 <body>
 <header class="top">
@@ -118,11 +118,12 @@
 
   <!-- ===================== MARKETS ===================== -->
   <section class="tab" id="tab-markets" data-tab="markets">
-    <div class="card"><div class="card-h"><div><h2>Markets</h2><p class="explain">Prices in £ (converted live from $). Tap a row for the chart, trades, signal reasons and news sentiment.</p></div>
+    <div class="card"><div class="card-h"><div><h2>Markets</h2><p class="explain">Grouped by theme (★ = watch closely). Prices in £ (converted live from $ / pence). Tap a row for the chart, trades, signal reasons and news sentiment.</p></div>
       <div class="tools"><input id="asset-q" type="search" placeholder="Search" autocomplete="off" aria-label="Search assets">
+        <select id="mk-theme" aria-label="Theme"><option value="">All themes</option></select>
         <div class="seg" id="asset-filter"><button data-f="all" class="on">All</button><button data-f="crypto">Crypto</button><button data-f="stock">Stocks</button><button data-f="held">Held</button></div></div></div>
-      <div class="tw"><table id="asset-table" class="tbl clickable"></table></div>
-      <div class="note" id="mk-note"></div></div>
+      <div class="note" id="mk-note"></div>
+      <div id="mk-groups"></div></div>
   </section>
 
   <!-- ===================== SENTIMENT ===================== -->
