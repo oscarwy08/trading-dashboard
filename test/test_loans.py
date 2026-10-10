@@ -63,7 +63,7 @@ common._NOW = trader.now().replace(second=0)
 # (0.80 / 0.60 below), so this test is about the loan rules, not about the confidence model (test/sim.py covers that).
 import riskpot
 _rconf = riskpot.confidence
-riskpot.confidence = lambda R, brk, *a: (brk, dict(breakout=brk, volume=brk, sentiment=brk, market=brk, hit_rate=brk)) if brk in (0.80, 0.60) else _rconf(R, brk, *a)
+riskpot.confidence = lambda R, brk, *a, **k: (brk, dict(breakout=brk, volume=brk, sentiment=brk, market=brk, hit_rate=brk)) if brk in (0.80, 0.60) else _rconf(R, brk, *a, **k)
 print("1. exceptional breakout short of cash -> borrow from CORE")
 c = setup(0.80, risk_cash=3.0, core_cash=60.0)
 before, _, _, _ = snap(); out = run(); cash, loans, pos, ln = snap()
@@ -91,8 +91,16 @@ check(not ln2, "no outstanding loans left")
 print("3. CORE idle cash needed for today's tranches -> DAY lends instead")
 setup(0.80, risk_cash=3.0, core_cash=19.0, day_cash=30.0)
 con = common.db(); rate = common.usd_gbp(con)[0]; btc = con.execute("SELECT price FROM prices WHERE asset='BTC' ORDER BY ts DESC LIMIT 1").fetchone()[0] * rate
-con.execute("INSERT OR REPLACE INTO positions VALUES('core','BTC','crypto',?,?,?,?,1)", (40 / btc, btc, 40.0, common._NOW.isoformat()))   # Core crypto £59: £40 BTC + £19 cash
-con.commit(); con.close()   # -> MON/XRP/WLD/ETH each still need a £5 tranche today (= £20 + gas > £19 cash): Core has no idle cash
+con.execute("INSERT OR REPLACE INTO positions VALUES('core','BTC','crypto',?,?,?,?,1)", (40 / btc, btc, 40.0, common._NOW.isoformat()))   # Core crypto: £40 BTC + £19 cash
+# The copied plan follows the live book (coins already built, or already given today's tranche), so CORE would treat the
+# £19 as idle and lend it. Force the four crypto targets back to 'building' with no position: each still needs a £5 tranche
+# today (£20 + gas > £19), so CORE has nothing spare and DAY lends the RISK shortfall.
+plan = json.loads(con.execute("SELECT value FROM state WHERE key='core_plan'").fetchone()[0])
+for a in ("MON", "XRP", "WLD", "ETH"):
+    plan[a] = dict(status="building", n=0, last_day=None, day_n=0)
+    con.execute("DELETE FROM positions WHERE sleeve='core' AND asset=?", (a,))
+con.execute("UPDATE state SET value=? WHERE key='core_plan'", (json.dumps(plan),))
+con.commit(); con.close()
 run(); _, loans3, pos3, _ = snap()
 check(loans3 and all(l["lender"] != "core" for l in loans3) and any(l["lender"] == "day" for l in loans3), f"lender = day: {loans3}")
 
@@ -126,7 +134,7 @@ def burst_case(conf, ev):
     daypot.crypto_vol_ratio = lambda con_, a_, t_: 3.0 if a_ == "TESTB" else _orig["crypto_vol_ratio"](con_, a_, t_)
     daypot.rsi_h = lambda pts: 60.0
     daypot.market_regime = lambda con_, k_, a_, *r: (True, 1.0, "market ok (stub)") if a_ == "TESTB" else _orig["market_regime"](con_, k_, a_, *r)
-    daypot.confidence = lambda DB, strength, *r: (conf, dict(stub=conf)) if strength == 0.9 else _orig["confidence"](DB, strength, *r)
+    daypot.confidence = lambda DB, strength, *r, **k: (conf, dict(stub=conf)) if strength == 0.9 else _orig["confidence"](DB, strength, *r, **k)
     daypot.expected_value = lambda ss, tp, sl, rtc, n: ev
     try:
         out = run()
