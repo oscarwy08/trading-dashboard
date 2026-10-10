@@ -126,12 +126,13 @@ def main(D):
         if isinstance(thr, (int, float)) and b0 is not None:
             frac = min(1.0, max(0.0, -(r.get("dd_pct") or 0) / cap))
             eq(thr, min(0.99, b0 + (b1 - b0) * frac), "risk threshold = base + (top - base) x drawdown / stop", 0.002)
-        Wt = R.get("weights") or {}
         for x in r.get("cands") or []:
             w = f"risk cand {x.get('a')}"
             if "conf" not in x: continue
             n[0] += 1
+            if x.get("setup") not in (None, "", "breakout", "dip"): fails.append(f"{w} setup {x.get('setup')!r} is not breakout or dip")
             if not (0 <= x["conf"] <= 1) or any(not (0 <= v <= 1) for v in (x.get("parts") or {}).values()): fails.append(f"{w} confidence/components outside 0-1")
+            Wt = (R.get("dip_weights") if x.get("setup") == "dip" else R.get("weights")) or {}
             if Wt and x.get("parts"):
                 core = {k: v for k, v in Wt.items() if k != "freshness"}
                 if core and all(k in x["parts"] for k in core):
@@ -148,6 +149,20 @@ def main(D):
             elif not x.get("block"): fails.append(f"{w} neither bought nor blocked")
         for p in P:
             if p["sleeve"] == "risk" and p.get("conf") is not None and not (0 <= p["conf"] <= 1): fails.append(f"risk position {p['asset']} confidence {p['conf']}")
+    def ev_now_of(p, now, tgt, stop, cost):
+        if not all(isinstance(v, (int, float)) for v in (p, now, tgt, stop)) or now <= 0: return None
+        p = max(0.0, min(1.0, float(p)))
+        up = max(0.0, (float(tgt) / float(now) - 1) * 100)
+        dn = max(0.0, (1 - float(stop) / float(now)) * 100)
+        return round(p * up - (1 - p) * dn - float(cost or 0), 3)
+    for p in P:
+        if p.get("sleeve") in ("day", "risk") and isinstance(p.get("ev_now"), (int, float)) and p.get("now") and p.get("ev_tgt") and p.get("ev_stop"):
+            eq(p["ev_now"], ev_now_of(p.get("ev_p") if p.get("ev_p") is not None else 0.5, p["now"], p["ev_tgt"], p["ev_stop"], p.get("ev_cost")),
+               f"{p['sleeve']} {p['asset']} EV now", 0.011)
+    for t in D.get("trades") or []:
+        if t.get("side") in ("BUY", "SELL") and t.get("sleeve") in ("day", "risk") and isinstance(t.get("ev_now"), (int, float)) and t.get("ev_px") and t.get("ev_tgt") and t.get("ev_stop"):
+            eq(t["ev_now"], ev_now_of(t.get("ev_p") if t.get("ev_p") is not None else 0.5, t["ev_px"], t["ev_tgt"], t["ev_stop"], t.get("ev_cost")),
+               f"order {t.get('id')} {t.get('asset')} EV now", 0.011)
     return fails
 
 if __name__ == "__main__":

@@ -6,6 +6,25 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7.8 (2026-10-10): honest costs, honest EV, and a frozen scorecard (paper only)
+
+The rule set is frozen at `rules.frozen_since` (shown on the dashboard). The next change to a threshold needs a reason that is not one day's P&L.
+
+- **Scorecard.** Overview and the daily summary list, per setup (momentum, burst, risk breakout, risk dip): closed trades, net after fees, fee/gross, win rate, and how the exits split (flatten, stop, target, trail, time, signal).
+- **Expected value.** A confidence score is not a win probability. With no closes, P(win) is 0.5. It moves toward the score only as closes build (`ev_conf_full_n`, 30) and is blended with the measured hit rate. A trade needs EV after costs above `ev_min_pct` (0.3%), not merely above zero. Day EV includes the 22:00 flatten (and the burst time stop): that share of the trade pays the round trip and keeps none of the target. Burst stays in the code. The hurdle is what keeps it rare. There is no off switch and no loss-streak cooldown.
+- **No chase.** A 4h range tighter than 0.3% is stuck prints, not a breakout. Momentum entries at RSI 80 or above are refused (burst already did this). A Risk breakout up 80% or more over 7 days is refused, and from +40% the breakout score is scaled down. Core cash is not lent into either of those names.
+- **Costs.** Crypto fills use market cap, volume/market-cap, and a stored Kyber route loss when one exists, between a 0.05% floor and a 1% cap. Unknown market cap keeps the old 0.30% per side. Trading 212 FX stays 0.15% per side. Gas is unchanged.
+- **Missing sentiment** scores 0.25, below a real neutral 0.5, on burst, Risk breakout, and dip confidence.
+- **After 22:00.** A Day position still open is force-closed at the last stored price. If there is no price at all, the dashboard flags it.
+
+## v7.7 (2026-10-10): RISK pot can buy a dip, not only a breakout (paper only)
+- **Two setup types.** A breakout is unchanged (near a recent high, short-term trend agreeing). A dip is a coin already in an uptrend, or with positive sentiment, that has pulled back toward a recent low, the day average or a short average, and then turned up (higher low or the short average reclaimed, last bar up). A move still making new lows, a drop deeper than 18%, or a coin still up more than 60% on the day is not bought.
+- **Its own confidence** (0-1): pullback depth against typical volatility, how close price is to support, bounce confirmation, sentiment, market regime, that setup's own measured hit rate, and data freshness. Same threshold (0.55, rising toward 0.85 as the drawdown approaches 30%), same rule that expected value after costs must clear the hurdle (0.3%), same size, same 12% stop, trail, 7-day hold and 5-open cap. One row per coin: if both a breakout and a dip qualify, the higher confidence is kept.
+- **Borrowing.** A breakout still borrows only when the short-term trend is up. A dip borrows when confidence is at least 0.65, the prior uptrend is there, and expected value clears the same 0.3% hurdle — the 4-hour trend is often still down at the bounce. Core cash is not lent into a name the 7-day run-up rule has marked.
+- **Dashboard.** The Risk setups table, open positions and orders say Breakout or Dip, with a one-sentence reason. Dip rows use their own mini-bars.
+- **At entry, and EV now.** A Day or Risk buy stores its confidence (a Day momentum trade stores its score instead), the component bars, the chance used, the target and the loss, the costs and the expected value. Open positions, the Orders list and the asset panel show that entry score the same way as the setups table, plus a live **EV now**: the chance of hitting times the percent still left up to the target, minus the chance of losing times the percent down to the stop or the trail, minus the sell cost still to pay. A position bought before this was stored shows a dash, "bought before confidence scoring", for the entry figures, and still shows EV now.
+- **Day pot.** Not given a dip entry. Day momentum already buys a pullback when its combined score is still a buy, and every Day position is flat by 22:00 UK, so a second entry would need its own hold and exit rules. Left as a breakout-plus-momentum pot.
+
 ## v7.6 (2026-10-10): gold-backed tokens in the Core crypto universe (paper only)
 - **PAXG and XAUT** are candidates in the Crypto account's Core universe, theme "Real-world assets (tokenised)" (`core.crypto_universe`). They are not in `targets_pct`. The Monday rebalance scores them with the same momentum / trend-quality / sentiment rules as the stocks and adds one only if it qualifies, at one normal slot (the fixed coins keep their ratios and share what is left). No fixed share.
 - They stay out of the Day pot (`day_universe.exclude_symbols`, and still excluded from the Risk screen). Daily closes come from CoinGecko, one coin per cycle.
@@ -433,8 +452,9 @@ Entry (breakout + sentiment): crypto score = 0.35 x 24h move (20% = full) + 0.25
 the 20-day high + 0.2 x trend (above a rising 50d average); must be +3% over 5 days, at >= 97% of the 20-day high, above
 the 50d average. v7.4: the decision is Day-style (see the v7.4 section): confidence >= threshold AND expected value after
 costs > 0, with the intraday momentum model (same as DAY, >= 2h history) >= 0 as a hard gate; no entry while fresh
-sentiment <= -0.3 (conf >= 0.5). Size = confidence x 50% of the account's remaining RISK cash (min £5, max £8 / 20% of
-the pot); max 5 open, no daily cap, 24h cooldown per asset after an exit.
+sentiment <= -0.3 (conf >= 0.5). v7.7 adds a second setup, a dip / pullback buy (see the v7.7 section): same threshold,
+expected value, size and exits, its own confidence. One position per coin, max 5 open. Size = confidence x 50% of the account's remaining RISK cash (min £5, max £8 / 20% of
+the pot); no daily cap, 24h cooldown per asset after an exit.
 Exits: stop-loss 12% from average cost (incl. fees/gas); trailing take-profit: once the peak is >= +15% above cost, sell
 when price falls 10% from the peak (peak in state risk_peaks); max hold 7 days; sentiment exit <= -0.5 (conf >= 0.6).
 Drawdown cap: if the pot is down 30% vs its base (start £40, or the equity at the last review) new entries stop

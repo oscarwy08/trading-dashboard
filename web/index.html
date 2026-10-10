@@ -36,7 +36,8 @@
     <div class="seg" id="acct-switch" role="group" aria-label="Account"><button data-a="" class="on">All</button><button data-a="crypto">Crypto <span class="muted">· Monad wallet</span></button><button data-a="stocks">Stocks <span class="muted">· Trading 212</span></button></div>
     <span class="muted small" id="acct-note"></span></div></div>
 </header>
-<div id="alert" class="alert hidden"></div>
+  <div id="rules-banner" class="rules-banner hidden"></div>
+  <div id="alert" class="alert hidden"></div>
 <main>
   <!-- ===================== OVERVIEW ===================== -->
   <section class="tab" id="tab-overview" data-tab="overview">
@@ -56,6 +57,10 @@
         <div class="seg" id="eq-range"><button data-r="1D">1D</button><button data-r="1W">1W</button><button data-r="ALL" class="on">All</button></div></div></div>
       <div class="chart-wrap"><div id="eq-chart" class="chart"></div><div id="eq-tip" class="tip hidden"></div><div id="eq-empty" class="empty hidden"></div></div>
       <div class="note" id="eq-note"></div>
+    </div>
+    <div class="card" id="ov-scorecard-card">
+      <div class="card-h"><div><h2>Setup scorecard</h2><p class="explain" id="rules-note">Closed trades only, after fees. Fee/gross is the costs divided by the gain before costs, and is blank when that gain is not positive.</p></div></div>
+      <div class="tw"><table id="ov-score" class="tbl"></table></div>
     </div>
     <div class="grid3" id="ov-cards"></div>
     <div class="grid2">
@@ -185,6 +190,7 @@
     <div class="card-h sm"><h3>Sentiment</h3></div>
     <div class="chart-wrap"><div id="d-sent" class="chart xs"></div><div id="d-sent-empty" class="empty hidden"></div></div>
     <div id="d-sent-list" class="sent-list"></div>
+    <div id="d-entry"></div>
     <div class="card-h sm"><h3>Orders</h3></div>
     <div class="tw"><table id="d-trades" class="tbl"></table></div>
   </div>

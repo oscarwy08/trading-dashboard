@@ -41,9 +41,9 @@ Each account divides its funds across three pots with distinct strategies:
 
 ### RISK Pot (20% - £20 per account)
 - Speculative small/mid-cap crypto and niche stocks
-- Breakout + sentiment entry with confidence-based sizing
-- 12% stop-loss, trailing take-profit (10% from peak after +15%)
-- 7-day maximum hold, 30% drawdown cap
+- Two entries, each with its own confidence: a breakout, or a dip that has bounced in an uptrend (a coin still falling is skipped)
+- Same sizing, 12% stop-loss, trailing take-profit (10% from peak after +15%), 7-day maximum hold, 30% drawdown cap, borrowing rules
+- The buy stores confidence, components and expected value after costs; open and closed rows show those entry figures plus a live EV now (a dash if the buy predates scoring)
 - Max 5 open positions
 
 ## Inter-Pot Lending
@@ -230,7 +230,7 @@ Each account divides its funds across three pots with distinct strategies:
 
 ## Current Status (October 2026)
 
-- **Version**: v7.4 (Risk pot confidence-based decision model)
+- **Version**: v7.8 (rules frozen 2026-10-10: honest EV and a 0.3% hurdle, liquidity-based crypto costs, no chase on a flat range / RSI 80 / a 7-day run, scorecard on the dashboard)
 - **Start Date**: 2026-10-10 (great reset after initial development)
 - **Balance**: £200 GBP (£100 crypto, £100 stocks)
 - **Cycle Frequency**: Every 15 minutes (when GitHub Actions cooperates)
