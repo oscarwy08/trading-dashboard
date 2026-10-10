@@ -1,7 +1,7 @@
 """Price collector: CoinGecko (crypto), KyberSwap (MON/USDC on Monad), stocks (Yahoo, normal exchange tickers, v5), USD->GBP FX,
 Monad gas price (simulated network fee), daily closes of the CORE stock universe (Yahoo) + ranking.
 All asset prices are stored in raw USD; the FX rate is stored in table fx and applied by trader/dashboard."""
-import json, time, requests
+import json, os, time, requests
 from datetime import datetime, timedelta, timezone
 from common import cfg, db, iso, log
 import freshness
@@ -221,6 +221,31 @@ def crypto(con, c, ts, status):
         con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"cgid:{sym}", x["id"]))
     status["coingecko"] = (f"ok ({len(seen)} coins priced, top {len(top)} screened, DAY universe +{len(uni)}, {len(risk_syms)} risk-only)" if rows else "FAILED")
     return rows
+
+def crypto_fast(con, c, ts, status):
+    """COLLECT_MODE=fast (VPS 5-min cycles between the 15-min full ones): re-price only the coins priced by the last full
+    snapshot (+ held coins) with ONE CoinGecko markets call by id. No top-300 screen, no meme/Monad category refresh, no
+    universe/screen state updates (those stay from the last full cycle) - keeps CoinGecko usage within the free tier."""
+    since = (datetime.fromisoformat(ts) - timedelta(minutes=40)).isoformat()
+    syms = [r[0] for r in con.execute("SELECT DISTINCT asset FROM prices WHERE klass='crypto' AND source='coingecko' AND ts>=?", (since,))]
+    syms += [r[0] for r in con.execute("SELECT DISTINCT asset FROM positions WHERE klass='crypto'")]
+    by_id = {}
+    for sym in dict.fromkeys(syms):
+        r = con.execute("SELECT value FROM state WHERE key=?", (f"cgid:{sym}",)).fetchone()
+        cid = str(r[0]).strip('"') if r and r[0] else None
+        if cid and cid not in by_id: by_id[cid] = sym
+    if not by_id: status["coingecko"] = "fast: nothing to re-price"; return {}
+    rows = get(f"{CG}/coins/markets", {"vs_currency": "usd", "ids": ",".join(list(by_id)[:250]), "per_page": 250, "page": 1,
+                                       "price_change_percentage": PCT}, tries=2) or []
+    n = 0
+    for x in rows:
+        sym = by_id.get(x.get("id"))
+        if not sym or x.get("current_price") is None: continue
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts, sym, "crypto",
+                    x["current_price"], x.get("high_24h"), x.get("low_24h"), x.get("total_volume"),
+                    x.get("market_cap"), "coingecko", freshness.to_iso(x.get("last_updated")) or ts)); n += 1
+    status["coingecko"] = f"fast ok ({n}/{len(by_id)} coins re-priced, screens from last full cycle)" if n else "fast FAILED"
+    return {}
 
 def kyber(con, c, ts, status):
     k = c["crypto"]["kyberswap"]
@@ -503,22 +528,28 @@ def backfill(con, c, crypto_rows, cg_limit=3):
     return done
 
 def main():
+    """COLLECT_MODE=fast (set by the VPS runner for the 5-min cycles between full ones): cheap price refresh only (crypto by
+    id, FX if due, KyberSwap, gas, stocks, market proxy). Default/full: everything (top-300 screen, categories, daily
+    closes, backfills) - GitHub Actions and the box fallback always run full."""
+    fast = os.environ.get("COLLECT_MODE", "").lower() == "fast"
     c, con, ts, status = cfg(), db(), iso(), {}
     rows = {}
-    for name, fn in (("coingecko", crypto), ("fx", fxrate), ("kyberswap", kyber), ("gas", gas), ("stocks", stocks), ("market_proxy", market_proxy)):
+    for name, fn in (("coingecko", crypto_fast if fast else crypto), ("fx", fxrate), ("kyberswap", kyber), ("gas", gas), ("stocks", stocks), ("market_proxy", market_proxy)):
         try:
             r = fn(con, c, ts, status)
             if name == "coingecko": rows = r
         except Exception as e:
             L.exception("%s failed", name); status[name] = f"FAILED: {e}"
         con.commit()
-    try: daily(con, c, status)
-    except Exception as e: L.exception("daily closes failed"); status["daily"] = f"FAILED: {e}"
-    uni_only = {i for i, x in rows.items() if x.get("_rank")} - set(c["crypto"]["core_ids"]) - set((c["crypto"].get("watch_ids") or {}).keys())
-    n = backfill(con, c, {i: x for i, x in rows.items() if i not in uni_only}); con.commit()   # v7.2: universe coins warm up from snapshots (no extra calls)
-    con.execute("INSERT OR REPLACE INTO state VALUES('collector_status',?)", (f"{ts} " + "; ".join(f"{k}: {v}" for k, v in status.items()),))
+    n = 0
+    if not fast:
+        try: daily(con, c, status)
+        except Exception as e: L.exception("daily closes failed"); status["daily"] = f"FAILED: {e}"
+        uni_only = {i for i, x in rows.items() if x.get("_rank")} - set(c["crypto"]["core_ids"]) - set((c["crypto"].get("watch_ids") or {}).keys())
+        n = backfill(con, c, {i: x for i, x in rows.items() if i not in uni_only}); con.commit()   # v7.2: universe coins warm up from snapshots (no extra calls)
+    con.execute("INSERT OR REPLACE INTO state VALUES('collector_status',?)", (f"{ts} " + ("[fast] " if fast else "") + "; ".join(f"{k}: {v}" for k, v in status.items()),))
     con.commit()
-    print(f"[collector {ts}]", status, f"backfilled={n}")
+    print(f"[collector {ts}{' fast' if fast else ''}]", status, f"backfilled={n}")
 
 if __name__ == "__main__":
     main()
