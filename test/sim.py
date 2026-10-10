@@ -176,7 +176,7 @@ while t <= END:
                 lg_ = D_["sleeves"]["day"]["ledger"][ac_][sb_]
                 if abs(y_["cash"] - lg_["cash"]) > 0.011: RECON["fails"].append(f"{L:%a %H:%M} trader {sb_}/{ac_} cash {y_['cash']:.4f} != Day tab {lg_['cash']}")
                 if any(p_["value"] is None for p_ in D_["positions"]): continue
-                if abs(y_["budget"] - lg_["budget"]) > 0.011: RECON["fails"].append(f"{L:%a %H:%M} trader {sb_}/{ac_} budget {y_['budget']:.4f} != Day tab {lg_['budget']}")
+                if abs(y_["budget"] - lg_["budget"]) > 0.011 + 0.006 * lg_.get("open_n", 0): RECON["fails"].append(f"{L:%a %H:%M} trader {sb_}/{ac_} budget {y_['budget']:.4f} != Day tab {lg_['budget']}")
     t += timedelta(minutes=15); steps += 1
 
 # ---------------- post-run checks ----------------

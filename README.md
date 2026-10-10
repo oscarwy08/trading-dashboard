@@ -22,6 +22,11 @@ writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100
   closed + on open buys (so "fees £0.05 with 0 trades" now reads "£0.00 closed · £0.05 on open buys"). Overview / Portfolio /
   account / Core / Risk cards use the same value = cash + invested definitions and have tooltips; the Core tab's
   "invested" is the pot's invested figure (was the sum of target rows only). daily_summary labels closed vs open-buy fees.
+- **Asset panel clicks (item 2)**: the Day tab's Burst setups table passed `{asset: undefined}` to openAsset (->
+  `#asset=[object Object]`, panel did not open). openAsset now accepts a symbol or a row object and ignores anything else,
+  and every asset table opens the panel on a row click: Overview latest orders, Portfolio, Core targets/picks/ranking, Day
+  positions/setups/orders, Risk positions/candidates/screen/orders, Markets, Orders (not cash transfers), Sentiment.
+  check.js clicks a (priced) row in each of these and checks hash + open panel.
 - **Checks**: `python3 test/check_data.py [docs/data.json | URL]` asserts ~190 reconciliations (positions, pot x account
   cells, pots, accounts, totals, Day ledger vs pot cards, sub stats); ci_cycle.sh runs it every cycle (warning in the log on a
   mismatch). `/workspace/tools/check.js` (box) runs it on the exact data.json the page loaded, checks the Day tab in the DOM

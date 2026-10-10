@@ -129,7 +129,7 @@ function table(el, cols, rows, st, onSort, opts = {}) {
   }
   const th = cols.map(c => `<th${c.nosort || !st ? '' : ` data-k="${c.k}"`}${c.tip ? ` title="${esc(c.tip)}"` : ''} class="${c.num ? 'num' : ''} ${st && st.k === c.k ? 'sorted' : ''}">${esc(c.l)}${c.tip ? ' <span class="tipi" aria-hidden="true">ⓘ</span>' : ''}${st && st.k === c.k ? `<span class="ar">${st.d > 0 ? '▲' : '▼'}</span>` : ''}</th>`).join('');
   const shown = opts.limit ? sorted.slice(0, opts.limit) : sorted;
-  const body = shown.length ? shown.map(r => `<tr${opts.key ? ` data-id="${esc(opts.key(r))}"` : ''}>` +
+  const body = shown.length ? shown.map(r => `<tr${opts.key && opts.key(r) ? ` data-id="${esc(opts.key(r))}"` : ''}>` +
       cols.map(c => `<td class="${c.num ? 'num' : ''} ${c.wrap ? 'wrap' : ''}">${c.f ? c.f(r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('')
     : `<tr><td class="emptyrow" colspan="${cols.length}">${esc(opts.empty || 'Nothing to show')}</td></tr>`;
   el.innerHTML = `<thead><tr>${th}</tr></thead><tbody>${body}${shown.length && opts.foot ? opts.foot : ''}</tbody>`;
@@ -197,7 +197,7 @@ function renderOverview() {
     `<div class="note">Each pot has separate cash in both accounts; a crypto trade only uses the pot's Crypto-account cash and a stock trade only its Stocks-account cash. Cash moves (pots / accounts) are on the Orders tab under "Cash transfers" and are never counted as profit or loss.</div>`;
   const cols = [{k: 't', l: 'Time', f: r => esc(fTs(r.t))}, {k: 'side', l: 'Side', f: r => sideTag(r.side)}, {k: 'asset', l: 'Asset', f: r => assetLink(r.asset)}, {k: 'acct', l: 'Account', f: r => acctTag(r.acct)},
     {k: 'value', l: 'Value', num: 1, f: r => fM(r.value)}, {k: 'pnl', l: 'P&L', num: 1, f: r => pnlCell(r.pnl)}];
-  table($('#ov-orders'), cols, (D.trades || []).filter(t => t.side !== 'TRANSFER').slice(0, 6), null, null, {empty: 'No orders yet'});
+  table($('#ov-orders'), cols, (D.trades || []).filter(t => t.side !== 'TRANSFER').slice(0, 6), null, null, {empty: 'No orders yet', key: r => r.asset, onRow: openAsset});
   renderRisk();
 }
 function renderAccountCards() {
@@ -316,7 +316,7 @@ function renderCore() {
     stat('Stocks last picked', esc(fTs(c.picks_ts)), '', esc(c.picks_source || ''));
   const mx = Math.max(1, ...T.map(t => Math.max(t.target, t.weight))) * 1.08;
   const row = t => { const st = t.status === 'built' ? 'built' : t.status === 'stopped' ? 'stopped out' : `building ${t.n}/${R.tranches}`;
-    return `<div class="tg-row"><div class="nm">${esc(t.a)}<small>${esc(t.acct === 'stocks' ? (themeOf(t.a) || 'Stock') : 'Crypto')}</small></div>` +
+    return `<div class="tg-row" data-a="${esc(t.a)}" role="button" tabindex="0"><div class="nm">${esc(t.a)}<small>${esc(t.acct === 'stocks' ? (themeOf(t.a) || 'Stock') : 'Crypto')}</small></div>` +
       `<div class="tg-bar" title="actual ${t.weight}% vs target ${t.target}% of the Core ${t.acct} money (target ${fM(t.target_gbp)})"><span class="a" style="width:${(t.weight / mx * 100).toFixed(1)}%"></span><span class="t" style="left:${(t.target / mx * 100).toFixed(1)}%"></span></div>` +
       `<div class="num">${t.weight.toFixed(1)}% <span class="muted">/ ${t.target.toFixed(1)}%</span><small>${fM(t.value)} of ${fM(t.target_gbp)} · ${esc(st)}</small></div></div>`; };
   const grp = a => { const L = T.filter(t => t.acct === a), x = CA[a] || {}; if (!L.length && S.acct && S.acct !== a) return '';
@@ -325,16 +325,18 @@ function renderCore() {
   $('#core-targets').innerHTML = T0.length ? (S.acct ? grp(S.acct) : ACCTS.map(grp).join('')) +
     '<div class="note">Blue bar = actual share of the Core pot\'s money in that account · white mark = target. A crypto buy can only use the Crypto-account cash, a stock buy only the Stocks-account cash.</div>' +
     ((c0.extra_pos || []).length ? `<div class="note">Also held (no longer a target, sold at the next rebalance): ${esc(c0.extra_pos.join(', '))}.</div>` : '') : '<div class="muted">No targets yet.</div>';
+  $$('#core-targets .tg-row[data-a]').forEach(r => { r.onclick = () => openAsset(r.dataset.a); r.onkeydown = e => { if (e.key === 'Enter') openAsset(r.dataset.a); }; });
   const info = c0.picks_info || {}, picks = c0.picks || [], cs = CA.stocks || {};
   $('#picks-sub').textContent = `${picks.length} stocks in the Stocks account (Trading 212), the Core pot's Stocks money (${fM(cs.equity)}, of which ${fM(cs.cash)} cash) split equally - each ~${fM((cs.equity || 0) * (c0.stock_pct || 100) / 100 / Math.max(picks.length, 1))}. Number of picks is fitted so each one is at least £${c0.min_pick} (min trade £${D.risk.limits.min_trade}).`;
   const same = (c0.would_pick || []).join(',') === picks.join(',');
   $('#core-picks').closest('.card').classList.toggle('hidden', S.acct === 'crypto');
   $('#core-picks').innerHTML = (picks.length ? picks.map(a => { const r = info[a] || {}, live = (c0.ranking || []).find(x => x.a === a) || r;
-    return `<div class="pick"><div class="pick-h"><span><span class="nm">${assetLink(a)}</span> <span class="tag">${esc(r.theme_label || themeOf(a) || '')}</span>${watchOf(a) ? ' <span class="tag watch">★ watch</span>' : ''} <span class="muted small">${esc((assetBy(a) || {}).name || '')}</span></span>` +
+    return `<div class="pick" data-a="${esc(a)}"><div class="pick-h"><span><span class="nm">${assetLink(a)}</span> <span class="tag">${esc(r.theme_label || themeOf(a) || '')}</span>${watchOf(a) ? ' <span class="tag watch">★ watch</span>' : ''} <span class="muted small">${esc((assetBy(a) || {}).name || '')}</span></span>` +
       `<span>${scoreBar(live.score)}</span></div><div class="why">Why: ${esc(r.why || '-')}</div></div>`; }).join('') : '<div class="muted">No stock picks (none eligible).</div>') +
     (!same && (c0.would_pick || []).length ? `<div class="note">If the stocks were re-picked right now: <b>${(c0.would_pick || []).map(a => esc(a) + (themeOf(a) ? ' <span class="muted">(' + esc(themeOf(a)) + ')</span>' : '')).join(', ')}</b> (applied at the next rebalance).</div>` : '') +
     ((c0.queue || []).length ? `<div class="note"><b>Queued stock orders</b> (decided while the market was closed; filled at the next open with Stocks-account cash): ${(c0.queue).map(o => `${esc(o.side)} ${esc(o.a)} ${o.value ? fM(o.value) : Math.round((o.frac || 0) * 100) + '%'} - ${esc(o.reason)}`).join('; ')}</div>` : '') +
     `<div class="note">${marketLine()}</div>`;
+  $$('#core-picks .pick[data-a]').forEach(r => r.onclick = e => { if (!e.target.closest('a')) openAsset(r.dataset.a); });
   // plans
   $('#plans').innerHTML = (c0.plans || []).map(p => {
     const PA = p.accounts || {}, show = ACCTS.filter(a => !S.acct || a === S.acct), skip = p.rows.filter(r => r.skip && show.includes(r.acct)).length;
@@ -463,11 +465,11 @@ function renderDay() {
     {k: 'conf', l: 'Confidence', num: 1, f: r => confBar(r.conf, thrV)}, {k: 'parts', l: 'Components', nosort: 1, f: r => compBars(r.parts)},
     {k: 'ev', l: 'Expected value', num: 1, f: r => isNum(r.ev) ? `<span class="${cls(r.ev)}">${fPct(r.ev)}</span><div class="muted small">after ${fPct(r.rt_cost, 2, false)} costs · hit ${isNum(r.hit) ? (r.hit * 100).toFixed(0) + '%' : '-'} (${r.hit_n || 0})</div>` : '-'},
     {k: 'block', l: 'Decision', asc: 1, wrap: 1, f: r => r.bought ? `<span class="tag buy">Taken</span> ${fM(r.bought)}` : `<span class="tag">Skipped</span> <span class="muted">${esc(r.block || '-')}</span>`}],
-    C, {k: 'conf', d: -1}, renderDay, {empty: 'No breakout setups in the last cycle', key: r => r.a, onRow: r => openAsset({asset: r.a})});
+    C, {k: 'conf', d: -1}, renderDay, {empty: 'No breakout setups in the last cycle', key: r => r.a, onRow: openAsset});
   $('#day-cands-sub').textContent = `${C.length} setup${C.length === 1 ? '' : 's'} at the last cycle${SS.ts ? ' (' + fTs(Date.parse(SS.ts) / 1000) + ' UK)' : ''}`;
   table($('#day-trades'), [{k: 'sub', l: 'Strategy', asc: 1, f: r => subTag(r.sub)},
     {k: 'conf', l: 'Confidence', num: 1, f: r => !isNum(r.conf) ? '<span class="muted">-</span>' : r.sub === 'burst' ? confBar(r.conf, null) : `<span class="muted small">score</span> ${r.conf.toFixed(2)}`},
-    ...orderCols().filter(c => c.k !== 'sleeve')], tr, {k: 't', d: -1}, renderDay, {empty: 'No day trades yet today'});
+    ...orderCols().filter(c => c.k !== 'sleeve')], tr, {k: 't', d: -1}, renderDay, {empty: 'No day trades yet today', key: r => r.asset, onRow: openAsset});
   $('#day-tr-sub').innerHTML = `${tr.length} trade${tr.length === 1 ? '' : 's'} · realised <span class="${cls(realT)}">${fM(realT, true)}</span>`;
 }
 
@@ -511,7 +513,7 @@ function renderRiskPot() {
     sc.top || [], S.rsSort, renderRiskPot, {empty: 'Screen not run yet', key: x => x.a, onRow: a => priced.has(a) && openAsset(a), limit: 25});
   $('#risk-screen').closest('.card').classList.toggle('hidden', S.acct === 'stocks');
   const tr = (D.trades || []).filter(t => t.sleeve === 'risk' && inAcct(t)), real = tr.reduce((a, t) => a + (t.pnl || 0), 0);
-  table($('#risk-trades'), orderCols().filter(c => c.k !== 'sleeve'), tr, {k: 't', d: -1}, renderRiskPot, {empty: 'No risk pot orders yet', limit: 30});
+  table($('#risk-trades'), orderCols().filter(c => c.k !== 'sleeve'), tr, {k: 't', d: -1}, renderRiskPot, {empty: 'No risk pot orders yet', limit: 30, key: r => r.asset, onRow: openAsset});
   $('#risk-tr-sub').innerHTML = `${tr.filter(t => t.side !== 'TRANSFER').length} orders · realised <span class="${cls(real)}">${fM(real, true)}</span>`;
 }
 
@@ -610,7 +612,7 @@ function renderOrders() {
   const sel = $('#tr-asset'), have = [...new Set((D.trades || []).map(t => t.asset))].sort();
   if ([...sel.options].slice(1).map(o => o.value).join(',') !== have.join(',')) { sel.innerHTML = '<option value="">All assets</option>' + have.map(a => `<option>${esc(a)}</option>`).join(''); sel.value = S.tAsset; }
   const rows = orderRows();
-  table($('#trade-table'), orderCols(), rows, S.tSort, renderOrders, {empty: (D.trades || []).length ? 'No orders match the filters' : 'No orders yet', limit: S.tLimit});
+  table($('#trade-table'), orderCols(), rows, S.tSort, renderOrders, {empty: (D.trades || []).length ? 'No orders match the filters' : 'No orders yet', limit: S.tLimit, key: r => r.side === 'TRANSFER' ? '' : r.asset, onRow: openAsset});
   const pnl = rows.reduce((a, t) => a + (t.pnl || 0), 0), fees = rows.reduce((a, t) => a + (t.fee || 0), 0), gas = rows.reduce((a, t) => a + (t.gas || 0), 0);
   const closed = rows.filter(t => isNum(t.pnl)), wins = closed.filter(t => t.pnl > 0).length;
   $('#tr-sum').innerHTML = `${rows.length} order${rows.length === 1 ? '' : 's'} · realised P&L <span class="${cls(pnl)}">${fM(pnl, true)}</span> · fees ${fFee(fees)} · gas ${fGas(gas)}` +
@@ -647,7 +649,9 @@ function renderRisk() {
 }
 
 /* ---------- asset detail drawer ---------- */
-function openAsset(a) { location.hash = 'asset=' + encodeURIComponent(a); }
+// row clicks pass the row's data-id (asset symbol); a row object ({asset} / {a}) is accepted too so a caller can never produce
+// #asset=[object Object] (bug fixed in v7.1: the Day tab's Burst setups table passed {asset: undefined})
+function openAsset(a) { const sym = a && typeof a === 'object' ? (a.asset || a.a) : a; if (!sym || typeof sym !== 'string') return; location.hash = 'asset=' + encodeURIComponent(sym); }
 function closeAsset() { location.hash = S.tab; }
 function hideDrawer() { if (!S.open && $('#drawer').classList.contains('hidden')) return;
   S.open = null; $('#drawer').classList.add('hidden'); $('#drawer').setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
