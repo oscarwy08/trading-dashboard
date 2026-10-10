@@ -161,3 +161,24 @@ input[type=search]{min-width:0;width:100%}.tools{width:100%}#updated-ago{display
 .mk-group.watch h3 { color: var(--hi); }
 .tag.watch { background: rgba(29,155,240,.15); color: #1D9BF0; border-color: rgba(29,155,240,.4); }
 #mk-theme { max-width: 220px; }
+/* v6: two accounts (Crypto = Monad wallet, Stocks = Trading 212) */
+.acct-bar{border-top:1px solid var(--line2)}
+.acct-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:8px 20px;flex-wrap:wrap}
+.acct-in .seg button .muted{font-weight:500}
+.accts .acct{cursor:pointer;transition:border-color .15s}.accts .acct:hover{border-color:var(--blue)}
+.acct-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.acct-h .nm{font-size:17px;font-weight:800;color:var(--hi)}.acct-h .wh{color:var(--mut);font-size:13px}
+.acct .big{font-size:40px;margin:8px 0 2px}
+.acct .pl{font-size:16px;font-weight:600}
+.acct-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.acct-kv .stat{padding:10px 12px}.acct-kv .stat .v{font-size:17px}
+.acct-pots{margin-top:12px;font-size:13px;color:var(--mut);display:grid;grid-template-columns:auto 1fr auto auto;gap:4px 12px}
+.acct-pots b{color:var(--txt);font-weight:600}.acct-pots .num{text-align:right;font-variant-numeric:tabular-nums}
+.tag.acct-c{color:var(--blue);border-color:rgba(29,155,240,.5)}.tag.acct-s{color:var(--hi);border-color:var(--mut)}
+.tg-grp{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;margin:6px 0 2px;padding-top:10px;border-top:1px solid var(--line2)}
+.tg-grp:first-child{border-top:0;padding-top:0;margin-top:0}
+.tg-grp b{color:var(--hi);font-size:15px}.tg-grp span{color:var(--mut);font-size:13px}
+.plan .dep{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 10px}
+.plan .dep div{background:var(--card2);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--mut)}.plan .dep b{display:block;color:var(--hi);font-size:16px}
+.plan tr.grp td{color:var(--mut);font-size:12px;font-weight:600;padding-top:10px;border-bottom:1px solid var(--line)}
+@media (max-width:640px){.acct-in{padding:6px 12px}.acct-kv{grid-template-columns:1fr 1fr}.acct .big{font-size:32px}.acct-in .seg button .muted{display:none}}

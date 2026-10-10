@@ -8,6 +8,11 @@ v5: stocks are normal exchange tickers with real market hours (markets.py): synt
 listing exchange is open; checks that no stock trade happens outside its session (US / LSE / ASX, weekends), that rebalance
 orders decided while a market is closed are QUEUED and filled at the open, that DAY stock positions are flat at the close,
 plus unit checks of the calendar (DST gap, holidays), the pence -> pounds conversion and the broker-like stock costs.
+v6: two accounts (crypto = Monad wallet, stocks = Trading 212) with cash per pot x account: every trade must use the
+cash of its own account (per-account cash reconciliation for all 6 pot x account cells, no account ever negative, no
+cash crossing accounts), per-account equity columns, pot moves inside one account and a manual account transfer (rebased,
+baselines move), plus the live-DB account split (migrate_v6_accounts: totals 100/100, pot totals unchanged, settlement
+inside each account executed by the trader once the DAY pot is flattened -> every pot x account at its target).
 Usage: python3 test/sim.py [--keep]   (writes only to data/sim.db, deleted at the end unless --keep; logs/sim_cycles.log)."""
 import io, json, os, random, sqlite3, sys, contextlib
 from datetime import datetime, timedelta, timezone
@@ -18,7 +23,7 @@ os.environ["TRADING_DB"] = str(SIM); os.environ["TRADING_LOG"] = str(HERE / "log
 sys.path.insert(0, str(HERE))
 if SIM.exists(): SIM.unlink()
 src = sqlite3.connect(HERE / "data" / "trading.db"); dst = sqlite3.connect(SIM); src.backup(dst); dst.close(); src.close()
-import common, trader, stockrank, riskpot, rebalance_pots, dashboard, markets, collector
+import common, trader, stockrank, riskpot, rebalance_pots, dashboard, markets, collector, transfer_accounts, migrate_v6_accounts
 from common import LON
 trend = (sqlite3.connect(SIM).execute("SELECT value FROM state WHERE key='stock_trends'").fetchone() or [None])[0]
 c = common.cfg()
@@ -27,13 +32,14 @@ T0 = datetime.now(timezone.utc).replace(second=0, microsecond=0)
 T0 = T0 + timedelta(minutes=15 - T0.minute % 15)
 common._NOW = T0
 con = sqlite3.connect(SIM)
-for t in ("trades", "positions", "cash", "equity", "signals", "transfers"): con.execute(f"DROP TABLE IF EXISTS {t}")
+for t in ("trades", "positions", "cash", "acct_cash", "equity", "signals", "transfers"): con.execute(f"DROP TABLE IF EXISTS {t}")
 con.execute("DELETE FROM state WHERE key='risk' OR key LIKE 'day_start:%' OR key LIKE 'day_halt:%' OR key LIKE 'core_%' "
-            "OR key LIKE 'risk%' OR key LIKE 'riskpot%'")
+            "OR key LIKE 'risk%' OR key LIKE 'riskpot%' OR key='account_split' OR key='order_queue'")
 if trend: con.execute("INSERT OR REPLACE INTO state VALUES('stock_trends',?)", (trend,))
 con.commit(); con.close()
 con = common.db()
-con.executemany("INSERT INTO cash VALUES(?,?)", list(common.start_cash(c).items()))
+FUND = common.funding(c)
+con.executemany("INSERT INTO acct_cash VALUES(?,?,?)", [(k, a, v) for k, d in FUND.items() for a, v in d.items()]); common.sync_pot_cash(con)
 print("init picks:", trader.init_core(con, c)); con.commit()
 
 last = {r[0]: (r[1], r[2]) for r in con.execute(
@@ -146,7 +152,7 @@ while t <= END:
     if t == RRESUME:
         checks["risk_resumed"] = not con.execute("SELECT 1 FROM state WHERE key='riskpot_halt'").fetchone() and not (HERE / "test" / "RISK_RESUME").exists()
         trader.RISK_RESUME = common.RISK_RESUME
-    if any(r[0] < -1e-9 for r in con.execute("SELECT amount FROM cash")): checks["neg_cash"].append(L.isoformat())
+    if any(r[0] < -1e-9 for r in con.execute("SELECT amount FROM acct_cash")): checks["neg_cash"].append(L.isoformat())
     t += timedelta(minutes=15); steps += 1
 
 # ---------------- post-run checks ----------------
@@ -180,6 +186,15 @@ start = common.start_cash(c)
 cash = {r[0]: r[1] for r in con.execute("SELECT sleeve, amount FROM cash")}
 recon = {s: start[s] - sum(x["value"] + (x["gas"] or 0) for x in tr if x["sleeve"] == s and x["side"] == "BUY")
             + sum(x["value"] - (x["gas"] or 0) for x in tr if x["sleeve"] == s and x["side"] == "SELL") for s in start}
+# v6: per pot x account - a trade may only move the cash of its own account (crypto -> crypto cash, stock -> stocks cash)
+acash = {(r[0], r[1]): r[2] for r in con.execute("SELECT sleeve, account, amount FROM acct_cash")}
+arecon = {(s, a): FUND[s][a] - sum(x["value"] + (x["gas"] or 0) for x in tr if x["sleeve"] == s and common.acct_of(x["klass"]) == a and x["side"] == "BUY")
+          + sum(x["value"] - (x["gas"] or 0) for x in tr if x["sleeve"] == s and common.acct_of(x["klass"]) == a and x["side"] == "SELL")
+          for s in common.SLEEVES for a in common.ACCOUNTS}
+n_cross = con.execute("SELECT COUNT(*) FROM transfers WHERE from_account IS NOT NULL AND from_account != to_account").fetchone()[0]
+eqrow = con.execute("SELECT equity, cash, crypto, stocks, crypto_cash, stocks_cash, accts FROM equity ORDER BY ts DESC LIMIT 1").fetchone()
+acc_eq_ok = abs(eqrow["crypto"] + eqrow["stocks"] - eqrow["equity"]) < 1e-6 and abs(eqrow["crypto_cash"] + eqrow["stocks_cash"] - eqrow["cash"]) < 1e-6
+stock_buys_acct = {a: sum(1 for x in tr if x["side"] == "BUY" and common.acct_of(x["klass"]) == a) for a in common.ACCOUNTS}
 mint = float(c["risk"]["min_trade_size"])
 small_buys = [x for x in tr if x["side"] == "BUY" and x["value"] < mint - 1e-6]
 gas_vals = sorted({round(x["gas"], 6) for x in tr if x["gas"] is not None}); no_gas = [x for x in tr if x["gas"] is None]
@@ -188,7 +203,7 @@ cs = json.loads(con.execute("SELECT value FROM state WHERE key='core_stocks'").f
 drop_sells = [x for x in tr if x["asset"] == DROP and x["side"] == "SELL" and "no longer a CORE pick" in x["reason"]]
 new_picks = [a for a in cs["picks"] if a not in PICKS0]
 new_buys = {a: [round(x["value"], 2) for x in tr if x["asset"] == a and x["sleeve"] == "core" and x["side"] == "BUY"] for a in new_picks}
-eqc = con.execute("SELECT core FROM equity ORDER BY ts DESC LIMIT 1").fetchone()[0]
+eqc = json.loads(con.execute("SELECT accts FROM equity ORDER BY ts DESC LIMIT 1").fetchone()[0])["core"]["stocks"][0]   # v6: Core stocks money
 tranche = {}
 for x in tr:
     if x["sleeve"] == "core" and x["side"] == "BUY" and x["reason"].startswith("CORE tranche"):
@@ -227,8 +242,10 @@ print("RISK buys:", [(f"{x['L']:%a %d %H:%M}", x["asset"], round(x["value"], 2))
 print("RISK exits:", risk_exit)
 print(f"RISK buys per UK day {dict((str(k), v) for k, v in rpd.items())} | buys during drawdown halt {len(halt_buys)} | DAY trades in risk-only coins {len(day_in_risk)}")
 print("cash vs reconstruction (incl. gas):", {s: (round(cash[s], 4), round(recon[s], 4)) for s in cash})
-print(f"initial picks {PICKS0} ({len(PICKS0)} = n_picks(£{common.start_cash(c)['core']:.0f}) {stockrank.n_picks(c, common.start_cash(c)['core'])}); "
-      f"targets per pick £{common.start_cash(c)['core'] * c['core']['stocks_pct'] / 100 / max(len(PICKS0), 1):.2f}")
+print("v6 cash per pot x account vs reconstruction (only same-account trades):", {f"{k[0]}/{k[1]}": (round(acash[k], 4), round(arecon[k], 4)) for k in arecon},
+      "| buys per account", stock_buys_acct, "| cross-account transfers", n_cross, "| equity = crypto + stocks:", acc_eq_ok)
+print(f"initial picks {PICKS0} ({len(PICKS0)} = n_picks(Core stocks £{FUND['core']['stocks']:.0f}) {stockrank.n_picks(c, FUND['core']['stocks'])}); "
+      f"targets per pick £{FUND['core']['stocks'] * c['core']['stocks_pct'] / 100 / max(len(PICKS0), 1):.2f}")
 print(f"Monday re-pick: {cs['picks']} | dropped {DROP} sold: {[(f'{x['L']:%a %d %H:%M}', round(x['pnl'], 2)) for x in drop_sells]} | "
       f"replacements {new_picks} bought: {new_buys} | rebalance log: {rbl.get('actions')}")
 print(f"themes of picks: {[RANK0.get(a, {}).get('theme') for a in cs['picks']]} (max {c['core']['max_per_theme']} per theme)")
@@ -243,6 +260,8 @@ assert not halt_buys and checks["risk_halt_state"] and checks["risk_resumed"], "
 assert not day_in_risk, "DAY traded a risk-only coin"
 assert not checks["max_open_violation"], "max open"
 assert all(abs(cash[s] - recon[s]) < 1e-6 for s in cash), "cash reconciliation"
+assert all(abs(acash[k] - arecon[k]) < 1e-6 for k in arecon), "v6 cash reconciliation per pot x account (cash crossed accounts)"
+assert n_cross == 0 and acc_eq_ok and all(stock_buys_acct.values()), "v6: no automatic cross-account move; equity = crypto + stocks; both accounts traded"
 assert GAS_LIVE in gas_vals and float(c["gas"]["fallback_gbp"]) in gas_vals, "gas live + fallback"
 if DROP: assert DROP not in cs["picks"] and drop_sells and new_picks and all(new_buys.values()), "Monday re-pick"
 assert len(cs["picks"]) == stockrank.n_picks(c, eqc) or len(cs["picks"]) == len([1 for r in RANK0.values() if r["eligible"]]), "pick count"
@@ -254,16 +273,69 @@ print("core plan at end:", {a: (v["status"], v["n"]) for a, v in json.loads(con.
 print("re-entry tranches after 2nd rebalance:", [(f"{x['L']:%a %d %H:%M}", x["asset"], round(x["value"], 2), x["reason"][:60]) for x in tr if x["sleeve"] == "core" and x["side"] == "BUY" and x["L"] >= lt(uk(10, 9))])
 print("MON signals Sun:", [tuple(r) for r in con.execute("SELECT ts, action, substr(reason,1,90) FROM signals WHERE sleeve='core' AND asset='MON' AND ts BETWEEN ? AND ? AND (reason LIKE '%delayed%' OR action='BUY') ORDER BY ts", (common.iso(uk(1, 23)), common.iso(uk(2, 23)))).fetchall()][:3], "...")
 
-# ---- TRANSFER: move £1 Day -> Risk; cash moves, history is rebased (no fake P&L / drawdown) ----
+# ---- TRANSFER: move £1 Day -> Risk inside the stocks account; cash moves, history is rebased (no fake P&L / drawdown) ----
 s0 = {s: dashboard.stats(con, s) for s in ("day", "risk")}; c0 = {r[0]: r[1] for r in con.execute("SELECT sleeve, amount FROM cash")}
-common._NOW = END + timedelta(minutes=1); rebalance_pots.iso = common.iso
-rebalance_pots.transfer(con, "day", "risk", 1.0, "sim test"); con.commit()
+a0 = {r[0] + "/" + r[1]: r[2] for r in con.execute("SELECT sleeve, account, amount FROM acct_cash")}
+st0 = {a: dashboard.stats(con, None, a) for a in common.ACCOUNTS}
+common._NOW = END + timedelta(minutes=1)
+rebalance_pots.transfer(con, "day", "risk", 1.0, "sim test", "stocks"); con.commit()
 c1 = {r[0]: r[1] for r in con.execute("SELECT sleeve, amount FROM cash")}
 adj = common.transfer_adj(con, "risk"); last_ts = con.execute("SELECT MAX(ts) FROM equity").fetchone()[0]
 print("transfer:", {k: round(c1[k] - c0[k], 4) for k in c1}, "| risk rebase of last point £", common.rebase(last_ts, adj),
       "| risk max_dd before/after", round(s0["risk"]["max_dd"], 4), round(dashboard.stats(con, "risk")["max_dd"], 4))
 assert abs(c1["day"] - c0["day"] + 1) < 1e-9 and abs(c1["risk"] - c0["risk"] - 1) < 1e-9 and common.rebase(last_ts, adj) == 1.0, "transfer"
+assert dashboard.stats(con, "risk")["start"] == s0["risk"]["start"] + 1 and abs(dashboard.stats(con, "risk")["ret"] - s0["risk"]["equity"] / s0["risk"]["start"] + 1) < 0.05, "pot baseline follows the transfer"
+# ---- v6: manual account transfer (Stocks -> Crypto, Risk pot): baselines move, account P&L unchanged ----
+common._NOW = END + timedelta(minutes=2)
+b0 = common.acct_start(con)   # after the pot move (it shifts the pot x account baselines, not the account totals)
+assert all(abs(sum(b0[k][a] for k in b0) - sum(FUND[k][a] for k in FUND)) < 1e-9 for a in common.ACCOUNTS), "pot move keeps account baselines"
+have = con.execute("SELECT amount FROM acct_cash WHERE sleeve='risk' AND account='stocks'").fetchone()[0]
+try: transfer_accounts.transfer(con, "stocks", "crypto", have + 1, "risk"); over = False
+except SystemExit: over = True
+amt = min(2.0, have); transfer_accounts.transfer(con, "stocks", "crypto", amt, "risk", reason="sim manual move"); con.commit()
+st1 = {a: dashboard.stats(con, None, a) for a in common.ACCOUNTS}; b1 = common.acct_start(con)
+a1 = {r[0] + "/" + r[1]: r[2] for r in con.execute("SELECT sleeve, account, amount FROM acct_cash")}
+print(f"account transfer £{amt:.2f} risk stocks->crypto: cash {round(a1['risk/stocks'] - a0['risk/stocks'], 4)} / {round(a1['risk/crypto'] - a0['risk/crypto'], 4)} | "
+      f"baselines risk {b0['risk']} -> {b1['risk']} | account P&L before/after", {a: (round(st0[a]['equity'] - st0[a]['start'], 4), round(st1[a]['equity'] - st1[a]['start'], 4)) for a in st0},
+      "| overdraw refused", over)
+assert over and amt > 0 and abs(b1["risk"]["crypto"] - b0["risk"]["crypto"] - amt) < 1e-9 and abs(b1["risk"]["stocks"] - b0["risk"]["stocks"] + amt) < 1e-9, "account transfer baselines"
+assert all(abs((st1[a]["equity"] - st1[a]["start"]) - (st0[a]["equity"] - st0[a]["start"])) < 1e-6 for a in st0), "account transfer is not P&L"
+con.close()
+
+# ---- v6: the real account split on a copy of the LIVE DB (no reset), then the settlement inside each account ----
+MIG = HERE / "data" / "sim_mig.db"
+s_ = sqlite3.connect(HERE / "data" / "trading.db"); d_ = sqlite3.connect(MIG); s_.backup(d_); d_.close(); s_.close()
+common.DB = MIG; common._NOW = None
+con = common.db()
+for t_ in ("acct_cash",): con.execute(f"DELETE FROM {t_}")
+con.execute("DELETE FROM transfers WHERE kind IS NOT NULL"); con.execute("DELETE FROM state WHERE key='account_split'"); con.execute("UPDATE equity SET accts=NULL, crypto=NULL, stocks=NULL")
+pot_cash0 = {r[0]: r[1] for r in con.execute("SELECT sleeve, amount FROM cash")}
+lt_ = con.execute("SELECT MAX(ts) FROM equity").fetchone()[0]
+common._NOW = datetime.fromisoformat(lt_) + timedelta(minutes=1)
+st = migrate_v6_accounts.migrate(con, c)
+O = st["opening"]; tot = {a: sum(O[k][a] for k in O) for a in common.ACCOUNTS}
+pot_cash1 = {s: sum(r[0] for r in con.execute("SELECT amount FROM acct_cash WHERE sleeve=?", (s,))) for s in common.SLEEVES}
+print("v6 migration of the live DB: opening", {k: {a: round(v, 2) for a, v in d.items()} for k, d in O.items()}, "| account totals", {a: round(v, 4) for a, v in tot.items()},
+      "| pending", st["pending"])
+assert all(abs(tot[a] - sum(FUND[k][a] for k in FUND)) < 0.01 for a in tot), "account totals = funding targets"
+assert all(abs(pot_cash1[s] - pot_cash0[s]) < 1e-9 for s in pot_cash0), "pot cash unchanged by the split"
+assert all(abs(sum(O[k].values()) - common.start_cash(c)[k]) < 0.01 for k in O), "pot baselines unchanged"
+for leg in st["pending"]: assert leg["account"] in common.ACCOUNTS and leg["from"] != leg["to"], "settlement stays inside one account"
+# DAY flatten at 22:05 UK on the live DB day frees the crypto cash -> trader settles all legs at once
+d_uk = datetime.fromisoformat(lt_).astimezone(LON).date()
+common._NOW = datetime(d_uk.year, d_uk.month, d_uk.day, 22, 5, tzinfo=LON).astimezone(timezone.utc)
+buf = io.StringIO()
+with contextlib.redirect_stdout(buf): trader.main()
+print("trader at 22:05 UK:", buf.getvalue().strip().replace("\n", " / ")[:900])
+st2 = json.loads(con.execute("SELECT value FROM state WHERE key='account_split'").fetchone()[0])
+b2 = common.acct_start(con, c)
+print("after settlement: baselines", {k: {a: round(v, 4) for a, v in d.items()} for k, d in b2.items()}, "| settled", st2.get("settled"))
+if st["pending"]:
+    assert st2.get("settled") and not st2.get("pending"), "settlement executed"
+    assert all(abs(b2[k][a] - FUND[k][a]) < 0.01 for k in FUND for a in FUND[k]), "every pot x account at its target after settlement"
+assert not con.execute("SELECT COUNT(*) FROM transfers WHERE kind='settle' AND from_account != to_account").fetchone()[0], "settlement never crosses accounts"
+con.close(); MIG.unlink()
 print("ALL CHECKS PASSED")
 
 if "--keep" not in sys.argv:
-    con.close(); SIM.unlink(); print("deleted test copy", SIM)
+    SIM.unlink(); print("deleted test copy", SIM)

@@ -8,9 +8,9 @@
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%274%27 fill=%27%231D9BF0%27/%3E%3C/svg%3E">
 <title>Paper Trader - £200 paper account</title>
-<link rel="stylesheet" href="styles.css?v=2be53aab5b">
+<link rel="stylesheet" href="styles.css?v=d1f7528316">
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js" crossorigin="anonymous"></script>
-<script src="app.js?v=581cbed97f" defer></script>
+<script src="app.js?v=440a421c59" defer></script>
 </head>
 <body>
 <header class="top">
@@ -32,6 +32,9 @@
     <a href="#sentiment" data-tab="sentiment" role="tab">Sentiment</a>
     <a href="#orders" data-tab="orders" role="tab">Orders</a>
   </nav>
+  <div class="acct-bar hidden" id="acct-bar"><div class="acct-in"><span class="muted small">Account</span>
+    <div class="seg" id="acct-switch" role="group" aria-label="Account"><button data-a="" class="on">All</button><button data-a="crypto">Crypto <span class="muted">· Monad wallet</span></button><button data-a="stocks">Stocks <span class="muted">· Trading 212</span></button></div>
+    <span class="muted small" id="acct-note"></span></div></div>
 </header>
 <div id="alert" class="alert hidden"></div>
 <main>
@@ -39,16 +42,18 @@
   <section class="tab" id="tab-overview" data-tab="overview">
     <div class="hero card">
       <div class="hero-l">
-        <div class="lbl">Account value</div>
+        <div class="lbl">Total value <span class="muted">· both accounts</span></div>
         <div class="big" id="ov-value">-</div>
         <div class="hero-sub" id="ov-pnl"></div>
-        <p class="explain">This is what your £<span class="js-start">200</span> paper account is worth right now: cash plus everything it holds, at today's prices, after fees.</p>
+        <p class="explain">What your £<span class="js-start">200</span> of paper money is worth right now across the two accounts - the Crypto account (Monad wallet) and the Stocks account (Trading 212): cash plus everything held, at today's prices, after fees.</p>
       </div>
       <div class="hero-r" id="ov-stats"></div>
     </div>
+    <div class="grid2 accts" id="ov-accts"></div>
     <div class="card">
-      <div class="card-h"><div><h2>Account value over time</h2><p class="explain">This shows what your £<span class="js-start">200</span> is worth over time. The dashed line is where you started.</p></div>
-        <div class="seg" id="eq-range"><button data-r="1D">1D</button><button data-r="1W">1W</button><button data-r="ALL" class="on">All</button></div></div>
+      <div class="card-h"><div><h2 id="eq-title">Value over time</h2><p class="explain" id="eq-explain">What your £<span class="js-start">200</span> is worth over time. The dashed line is where you started.</p></div>
+        <div class="tools"><div class="seg" id="eq-acct"><button data-a="" class="on">Total</button><button data-a="crypto">Crypto</button><button data-a="stocks">Stocks</button></div>
+        <div class="seg" id="eq-range"><button data-r="1D">1D</button><button data-r="1W">1W</button><button data-r="ALL" class="on">All</button></div></div></div>
       <div class="chart-wrap"><div id="eq-chart" class="chart"></div><div id="eq-tip" class="tip hidden"></div><div id="eq-empty" class="empty hidden"></div></div>
       <div class="note" id="eq-note"></div>
     </div>
@@ -79,12 +84,12 @@
       <p class="explain" id="core-intro"></p></div>
     <div class="stat-row" id="core-stats"></div>
     <div class="grid2">
-      <div class="card"><div class="card-h"><div><h2>Target vs actual</h2><p class="explain">How much of the Core pot each asset should be (target) and actually is. Positions are bought gradually in small pieces.</p></div></div>
+      <div class="card"><div class="card-h"><div><h2>Target vs actual</h2><p class="explain">Crypto targets live in the Crypto account and stock picks in the Stocks account; each target is a share of the Core pot's money in that account. Positions are bought gradually in small pieces, only with that account's cash.</p></div></div>
         <div id="core-targets" class="tgt"></div></div>
       <div class="card"><div class="card-h"><div><h2>Current stock picks</h2><p class="explain" id="picks-sub"></p></div></div>
         <div id="core-picks" class="picks"></div></div>
     </div>
-    <div class="card"><div class="card-h"><div><h2>Investment plans</h2><p class="explain">What would be bought if you added more money to the Core pot. Same targets (60% crypto / 40% stocks); a bigger pot means more stocks and more themes. Display only - nothing is traded.</p></div></div>
+    <div class="card"><div class="card-h"><div><h2>Investment plans</h2><p class="explain">What would be bought if you added more money to the Core pot. Each top-up is deposited <b>half into the Crypto account</b> (Monad wallet) and <b>half into the Stocks account</b> (Trading 212); each half only buys its own account's targets. A bigger Stocks slice means more stocks and more themes. Display only - nothing is traded.</p></div></div>
       <div id="plans" class="plans"></div></div>
     <div class="card"><div class="card-h"><div><h2>Stock watchlist ranking</h2><p class="explain" id="rank-sub"></p></div>
         <select id="rank-theme" aria-label="Theme"><option value="">All themes</option></select></div>
@@ -137,7 +142,7 @@
 
   <!-- ===================== ORDERS ===================== -->
   <section class="tab" id="tab-orders" data-tab="orders">
-    <div class="card"><div class="card-h"><div><h2>Order history</h2><p class="explain">Every simulated order. Fee = 0.3% trading fee + slippage; gas = simulated Monad network fee.</p></div>
+    <div class="card"><div class="card-h"><div><h2>Order history</h2><p class="explain">Every simulated order. Crypto account (Monad wallet): fee = 0.3% trading fee + slippage, gas = simulated Monad network fee. Stocks account (Trading 212): fee = spread + FX fee (non-£ shares) + UK stamp duty (London buys). Cash transfers between pots or accounts are listed too.</p></div>
       <button id="tr-csv" class="btn">Export CSV</button></div>
       <div class="tools filters">
         <select id="tr-sleeve" aria-label="Pot"><option value="">All pots</option><option value="core">Core pot</option><option value="day">Day pot</option><option value="risk">Risk pot</option></select>

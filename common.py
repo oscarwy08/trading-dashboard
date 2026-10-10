@@ -13,6 +13,16 @@ KILL = ROOT / "KILL"                 # halts all trading (create the file in the
 RISK_RESUME = ROOT / "RISK_RESUME"   # clears a RISK pot drawdown halt after review (trader deletes it once applied)
 LON = ZoneInfo("Europe/London")
 SLEEVES = ("core", "day", "risk")
+# v6 (2026-10-10): two real-world accounts. Every pot has separate cash in each account (pot x account matrix):
+#   crypto = Monad wallet (crypto trades: fee + gas), stocks = Trading 212 Invest (stock trades: spread + FX fee + stamp duty).
+# A trade only ever uses cash of the account that matches its asset class; nothing moves between accounts automatically
+# (moving money between Trading 212 and a wallet is manual in real life -> transfer_accounts.py).
+ACCOUNTS = ("crypto", "stocks")
+ACCT_LABEL = {"crypto": "Crypto account", "stocks": "Stocks account"}
+
+def acct_of(klass):
+    """Account an asset class settles in: stocks -> 'stocks' (Trading 212), everything else -> 'crypto' (Monad wallet)."""
+    return "stocks" if klass == "stock" else "crypto"
 
 (ROOT / "logs").mkdir(exist_ok=True)
 logging.basicConfig(filename=os.environ.get("TRADING_LOG") or ROOT / "logs" / "trading.log", level=logging.INFO,
@@ -40,7 +50,9 @@ CREATE TABLE IF NOT EXISTS trades(id INTEGER PRIMARY KEY, ts TEXT, sleeve TEXT, 
   qty REAL, price REAL, fill REAL, value REAL, cost REAL, pnl REAL, reason TEXT, price_usd REAL, usd_gbp REAL, gas REAL);
 CREATE TABLE IF NOT EXISTS positions(sleeve TEXT, asset TEXT, klass TEXT, qty REAL, entry REAL, cost REAL,
   opened TEXT, tranches INTEGER DEFAULT 1, PRIMARY KEY(sleeve, asset));
-CREATE TABLE IF NOT EXISTS cash(sleeve TEXT PRIMARY KEY, amount REAL);
+CREATE TABLE IF NOT EXISTS cash(sleeve TEXT PRIMARY KEY, amount REAL);   -- v6: derived pot total (sum of acct_cash), kept for old readers
+-- v6: the real cash ledger, one row per pot x account (account = 'crypto' Monad wallet | 'stocks' Trading 212)
+CREATE TABLE IF NOT EXISTS acct_cash(sleeve TEXT, account TEXT, amount REAL, PRIMARY KEY(sleeve, account));
 CREATE TABLE IF NOT EXISTS equity(ts TEXT, equity REAL, cash REAL, pos_value REAL, btc REAL, open_n INTEGER,
   usd_gbp REAL, core REAL, day REAL, core_cash REAL, day_cash REAL);
 CREATE TABLE IF NOT EXISTS fx(ts TEXT, pair TEXT, rate REAL, source TEXT, alt_rate REAL, alt_source TEXT);
@@ -51,12 +63,85 @@ CREATE TABLE IF NOT EXISTS transfers(ts TEXT, from_sleeve TEXT, to_sleeve TEXT, 
 CREATE TABLE IF NOT EXISTS daily_closes(asset TEXT, d TEXT, close REAL, PRIMARY KEY(asset, d));
 """
 
+def funding(c=None):
+    """v6 configured funding per pot x account, e.g. {'core': {'crypto': 50.0, 'stocks': 50.0}, ...} (config accounts.funding).
+    Without that section: the pot's whole start in the crypto account (pre-v6 behaviour)."""
+    c = c or cfg(); f = (c.get("accounts") or {}).get("funding")
+    if f: return {k: {a: float((f.get(k) or {}).get(a, 0)) for a in ACCOUNTS} for k in SLEEVES}
+    total, sp = float(c["starting_balance"]), c["sleeve_split_pct"]
+    return {k: {"crypto": total * float(sp.get(k, 0)) / 100, "stocks": 0.0} for k in SLEEVES}
+
 def start_cash(c=None):
     """Starting (= current baseline) GBP per sleeve, e.g. {'core': 100.0, 'day': 60.0, 'risk': 40.0}.
     After a TRANSFER rebalance (rebalance_pots.py) this equals the original start + net transfers, so sleeve
     returns are measured against the current split; earlier equity history is rebased (see transfer_adj)."""
-    c = c or cfg(); total, sp = float(c["starting_balance"]), c["sleeve_split_pct"]
+    c = c or cfg()
+    if (c.get("accounts") or {}).get("funding"): return {k: sum(v.values()) for k, v in funding(c).items()}
+    total, sp = float(c["starting_balance"]), c["sleeve_split_pct"]
     return {k: total * float(sp.get(k, 0)) / 100 for k in SLEEVES}
+
+def _state(con, key):
+    import json
+    r = con.execute("SELECT value FROM state WHERE key=?", (key,)).fetchone()
+    try: return json.loads(r[0]) if r else None
+    except Exception: return None
+
+def acct_start(con, c=None):
+    """v6 baseline (start) per pot x account: {'core': {'crypto': 50.0, 'stocks': 50.0}, ...}.
+    = the opening balances fixed at the account split (state 'account_split'.opening; fresh accounts: config funding)
+    + net later transfers that involve an account (pot moves within an account, settlement legs, manual account moves).
+    The split's own TRANSFER rows (kind 'split') only re-label cash inside a pot and are not counted again."""
+    sp = _state(con, "account_split"); c = c or cfg()
+    base = {k: dict(v) for k, v in (sp["opening"] if sp else funding(c)).items()}
+    since = sp["ts"] if sp else ""
+    for r in con.execute("SELECT ts, from_sleeve, to_sleeve, amount, from_account, to_account, kind FROM transfers WHERE ts>? ORDER BY ts", (since,)):
+        if r[6] == "split" or not r[4] or not r[5]: continue
+        base.setdefault(r[1], {a: 0.0 for a in ACCOUNTS})[r[4]] -= r[3]
+        base.setdefault(r[2], {a: 0.0 for a in ACCOUNTS})[r[5]] += r[3]
+    return base
+
+def transfer_adj_acct(con, account, sleeve=None):
+    """Like transfer_adj but for an account (optionally one pot's slice of it): [(ts, net GBP in)] for account transfers
+    after the split (kind != 'split'). Used to rebase account equity history so transfers are never shown as P&L."""
+    sp = _state(con, "account_split"); since = sp["ts"] if sp else ""
+    out = []
+    for r in con.execute("SELECT ts, from_sleeve, to_sleeve, amount, from_account, to_account, kind FROM transfers WHERE ts>? ORDER BY ts", (since,)):
+        if r[6] == "split" or not r[4]: continue
+        inn = r[5] == account and (sleeve is None or r[2] == sleeve); out_ = r[4] == account and (sleeve is None or r[1] == sleeve)
+        if inn != out_: out.append((r[0], r[3] if inn else -r[3]))
+    return out
+
+def move_cash(con, frm, to, amount, reason, kind):
+    """Record a cash move (no fees, no P&L) between (pot, account) cells: frm/to = (sleeve, account).
+    kind: 'split' (v6 one-off re-labelling inside a pot) | 'settle' (one-off pot settlement inside one account)
+    | 'pot' (rebalance_pots.py: between pots, same account) | 'account' (transfer_accounts.py: manual move between accounts).
+    Refuses to overdraw. Keeps same-day DAY loss-cap baselines neutral when a pot's total changes."""
+    from datetime import datetime as _dt
+    assert frm[0] in SLEEVES and to[0] in SLEEVES and frm[1] in ACCOUNTS and to[1] in ACCOUNTS and frm != to, (frm, to)
+    amount = float(amount)
+    have = (con.execute("SELECT amount FROM acct_cash WHERE sleeve=? AND account=?", frm).fetchone() or [0.0])[0]
+    if amount <= 0: return 0.0
+    if amount > have + 1e-9: raise SystemExit(f"{frm[0]}/{frm[1]} has only £{have:.4f} cash (asked £{amount:.4f}) - would need selling; not done")
+    ts = iso()
+    con.execute("INSERT OR IGNORE INTO acct_cash VALUES(?,?,0)", to)
+    con.execute("UPDATE acct_cash SET amount=amount-? WHERE sleeve=? AND account=?", (amount, *frm))
+    con.execute("UPDATE acct_cash SET amount=amount+? WHERE sleeve=? AND account=?", (amount, *to))
+    con.execute("INSERT INTO transfers(ts,from_sleeve,to_sleeve,amount,reason,from_account,to_account,kind) VALUES(?,?,?,?,?,?,?,?)",
+                (ts, frm[0], to[0], amount, reason, frm[1], to[1], kind))
+    if frm[0] != to[0]:
+        day = now().astimezone(LON).date().isoformat()
+        for sl, d in ((frm[0], -amount), (to[0], amount)):
+            k = f"day_start:{sl}:{day}"
+            r = con.execute("SELECT value FROM state WHERE key=?", (k,)).fetchone()
+            if r: con.execute("UPDATE state SET value=? WHERE key=?", (str(float(r[0]) + d), k))
+    sync_pot_cash(con)
+    return amount
+
+def sync_pot_cash(con):
+    """Mirror acct_cash into the legacy per-pot cash table (pot total = crypto + stocks)."""
+    for sl in SLEEVES:
+        v = con.execute("SELECT COALESCE(SUM(amount),0) FROM acct_cash WHERE sleeve=?", (sl,)).fetchone()[0]
+        con.execute("INSERT OR REPLACE INTO cash VALUES(?,?)", (sl, v))
 
 def transfer_adj(con, sleeve):
     """[(ts, net GBP into sleeve)] sorted by ts. A sleeve equity point at time t is rebased by adding the net
@@ -85,4 +170,9 @@ def db():
     ecols = {r[1] for r in con.execute("PRAGMA table_info(equity)")}
     for col in ("risk", "risk_cash"):                                              # RISK pot (v4)
         if col not in ecols: con.execute(f"ALTER TABLE equity ADD COLUMN {col} REAL")
+    for col, typ in (("crypto", "REAL"), ("stocks", "REAL"), ("crypto_cash", "REAL"), ("stocks_cash", "REAL"), ("accts", "TEXT")):   # v6 accounts
+        if col not in ecols: con.execute(f"ALTER TABLE equity ADD COLUMN {col} {typ}")
+    tcols = {r[1] for r in con.execute("PRAGMA table_info(transfers)")}
+    for col in ("from_account", "to_account", "kind"):                             # v6: pot x account transfers
+        if col not in tcols: con.execute(f"ALTER TABLE transfers ADD COLUMN {col} TEXT")
     return con

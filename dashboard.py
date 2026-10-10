@@ -5,8 +5,9 @@ import hashlib, json, os, re
 from bisect import bisect_right
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-from common import KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, cfg, db, now, rebase, start_cash, transfer_adj, usd_gbp
-import markets, stockrank
+from common import (ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
+                    transfer_adj, transfer_adj_acct, usd_gbp)
+import markets, stockrank, trader
 
 def plain(a):   # v5: xStock name -> normal ticker (AMDx -> AMD); historical orders keep the xStock name, alias links them
     m = re.match(r"^([A-Z][A-Z0-9.]*)x$", a or ""); return m.group(1) if m else a
@@ -21,16 +22,40 @@ MAX_TRADES = 500
 MAX_SENTIMENT = 300
 MAX_REASONS = 12         # per asset: latest signal + recent non-HOLD signals with full reasons
 
-def stats(con, sleeve=None):
-    """Account stats for the whole account (sleeve=None) or one sleeve ('core'/'day'/'risk'). Also used by daily_summary.py.
-    Sleeve equity history is rebased by later cash TRANSFERs (common.transfer_adj) so moves between pots are not P&L."""
+def stats(con, sleeve=None, account=None):
+    """Stats for the whole paper money (sleeve=None, account=None), one pot ('core'/'day'/'risk'), one account
+    ('crypto' = Monad wallet / 'stocks' = Trading 212, v6) or one pot x account cell. Also used by daily_summary.py.
+    Equity history is rebased by later cash TRANSFERs (common.transfer_adj / transfer_adj_acct) so moves are not P&L;
+    start = the current baseline (opening at the v6 split + net later transfers, common.acct_start)."""
+    c = cfg(); base = acct_start(con, c)
+    if account:
+        adj = transfer_adj_acct(con, account, sleeve)
+        rows = con.execute(f"SELECT ts, {account}, btc, accts FROM equity ORDER BY ts").fetchall()
+        if sleeve:
+            def cell(r):
+                try: return json.loads(r[3])[sleeve][account][0] if r[3] else None
+                except Exception: return None
+            eq = [(r[0], v + rebase(r[0], adj), r[2]) for r in rows for v in [cell(r)] if v is not None]
+        else:
+            eq = [(r[0], r[1] + rebase(r[0], adj), r[2]) for r in rows if r[1] is not None]
+        kl = "('stock')" if account == "stocks" else "('crypto')"
+        w, a = (" AND sleeve=?", (sleeve,)) if sleeve else ("", ())
+        sells = [r[0] for r in con.execute(f"SELECT pnl FROM trades WHERE side='SELL' AND (CASE WHEN klass='stock' THEN 'stock' ELSE 'crypto' END) IN {kl}{w}", a)]
+        nt = con.execute(f"SELECT COUNT(*) FROM trades WHERE side IN ('BUY','SELL') AND (CASE WHEN klass='stock' THEN 'stock' ELSE 'crypto' END) IN {kl}{w}", a).fetchone()[0]
+        start = base[sleeve][account] if sleeve else sum(base[s_][account] for s_ in SLEEVES)
+        peak, mdd = 0, 0
+        for r in eq: peak = max(peak, r[1]); mdd = min(mdd, r[1] / peak - 1) if peak else mdd
+        return dict(start=start, equity=eq[-1][1] if eq else start, ret=(eq[-1][1] / start - 1) if eq and start else 0,
+                    realized=sum(x or 0 for x in sells), trades=nt, closed=len(sells),
+                    win_rate=(sum((x or 0) > 0 for x in sells) / len(sells)) if sells else None, max_dd=mdd, btc_ret=None,
+                    best=max(sells, default=None), worst=min(sells, default=None))
     col = {None: "equity", "core": "core", "day": "day", "risk": "risk"}[sleeve]
     adj = transfer_adj(con, sleeve) if sleeve else []
     eq = [(r[0], r[1] + rebase(r[0], adj), r[2]) for r in con.execute(f"SELECT ts, {col}, btc FROM equity ORDER BY ts").fetchall()
           if r[1] is not None]
     q = "SELECT pnl FROM trades WHERE side='SELL'" + (" AND sleeve=?" if sleeve else "")
     sells = [r[0] for r in con.execute(q, (sleeve,) if sleeve else ())]
-    c = cfg(); start = float(c["starting_balance"]) if not sleeve else start_cash(c)[sleeve]
+    start = float(c["starting_balance"]) if not sleeve else sum(base[sleeve].values())
     peak, mdd = 0, 0
     for r in eq: peak = max(peak, r[1]); mdd = min(mdd, r[1] / peak - 1) if peak else mdd
     btc0 = next((r[2] for r in eq if r[2]), None)
@@ -52,7 +77,7 @@ def r2(x): return None if x is None else round(x, 2)
 
 def build(con):
     c = cfg(); st, rk, K, DY = c["strategy"], c["risk"], c["core"], c["day"]
-    sc = start_cash(c)
+    base = acct_start(con, c); sc = {s_: sum(base[s_].values()) for s_ in SLEEVES}
     start = float(c["starting_balance"]); focus = list(st["focus_assets"])
     t_now = now(); n_ep = int(t_now.timestamp())
     fx = usd_gbp(con, c["fx"]["max_age_h"]); rate = fx[0] if fx else None
@@ -65,18 +90,19 @@ def build(con):
     fx_alt = con.execute("SELECT alt_rate, alt_source FROM fx WHERE pair='USDGBP' ORDER BY ts DESC LIMIT 1").fetchone()
 
     # ---- equity curve + BTC benchmark (both £, benchmark rebased to the £start) ----
-    eq = con.execute("SELECT ts, equity, cash, pos_value, btc, open_n, core, day, risk FROM equity ORDER BY ts").fetchall()
+    eq = con.execute("SELECT ts, equity, cash, pos_value, btc, open_n, core, day, risk, crypto, stocks FROM equity ORDER BY ts").fetchall()
     btc0 = next((r["btc"] for r in eq if r["btc"]), None)
     adj = {sl: transfer_adj(con, sl) for sl in SLEEVES}
-    reb = lambda r, sl: r2(r[sl] + rebase(r["ts"], adj[sl])) if r[sl] is not None else None   # pot history rebased by later transfers
+    adj.update({ac: transfer_adj_acct(con, ac) for ac in ACCOUNTS})
+    reb = lambda r, sl: r2(r[sl] + rebase(r["ts"], adj[sl])) if r[sl] is not None else None   # pot/account history rebased by later transfers
     cut = n_ep - EQUITY_FULL_H * 3600; seen = {}
     for r in eq:
         t = ep(r["ts"]); key = t if t >= cut else t // 3600   # older points: last one per hour
         seen[key] = (t, r2(r["equity"]), r2(start * r["btc"] / btc0) if btc0 and r["btc"] else None, r2(r["cash"]),
-                     reb(r, "core"), reb(r, "day"), reb(r, "risk"))
+                     reb(r, "core"), reb(r, "day"), reb(r, "risk"), reb(r, "crypto"), reb(r, "stocks"))
     pts = sorted(seen.values())[-3000:]
     equity = dict(t=[p[0] for p in pts], eq=[p[1] for p in pts], btc=[p[2] for p in pts], cash=[p[3] for p in pts],
-                  core=[p[4] for p in pts], day=[p[5] for p in pts], risk=[p[6] for p in pts])
+                  core=[p[4] for p in pts], day=[p[5] for p in pts], risk=[p[6] for p in pts], crypto=[p[7] for p in pts], stocks=[p[8] for p in pts])
 
     # ---- latest prices / 24h change ----
     latest = con.execute("""SELECT asset, klass, price, source, MAX(ts) ts FROM prices
@@ -162,7 +188,7 @@ def build(con):
         usd = lp[r["asset"]]["price"] if r["asset"] in lp else None
         now_gbp = usd * rate if usd is not None and rate else None
         val = r["qty"] * now_gbp if now_gbp is not None else None
-        positions.append(dict(sleeve=r["sleeve"], tranches=r["tranches"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]), entry=sig(r["entry"]), now=sig(now_gbp),
+        positions.append(dict(sleeve=r["sleeve"], acct=acct_of(r["klass"]), tranches=r["tranches"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]), entry=sig(r["entry"]), now=sig(now_gbp),
                               now_usd=sig(usd), cost=r2(r["cost"]), value=r2(val),
                               pnl=r2(val - r["cost"]) if val is not None else None,
                               pnl_pct=round((now_gbp / r["entry"] - 1) * 100, 2) if now_gbp and r["entry"] else None,
@@ -177,18 +203,33 @@ def build(con):
     for p in positions: pos_by.setdefault(p["asset"], []).append(p["sleeve"])
 
     # ---- trades ----
-    trades = [dict(id=r["id"], t=ep(r["ts"]), sleeve=r["sleeve"], side=r["side"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]),
+    # ---- fees per account (crypto: fee + gas; stocks: spread + FX + stamp duty; early tokenised-stock trades: fee + gas) ----
+    fees = {s_: {ac: dict(fee=0.0, gas=0.0, spread=0.0, fx=0.0, stamp=0.0, xstock=0.0) for ac in ACCOUNTS} for s_ in SLEEVES}
+    def fparts(r):
+        cost = r["cost"] or 0.0; gas_ = r["gas"] or 0.0
+        if r["klass"] != "stock": return dict(fee=cost, gas=gas_)
+        if gas_ > 0 or re.match(r"^[A-Z][A-Z0-9.]*x$", r["asset"] or ""): return dict(xstock=cost + gas_)   # pre-v5 xStock trade on Monad
+        pp = trader.cost_parts(c, r["asset"], "stock", r["side"]); tot = sum(pp.values()) or 1
+        return {k: cost * v / tot for k, v in pp.items()}
+    tparts = {}
+    for r in con.execute("SELECT id, sleeve, asset, klass, side, cost, gas FROM trades WHERE side IN ('BUY','SELL')"):
+        fp_ = fparts(r); tparts[r["id"]] = fp_
+        for k, v in fp_.items(): fees[r["sleeve"]][acct_of(r["klass"])][k] += v
+    trades = [dict(id=r["id"], t=ep(r["ts"]), sleeve=r["sleeve"], acct=acct_of(r["klass"]), side=r["side"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]),
                    price=sig(r["price"]), fill=sig(r["fill"]), usd=sig(r["price_usd"]), fx=sig(r["usd_gbp"], 5),
                    value=r2(r["value"]), fee=round(r["cost"], 4) if r["cost"] is not None else None, pnl=r2(r["pnl"]),
                    gas=sig(r["gas"], 3) if r["gas"] is not None else None,
-                   reason=r["reason"] or "", alias=plain(r["asset"]) if plain(r["asset"]) != r["asset"] else None)
+                   reason=r["reason"] or "", alias=plain(r["asset"]) if plain(r["asset"]) != r["asset"] else None,
+                   fees={k: sig(v, 3) for k, v in tparts.get(r["id"], {}).items() if v})
               for r in con.execute("SELECT * FROM trades ORDER BY id DESC LIMIT ?", (MAX_TRADES,))]
-    POTN = dict(core="Core pot", day="Day pot", risk="Risk pot")
-    for i, r in enumerate(con.execute("SELECT rowid, * FROM transfers ORDER BY ts")):   # cash moves between pots (no fees)
-        for sl, sgn in ((r["from_sleeve"], -1), (r["to_sleeve"], 1)):
-            trades.append(dict(id=-(i * 2 + (sgn > 0) + 1), t=ep(r["ts"]), sleeve=sl, side="TRANSFER", asset="CASH", klass="cash", qty=None,
+    POTN = dict(core="Core pot", day="Day pot", risk="Risk pot"); ACN = dict(crypto="Crypto account", stocks="Stocks account")
+    for i, r in enumerate(con.execute("SELECT rowid, * FROM transfers ORDER BY ts")):   # cash moves (no fees): pots / accounts
+        fa, ta = r["from_account"], r["to_account"]
+        lbl = lambda sl, ac: POTN.get(sl, sl) + (f" ({ACN[ac]})" if ac else "")
+        for sl, ac, sgn in ((r["from_sleeve"], fa, -1), (r["to_sleeve"], ta, 1)):
+            trades.append(dict(id=-(i * 2 + (sgn > 0) + 1), t=ep(r["ts"]), sleeve=sl, acct=ac, kind=r["kind"] or "pot", side="TRANSFER", asset="CASH", klass="cash", qty=None,
                                price=None, fill=None, usd=None, fx=None, value=r2(sgn * r["amount"]), fee=0, pnl=None, gas=None,
-                               reason=f"£{r['amount']:.2f} cash {POTN.get(r['from_sleeve'], r['from_sleeve'])} -> {POTN.get(r['to_sleeve'], r['to_sleeve'])}: {r['reason']}"))
+                               reason=f"£{r['amount']:.2f} cash {lbl(r['from_sleeve'], fa)} -> {lbl(r['to_sleeve'], ta)}: {r['reason']}"))
     trades.sort(key=lambda x: (x["t"], x["id"]), reverse=True)
 
     # ---- CORE plan / DAY status ----
@@ -197,8 +238,8 @@ def build(con):
     rblog = json.loads((con.execute("SELECT value FROM state WHERE key='core_rebalance_log'").fetchone() or ["null"])[0])
     last_rb = (con.execute("SELECT value FROM state WHERE key='core_last_rebalance'").fetchone() or [None])[0]
     picks = cst.get("picks", [])
-    core_t = {a: float(v) for a, v in K["targets_pct"].items()}
-    core_t.update({s_: w * 100 for s_, w in stockrank.pick_weights(c, picks).items()})
+    core_tg = trader.core_targets(c, picks)                      # {asset: (account, weight within that account's Core money)}
+    core_t = {a: w * 100 for a, (ac, w) in core_tg.items()}
     try: ranked = stockrank.rank(con, c)
     except Exception: ranked = {}
     th = stockrank.themes(c); watch = stockrank.watch_themes(c); rset = set(stockrank.risk_stocks(c))
@@ -223,7 +264,7 @@ def build(con):
         if r["klass"] not in ("crypto", "stock"): continue
         s = last_sig.get(a); se = sent_latest.get(a); usd = r["price"]
         spark_pts = [sig(b[4], 5) for b in prices.get(a, [])[-48:]]
-        assets.append(dict(a=a, k=r["klass"], focus=a in focus, usd=sig(usd), gbp=sig(usd * rate) if rate else None,
+        assets.append(dict(a=a, k=r["klass"], acct=acct_of(r["klass"]), focus=a in focus, usd=sig(usd), gbp=sig(usd * rate) if rate else None,
                            chg=chg24(a), src=r["source"], t=ep(r["ts"]),
                            score=s["combined"] if s else None, mom=s["momentum"] if s else None,
                            sent_used=s["sentiment"] if s else None, action=s["action"] if s else None,
@@ -237,7 +278,7 @@ def build(con):
         dc = con.execute("SELECT d, close FROM daily_closes WHERE asset=? ORDER BY d DESC LIMIT 22", (a,)).fetchall()
         if not dc: continue
         usd = dc[0][1]; chg = round((usd / dc[1][1] - 1) * 100, 2) if len(dc) > 1 and dc[1][1] else None
-        assets.append(dict(a=a, k="stock", focus=False, usd=sig(usd), gbp=sig(usd * rate) if rate else None, chg=chg, chg_d=True,
+        assets.append(dict(a=a, k="stock", acct="stocks", focus=False, usd=sig(usd), gbp=sig(usd * rate) if rate else None, chg=chg, chg_d=True,
                            src="daily close " + dc[0][0], t=ep(dc[0][0] + "T21:00:00+00:00"), score=None, mom=None, sent_used=None,
                            action=None, reason=None, sent=None, pos=a in pos_by, held=pos_by.get(a, []), core_t=core_t.get(a),
                            spark=[sig(x[1], 5) for x in reversed(dc)], rank=(ranked.get(a) or {}).get("score"), **tinfo(a, "stock")))
@@ -248,7 +289,8 @@ def build(con):
     s = stats(con)
     cur_eq = s["equity"]; day_start = risk.get("day_start")
     updated = max([ep(x) for x in (risk.get("ts"), eq[-1]["ts"] if eq else None) if x] or [n_ep])
-    cash_now = {r[0]: r[1] for r in con.execute("SELECT sleeve, amount FROM cash")}
+    acash = {(r[0], r[1]): r[2] for r in con.execute("SELECT sleeve, account, amount FROM acct_cash")}
+    cash_now = {s_: sum(acash.get((s_, ac), 0.0) for ac in ACCOUNTS) for s_ in SLEEVES}
     lt = t_now.astimezone(LON)
     rb_day = lt.date() - timedelta(days=(lt.weekday() - int(K["rebalance_weekday"])) % 7)
     hh, mm = map(int, K["rebalance_time_uk"].split(":"))
@@ -262,21 +304,35 @@ def build(con):
                            win_rate=round(ss["win_rate"] * 100, 1) if ss["win_rate"] is not None else None, closed=ss["closed"],
                            trades=ss["trades"], cash=r2(cash_now.get(sl)), open_n=len(sp), max_dd=round(ss["max_dd"] * 100, 3),
                            invested=r2(sum(p["value"] or 0 for p in sp)))
+        cells = {}
+        for ac in ACCOUNTS:                                   # v6: the pot's slice of each account
+            xs = stats(con, sl, ac); ap = [p for p in sp if p["acct"] == ac]; ff = fees[sl][ac]
+            inv_ = sum(p["value"] or 0 for p in ap); cash_ = acash.get((sl, ac), 0.0)
+            cells[ac] = dict(start=r2(base[sl][ac]), target=r2((c.get("accounts") or {}).get("funding", {}).get(sl, {}).get(ac)),
+                             equity=r2(cash_ + inv_), cash=r2(cash_), invested=r2(inv_), open_n=len(ap),
+                             pnl=r2(cash_ + inv_ - base[sl][ac]), ret=round(((cash_ + inv_) / base[sl][ac] - 1) * 100, 3) if base[sl][ac] else None,
+                             realized=r2(xs["realized"]), unrealized=r2(sum(p["pnl"] or 0 for p in ap)), fees=r2(sum(ff.values())))
+        sleeves[sl]["accts"] = cells
     ceq = sleeves["core"]["equity"] or 0
+    caeq = {ac: sleeves["core"]["accts"][ac]["equity"] or 0 for ac in ACCOUNTS}
     cpos = {p["asset"]: p for p in positions if p["sleeve"] == "core"}
     sleeves["core"].update(
-        targets=[dict(a=a, target=round(w, 2), weight=round((cpos[a]["value"] or 0) / ceq * 100, 2) if a in cpos and ceq else 0,
+        targets=[dict(a=a, acct=core_tg[a][0], target=round(w, 2), target_gbp=r2(w / 100 * caeq[core_tg[a][0]]),
+                      pot_pct=round(w * caeq[core_tg[a][0]] / ceq, 2) if ceq else None,
+                      weight=round((cpos[a]["value"] or 0) / caeq[core_tg[a][0]] * 100, 2) if a in cpos and caeq[core_tg[a][0]] else 0,
                       value=cpos[a]["value"] if a in cpos else 0, status=plan.get(a, {}).get("status", "building"),
                       n=plan.get(a, {}).get("n", 0)) for a, w in core_t.items()],
         picks=picks, picks_info=cst.get("info", {}), picks_source=cst.get("source"), picks_ts=ep(cst["ts"]) if cst.get("ts") else None,
-        stock_pct=float(K["stocks_pct"]), n_slots=stockrank.n_picks(c, ceq), min_pick=float(K.get("min_pick_gbp", 8)),
+        stock_pct=float(K["stocks_pct"]), n_slots=stockrank.n_picks(c, caeq["stocks"]), min_pick=float(K.get("min_pick_gbp", 8)),
+        split=stockrank.core_split(c), extra_pos=[p["asset"] for p in positions if p["sleeve"] == "core" and p["asset"] not in core_tg],
         max_per_theme=int(K.get("max_per_theme", 2)), weights=K.get("score_weights"),
         ranking=[dict(a=a, **{k: v for k, v in r.items() if k not in ("close", "n")}, pick=a in picks)
                  for a, r in sorted(ranked.items(), key=lambda kv: (not kv[1]["eligible"], -kv[1]["score"]))],
         universe=[dict(key=k, label=v.get("label", k), tickers=v.get("tickers", []), watch=bool(v.get("watch"))) for k, v in (c["stocks"].get("universe") or {}).items()],
         queue=json.loads((con.execute("SELECT value FROM state WHERE key='order_queue'").fetchone() or ["[]"])[0]) or [],
-        would_pick=stockrank.select(c, ranked, stockrank.n_picks(c, ceq)) if ranked else [],
-        plans=stockrank.plans(c, ranked, ceq, {a: p["value"] or 0 for a, p in cpos.items()}, cash_now.get("core", 0)) if ranked else [],
+        would_pick=stockrank.select(c, ranked, stockrank.n_picks(c, caeq["stocks"])) if ranked else [],
+        plans=stockrank.plans(c, ranked, caeq, {a: p["value"] or 0 for a, p in cpos.items()},
+                              {ac: acash.get(("core", ac), 0.0) for ac in ACCOUNTS}) if ranked else [],
         last_rebalance=ep(last_rb.strip('"')) if last_rb else None, next_rebalance=int(rb_at.timestamp()), rebalance_log=rblog,
         rules=dict(tranches=K["tranches"], per_day=K["max_tranches_per_day"], dip=K["dip_vs_avg24_pct"], fallback_h=K["fallback_hour_uk"],
                    band=K["drift_band_pp"], stop=K["stop_loss_pct"], sent_delay=K["sentiment_delay_score"],
@@ -302,8 +358,29 @@ def build(con):
                    hold=RP.get("max_hold_days"), cap=RP.get("drawdown_cap_pct"), cooldown=RP.get("cooldown_h"), top_n=RC.get("top_n"),
                    min_mcap=RC.get("min_mcap_usd"), max_mcap=RC.get("max_mcap_usd"), min_vol=RC.get("min_vol_usd"), sent_block=RP.get("sentiment_block"),
                    sent_exit=RP.get("sentiment_exit")))
-    transfers = [dict(t=ep(r["ts"]), frm=r["from_sleeve"], to=r["to_sleeve"], amount=r2(r["amount"]), reason=r["reason"])
+    transfers = [dict(t=ep(r["ts"]), frm=r["from_sleeve"], to=r["to_sleeve"], frm_acct=r["from_account"], to_acct=r["to_account"],
+                      kind=r["kind"] or "pot", amount=r2(r["amount"]), reason=r["reason"])
                  for r in con.execute("SELECT * FROM transfers ORDER BY ts")]
+    # ---- v6: the two real-world accounts ----
+    AC = c.get("accounts") or {}
+    accounts = {}
+    for ac in ACCOUNTS:
+        xs = stats(con, None, ac); ap = [p for p in positions if p["acct"] == ac]
+        inv_ = sum(p["value"] or 0 for p in ap); cash_ = sum(acash.get((s_, ac), 0.0) for s_ in SLEEVES)
+        st_ = sum(base[s_][ac] for s_ in SLEEVES); ff = {k: sum(fees[s_][ac][k] for s_ in SLEEVES) for k in fees["core"][ac]}
+        accounts[ac] = dict(label=(AC.get(ac) or {}).get("label", ac), where=(AC.get(ac) or {}).get("where", ""),
+                            start=r2(st_), target=r2(sum(float((AC.get("funding") or {}).get(s_, {}).get(ac, 0)) for s_ in SLEEVES)),
+                            equity=r2(cash_ + inv_), cash=r2(cash_), invested=r2(inv_), pnl=r2(cash_ + inv_ - st_),
+                            ret=round(((cash_ + inv_) / st_ - 1) * 100, 3) if st_ else None, open_n=len(ap),
+                            realized=r2(xs["realized"]), unrealized=r2(sum(p["pnl"] or 0 for p in ap)), closed=xs["closed"], trades=xs["trades"],
+                            win_rate=round(xs["win_rate"] * 100, 1) if xs["win_rate"] is not None else None, max_dd=round(xs["max_dd"] * 100, 3),
+                            fees={k: sig(v, 4) for k, v in ff.items() if v}, fees_total=r2(sum(ff.values())),
+                            pots={s_: sleeves[s_]["accts"][ac] for s_ in SLEEVES})
+    asplit = json.loads((con.execute("SELECT value FROM state WHERE key='account_split'").fetchone() or ["null"])[0])
+    if asplit:
+        asplit = dict(t=ep(asplit["ts"]), opening={k: {a: r2(v) for a, v in d.items()} for k, d in asplit["opening"].items()},
+                      targets=asplit["targets"], pending=asplit.get("pending") or [], settled=ep(asplit["settled"]) if asplit.get("settled") else None,
+                      settled_legs=asplit.get("settled_legs") or [])
     gd = json.loads((con.execute("SELECT value FROM state WHERE key='gas'").fetchone() or ["null"])[0]) or {}
     G = c.get("gas") or {}
     gas_tot = con.execute("SELECT COALESCE(SUM(gas),0), COALESCE(SUM(cost),0), COUNT(gas) FROM trades").fetchone()
@@ -311,7 +388,7 @@ def build(con):
                t=ep(gd["ts"]) if gd.get("ts") else None, src=gd.get("src"), fallback=G.get("fallback_gbp"),
                paid=sig(gas_tot[0], 4), fees=r2(gas_tot[1]), n=gas_tot[2])
     return dict(
-        v=4, gas=gas, generated=n_ep, updated=updated, currency="GBP", start=start,
+        v=6, gas=gas, generated=n_ep, updated=updated, currency="GBP", start=start, accounts=accounts, account_split=asplit,
         sleeves=sleeves, focus=focus, transfers=transfers, markets=markets.status(t_now),
         themes=[dict(key=k, label=v.get("label", k), watch=bool(v.get("watch")), n=len(v.get("tickers", []))) for k, v in (c["stocks"].get("universe") or {}).items()]
                + [dict(key=k, label=l, watch=True, n=sum(1 for x in (CC.get("watch_ids") or {}).values() if x == k)) for k, l in cth.items()],

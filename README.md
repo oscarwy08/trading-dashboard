@@ -1,7 +1,39 @@
 # Paper trading system (Oscar) — PAPER ONLY
 
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
-writes sentiment JSON files. GBP £200 paper account in three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%).
+writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
+
+## v6 (2026-10-10): two accounts - Crypto (Monad wallet) + Stocks (Trading 212 Invest)
+The £200 is modelled as two real-world accounts, 50/50: **Crypto account £100** (Monad wallet: all crypto, fees = venue
+fee + gas) and **Stocks account £100** (Trading 212 Invest: all stocks/ETFs, fees = spread + FX + UK stamp duty). Each
+pot is split across both (config.yaml `accounts.funding`): CORE crypto £50 / stocks £50, DAY £30 / £30, RISK £20 / £20.
+- **Cash per pot x account** (table `acct_cash`; table `cash` mirrors the pot totals). A crypto trade only uses/returns the
+  pot's crypto cash, a stock trade only its stocks cash; `trader.buy()` refuses to overdraw an account cell. The trader
+  NEVER moves money between accounts.
+- **CORE targets** are weights inside each account's slice of the Core pot: crypto `core.targets_pct` (MON 26 / XRP 26 /
+  WLD 20 / BTC 16 / ETH 12 = 100% of Core crypto money), stock picks `core.stocks_pct` = 100% of Core stocks money
+  (`max_pick_pct` 20% of it = the old 10% of the pot). Number of picks follows the Core stocks money.
+- **Migration** `migrate_v6_accounts.py` (one-off, idempotent via state `account_split`; also run by ci_cycle.sh; backs up
+  to data/trading.db.bak-pre-v6): no reset - holdings stay in the account of their asset class, each pot's cash is split
+  with TRANSFER rows (kind `split`, no P&L) so account totals are as close as possible to 100/100. If a pot held more of
+  one asset class than its target (DAY had £40 of crypto), the remainder is a **pending settlement** between pots INSIDE
+  one account (crypto DAY->CORE, stocks CORE->DAY, equal amounts so pot totals do not change); the trader executes it
+  automatically, all legs at once, as soon as the cash is free (DAY is flat after 22:00 UK). Earlier equity rows get
+  pro-forma per-account values (opening + realised + unrealised P&L at that time).
+- **Baselines**: account/pot x account starts = opening at the split + later pot/account transfers; history is rebased
+  (`transfer_adj`, `transfer_adj_acct`) so transfers never show as P&L. Table `equity` has crypto/stocks/crypto_cash/
+  stocks_cash and `accts` (JSON {pot: {account: [equity, cash]}}); `transfers` has from_account/to_account/kind
+  (split | settle | pot | account).
+- **Manual scripts** (box clone, under the repo lock, then commit + push data/trading.db):
+  `python3 transfer_accounts.py FROM_ACCOUNT TO_ACCOUNT AMOUNT|cash POT [TO_POT] [-- reason]` - between accounts (only after
+  you really moved money); `python3 rebalance_pots.py FROM TO AMOUNT|cash|topup ACCOUNT [reason]` - between pots, same account.
+- **Dashboard**: combined total + two account cards (value, P&L, cash, invested) on Overview, equity chart toggle Total /
+  Crypto / Stocks, account switch All / Crypto / Stocks (Portfolio, Core/Day/Risk tabs, Orders, Markets), Core tab with
+  crypto targets and stock picks in separate sections with each account's cash, investment plans (+£100/£500/£1000)
+  split 50/50 into the two accounts. Fees per account: crypto fee + gas, stocks spread + FX + stamp duty.
+- **daily_summary.py**: CRYPTO / STOCKS lines (value, P&L, cash, invested, fees, by pot) and per-pot account split.
+- **test/sim.py**: per pot x account cash reconciliation (cash never crosses accounts), no negative account cell,
+  pot move + manual account transfer (rebased), and the live-DB split + settlement on a copy.
 
 ## v5 (2026-10-10): UK-accessible stocks - normal exchange tickers, real market hours
 xStocks (tokenised stocks) are NOT available to UK residents (Kraken: "xStocks are not available in: United States,
@@ -104,7 +136,9 @@ riskpot.py            RISK pot screen/scores (crypto breakout from the markets s
 stockrank.py          CORE stock scoring/selection + display-only investment plans (pure DB, no network)
 trader.py             three sleeves: CORE long holds / DAY intraday / RISK speculative: signals + paper trades + risk rules
 maintenance.py        daily DB pruning + VACUUM (keeps the committed DB small)
-rebalance_pots.py     move UNINVESTED cash between pots (TRANSFER, no reset; backs up the DB)
+rebalance_pots.py     move UNINVESTED cash between pots inside ONE account (TRANSFER, no reset; backs up the DB)
+transfer_accounts.py  MANUAL move between the Crypto and Stocks accounts (TRANSFER, rebased; backs up the DB)
+migrate_v6_accounts.py one-off split of the single cash into Crypto + Stocks accounts (idempotent)
 replan_core.py        one-off: force the CORE rebalance/re-pick at the next trader cycle (backs up the DB; no reset)
 universe_check.py     re-verify the stock universe: Yahoo history (>= 100 days) + liquidity (v5)
 markets.py            exchange sessions/holidays (US, LSE/AIM, ASX) used by trader/collector/dashboard (v5)

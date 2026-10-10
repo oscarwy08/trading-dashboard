@@ -94,8 +94,9 @@ def rank(con, c):
 
 def _r(x): return None if x is None else round(x, 4)
 
-def n_picks(c, core_equity, max_picks=None):
-    K = c["core"]; budget = core_equity * float(K["stocks_pct"]) / 100
+def n_picks(c, stock_equity, max_picks=None):
+    """Number of CORE stock picks for a CORE *stocks-account* equity of stock_equity (v6: picks live in the Stocks account)."""
+    K = c["core"]; budget = stock_equity * float(K["stocks_pct"]) / 100
     per = max(float(K.get("min_pick_gbp", 8)), float(c["risk"]["min_trade_size"]))
     n = int(budget // per)
     return max(int(K.get("stock_picks_min", 1)), min(int(max_picks or K.get("stock_picks_max", 8)), n)) if n >= 1 else 0
@@ -109,36 +110,55 @@ def select(c, ranked, n, max_per_theme=None):
         per[t] = per.get(t, 0) + 1; picks.append(s)
     return picks
 
+def crypto_weights(c):
+    """v6: CORE crypto targets as fractions of the CORE crypto-account money (targets_pct normalised to sum 1)."""
+    t = {a: float(v) for a, v in c["core"]["targets_pct"].items()}; tot = sum(t.values()) or 1
+    return {a: v / tot for a, v in t.items()}
+
 def pick_weights(c, picks):
-    """Target weight (fraction of CORE equity) per pick: stocks_pct split equally, capped at max_pick_pct."""
+    """Target weight per pick as a fraction of the CORE *stocks-account* money: stocks_pct split equally, capped at max_pick_pct."""
     if not picks: return {}
     K = c["core"]; w = float(K["stocks_pct"]) / 100 / len(picks)
     cap = float(K.get("max_pick_pct", 100)) / 100
     return {s: min(w, cap) for s in picks}
 
-def plans(c, ranked, core_equity, holdings, core_cash):
-    """Display-only top-up plans. holdings = {asset: current CORE value £}. The top-up goes into the Core pot; target
-    weights are the same as now (crypto targets + stocks split equally over more picks), buys fill the gaps to target,
-    funded by the top-up plus Core cash not yet invested; nothing is sold."""
-    K = c["core"]; mint = float(c["risk"]["min_trade_size"]); out = []
+def core_split(c):
+    """Share of CORE money per account from accounts.funding.core (e.g. {'crypto': 0.5, 'stocks': 0.5})."""
+    from common import funding
+    f = funding(c)["core"]; tot = sum(f.values()) or 1
+    return {a: v / tot for a, v in f.items()}
+
+def plans(c, ranked, acct_eq, holdings, acct_cash):
+    """Display-only top-up plans (v6: per account). acct_eq / acct_cash = CORE equity / cash per account
+    {'crypto': .., 'stocks': ..}; holdings = {asset: current CORE value £}. Each top-up is deposited into the two accounts
+    by the CORE funding ratio (50/50); the crypto deposit (+ Crypto-account Core cash) fills the crypto target gaps, the
+    stocks deposit (+ Stocks-account Core cash) buys the stock picks (more picks for a bigger pot). Never sells."""
+    K = c["core"]; mint = float(c["risk"]["min_trade_size"]); out = []; sh = core_split(c)
     for tier in c.get("plans") or []:
-        add = float(tier["topup"]); E = core_equity + add
-        n = n_picks(c, E, tier.get("max_picks")); picks = select(c, ranked, n, tier.get("max_per_theme"))
-        tg = {a: float(v) / 100 for a, v in K["targets_pct"].items()}
-        tg.update({s: float(K["stocks_pct"]) / 100 / len(picks) for s in picks} if picks else {})
+        add = float(tier["topup"]); dep = {a: round(add * sh[a], 2) for a in sh}
+        E = {a: acct_eq.get(a, 0.0) + dep[a] for a in sh}
+        n = n_picks(c, E["stocks"], tier.get("max_picks")); picks = select(c, ranked, n, tier.get("max_per_theme"))
+        tg = {a: ("crypto", w) for a, w in crypto_weights(c).items()}
+        tg.update({s: ("stocks", w) for s, w in pick_weights(c, picks).items()})
         rows = []
-        for a, w in tg.items():
-            have = holdings.get(a, 0.0); gap = max(0.0, w * E - have)
-            rows.append(dict(a=a, kind="stock" if a in ranked else "crypto", theme=(ranked.get(a) or {}).get("theme_label"),
-                             score=(ranked.get(a) or {}).get("score"), target_pct=round(w * 100, 2), target=round(w * E, 2),
+        for a, (ac, w) in tg.items():
+            have = holdings.get(a, 0.0); gap = max(0.0, w * E[ac] - have)
+            rows.append(dict(a=a, acct=ac, kind="stock" if ac == "stocks" else "crypto", theme=(ranked.get(a) or {}).get("theme_label"),
+                             score=(ranked.get(a) or {}).get("score"), target_pct=round(w * 100, 2), target=round(w * E[ac], 2),
                              have=round(have, 2), gap=gap))
-        avail = add + max(0.0, core_cash); need = sum(r["gap"] for r in rows)
-        f = min(1.0, avail / need) if need > 0 else 0
-        for r in rows:
-            b = r.pop("gap") * f; r["buy"] = round(b, 2) if b >= mint else 0.0; r["skip"] = 0 < b < mint
-        # holdings that would no longer be targets are kept (plans never sell)
-        out.append(dict(topup=add, core_after=round(E, 2), deploy=round(avail, 2), picks=picks, n_picks=len(picks),
+        acc = {}
+        for ac in sh:
+            avail = dep[ac] + max(0.0, acct_cash.get(ac, 0.0)); need = sum(r["gap"] for r in rows if r["acct"] == ac)
+            f = min(1.0, avail / need) if need > 0 else 0
+            for r in rows:
+                if r["acct"] != ac: continue
+                b = r["gap"] * f; r["buy"] = round(b, 2) if b >= mint else 0.0; r["skip"] = 0 < b < mint
+            acc[ac] = dict(deposit=dep[ac], cash=round(max(0.0, acct_cash.get(ac, 0.0)), 2), deploy=round(avail, 2), after=round(E[ac], 2),
+                           buy_total=round(sum(r["buy"] for r in rows if r["acct"] == ac), 2))
+        for r in rows: r.pop("gap", None)
+        out.append(dict(topup=add, core_after=round(sum(E.values()), 2), deploy=round(sum(a["deploy"] for a in acc.values()), 2),
+                        accounts=acc, picks=picks, n_picks=len(picks),
                         themes=sorted({ranked[s]["theme_label"] for s in picks}), buy_total=round(sum(r["buy"] for r in rows), 2),
-                        stock_pct=float(K["stocks_pct"]), per_pick=round(float(K["stocks_pct"]) / 100 / len(picks) * E, 2) if picks else 0,
-                        rows=sorted(rows, key=lambda r: -r["buy"])))
+                        stock_pct=float(K["stocks_pct"]), per_pick=round(pick_weights(c, picks)[picks[0]] * E["stocks"], 2) if picks else 0,
+                        rows=sorted(rows, key=lambda r: (r["acct"], -r["buy"]))))
     return out

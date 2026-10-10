@@ -13,6 +13,7 @@ __pycache__/
 .bak*/
 data/*.bak*
 data/sim.db
+data/sim_mig.db
 data/sentiment/pushed/
 dashboard/
 docs/snapshot.png

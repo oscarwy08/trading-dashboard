@@ -2,6 +2,14 @@
 currency: GBP                   # account currency; source prices are USD and converted with the live GBP/USD rate
 starting_balance: 200           # GBP, total paper account
 sleeve_split_pct: {core: 50, day: 30, risk: 20}   # -> £100 CORE (long holds) / £60 DAY (intraday) / £40 RISK (speculative)
+accounts:                       # v6 (2026-10-10): two real-world accounts, each pot has separate cash in both (pot x account)
+  crypto: {label: "Crypto account", where: "Monad wallet"}          # crypto trades: 0.3% fee/slippage + Monad gas
+  stocks: {label: "Stocks account", where: "Trading 212 Invest"}    # stock trades: spread + FX fee + UK stamp duty
+  funding:                      # GBP per pot x account (50/50): Crypto account £100 / Stocks account £100
+    core: {crypto: 50, stocks: 50}
+    day:  {crypto: 30, stocks: 30}
+    risk: {crypto: 20, stocks: 20}
+  # trades only use cash of the matching account; NO automatic transfers between accounts (manual: transfer_accounts.py)
                                 # separate cash + positions. v4 (2026-10-10): was 60/40; moved by TRANSFER (rebalance_pots.py), no reset
 
 fx:                             # USD->GBP rate, fetched every collector cycle (free, no key, HTTPS)
@@ -74,12 +82,15 @@ strategy:                       # shared signal model (used by the DAY sleeve fo
   min_history_h: 4
 
 core:                           # CORE pot: long holds, staggered entry, weekly rebalance (re-picks stocks)
-  targets_pct: {MON: 15, WLD: 12, XRP: 15, BTC: 10, ETH: 8}    # % of CORE pot equity (crypto 60%)
-  stocks_pct: 40                # total % for stocks, split equally across the picks
-  stock_picks_min: 1            # picks = stock budget / min_pick_gbp, clamped to min..max (40% of ~£120 = ~£48 -> 6 picks of ~£8)
+  # v6: CORE has separate money in each account (accounts.funding: crypto £50 / stocks £50) and every target is a % of the
+  # matching account's slice of the Core pot - crypto targets live inside the Crypto account, stock picks inside the Stocks
+  # account, so a crypto rally never forces a stock trade with crypto money (and vice versa).
+  targets_pct: {MON: 26, XRP: 26, WLD: 20, BTC: 16, ETH: 12}   # % of the CORE crypto money (MON/WLD/XRP emphasis = 72%)
+  stocks_pct: 100               # % of the CORE stocks money for the picks, split equally across them
+  stock_picks_min: 1            # picks = stock budget / min_pick_gbp, clamped to min..max (~£50 -> 6 picks of ~£8.33)
   stock_picks_max: 8
   min_pick_gbp: 7.5             # smallest target per pick (>= risk.min_trade_size)
-  max_pick_pct: 10              # cap per pick if only a few stocks are eligible (rest stays in cash)
+  max_pick_pct: 20              # cap per pick (% of the CORE stocks money = 10% of the Core pot) if only a few are eligible
   max_per_theme: 2              # diversification across stocks.universe themes
   score_weights: {momentum: 0.55, quality: 0.30, sentiment: 0.15}   # composite, see stockrank.py
   stock_exclude: [VUSA.L, EQQQ.L, ISF.L]   # index ETFs: CORE picks single stocks only (edit to allow)
@@ -161,7 +172,8 @@ gas:                            # simulated Monad network fee per trade (paper),
   fallback_gbp: 0.001           # used if the RPC/MON price is unavailable or older than max_age_h
   max_age_h: 6
 
-plans:                          # display-only 'investment plans' for bigger top-ups into the Core pot (no trading)
+plans:                          # display-only 'investment plans' for bigger top-ups into the Core pot (no trading); v6: each top-up
+                                #   is deposited 50/50 into the two accounts (core funding ratio) and each half buys only its own assets
   - {topup: 100,  max_picks: 8}
   - {topup: 500,  max_picks: 12}
   - {topup: 1000, max_picks: 16, max_per_theme: 3}

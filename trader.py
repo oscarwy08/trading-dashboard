@@ -12,6 +12,11 @@ stored USD->GBP rate (table fx).
         sentiment, max 5 x 20% positions, 12% stop, trailing take-profit (10% from peak after +15%), 7-day max hold,
         30% sleeve drawdown cap (no new entries until RISK_RESUME is created).
 Each sleeve has its own cash and positions; the same asset can be held in both.
+v6 (2026-10-10): two accounts - crypto (Monad wallet) and stocks (Trading 212). Cash is kept per pot x account (table
+acct_cash); a crypto trade only uses/returns the pot's crypto cash, a stock trade only its stocks cash (buy() refuses to
+overdraw an account). CORE targets are % of the matching account's slice of the Core pot. Nothing is moved between
+accounts automatically (manual: transfer_accounts.py); the only automatic move is the one-off pot settlement INSIDE each
+account that completes the v6 split (state account_split.pending, see migrate_v6_accounts.py).
 v5 (2026-10-10): stocks are normal exchange tickers (Yahoo prices; US, London .L incl. AIM, ASX .AX) and are only traded
 while their exchange is open (markets.py): CORE tranches/stops wait for the open, CORE rebalance orders decided while a
 market is closed go to state 'order_queue' and fill at the first open cycle, DAY stock entries stop 30 min before the
@@ -21,10 +26,11 @@ Costs per trade: fee+slippage (risk.fee_slippage_pct, in the fill price) + simul
 collector, or gas.fallback_gbp) paid from cash on top and recorded in trades.gas."""
 import json
 from datetime import datetime, timedelta, timezone, time as dtime
-from common import KILL, LON, RISK_RESUME, SLEEVES, cfg, db, iso, log, now, start_cash, usd_gbp
+from common import ACCOUNTS, KILL, LON, RISK_RESUME, SLEEVES, acct_of, acct_start, cfg, db, funding, iso, log, move_cash, now, sync_pot_cash, usd_gbp
 import markets, riskpot, stockrank
 
 L = log("trader")
+ACCT = {"crypto": "crypto-account", "stocks": "stocks-account"}
 clip = lambda x, lo=-1.0, hi=1.0: max(lo, min(hi, x))
 
 def ema(xs, n):
@@ -91,30 +97,37 @@ def sget(con, key, default=None):
 def sset(con, key, val):
     con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (key, json.dumps(val)))
 
-def pick_stocks(con, c, core_equity):
+def pick_stocks(con, c, stock_equity):
     """CORE stock picks from the themed universe: composite score (momentum / trend quality / sentiment), eligible only,
-    max core.max_per_theme per theme, count = stock budget / core.min_pick_gbp (clamped). Returns (picks, info, source)."""
+    max core.max_per_theme per theme, count = CORE stocks-account money / core.min_pick_gbp (clamped). Returns (picks, info, source)."""
     rk = stockrank.rank(con, c)
-    n = stockrank.n_picks(c, core_equity)
+    n = stockrank.n_picks(c, stock_equity)
     picks = stockrank.select(c, rk, n)
     info = {s: rk[s] for s in picks}
-    return picks, info, f"composite score, {sum(1 for r in rk.values() if r['eligible'])}/{len(rk)} eligible, {n} slots for £{core_equity:.0f} pot"
+    return picks, info, f"composite score, {sum(1 for r in rk.values() if r['eligible'])}/{len(rk)} eligible, {n} slots for £{stock_equity:.0f} of Core stocks money"
 
 def core_targets(c, picks):
-    k = c["core"]; t = {a: float(v) / 100 for a, v in k["targets_pct"].items()}
-    t.update(stockrank.pick_weights(c, picks))
+    """{asset: (account, weight within the CORE money of that account)} - crypto targets in the Crypto account,
+    stock picks in the Stocks account (v6)."""
+    t = {a: ("crypto", w) for a, w in stockrank.crypto_weights(c).items()}
+    t.update({s: ("stocks", w) for s, w in stockrank.pick_weights(c, picks).items()})
     return t
+
+def cost_parts(c, asset, klass, side):
+    """Per-side cost components as fractions of the price. crypto: {'fee'} (fee + slippage; gas is separate);
+    stocks: {'spread', 'fx', 'stamp'} (Trading 212-like)."""
+    if klass != "stock": return {"fee": float(c["risk"]["fee_slippage_pct"]) / 100}
+    C = c["stocks"].get("costs") or {}; ex = markets.exchange(asset)
+    return {"spread": float(C.get("spread_pct", 0.1)) / 100,
+            "fx": float(C.get("fx_fee_pct", 0.15)) / 100 if ex != "LSE" else 0.0,
+            "stamp": float(C.get("uk_stamp_duty_pct", 0.5)) / 100 if side == "BUY" and ex == "LSE" and asset not in set(C.get("stamp_exempt") or []) else 0.0}
 
 def cost_pct(c, asset, klass, side):
     """Per-side trading cost as a fraction of the price (applied in the fill price).
     crypto: risk.fee_slippage_pct (+ simulated Monad gas on top, see gas_gbp).
     stocks (v5, broker-like, Trading 212-style): stocks.costs.spread_pct (no commission) + fx_fee_pct for non-GBP listings
     (GBP account buying USD/AUD shares; both sides) + UK stamp duty (SDRT) on London BUYS unless AIM/ETF (stamp_exempt)."""
-    if klass != "stock": return float(c["risk"]["fee_slippage_pct"]) / 100
-    C = c["stocks"].get("costs") or {}; ex = markets.exchange(asset)
-    p = float(C.get("spread_pct", 0.1)) + (float(C.get("fx_fee_pct", 0.15)) if ex != "LSE" else 0.0)
-    if side == "BUY" and ex == "LSE" and asset not in set(C.get("stamp_exempt") or []): p += float(C.get("uk_stamp_duty_pct", 0.5))
-    return p / 100
+    return sum(cost_parts(c, asset, klass, side).values())
 
 def gas_gbp(con, c):
     """Simulated Monad gas per trade in GBP: latest collector estimate if fresh, else the configured fallback."""
@@ -127,7 +140,7 @@ def gas_gbp(con, c):
 
 def init_core(con, c):
     """Called on account reset: pick stocks, mark every target asset as 'building', no rebalance until next week."""
-    picks, info, src = pick_stocks(con, c, start_cash(c)["core"])
+    picks, info, src = pick_stocks(con, c, funding(c)["core"]["stocks"])
     sset(con, "core_stocks", dict(picks=picks, info=info, source=src, ts=iso()))
     sset(con, "core_plan", {a: dict(status="building", n=0, last_day=None, day_n=0) for a in core_targets(c, picks)})
     sset(con, "core_last_rebalance", iso())
@@ -155,12 +168,16 @@ def main():
         print("[trader] no USD->GBP rate available yet - no actions"); return
     rate, fx_stale = fx[0], fx[3]
     if fx_stale: L.warning("USD->GBP rate from %s is older than %sh - new buys blocked", fx[1], c["fx"]["max_age_h"])
-    if not con.execute("SELECT 1 FROM cash").fetchone():
-        con.executemany("INSERT INTO cash VALUES(?,?)", list(start_cash(c).items()))
-    for s_ in SLEEVES: con.execute("INSERT OR IGNORE INTO cash VALUES(?,0)", (s_,))   # a new sleeve gets money only via TRANSFER
+    if not con.execute("SELECT 1 FROM acct_cash").fetchone():
+        if con.execute("SELECT 1 FROM cash").fetchone() or con.execute("SELECT 1 FROM positions").fetchone():
+            import migrate_v6_accounts; migrate_v6_accounts.migrate(con)        # existing single-cash account -> split (v6)
+        else:                                                                  # fresh account: config funding per pot x account
+            con.executemany("INSERT INTO acct_cash VALUES(?,?,?)", [(k, a, v) for k, d in funding(c).items() for a, v in d.items()])
+    for s_ in SLEEVES:
+        for a_ in ACCOUNTS: con.execute("INSERT OR IGNORE INTO acct_cash VALUES(?,?,0)", (s_, a_))   # new cells get money only via TRANSFER
     if sget(con, "core_plan") is None: init_core(con, c)
     px = latest_prices(con, rk["max_price_age_min"], rate)
-    cash = {r[0]: r[1] for r in con.execute("SELECT sleeve, amount FROM cash")}
+    cash = {(r[0], r[1]): r[2] for r in con.execute("SELECT sleeve, account, amount FROM acct_cash")}   # (pot, account) -> £
     pos = {(r["sleeve"], r["asset"]): dict(r) for r in con.execute("SELECT * FROM positions")}
 
     def gas_of(klass): return gas if klass == "crypto" else 0.0     # stocks: no network fee (broker trade)
@@ -173,6 +190,9 @@ def main():
         return klass_of(a) != "stock" or markets.is_open(a, t)
     def mclose_in(a):      # minutes to the close of the current session (None = closed); crypto: large
         return 1e9 if klass_of(a) != "stock" else markets.mins_to_close(a, t)
+    def acc(a): return acct_of(klass_of(a))
+    def cash_for(sleeve, a): return cash[(sleeve, acc(a))]          # the ONLY cash a trade in asset a may use
+    def acash(sleeve, a): return f"{sleeve} {ACCT[acc(a)]} cash £{cash_for(sleeve, a):.2f}"
     def closed_msg(a):
         no = markets.next_open(a, t)
         return f"market closed ({markets.EXCH[markets.exchange(a)]['label']}; opens {no.astimezone(LON):%a %H:%M} UK)" if no else "market closed"
@@ -189,7 +209,8 @@ def main():
         """Spends value on the asset (fill incl. fees/slippage/FX/stamp duty) + gas on top (crypto only); all go into the cost basis."""
         q = px[a]; fp = cost_pct(c, a, q["klass"], "BUY")
         fill = trade(sleeve, a, q["klass"], "BUY", value / (q["price"] * (1 + fp)), q["price"], reason)
-        qty = value / fill; p = pos.get((sleeve, a)); spent = value + gas_of(q["klass"])
+        qty = value / fill; p = pos.get((sleeve, a)); spent = value + gas_of(q["klass"]); ck = (sleeve, acct_of(q["klass"]))
+        if spent > cash[ck] + 1e-9: raise RuntimeError(f"{sleeve} {a}: £{spent:.4f} > {ck[1]} cash £{cash[ck]:.4f} (cash never crosses accounts)")
         if p:
             p["qty"] += qty; p["cost"] += spent; p["entry"] = p["cost"] / p["qty"]; p["tranches"] = (p["tranches"] or 1) + 1
             con.execute("UPDATE positions SET qty=?, cost=?, entry=?, tranches=? WHERE sleeve=? AND asset=?",
@@ -197,13 +218,13 @@ def main():
         else:
             pos[(sleeve, a)] = dict(sleeve=sleeve, asset=a, klass=q["klass"], qty=qty, entry=spent / qty, cost=spent, opened=ts, tranches=1)
             con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)", (sleeve, a, q["klass"], qty, spent / qty, spent, ts, 1))
-        cash[sleeve] -= spent
+        cash[ck] -= spent
 
     def sell(sleeve, a, qty, reason, price=None):
         p = pos[(sleeve, a)]; price = price or px[a]["price"]; qty = min(qty, p["qty"])
         proceeds = qty * price * (1 - cost_pct(c, a, p["klass"], "SELL")) - gas_of(p["klass"]); part = p["cost"] * qty / p["qty"]; pnl = proceeds - part
         trade(sleeve, a, p["klass"], "SELL", qty, price, f"{reason}; P&L £{pnl:+.2f}", pnl)
-        cash[sleeve] += proceeds
+        cash[(sleeve, acct_of(p["klass"]))] += proceeds
         if qty >= p["qty"] * (1 - 1e-9):
             con.execute("DELETE FROM positions WHERE sleeve=? AND asset=?", (sleeve, a)); del pos[(sleeve, a)]
         else:
@@ -212,7 +233,8 @@ def main():
         return pnl
 
     def val(p): q = px.get(p["asset"]); return p["qty"] * q["price"] if q else p["cost"]
-    def sleeve_eq(s): return cash[s] + sum(val(p) for (sl, _), p in pos.items() if sl == s)
+    def acct_eq(s, ac): return cash[(s, ac)] + sum(val(p) for (sl, _), p in pos.items() if sl == s and acct_of(p["klass"]) == ac)
+    def sleeve_eq(s): return sum(acct_eq(s, ac) for ac in ACCOUNTS)
 
     # ---- score every asset (DAY signal; sentiment also used by CORE tranche timing) ----
     scores, hist = {}, {}
@@ -284,6 +306,23 @@ def main():
         else:
             sig("day", a, m, s, comb, "HOLD", f"open day position {chg*100:+.1f}%; {info}")
 
+    # ================= v6 one-off pot settlement inside each account (completes the account split) =================
+    # migrate_v6_accounts.py could not reach every pot x account target at once (e.g. DAY held £40 of crypto); the pending
+    # legs move cash between POTS within ONE account (crypto->crypto, stocks->stocks, never between accounts) as soon as
+    # every leg is covered by cash - all legs together, so each pot total stays unchanged.
+    acs = sget(con, "account_split") or {}
+    if acs.get("pending") and all(cash[(l["from"], l["account"])] >= l["amount"] - 1e-9 for l in acs["pending"]):
+        # move_cash checks the DB cells -> first write the in-memory cash (sales in this cycle) for the involved cells
+        for k in {(l[x], l["account"]) for l in acs["pending"] for x in ("from", "to")}:
+            con.execute("INSERT OR REPLACE INTO acct_cash VALUES(?,?,?)", (*k, cash[k]))
+        for l in acs["pending"]:
+            move_cash(con, (l["from"], l["account"]), (l["to"], l["account"]), l["amount"],
+                      f"v6 account split settlement: {ACCT[l['account']]} cash {l['from'].upper()} -> {l['to'].upper()} "
+                      f"(pot targets {acs['targets'][l['to']][l['account']]:.0f}/{acs['targets'][l['from']][l['account']]:.0f})", "settle")
+            cash[(l["from"], l["account"])] -= l["amount"]; cash[(l["to"], l["account"])] += l["amount"]
+            out.append(f"[{l['account']}] SETTLE £{l['amount']:.2f} {l['from']} -> {l['to']} (same account, pot totals unchanged)")
+        acs["settled"] = ts; acs["settled_legs"] = acs.pop("pending"); sset(con, "account_split", acs)
+
     # ================= CORE =================
     plan = sget(con, "core_plan") or {}
     picks = (sget(con, "core_stocks") or {}).get("picks", [])
@@ -300,8 +339,8 @@ def main():
             pnl = sell(o["sleeve"], a, p["qty"] * min(1.0, o["frac"]), f"{o['reason']} [queued {o['queued'][:16]}Z, filled at the open]")
             sig(o["sleeve"], a, None, None, None, "SELL", f"queued: {o['reason']}; P&L £{pnl:+.2f}")
         else:
-            v = min(o["value"], cash[o["sleeve"]] - gas)
-            if v < mint: out.append(f"[{o['sleeve']}] queued BUY {a} dropped: cash £{cash[o['sleeve']]:.2f}"); continue
+            v = min(o["value"], cash_for(o["sleeve"], a) - gas_of(klass_of(a)))
+            if v < mint: out.append(f"[{o['sleeve']}] queued BUY {a} dropped: {acash(o['sleeve'], a)}"); continue
             buy(o["sleeve"], a, v, f"{o['reason']} [queued {o['queued'][:16]}Z, filled at the open]")
             sig(o["sleeve"], a, None, None, None, "BUY", f"queued: {o['reason']} £{v:.2f}")
     queue = keep
@@ -326,10 +365,11 @@ def main():
     rb_at = datetime.combine(rb_day, dtime(rh, rm), LON)
     last_rb = sget(con, "core_last_rebalance"); forced = sget(con, "core_force_rebalance")
     if forced or (t >= rb_at and (not last_rb or datetime.fromisoformat(last_rb) < rb_at)):
-        new_picks, info, src = pick_stocks(con, c, sleeve_eq("core"))
+        new_picks, info, src = pick_stocks(con, c, acct_eq("core", "stocks"))
         if not new_picks: new_picks = picks       # keep old picks rather than dropping stocks on missing data
         sset(con, "core_stocks", dict(picks=new_picks, info=info, source=src, ts=ts))
-        tg = core_targets(c, new_picks); ceq = sleeve_eq("core"); band = K["drift_band_pp"]; log_rb = []
+        tg = core_targets(c, new_picks); ceq = sleeve_eq("core"); aeq = {ac: acct_eq("core", ac) for ac in ACCOUNTS}
+        band = K["drift_band_pp"]; log_rb = []
         for a in list(plan):
             if a not in tg: plan.pop(a)
         for a in tg:
@@ -345,38 +385,38 @@ def main():
                 pnl = sell("core", a, p["qty"], "rebalance: no longer a CORE pick (target 0%)")
                 log_rb.append(f"SELL {a} all (dropped pick)"); sig("core", a, None, None, None, "SELL", f"rebalance: dropped pick; P&L £{pnl:+.2f}")
         moves = []
-        for a, w_t in tg.items():
+        for a, (ac, w_t) in tg.items():     # weights are % of the CORE money in the asset's own account
             if plan[a]["status"] != "built" or a not in px or (not px[a]["fresh"] and mopen(a)): continue
-            v = val(pos[("core", a)]) if ("core", a) in pos else 0
-            w = v / ceq if ceq else 0; drift = (w - w_t) * 100
-            if abs(drift) > band and abs((w_t - w) * ceq) >= mint and not mopen(a):
-                if w_t < w: enqueue("core", a, "SELL", f"rebalance trim {w*100:.1f}% -> {w_t*100:.0f}% (band {band}pp)", frac=min(1, (w - w_t) * ceq / v))
-                else: enqueue("core", a, "BUY", f"rebalance top-up {w*100:.1f}% -> {w_t*100:.0f}% (band {band}pp)", value=(w_t - w) * ceq)
-                log_rb.append(f"{a} {w*100:.1f}% vs {w_t*100:.0f}%: order queued ({closed_msg(a)})")
-            elif abs(drift) > band and abs((w_t - w) * ceq) >= mint: moves.append((a, (w_t - w) * ceq, w, w_t))
-            else: log_rb.append(f"{a} {w*100:.1f}% vs {w_t*100:.0f}% ok")
+            v = val(pos[("core", a)]) if ("core", a) in pos else 0; E = aeq[ac]
+            w = v / E if E else 0; drift = (w - w_t) * 100
+            if abs(drift) > band and abs((w_t - w) * E) >= mint and not mopen(a):
+                if w_t < w: enqueue("core", a, "SELL", f"rebalance trim {w*100:.1f}% -> {w_t*100:.0f}% of Core {ac} (band {band}pp)", frac=min(1, (w - w_t) * E / v))
+                else: enqueue("core", a, "BUY", f"rebalance top-up {w*100:.1f}% -> {w_t*100:.0f}% of Core {ac} (band {band}pp)", value=(w_t - w) * E)
+                log_rb.append(f"{a} {w*100:.1f}% vs {w_t*100:.0f}% of {ac}: order queued ({closed_msg(a)})")
+            elif abs(drift) > band and abs((w_t - w) * E) >= mint: moves.append((a, (w_t - w) * E, w, w_t))
+            else: log_rb.append(f"{a} {w*100:.1f}% vs {w_t*100:.0f}% of {ac} ok")
         for a, dv, w, w_t in sorted(moves, key=lambda x: x[1]):          # sells first, then buys
             if dv < 0:
                 p = pos[("core", a)]; qty = p["qty"] * min(1, -dv / val(p))
                 pnl = sell("core", a, qty, f"rebalance trim {w*100:.1f}% -> {w_t*100:.0f}% (band {band}pp)")
                 log_rb.append(f"SELL {a} £{-dv:.2f}"); sig("core", a, None, None, None, "SELL", f"rebalance trim {w*100:.1f}% -> {w_t*100:.0f}%; P&L £{pnl:+.2f}")
             else:
-                v = min(dv, cash["core"] - gas)
-                if v < mint or fx_stale: log_rb.append(f"{a} under target but cash £{cash['core']:.2f}"); continue
+                v = min(dv, cash_for("core", a) - gas_of(klass_of(a)))
+                if v < mint or fx_stale: log_rb.append(f"{a} under target but {acash('core', a)}"); continue
                 buy("core", a, v, f"rebalance top-up {w*100:.1f}% -> {w_t*100:.0f}% (band {band}pp)")
                 log_rb.append(f"BUY {a} £{v:.2f}"); sig("core", a, None, None, None, "BUY", f"rebalance top-up £{v:.2f} {w*100:.1f}% -> {w_t*100:.0f}%")
         sset(con, "core_last_rebalance", ts)
         if forced: con.execute("DELETE FROM state WHERE key='core_force_rebalance'")
-        sset(con, "core_rebalance_log", dict(ts=ts, picks=new_picks, equity=ceq, actions=log_rb, forced=forced or None))
+        sset(con, "core_rebalance_log", dict(ts=ts, picks=new_picks, equity=ceq, acct_equity=aeq, actions=log_rb, forced=forced or None))
         out.append(f"[core] REBALANCE{' (forced: ' + str(forced) + ')' if forced else ''} (picks {', '.join(new_picks)}): " + "; ".join(log_rb))
         picks = new_picks
 
     # staggered entry: tranches for assets still being built
-    tg = core_targets(c, picks); ceq = sleeve_eq("core"); ntr = int(K["tranches"])
-    for a, w_t in tg.items():
+    tg = core_targets(c, picks); ntr = int(K["tranches"])
+    for a, (ac, w_t) in tg.items():
         pl = plan.setdefault(a, dict(status="building", n=0, last_day=None, day_n=0))
         if pl.get("status") != "building": continue
-        q = px.get(a); T = w_t * ceq; cur = val(pos[("core", a)]) if ("core", a) in pos else 0; gap = T - cur
+        q = px.get(a); T = w_t * acct_eq("core", ac); cur = val(pos[("core", a)]) if ("core", a) in pos else 0; gap = T - cur
         if gap < mint:
             pl["status"] = "built"; sig("core", a, None, None, None, "HOLD", f"built: £{cur:.2f} of £{T:.2f} target"); continue
         if pl.get("last_day") != day: pl.update(last_day=day, day_n=0)
@@ -400,12 +440,12 @@ def main():
         if not why:
             size = max(T / ntr, mint)
             if pl["n"] >= ntr - 1 or gap - size < mint: size = gap
-            size = min(size, cash["core"] - gas)
-            if size < mint: why = f"core cash £{cash['core']:.2f} < min trade £{mint:.0f}"
+            size = min(size, cash[("core", ac)] - gas_of("stock" if ac == "stocks" else "crypto"))
+            if size < mint: why = f"core {ACCT[ac]} cash £{cash[('core', ac)]:.2f} < min trade £{mint:.0f}"
         if why: sig("core", a, None, None, None, "HOLD", f"tranche {pl['n']+1}/{ntr} {why}; £{cur:.2f}/£{T:.2f}"); continue
         pl["n"] += 1; pl["day_n"] += 1
         fin = " final" if size >= gap - 1e-9 else ""
-        buy("core", a, size, f"CORE tranche {pl['n']}/{ntr}{fin} ({trig}); target {w_t*100:.0f}% = £{T:.2f}")
+        buy("core", a, size, f"CORE tranche {pl['n']}/{ntr}{fin} ({trig}); target {w_t*100:.0f}% of Core {ac} = £{T:.2f}")
         cur += size
         if T - cur < mint: pl["status"] = "built"
         sig("core", a, None, None, None, "BUY", f"tranche {pl['n']}/{ntr}{fin} £{size:.2f} ({trig}); now £{cur:.2f}/£{T:.2f}")
@@ -437,15 +477,15 @@ def main():
                "stale price" if not q["fresh"] else "stale FX rate" if fx_stale else
                "max open day positions" if nday >= D["max_open_positions"] else None)
         pct = min(D["alloc_pct"], D["max_position_pct"]) / 100
-        value = min(deq * pct, cash["day"] - gas)
+        value = min(deq * pct, cash_for("day", a) - gas_of(q["klass"]))
         if not why and value < mint:
-            why = f"size £{value:.2f} < min trade £{mint:.0f} (cap £{deq * pct:.2f}, day cash £{cash['day']:.2f})"
+            why = f"size £{value:.2f} < min trade £{mint:.0f} (cap £{deq * pct:.2f}, {acash('day', a)})"
         if why: sig("day", a, m, s, comb, "SKIP", f"score {comb} >= {thr} but {why}"); continue
         buy("day", a, value, f"DAY score {comb} >= {thr}; {info}"); nday += 1
         sig("day", a, m, s, comb, "BUY", f"£{value:.2f} (cap {pct*100:.0f}% of day sleeve); {info}")
 
     # ================= RISK entries: breakout + sentiment, drawdown cap =================
-    req = sleeve_eq("risk"); rstart = start_cash(c)["risk"]
+    req = sleeve_eq("risk"); rstart = sum(acct_start(con, c)["risk"].values())
     base = float(sget(con, "riskpot_base") or rstart); halt = sget(con, "riskpot_halt")
     if RISK_RESUME.exists():
         if halt: out.append(f"[risk] RESUME after review (was halted {halt.get('ts')}); drawdown base reset to £{req:.2f}")
@@ -486,8 +526,8 @@ def main():
               f"cooldown after exit {last_exit[:16]}" if last_exit and datetime.fromisoformat(last_exit) > t - timedelta(hours=RP["cooldown_h"]) else
               f"max {RP['max_open']} open" if nrisk >= RP["max_open"] else
               f"max {RP['max_new_per_day']} new per day" if new_today >= RP["max_new_per_day"] else None)
-        value = min(req * RP["position_pct"] / 100, float(RP["max_position_gbp"]), cash["risk"] - gas)
-        if not no and value < mint: no = f"size £{value:.2f} < min trade £{mint:.0f} (risk cash £{cash['risk']:.2f})"
+        value = min(req * RP["position_pct"] / 100, float(RP["max_position_gbp"]), cash_for("risk", a) - gas_of(q["klass"]))
+        if not no and value < mint: no = f"size £{value:.2f} < min trade £{mint:.0f} ({acash('risk', a)})"
         rstat.append(dict(a=a, kind=kind, score=bscore, comb=comb, mom=m, ok=ok, why=why, block=no))
         if no:
             if ok: sig("risk", a, m, se["score"] if se else None, comb, "SKIP", f"{no}; {why}")
@@ -499,21 +539,28 @@ def main():
     sset(con, "riskpot_status", dict(ts=ts, equity=sleeve_eq("risk"), start=rstart, base=base, dd_pct=dd * 100, halted=bool(halt),
                                      halt=halt, open_n=nrisk, new_today=new_today, cands=sorted(rstat, key=lambda x: (x["block"] is not None, -x["comb"]))[:30]))
 
-    for k, v in cash.items(): con.execute("INSERT OR REPLACE INTO cash VALUES(?,?)", (k, v))
+    for (k, ac), v in cash.items(): con.execute("INSERT OR REPLACE INTO acct_cash VALUES(?,?,?)", (k, ac, v))
+    sync_pot_cash(con)
     eqs = {s: sleeve_eq(s) for s in SLEEVES}; equity = sum(eqs.values()); pv = equity - sum(cash.values())
+    pc = {s: sum(cash[(s, ac)] for ac in ACCOUNTS) for s in SLEEVES}
+    ae = {s: {ac: [round(acct_eq(s, ac), 6), round(cash[(s, ac)], 6)] for ac in ACCOUNTS} for s in SLEEVES}
+    at = {ac: sum(ae[s][ac][0] for s in SLEEVES) for ac in ACCOUNTS}; atc = {ac: sum(cash[(s, ac)] for s in SLEEVES) for ac in ACCOUNTS}
     con.execute("INSERT OR REPLACE INTO state VALUES('risk',?)", (json.dumps(dict(
         ts=ts, day=day, day_start=tstart, equity=equity, day_pnl_pct=(equity / tstart - 1) * 100 if tstart else 0,
         halted=halted, day_sleeve=dict(start=dstart, equity=eqs["day"], pnl_pct=day_pnl * 100, halted=halted,
                                        entries_open=window, flat_now=flat_now, open_n=nday))),))
-    con.execute("INSERT INTO equity(ts,equity,cash,pos_value,btc,open_n,usd_gbp,core,day,core_cash,day_cash,risk,risk_cash) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (ts, equity, sum(cash.values()), pv, px.get("BTC", {}).get("price"), len(pos), rate,
-                eqs["core"], eqs["day"], cash["core"], cash["day"], eqs["risk"], cash["risk"]))
+    con.execute("INSERT INTO equity(ts,equity,cash,pos_value,btc,open_n,usd_gbp,core,day,core_cash,day_cash,risk,risk_cash,"
+                "crypto,stocks,crypto_cash,stocks_cash,accts) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (ts, equity, sum(cash.values()), pv, px.get("BTC", {}).get("price"), len(pos), rate,
+                 eqs["core"], eqs["day"], pc["core"], pc["day"], eqs["risk"], pc["risk"],
+                 at["crypto"], at["stocks"], atc["crypto"], atc["stocks"], json.dumps(ae, separators=(",", ":"))))
     con.commit()
     built = sum(1 for a in tg if plan.get(a, {}).get("status") == "built")
-    print(f"[trader {ts} / {lt:%a %H:%M} UK] equity £{equity:.2f} | CORE £{eqs['core']:.2f} (cash £{cash['core']:.2f}, "
-          f"{sum(1 for k in pos if k[0]=='core')} pos, {built}/{len(tg)} built) | DAY £{eqs['day']:.2f} (cash £{cash['day']:.2f}, "
+    print(f"[trader {ts} / {lt:%a %H:%M} UK] equity £{equity:.2f} = Crypto acct £{at['crypto']:.2f} (cash £{atc['crypto']:.2f}) "
+          f"+ Stocks acct £{at['stocks']:.2f} (cash £{atc['stocks']:.2f}) | CORE £{eqs['core']:.2f} (cash £{pc['core']:.2f}, "
+          f"{sum(1 for k in pos if k[0]=='core')} pos, {built}/{len(tg)} built) | DAY £{eqs['day']:.2f} (cash £{pc['day']:.2f}, "
           f"{nday} pos, day {day_pnl*100:+.2f}%{' HALTED' if halted else ''}, entries {'open' if window else 'closed'}) "
-          f"| RISK £{eqs['risk']:.2f} (cash £{cash['risk']:.2f}, {nrisk} pos{', HALTED' if halt else ''}) "
+          f"| RISK £{eqs['risk']:.2f} (cash £{pc['risk']:.2f}, {nrisk} pos{', HALTED' if halt else ''}) "
           f"| GBP/USD {1/rate:.4f} ({fx[2]}{', STALE' if fx_stale else ''})")
     for line in out: print("  " + line)
     if not out: print("  no trades this cycle")
