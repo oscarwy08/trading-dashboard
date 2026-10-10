@@ -153,3 +153,5 @@ overflow-y:auto;padding:20px 24px 48px;animation:slide .18s ease-out}
 .chart{height:240px}.chart.sm{height:240px}.drawer-panel{padding:14px 14px 32px}.drawer .tw{margin:0 -14px;padding:0 14px}
 input[type=search]{min-width:0;width:100%}.tools{width:100%}#updated-ago{display:none}.tg-row{grid-template-columns:70px 1fr 100px;gap:8px}
 .stat-row{grid-template-columns:1fr 1fr}.kv{grid-template-columns:1fr}.kv>div:nth-child(odd){margin-top:6px}}
+/* v4: Risk pot */
+.tag.risk{color:#f91880;border-color:rgba(249,24,128,.5)}.tag.xfer{color:var(--mut2);border-style:dashed}

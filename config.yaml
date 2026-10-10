@@ -1,0 +1,138 @@
+# Paper trading config — NO real money, no wallets, no keys.
+currency: GBP                   # account currency; source prices are USD and converted with the live GBP/USD rate
+starting_balance: 200           # GBP, total paper account
+sleeve_split_pct: {core: 50, day: 30, risk: 20}   # -> £100 CORE (long holds) / £60 DAY (intraday) / £40 RISK (speculative)
+                                # separate cash + positions. v4 (2026-10-10): was 60/40; moved by TRANSFER (rebalance_pots.py), no reset
+
+fx:                             # USD->GBP rate, fetched every collector cycle (free, no key, HTTPS)
+  primary: coingecko            # derived from CoinGecko simple/price bitcoin in gbp & usd (intraday)
+  fallback: open.er-api.com     # https://open.er-api.com/v6/latest/USD (updates daily)
+  max_age_h: 24                 # if the stored rate is older than this, no new buys (exits still run)
+  refresh_min: 55               # fetch at most hourly (saves CoinGecko calls; GBP/USD moves little intraday)
+
+crypto:
+  core_ids: [bitcoin, ethereum, ripple, worldcoin-wld, monad, solana]   # CoinGecko ids
+  top_n: 15                     # plus top N by market cap (stables/wrapped excluded)
+  exclude_symbols: [USDT, USDC, USDE, DAI, FDUSD, USDS, PYUSD, USD1, TUSD, BUSD, USDD, USDTB, BSC-USD,
+                    STETH, WSTETH, WBTC, WETH, WEETH, CBBTC, WBETH, SUSDE, SUSDS, BUIDL, RSETH, LBTC, FIGR_HELOC, JITOSOL]
+  kyberswap:                    # MON/USDC cross-check on Monad
+    token_in: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"   # native MON
+    token_out: "0x754704Bc059F8C67012fEd69BC8A327a5aafb603"  # USDC on Monad (6 dp)
+    amount_mon: 100
+
+stocks:
+  watchlist: [SPYx, QQQx, NVDAx, TSLAx, AAPLx, MSTRx, COINx, HOODx, CRCLx, GOOGLx]   # always priced intraday (DAY pot + Markets)
+  intraday_top_n: 8             # + the top N ranked universe names, the CORE picks and any held stock are priced intraday
+  daily_batch: 20               # universe daily closes (Yahoo, 1y) refreshed for at most N stale tickers per cycle (~once a day each)
+  daily_max_age_h: 20
+  # CORE universe: forward-looking growth names that exist as xStocks. Verified 2026-10-09 against the public
+  # api.xstocks.fi/api/v2/public/assets list (all 1,319 listed) + a live xStocks quote + 6 months of Yahoo daily closes;
+  # all are deployed on Monad. Not available as xStocks (dropped): VST, CCJ, SPOT, RGTI. Re-check: python3 universe_check.py
+  universe:
+    ai_semis:      {label: "AI chips & semis",            tickers: [NVDAx, AMDx, AVGOx, TSMx, MUx, ARMx, ASMLx, MRVLx, ANETx, CRDOx, ALABx, QCOMx, LRCXx, AMATx, KLACx, SMCIx, INTCx]}
+    ai_platforms:  {label: "AI platforms & big tech",     tickers: [PLTRx, MSFTx, METAx, GOOGLx, AMZNx, ORCLx, CRWVx, NBISx, APPx]}
+    crypto_linked: {label: "Crypto-linked",               tickers: [COINx, MSTRx, HOODx, CRCLx, MARAx, RIOTx, IRENx, GLXYx, CORZx, BMNRx, CLSKx, HUTx, WULFx]}
+    energy_infra:  {label: "Energy, nuclear & AI power",  tickers: [CEGx, GEVx, OKLOx, SMRx, NNEx, VRTx, ETNx, TLNx, FSLRx, UUUUx, BWXTx, PWRx, NEEx]}
+    cloud_software: {label: "Cloud, software & cyber",    tickers: [CRWDx, SNOWx, NETx, DDOGx, NOWx, PANWx, SHOPx, ZSx, MDBx, CRMx, ADBEx, TEAMx]}
+    consumer_tech: {label: "Consumer tech & platforms",   tickers: [AAPLx, TSLAx, NFLXx, UBERx, RDDTx, RBLXx, DASHx, ABNBx]}
+    space_defense: {label: "Space & defence tech",        tickers: [RKLBx, ASTSx, LUNRx, KTOSx, AVAVx, RDWx]}
+    quantum:       {label: "Quantum computing",           tickers: [IONQx, QUBTx]}
+    fintech:       {label: "Fintech",                     tickers: [SOFIx, AFRMx, XYZx, PYPLx]}
+
+strategy:                       # shared signal model (used by the DAY sleeve for entries/exits, shown on dashboard)
+  focus_assets: [MON, WLD, XRP]
+  buy_threshold: 0.35           # combined score needed to open a DAY position
+  focus_buy_threshold: 0.30
+  sell_threshold: -0.20         # combined score that closes a DAY position
+  sentiment_max_age_h: 12
+  sentiment_weight: 0.4         # scaled by confidence
+  min_history_h: 4
+
+core:                           # CORE pot: long holds, staggered entry, weekly rebalance (re-picks stocks)
+  targets_pct: {MON: 15, WLD: 12, XRP: 15, BTC: 10, ETH: 8}    # % of CORE pot equity (crypto 60%)
+  stocks_pct: 40                # total % for stocks, split equally across the picks
+  stock_picks_min: 1            # picks = stock budget / min_pick_gbp, clamped to min..max (40% of ~£120 = ~£48 -> 6 picks of ~£8)
+  stock_picks_max: 8
+  min_pick_gbp: 7.5             # smallest target per pick (>= risk.min_trade_size)
+  max_pick_pct: 10              # cap per pick if only a few stocks are eligible (rest stays in cash)
+  max_per_theme: 2              # diversification across stocks.universe themes
+  score_weights: {momentum: 0.55, quality: 0.30, sentiment: 0.15}   # composite, see stockrank.py
+  stock_exclude: [SPYx, QQQx]   # index ETFs: CORE picks single stocks only (edit to allow)
+  tranches: 5                   # build each position in ~5 tranches (target/5 per tranche, >= risk.min_trade_size)
+  max_tranches_per_day: 1       # per asset per UK day
+  dip_vs_avg24_pct: 0           # tranche fires when price <= 24h average * (1 - x%) ("buy the dip") ...
+  fallback_hour_uk: 18          # ... or from this UK hour if no dip happened that day (so ~1 tranche/day)
+  sentiment_delay_score: -0.5   # delay a tranche while fresh sentiment <= this ...
+  sentiment_delay_conf: 0.5     # ... with confidence >= this (tilts timing only, never targets)
+  rebalance_weekday: 0          # 0 = Monday (UK)
+  rebalance_time_uk: "09:00"    # first cycle at/after this time; caught up later that week if missed
+  drift_band_pp: 5              # only trade an asset if |weight - target| > 5 percentage points
+  stop_loss_pct: 20             # per position, from average cost (incl. fees); no take-profit (rebalance trims)
+  # a stopped-out asset stays in cash until the next weekly rebalance, then is rebuilt in tranches
+
+riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mid-cap crypto + niche xStocks, breakout + sentiment
+  crypto:                       # screened every cycle from ONE CoinGecko markets snapshot of the top 300 (2 calls: 250 + 50)
+    top_n: 300
+    max_rank_large: 40          # skip the largest caps (rank <= this): this pot is for small/mid caps
+    min_mcap_usd: 20000000      # anti-scam floor: CoinGecko-listed + >= $20M market cap ...
+    max_mcap_usd: 5000000000    # ... and <= $5B
+    min_vol_usd: 5000000        # ... and >= $5M 24h volume
+    min_vol_mcap: 0.03          # 24h volume / market cap (real turnover)
+    exclude_symbols: [BNB, OKB, LEO, CRO, GT, KCS, BGB, HT, MX, WBT, BMX, NEXO, FTT, HTX, XAUT, PAXG, KAU, KAG, USDG, RLUSD, USDF,
+                      USDX, EURC, EURS, USTC, FRAX, LUSD, CRVUSD, GHO, RUSD, USR, USDO, USYC, OUSG, USTB, BFUSD, SYRUPUSDC, SYRUPUSDT,
+                      BNSOL, MSOL, JUPSOL, BBSOL, SOLVBTC, CLBTC, EBTC, TBTC, METH, CMETH, OSETH, RETH, ETHX, EZETH, PUFETH, SWETH, LSETH,
+                      WHYPE, KHYPE, STHYPE, WAVAX, WSOL, WTRX, WMON, SMON, GMON, SHMON, APRMON]
+    exclude_name_words: [usd, dollar, euro, wrapped, bridged, staked, restaked, "liquid staking", tokenized, xstock, astock,
+                         treasury, "t-bill", gold, fund, " clo", " etf", " bond", vault]
+    watch_n: 12                 # best breakout candidates priced intraday each cycle (+ held + recent candidates)
+    watch_hours: 48             # a candidate stays priced this long after it last screened in (builds momentum history)
+    monad:                      # bonus: Monad-ecosystem tokens (CoinGecko category) outside the top 300, only if a KyberSwap
+      category: monad-ecosystem #   route on Monad for dex_check_usd moves < max_impact_pct (liquidity check); same mcap/vol floors
+      refresh_h: 6
+      dex_check_usd: 200
+      max_impact_pct: 3
+  stocks: [IONQx, QUBTx, RKLBx, ASTSx, LUNRx, RDWx, OKLOx, SMRx, NNEx, UUUUx, IRENx, CORZx, WULFx, CLSKx, BMNRx, MARAx, RIOTx, HUTx, CRWVx, NBISx, SOFIx, HOODx]
+  # breakout + sentiment entry: score -1..1 per candidate (see trader.risk_score), combined with fresh sentiment like DAY
+  entry_score: 0.45             # combined score needed to buy
+  confirm_momentum: 0.0         # intraday momentum (4h/24h/EMA, same model as DAY) must be >= this (needs >= 2h history)
+  min_history_h: 2
+  sentiment_block: -0.3         # no entry while fresh sentiment <= this (conf >= 0.5); exit if <= sentiment_exit (conf >= 0.6)
+  sentiment_exit: -0.5
+  position_pct: 20              # of RISK pot equity per position (£8 of £40); never above max_position_gbp
+  max_position_gbp: 8
+  max_open: 5
+  max_new_per_day: 3
+  cooldown_h: 24                # no re-entry into the same asset within 24h of an exit
+  stop_loss_pct: 12             # from average cost (incl. fees + gas)
+  trail_after_pct: 15           # once the position has been up >= 15% (peak) ...
+  trail_pct: 10                 # ... sell if price falls 10% from its peak
+  max_hold_days: 7
+  drawdown_cap_pct: 30          # RISK equity <= start x (1 - 30%) => no new entries until reviewed (create RISK_RESUME in the repo)
+
+day:                            # DAY sleeve: intraday momentum + sentiment, flat overnight
+  universe: all                 # all priced crypto + xStocks
+  alloc_pct: 25                 # % of DAY sleeve equity per position (focus and others)
+  max_position_pct: 25          # hard cap per position (% DAY sleeve equity)
+  max_open_positions: 3
+  stop_loss_pct: 3
+  take_profit_pct: 5
+  entry_start_uk: "08:00"       # no new entries before this UK time (keeps the book flat overnight)
+  entry_cutoff_uk: "21:00"      # no new entries at/after this UK time
+  flatten_uk: "22:00"           # force-close ALL day positions at/after this UK time (*/15 cron hits 22:00)
+  daily_loss_cap_pct: 5         # of DAY sleeve UK-day start equity; halts new DAY entries for the rest of the day
+
+risk:
+  fee_slippage_pct: 0.3         # applied per side to fill price
+  max_price_age_min: 45         # don't trade on stale prices
+  min_trade_size: 5             # GBP; skip buys (and rebalance trades) smaller than this
+
+gas:                            # simulated Monad network fee per trade (paper), on top of fee_slippage_pct
+  rpc: https://rpc.monad.xyz    # eth_gasPrice fetched every collector cycle
+  gas_per_swap: 200000          # assumed gas units per swap
+  fallback_gbp: 0.001           # used if the RPC/MON price is unavailable or older than max_age_h
+  max_age_h: 6
+
+plans:                          # display-only 'investment plans' for bigger top-ups into the Core pot (no trading)
+  - {topup: 100,  max_picks: 8}
+  - {topup: 500,  max_picks: 12}
+  - {topup: 1000, max_picks: 16, max_per_theme: 3}

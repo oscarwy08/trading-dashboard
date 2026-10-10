@@ -1,0 +1,6 @@
+PAPER scorecard Fri 09 Oct 21:55 UK
+TOTAL Equity £199.70 (-0.15% since £200 start) | Day P&L £-0.19
+vs BTC buy&hold (£) +0.03% | Max DD -0.10% | Win rate 0.00% over 2 closed
+CORE £119.70 (-0.25% vs £120) | day £-0.19 | realised £-0.07 | win 0.00% of 2 | today 15 trades (13 buys, 2 sells), best GOOGLx £-0.03, worst AAPLx £-0.03 | built 7/11 | open: AMDx, ANETx, BTC, ETH, MON, MSFTx, PLTRx, TEAMx, WLD, XRP, ZSx
+DAY  £80.00 (+0.00% vs £80) | day £+0.00 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | entries closed | open: none
+GBP/USD 1.3237 (coingecko, 2026-10-09T20:45 UTC)

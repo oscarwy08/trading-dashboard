@@ -1,18 +1,21 @@
 /* Paper Trader dashboard - static single-page app with hash tabs. Loads data.json (written by dashboard.py) and
-   re-fetches it every 60 s. Tabs: #overview #portfolio #core #day #markets #sentiment #orders; #asset=XRP opens an asset. */
+   re-fetches it every 60 s. Tabs: #overview #portfolio #core #day #risk #markets #sentiment #orders; #asset=XRP opens an asset. */
 (() => {
 'use strict';
 const LC = window.LightweightCharts;
 const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const TZ = 'Europe/London', REFRESH_MS = 60000;
-const TABS = ['overview', 'portfolio', 'core', 'day', 'markets', 'sentiment', 'orders'];
+const TABS = ['overview', 'portfolio', 'core', 'day', 'risk', 'markets', 'sentiment', 'orders'];
 const C = {green: '#00ba7c', red: '#f4212e', blue: '#1d9bf0', mut: '#71767b', txt: '#e7e9ea', grid: '#16181c', line: '#2f3336', grey: '#536471'};
 let D = null, lastGen = null, loadErr = null;
 const S = {tab: 'overview', aSort: {k: 'a', d: 1}, tSort: {k: 't', d: -1}, pSort: {k: 'value', d: -1}, rSort: {k: 'score', d: -1},
+  rcSort: {k: 'comb', d: -1}, rsSort: {k: 'score', d: -1},
   filter: 'all', q: '', eqRange: 'ALL', ccy: 'gbp', ptype: 'candle', dRange: 'ALL', open: null,
   tAsset: '', tSide: '', tSleeve: '', tFrom: '', tTo: '', tLimit: 50, sLimit: 15, sAsset: '', pPot: '', rTheme: ''};
-const POT = {core: 'Core pot', day: 'Day pot'};
-const potTag = s => s ? `<span class="tag ${s === 'core' ? 'blue' : ''}">${esc(POT[s] || s)}</span>` : '';
+const POT = {core: 'Core pot', day: 'Day pot', risk: 'Risk pot'};
+const POTS = ['core', 'day', 'risk'];
+const potTag = s => s ? `<span class="tag ${s === 'core' ? 'blue' : s === 'risk' ? 'risk' : ''}">${esc(POT[s] || s)}</span>` : '';
+const potCash = () => POTS.reduce((a, k) => a + ((D.sleeves[k] || {}).cash || 0), 0);
 const charts = {eq: null, d: null, dsig: null, dsent: null};
 
 /* ---------- formatting ---------- */
@@ -72,7 +75,7 @@ function seg(id, attr, val) { $$('#' + id + ' button').forEach(b => b.classList.
 /* ---------- data helpers ---------- */
 const assetBy = a => (D.assets || []).find(x => x.a === a);
 const posAll = a => (D.positions || []).filter(x => x.asset === a);
-const posBy = a => { const l = posAll(a); return l.find(x => x.sleeve === 'day') || l[0]; };
+const posBy = a => { const l = posAll(a); return l.find(x => x.sleeve === 'day') || l.find(x => x.sleeve === 'risk') || l[0]; };
 const posVal = a => { const l = posAll(a); return l.length ? l.reduce((s, p) => s + (p.value || 0), 0) : null; };
 const themeOf = a => { const r = ((D.sleeves.core || {}).ranking || []).find(x => x.a === a); return r ? r.theme_label : (assetBy(a) || {}).theme || null; };
 const kindOf = a => { const x = assetBy(a); return x ? x.k : /x$/.test(a) ? 'stock' : 'crypto'; };
@@ -97,7 +100,7 @@ function spark(vals) {
   const col = v[v.length - 1] >= v[0] ? C.green : C.red;
   return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><polyline fill="none" stroke="${col}" stroke-width="1.6" points="${pts}"/></svg>`;
 }
-const sideTag = a => a ? `<span class="tag ${a === 'BUY' ? 'buy' : a === 'SELL' ? 'sell' : ''}">${esc(a === 'BUY' ? 'Buy' : a === 'SELL' ? 'Sell' : a === 'HOLD' ? 'Hold' : a === 'SKIP' ? 'Skip' : a)}</span>` : '<span class="muted">-</span>';
+const sideTag = a => a ? `<span class="tag ${a === 'BUY' ? 'buy' : a === 'SELL' ? 'sell' : a === 'TRANSFER' ? 'xfer' : ''}">${esc(a === 'BUY' ? 'Buy' : a === 'SELL' ? 'Sell' : a === 'HOLD' ? 'Hold' : a === 'SKIP' ? 'Skip' : a === 'TRANSFER' ? 'Transfer' : a)}</span>` : '<span class="muted">-</span>';
 const pnlCell = (v, pct) => isNum(v) ? `<span class="${cls(v)}">${fM(v, true)}${isNum(pct) ? ` <span style="opacity:.85">(${fPct(pct)})</span>` : ''}</span>` : '<span class="muted">-</span>';
 
 /* ---------- generic sortable table ---------- */
@@ -139,6 +142,7 @@ function statusWords() {
   const r = D.risk, d = D.sleeves.day || {};
   if (r.kill) return {txt: 'Paused (kill switch on)', c: 'neg'};
   if (d.halted) return {txt: 'Day trading halted for today (daily loss limit hit)', c: 'neg'};
+  if ((D.sleeves.risk || {}).halted) return {txt: 'Risk pot paused (30% drawdown limit) - waiting for review', c: 'neg'};
   if (r.fx_stale) return {txt: 'New buys paused (exchange rate is stale)', c: 'warnc'};
   return {txt: 'All normal', c: 'pos'};
 }
@@ -148,7 +152,7 @@ function renderOverview() {
   const pnl = s.equity - start;
   $('#ov-value').textContent = fM(s.equity);
   $('#ov-pnl').innerHTML = `<span class="${cls(pnl)}">${fM(pnl, true)} (${fPct(s.ret)})</span><span class="muted">all time</span>`;
-  const inv = (D.positions || []).reduce((a, p) => a + (p.value || 0), 0), cash = (Z.core.cash || 0) + (Z.day.cash || 0);
+  const inv = (D.positions || []).reduce((a, p) => a + (p.value || 0), 0), cash = potCash();
   const fees = (D.gas.fees || 0) + (D.gas.paid || 0);
   $('#ov-stats').innerHTML = stat("Today's P&L", `<span class="${cls(s.day_pnl)}">${fM(s.day_pnl, true)}</span>`, '', `${fPct(s.day_pnl_pct)} since midnight UK`) +
     stat('Cash', fM(cash), '', 'ready to invest') + stat('Invested', fM(inv), '', `${(D.positions || []).length} holdings`) +
@@ -164,14 +168,16 @@ function renderOverview() {
   const ip = s.equity ? inv / s.equity * 100 : 0;
   $('#ov-cards').innerHTML =
     `<div class="card"><div class="lbl">Cash vs invested</div><div class="bar2"><span style="width:${ip.toFixed(1)}%;background:var(--blue)"></span><span style="width:${(100 - ip).toFixed(1)}%;background:#536471"></span></div>` +
-    `<p class="plain"><b>${fM(inv)}</b> (${ip.toFixed(0)}%) is invested and <b>${fM(cash)}</b> is cash. The Core pot invests its cash gradually, so cash shrinks over the first days.</p></div>` +
+    `<p class="plain"><b>${fM(inv)}</b> (${ip.toFixed(0)}%) is invested and <b>${fM(cash)}</b> is cash. The Core pot invests its cash gradually; the Risk pot only buys on breakouts, so it can sit in cash for a while.</p></div>` +
     `<div class="card"><div class="lbl">Compared with Bitcoin</div><p class="plain" style="margin-top:10px">${btcWords}</p></div>` +
     `<div class="card"><div class="lbl">Status</div><p class="plain" style="margin-top:10px"><b class="${st.c}">${esc(st.txt)}.</b> ${dayLine} Next Core rebalance: <b>${esc(dlong.format((core.next_rebalance || 0) * 1000))}</b> UK.</p></div>`;
   // pots
   const pot = (k, x, desc) => `<a class="pot" href="#${k}"><div><div class="pot-n">${POT[k]}</div><div class="pot-d">${desc}</div></div>` +
     `<div class="pot-v"><b>${fM(x.equity)}</b><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span></div></a>`;
   $('#ov-pots').innerHTML = pot('core', core, `Long-term holdings · started ${fM0(core.start)} · ${core.open_n} holdings, ${fM(core.cash)} cash`) +
-    pot('day', d, `Short-term trades, flat by ${esc((d.rules || {}).flatten)} UK · started ${fM0(d.start)} · ${d.open_n} open`);
+    pot('day', d, `Short-term trades, flat by ${esc((d.rules || {}).flatten)} UK · started ${fM0(d.start)} · ${d.open_n} open`) +
+    (Z.risk ? pot('risk', Z.risk, `Speculative small caps & niche stocks · started ${fM0(Z.risk.start)} · ${Z.risk.open_n} of ${(Z.risk.rules || {}).max_open} open${Z.risk.halted ? ' · <b class="neg">paused</b>' : ''}`) : '') +
+    ((D.transfers || []).length ? `<div class="note">Pot split ${POTS.map(k => (Z[k] || {}).pct + '%').join(' / ')} (Core / Day / Risk). Cash moved between pots: ${(D.transfers || []).map(x => `${fTs(x.t)} ${fM(x.amount)} ${esc(POT[x.frm] || x.frm)} → ${esc(POT[x.to] || x.to)}`).join(' · ')} (not counted as profit or loss).</div>` : '');
   const cols = [{k: 't', l: 'Time', f: r => esc(fTs(r.t))}, {k: 'side', l: 'Side', f: r => sideTag(r.side)}, {k: 'asset', l: 'Asset', f: r => assetLink(r.asset)},
     {k: 'value', l: 'Value', num: 1, f: r => fM(r.value)}, {k: 'pnl', l: 'P&L', num: 1, f: r => pnlCell(r.pnl)}];
   table($('#ov-orders'), cols, (D.trades || []).slice(0, 6), null, null, {empty: 'No orders yet'});
@@ -212,10 +218,10 @@ function renderEquity() {
 const PAL = ['#1d9bf0', '#8ecdf8', '#0f6fb0', '#c4e4fb', '#4fb3f4', '#0a4a75', '#a9b4bf', '#6a8fae', '#d6dde3', '#3b6e96'];
 function renderPortfolio() {
   const Z = D.sleeves, P = (D.positions || []).filter(p => !S.pPot || p.sleeve === S.pPot);
-  const total = D.stats.equity || 1, cashT = S.pPot ? (Z[S.pPot].cash || 0) : (Z.core.cash || 0) + (Z.day.cash || 0);
+  const total = D.stats.equity || 1, cashT = S.pPot ? (Z[S.pPot].cash || 0) : potCash();
   const inv = P.reduce((a, p) => a + (p.value || 0), 0), unr = P.reduce((a, p) => a + (p.pnl || 0), 0), cost = P.reduce((a, p) => a + (p.cost || 0), 0);
-  $('#pf-stats').innerHTML = stat(S.pPot ? POT[S.pPot] + ' value' : 'Total value', fM(S.pPot ? Z[S.pPot].equity : D.stats.equity), '', S.pPot ? '' : `Core ${fM(Z.core.equity)} · Day ${fM(Z.day.equity)}`) +
-    stat('Cash', fM(cashT), '', S.pPot ? '' : `Core ${fM(Z.core.cash)} · Day ${fM(Z.day.cash)}`) + stat('Holdings value', fM(inv), '', `${P.length} position${P.length === 1 ? '' : 's'}`) +
+  $('#pf-stats').innerHTML = stat(S.pPot ? POT[S.pPot] + ' value' : 'Total value', fM(S.pPot ? Z[S.pPot].equity : D.stats.equity), '', S.pPot ? '' : POTS.map(k => `${POT[k].replace(' pot', '')} ${fM((Z[k] || {}).equity)}`).join(' · ')) +
+    stat('Cash', fM(cashT), '', S.pPot ? '' : POTS.map(k => `${POT[k].replace(' pot', '')} ${fM((Z[k] || {}).cash)}`).join(' · ')) + stat('Holdings value', fM(inv), '', `${P.length} position${P.length === 1 ? '' : 's'}`) +
     stat('Unrealised P&L', `<span class="${cls(unr)}">${fM(unr, true)}</span>`, '', cost ? fPct(unr / cost * 100) + ' on cost' : '') +
     stat('Realised P&L', `<span class="${cls(D.stats.realized)}">${fM(S.pPot ? Z[S.pPot].realized : D.stats.realized, true)}</span>`, '', 'from closed trades');
   const cols = [
@@ -229,7 +235,7 @@ function renderPortfolio() {
     {k: 'pnl_pct', l: 'P&L %', num: 1, f: r => `<span class="${cls(r.pnl_pct)}">${fPct(r.pnl_pct)}</span>`},
     {k: 'alloc', l: 'Allocation', num: 1, sv: r => r.value, f: r => isNum(r.value) ? (r.value / total * 100).toFixed(1) + '%' : '-'},
   ];
-  const foot = `<tr><td>${assetCell('Cash', 'GBP')}</td><td>${S.pPot ? potTag(S.pPot) : '<span class="muted">both</span>'}</td><td></td><td></td><td></td><td class="num"><b style="color:var(--hi)">${fM(cashT)}</b></td><td></td><td></td><td class="num">${(cashT / total * 100).toFixed(1)}%</td></tr>` +
+  const foot = `<tr><td>${assetCell('Cash', 'GBP')}</td><td>${S.pPot ? potTag(S.pPot) : '<span class="muted">all pots</span>'}</td><td></td><td></td><td></td><td class="num"><b style="color:var(--hi)">${fM(cashT)}</b></td><td></td><td></td><td class="num">${(cashT / total * 100).toFixed(1)}%</td></tr>` +
     `<tr class="total"><td>Total</td><td></td><td></td><td></td><td></td><td class="num">${fM(inv + cashT)}</td><td class="num ${cls(unr)}">${fM(unr, true)}</td><td></td><td class="num">${((inv + cashT) / total * 100).toFixed(1)}%</td></tr>`;
   table($('#pf-table'), cols, P, S.pSort, renderPortfolio, {empty: 'No holdings yet', foot, key: r => r.asset, onRow: openAsset});
   // donut (by asset, both pots combined unless filtered) + cash
@@ -338,6 +344,49 @@ function renderDay() {
   $('#day-tr-sub').innerHTML = `${tr.length} trade${tr.length === 1 ? '' : 's'} · realised <span class="${cls(realT)}">${fM(realT, true)}</span>`;
 }
 
+/* ---------- risk pot ---------- */
+const fUsd = v => !isNum(v) ? '-' : v >= 1e9 ? '$' + (v / 1e9).toFixed(1) + 'B' : v >= 1e6 ? '$' + (v / 1e6).toFixed(0) + 'M' : '$' + Math.round(v).toLocaleString('en-GB');
+function renderRiskPot() {
+  const r = D.sleeves.risk; if (!r) return; const R = r.rules || {}, sc = r.screen || {};
+  $('#risk-intro').innerHTML = `A <b>${fM0(r.start)}</b> pot (${r.pct}% of the account) for <b>high-risk</b> bets: small and mid-size crypto coins and niche stocks ` +
+    `(quantum, space, nuclear, bitcoin miners). It buys on a <b>breakout</b> - a strong move up with heavy trading, near its recent high - checked against news sentiment. ` +
+    `Each position is at most <b>${R.pos_pct}% of the pot (≤ £${R.max_pos})</b>, up to <b>${R.max_open}</b> at a time and ${R.per_day} new per day. ` +
+    `Exits: <b>-${R.stop}%</b> stop-loss; once a position has been up <b>+${R.trail_after}%</b> it is sold if it falls <b>${R.trail}%</b> from its peak (locks in gains); anything still held after <b>${R.hold} days</b> is sold. ` +
+    `If the pot falls <b>${R.cap}%</b>, new trades stop until reviewed. Only coins listed on CoinGecko with ≥ ${fUsd(R.min_mcap)} market cap and ≥ ${fUsd(R.min_vol)} daily volume (no stablecoins, wrapped or exchange tokens). Expect big swings.`;
+  const st = D.risk.kill ? ['Paused', 'neg', 'kill switch on'] : r.halted ? ['Paused', 'neg', `down ${fPct(r.dd_pct)} - waiting for review`] : ['Active', 'pos', `${r.new_today || 0} of ${R.per_day} new trades today`];
+  $('#risk-stats').innerHTML = stat('Risk pot value', fM(r.equity), '', `<span class="${cls(r.pnl)}">${fM(r.pnl, true)} (${fPct(r.ret)})</span> since start`) +
+    stat('Cash', fM(r.cash), '', `${fM(r.invested)} invested`) + stat('Open positions', `${r.open_n} / ${R.max_open}`, '', `max £${R.max_pos} each`) +
+    stat('Status', esc(st[0]), st[1], st[2]) + stat('Drawdown', `<span class="${cls(r.dd_pct)}">${fPct(r.dd_pct)}</span>`, '', `limit -${R.cap}% · win rate ${isNum(r.win_rate) ? r.win_rate.toFixed(0) + '%' : '-'} of ${r.closed}`);
+  const P = (D.positions || []).filter(p => p.sleeve === 'risk');
+  const cols = [{k: 'asset', l: 'Asset', asc: 1, f: x => assetCell(x.asset)}, {k: 'opened', l: 'Opened', f: x => esc(fTs(x.opened))},
+    {k: 'entry', l: 'Avg buy', num: 1, f: x => fP(x.entry)}, {k: 'now', l: 'Now', num: 1, f: x => fP(x.now)}, {k: 'value', l: 'Value', num: 1, f: x => fM(x.value)},
+    {k: 'pnl', l: 'P&L', num: 1, f: x => pnlCell(x.pnl, x.pnl_pct)},
+    {k: 'stop', l: 'Stop / trailing', num: 1, nosort: 1, f: x => `<span class="neg">${fP(x.stop)}</span> / ${x.trail_on ? `<span class="pos">${fP(x.trail)}</span>` : `<span class="muted">from ${fP(x.trail_arm)}</span>`}`},
+    {k: 'expires', l: 'Sold by', f: x => `${esc(fTs(x.expires))}<div class="muted small">${esc(until(x.expires))}</div>`}];
+  table($('#risk-pos'), cols, P, {k: 'opened', d: -1}, renderRiskPot, {empty: 'No open risk positions - waiting for a breakout', key: x => x.asset, onRow: openAsset});
+  $('#risk-open-sub').textContent = `${P.length} open · stop -${R.stop}% · trailing ${R.trail}% after +${R.trail_after}% · max ${R.hold} days`;
+  const priced = new Set((D.assets || []).map(a => a.a));
+  $('#risk-cand-sub').innerHTML = `Ranked by breakout score (-1 to +1, mixed with fresh news sentiment). Buys at ≥ ${R.entry} when it is a real breakout, the short-term trend agrees and no limit blocks it. Updated ${esc(ago(r.status_t))}.`;
+  table($('#risk-cands'), [
+    {k: 'a', l: 'Asset', asc: 1, f: x => assetCell(x.a, x.kind === 'stock' ? (themeOf(x.a) || 'Stock') : 'Crypto')},
+    {k: 'comb', l: 'Score', f: x => scoreBar(x.comb)}, {k: 'mom', l: 'Short-term trend', num: 1, f: x => isNum(x.mom) ? `<span class="${cls(x.mom)}">${x.mom.toFixed(2)}</span>` : '<span class="muted">-</span>'},
+    {k: 'why', l: 'Why', wrap: 1, f: x => esc(x.why.split(' | no: ')[0])},
+    {k: 'block', l: 'Decision', wrap: 1, sv: x => x.block ? 1 : 0, f: x => x.block ? `<span class="muted small">${esc(x.block)}</span>` : '<span class="tag buy">Bought</span>'}],
+    r.cands || [], S.rcSort, renderRiskPot, {empty: 'No candidates yet', key: x => x.a, onRow: a => priced.has(a) && openAsset(a), limit: 25});
+  $('#risk-screen-sub').innerHTML = `Every 15 minutes the top ${R.top_n} coins by market cap are screened: ${sc.liquid ?? '-'} pass the size/volume/scam filters, ${sc.ok ?? '-'} look like a breakout right now` +
+    `${sc.monad ? ` (${sc.monad} Monad-ecosystem tokens checked for KyberSwap liquidity)` : ''}. The best ones are tracked live (Markets tab). Updated ${esc(ago(sc.t))}.`;
+  table($('#risk-screen'), [
+    {k: 'a', l: 'Coin', asc: 1, f: x => assetCell(x.a, (x.name || '') + (x.monad ? ' · Monad' : ''))}, {k: 'rank', l: 'Rank', num: 1, asc: 1, f: x => '#' + x.rank},
+    {k: 'mcap', l: 'Market cap', num: 1, f: x => fUsd(x.mcap)}, {k: 'vol', l: '24h volume', num: 1, f: x => fUsd(x.vol)},
+    {k: 'c24', l: '24h', num: 1, f: x => `<span class="${cls(x.c24)}">${fPct(x.c24, 1)}</span>`}, {k: 'c7', l: '7d', num: 1, f: x => `<span class="${cls(x.c7)}">${fPct(x.c7, 1)}</span>`},
+    {k: 'score', l: 'Breakout', f: x => scoreBar(x.score)},
+    {k: 'ok', l: 'Status', sv: x => x.ok ? 0 : 1, asc: 1, f: x => x.ok ? '<span class="tag blue">Breakout</span>' : `<span class="muted small">${esc((x.why.split(' | no: ')[1] || ''))}</span>`}],
+    sc.top || [], S.rsSort, renderRiskPot, {empty: 'Screen not run yet', key: x => x.a, onRow: a => priced.has(a) && openAsset(a), limit: 25});
+  const tr = (D.trades || []).filter(t => t.sleeve === 'risk'), real = tr.reduce((a, t) => a + (t.pnl || 0), 0);
+  table($('#risk-trades'), orderCols().filter(c => c.k !== 'sleeve'), tr, {k: 't', d: -1}, renderRiskPot, {empty: 'No risk pot orders yet', limit: 30});
+  $('#risk-tr-sub').innerHTML = `${tr.filter(t => t.side !== 'TRANSFER').length} orders · realised <span class="${cls(real)}">${fM(real, true)}</span>`;
+}
+
 /* ---------- markets ---------- */
 function renderMarkets() {
   const q = S.q.trim().toLowerCase();
@@ -426,7 +475,8 @@ function renderRisk() {
   const kv = [['Kill switch', r.kill ? '<b class="neg">ON - all trading paused</b>' : 'off'],
     ['Day pot loss limit', r.halted ? `<b class="neg">HIT</b> - no new day trades for ${esc(r.day)}` : `ok · ${fPct((D.sleeves.day || {}).day_pnl_pct)} today (limit -${l.daily_cap}%)`],
     ['Day pot positions', `${(D.sleeves.day || {}).open_n ?? '-'} of max ${l.max_open} · ${l.max_pos_pct}% of the pot each`],
-    ['Stops', `Day pot -${l.stop}% / +${l.take}% · Core pot -${l.core_stop}% from average cost`],
+    ['Stops', `Day pot -${l.stop}% / +${l.take}% · Core pot -${l.core_stop}% from average cost · Risk pot -${l.risk_stop}% + trailing`],
+    ['Risk pot drawdown limit', (D.sleeves.risk || {}).halted ? `<b class="neg">HIT</b> - no new risk trades until reviewed` : `ok · ${fPct((D.sleeves.risk || {}).dd_pct)} vs base (limit -${l.risk_cap}%)`],
     ['Costs per trade', `${l.fee}% fee + slippage, plus Monad gas ${fGas(g.gbp ?? g.fallback)} · min trade £${l.min_trade}`]];
   if (r.last_halt) kv.push(['Last halt', `${esc(fTs(r.last_halt.t))} - ${esc(r.last_halt.reason)}`]);
   $('#risk-box').innerHTML = kv.map(([k, v]) => `<div>${esc(k)}</div><div>${v}</div>`).join('');
@@ -479,7 +529,8 @@ function renderPriceChart(a, p) {
   s.setMarkers((D.trades || []).filter(t => t.asset === a && t.t >= t0 && t.t <= t1).map(t => ({time: snap(t.t), position: t.side === 'BUY' ? 'belowBar' : 'aboveBar',
     color: t.side === 'BUY' ? C.green : C.red, shape: t.side === 'BUY' ? 'arrowUp' : 'arrowDown',
     text: t.side === 'BUY' ? `B ${fM(t.value)}` : `S ${isNum(t.pnl) ? fM(t.pnl, true) : ''}`})).sort((x, y) => x.time - y.time));
-  if (p) { const f = usd ? (p.now_usd && p.now ? p.now_usd / p.now : 1) : 1, tg = p.sleeve === 'core' ? 'core' : 'day';
+  if (p) { const f = usd ? (p.now_usd && p.now ? p.now_usd / p.now : 1) : 1, tg = p.sleeve;
+    if (isNum(p.trail)) s.createPriceLine({price: p.trail * f, color: C.green, lineStyle: LC.LineStyle.Dotted, lineWidth: 1, axisLabelVisible: true, title: 'trailing stop'});
     s.createPriceLine({price: p.entry * f, color: C.blue, lineStyle: LC.LineStyle.Dashed, lineWidth: 1, axisLabelVisible: true, title: tg + ' avg buy'});
     if (isNum(p.stop)) s.createPriceLine({price: p.stop * f, color: C.red, lineStyle: LC.LineStyle.Dotted, lineWidth: 1, axisLabelVisible: true, title: tg + ' stop'});
     if (isNum(p.take)) s.createPriceLine({price: p.take * f, color: C.green, lineStyle: LC.LineStyle.Dotted, lineWidth: 1, axisLabelVisible: true, title: 'target'}); }
@@ -522,7 +573,7 @@ function renderSentTimeline(a) {
 }
 
 /* ---------- tabs / routing ---------- */
-const RENDER = {overview: () => { renderOverview(); renderEquity(); }, portfolio: renderPortfolio, core: renderCore, day: renderDay,
+const RENDER = {overview: () => { renderOverview(); renderEquity(); }, portfolio: renderPortfolio, core: renderCore, day: renderDay, risk: renderRiskPot,
   markets: renderMarkets, sentiment: renderSentiment, orders: renderOrders};
 const safe = (name, fn) => { try { fn(); } catch (e) { console.error('render ' + name + ' failed:', e); } };
 function showTab(t) {
