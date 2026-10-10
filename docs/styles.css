@@ -199,3 +199,4 @@ input[type=search]{min-width:0;width:100%}.tools{width:100%}#updated-ago{display
 .tipi{opacity:.55;font-size:.85em;cursor:help}
 .stat[title],th[title],.g-row[title]{cursor:help}
 .tg-row[data-a],.pick[data-a]{cursor:pointer}
+.note.loan { border-left: 3px solid var(--accent, #6b8afd); }   /* v7.3 inter-pot loans */

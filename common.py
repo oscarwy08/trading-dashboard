@@ -61,7 +61,27 @@ CREATE TABLE IF NOT EXISTS state(key TEXT PRIMARY KEY, value TEXT);
 CREATE TABLE IF NOT EXISTS transfers(ts TEXT, from_sleeve TEXT, to_sleeve TEXT, amount REAL, reason TEXT);
 -- daily closes (USD) of the CORE stock universe, used for the weekly ranking (stockrank.py)
 CREATE TABLE IF NOT EXISTS daily_closes(asset TEXT, d TEXT, close REAL, PRIMARY KEY(asset, d));
+-- v7.3: temporary loans between pots INSIDE one account (never crypto<->stocks) for an exceptional setup. The lender keeps a
+-- receivable, the borrower a liability: pot equity = cash + positions + lent - borrowed (outstanding = amount - repaid), so a
+-- loan never shows as P&L; repaid (principal only) when the borrower's position closes; P&L stays with the borrower.
+CREATE TABLE IF NOT EXISTS loans(id INTEGER PRIMARY KEY, ts TEXT, account TEXT, lender TEXT, borrower TEXT, sub TEXT, asset TEXT,
+  amount REAL, repaid REAL DEFAULT 0, status TEXT DEFAULT 'open', repaid_ts TEXT, reason TEXT);
 """
+
+def loans_open(con):
+    """Outstanding loans: [dict(id, account, lender, borrower, sub, asset, amount, repaid, out)] (v7.3)."""
+    try:
+        return [dict(id=r[0], account=r[1], lender=r[2], borrower=r[3], sub=r[4], asset=r[5], amount=r[6], repaid=r[7] or 0.0, out=r[6] - (r[7] or 0.0), ts=r[8])
+                for r in con.execute("SELECT id, account, lender, borrower, sub, asset, amount, repaid, ts FROM loans WHERE status='open' ORDER BY id")]
+    except Exception: return []
+
+def loan_net(con):
+    """{(pot, account): lent - borrowed} of the outstanding loans (v7.3; 0 for cells without loans)."""
+    out = {}
+    for l in loans_open(con):
+        out[(l["lender"], l["account"])] = out.get((l["lender"], l["account"]), 0.0) + l["out"]
+        out[(l["borrower"], l["account"])] = out.get((l["borrower"], l["account"]), 0.0) - l["out"]
+    return out
 
 def funding(c=None):
     """v6 configured funding per pot x account, e.g. {'core': {'crypto': 50.0, 'stocks': 50.0}, ...} (config accounts.funding).

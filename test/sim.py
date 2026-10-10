@@ -215,6 +215,10 @@ acash = {(r[0], r[1]): r[2] for r in con.execute("SELECT sleeve, account, amount
 arecon = {(s, a): FUND[s][a] - sum(x["value"] + (x["gas"] or 0) for x in tr if x["sleeve"] == s and common.acct_of(x["klass"]) == a and x["side"] == "BUY")
           + sum(x["value"] - (x["gas"] or 0) for x in tr if x["sleeve"] == s and common.acct_of(x["klass"]) == a and x["side"] == "SELL")
           for s in common.SLEEVES for a in common.ACCOUNTS}
+# v7.3: inter-pot loans move cash inside one account (borrower +amount -repaid, lender -amount +repaid); never across accounts
+for l_ in con.execute("SELECT account, lender, borrower, amount, repaid FROM loans"):
+    net_ = l_[3] - (l_[4] or 0)
+    recon[l_[2]] += net_; recon[l_[1]] -= net_; arecon[(l_[2], l_[0])] += net_; arecon[(l_[1], l_[0])] -= net_
 n_cross = con.execute("SELECT COUNT(*) FROM transfers WHERE from_account IS NOT NULL AND from_account != to_account").fetchone()[0]
 eqrow = con.execute("SELECT equity, cash, crypto, stocks, crypto_cash, stocks_cash, accts FROM equity ORDER BY ts DESC LIMIT 1").fetchone()
 acc_eq_ok = abs(eqrow["crypto"] + eqrow["stocks"] - eqrow["equity"]) < 1e-4 and abs(eqrow["crypto_cash"] + eqrow["stocks_cash"] - eqrow["cash"]) < 1e-6
@@ -331,6 +335,24 @@ print(f"account transfer £{amt:.2f} risk stocks->crypto: cash {round(a1['risk/s
       "| overdraw refused", over)
 assert over and amt > 0 and abs(b1["risk"]["crypto"] - b0["risk"]["crypto"] - amt) < 1e-9 and abs(b1["risk"]["stocks"] - b0["risk"]["stocks"] + amt) < 1e-9, "account transfer baselines"
 assert all(abs((st1[a]["equity"] - st1[a]["start"]) - (st0[a]["equity"] - st0[a]["start"])) < 1e-6 for a in st0), "account transfer is not P&L"
+con.close()
+
+# ---- v7.3: inter-pot loans taken during the random run (exceptional setups short of cash) ----
+con = sqlite3.connect(SIM); con.row_factory = sqlite3.Row
+LNS = [dict(r) for r in con.execute("SELECT * FROM loans ORDER BY id")]
+held = {(r[0], r[1]) for r in con.execute("SELECT sleeve, asset FROM positions")}
+lcash = {(r[0], r[1]): r[2] for r in con.execute("SELECT sleeve, account, amount FROM acct_cash")}
+capc = float(common.cfg()["loans"]["max_outstanding_pct"]) / 100
+for l in LNS:
+    assert l["lender"] != l["borrower"] and l["lender"] in common.SLEEVES and l["borrower"] in ("day", "risk") and l["account"] in common.ACCOUNTS, f"loan shape {l}"
+    assert -1e-9 <= (l["repaid"] or 0) <= l["amount"] + 1e-9, f"repaid <= amount {l}"
+    assert l["borrower"] != "day" or l["sub"] == "burst", f"only DAY burst setups borrow {l}"
+    if l["status"] == "open": assert (l["borrower"], l["asset"]) in held or lcash[(l["borrower"], l["account"])] < 0.01, f"closed position's loan not repaid {l}"
+    else: assert abs(l["repaid"] - l["amount"]) < 1e-6, f"repaid loan fully repaid {l}"
+    out_at = sum(x["amount"] for x in LNS if x["account"] == l["account"] and x["ts"] <= l["ts"] and (x["repaid_ts"] is None or x["repaid_ts"] > l["ts"]))
+    assert out_at <= capc * 100 + 0.02, f"outstanding £{out_at:.2f} > cap at {l['ts']}"
+print(f"v7.3 loans in the random run: {len(LNS)} taken ({sum(1 for l in LNS if l['status'] == 'repaid')} repaid, {sum(1 for l in LNS if l['status'] == 'open')} open): "
+      + "; ".join(f"{l['borrower']}<-{l['lender']} £{l['amount']:.2f} {l['asset']} ({l['account']})" for l in LNS[:8]))
 con.close()
 
 # ---- v6: the real account split on a copy of the LIVE DB (no reset), then the settlement inside each account ----
@@ -519,6 +541,8 @@ con.close(); V7.unlink(); common.DB = SIM
 import subprocess
 r_ = subprocess.run([sys.executable, str(HERE / "test" / "test_universe.py")], capture_output=True, text=True); print(r_.stdout.strip())
 assert r_.returncode == 0, "test_universe.py (DAY universe filter + sentiment mapping)"
+r_ = subprocess.run([sys.executable, str(HERE / "test" / "test_loans.py")], capture_output=True, text=True); print(r_.stdout.strip()[-1500:])
+assert r_.returncode == 0, "test_loans.py (v7.3 inter-pot loans: triggers, lenders, CORE tranche reserve, cap, repayment)"
 print("v7 DAY checks passed")
 
 print("ALL CHECKS PASSED")

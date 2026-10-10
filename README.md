@@ -3,6 +3,27 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7.3 (2026-10-10): temporary inter-pot loans (same account only, paper only)
+- A RISK or DAY pot that lacks the cash for an **exceptional** setup may borrow from another pot **in the same account**
+  (crypto lends to crypto, stocks to stocks; never across accounts). Exceptional = RISK setup score >= 0.65 with the
+  intraday trend agreeing (momentum > 0), or DAY burst confidence >= 0.75 with EV after costs > 0 (config `loans:`).
+- Lenders, in order: CORE's uninvested cash, then the other short-term pot's cash. CORE never lends what it needs today
+  (the next tranche of every CORE holding still being built that has not had today's tranche, plus queued CORE buys).
+  A pot that owes money does not lend, and a pot borrows for one position at a time.
+- Size: enough for ONE position (min trade £5, at most that pot's normal max position); no loan if the trade still could
+  not reach £5. Total outstanding per account <= `loans.max_outstanding_pct` (20%) of the account's starting value.
+- Accounting: table `loans` (lender, borrower, sub, asset, amount, repaid, status) and LOAN / REPAY rows on the Orders tab
+  (filter "Loans between pots"). The lender keeps a receivable, the borrower a debt, so a loan never shows as P&L
+  (pot value = cash + positions + lent - borrowed; account totals unchanged). When the position closes the principal is
+  repaid to the lender first (partly if the borrower is short; the rest is retried every cycle); the P&L stays with the
+  borrower. The DAY burst sub-strategy carries its own loans in the Day ledger (budget = cash + positions - owed).
+- Dashboard: Overview pots and the Core/Day/Risk tabs show e.g. "Borrowed £8.00 from Core for STRK" / "Lent £8.00 to
+  Risk"; data.json `loans` + `loan_rules`; daily_summary shows pot values incl. loans plus outstanding / repaid loans.
+- Tests: `python3 test/test_loans.py` (throwaway DB copy: RISK borrows from CORE, repays on close with the loss kept by RISK,
+  CORE tranche reserve -> DAY lends, 20% cap, score < 0.65 -> no loan, DAY burst loan at confidence 0.85 but not at 0.70
+  or EV < 0); check_data.py checks lent = borrowed per account, the cap and pot value = cash + invested + lent - borrowed;
+  test/sim.py checks every loan of its random run and runs test_loans.py.
+
 ## v7.2 (2026-10-10): wider DAY crypto universe (paper only)
 - **Universe** (`crypto.day_universe` in config.yaml, built by collector.py from the top-300 CoinGecko snapshot it already
   fetches - no extra price calls): the unchanged top-N base coins **plus** every coin with market cap >= $50M, 24h volume
@@ -263,6 +284,7 @@ migrate_v5_xstocks.py one-off xStocks -> normal tickers migration (idempotent; r
 ingest_sentiment.py   loads data/sentiment/*.json into SQLite
 reset_sleeves.py      DISABLED (superseded by great_reset.py)
 great_reset.py        one-off great reset 2026-10-10: archive to data/archive/ + fresh £200 v7 start (refuses to run twice)
+test/test_loans.py    v7.3 inter-pot loans (borrow / repay / reserve / cap / burst)
 test/test_universe.py v7.2 DAY crypto universe filter + sentiment symbol mapping
 test/check_data.py    v7.1 reconciliation of docs/data.json (every total = sum of its parts; run by ci_cycle.sh + check.js)
 test/sim.py           backtest-style dry run on a throwaway DB copy (simulated clock + synthetic prices); deletes the copy.

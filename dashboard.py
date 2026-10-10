@@ -5,7 +5,7 @@ import hashlib, json, os, re
 from bisect import bisect_right
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-from common import (ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
+from common import (loans_open, ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
                     transfer_adj, transfer_adj_acct, usd_gbp)
 import daypot, markets, stockrank, trader
 
@@ -56,19 +56,23 @@ def day_ledger(con, c, positions, acash, base):
     DY = c["day"]; sh = daypot.sub_shares(DY); since = (json.loads((con.execute("SELECT value FROM state WHERE key='account_split'").fetchone() or ["null"])[0]) or {}).get("ts", "")
     dp = [p for p in positions if p["sleeve"] == "day"]
     raw = {(r["asset"]): r["cost"] for r in con.execute("SELECT asset, cost FROM positions WHERE sleeve='day'")}
-    real = daypot.sub_realized(con, since)
+    real = daypot.sub_realized(con, since); LO = loans_open(con)
+    lent_ac = {ac: sum(l["out"] for l in LO if l["lender"] == "day" and l["account"] == ac) for ac in ACCOUNTS}     # v7.3 loans
     L = daypot.sub_ledger({ac: base["day"][ac] for ac in ACCOUNTS}, {ac: acash.get(("day", ac), 0.0) for ac in ACCOUNTS},
-                          [dict(sub=p.get("sub", "momentum"), acct=p["acct"], cost=raw.get(p["asset"], p["cost"]), value=p["value"]) for p in dp], real, sh, ACCOUNTS)
+                          [dict(sub=p.get("sub", "momentum"), acct=p["acct"], cost=raw.get(p["asset"], p["cost"]), value=p["value"]) for p in dp], real, sh, ACCOUNTS,
+                          borrowed={(sb, ac): sum(l["out"] for l in LO if l["borrower"] == "day" and l["account"] == ac and l["sub"] == sb) for sb in daypot.SUBS for ac in ACCOUNTS},
+                          lent=lent_ac)
     R2 = lambda x: round(x + 0.0, 2); out = {}
     for ac in ACCOUNTS:
-        cash_ac = R2(acash.get(("day", ac), 0.0)); cell = {}; left = cash_ac
+        cash_ac = R2(acash.get(("day", ac), 0.0)); cell = {}; left = cash_ac; left_l = R2(lent_ac[ac])
         for i, sb in enumerate(daypot.SUBS):
             ps = [p for p in dp if p["acct"] == ac and p.get("sub", "momentum") == sb]
             val = R2(sum(p["value"] or 0 for p in ps)); cost = R2(sum(p["cost"] or 0 for p in ps))
             cash_ = left if i == len(daypot.SUBS) - 1 else R2(L[ac][sb]["cash"]); left = R2(left - cash_)
             st_ = R2(sh[sb] * base["day"][ac])
-            eq_ = R2(cash_ + val)
-            cell[sb] = dict(start=st_, budget=eq_, cash=cash_, free=R2(max(0.0, min(cash_, cash_ac))), value=val, cost=cost,
+            ow = R2(L[ac][sb]["owed"]); ln = left_l if i == len(daypot.SUBS) - 1 else R2(L[ac][sb]["lent"]); left_l = R2(left_l - ln)
+            eq_ = R2(cash_ + val + ln - ow)          # v7.3: + its share of money the Day pot lent - what it borrowed
+            cell[sb] = dict(start=st_, budget=eq_, cash=cash_, free=R2(max(0.0, min(cash_, cash_ac))), value=val, cost=cost, owed=ow, lent=ln,
                             open_pnl=R2(sum(p["pnl"] or 0 for p in ps)), realized=R2(real.get((sb, ac), 0.0)), pnl=R2(eq_ - st_), open_n=len(ps))
         cell["residual"] = round(L[ac]["residual"], 4); out[ac] = cell
     out["all"] = {sb: {k: (sum(out[ac][sb][k] for ac in ACCOUNTS) if k == "open_n" else R2(sum(out[ac][sb][k] for ac in ACCOUNTS)))
@@ -295,6 +299,18 @@ def build(con):
             trades.append(dict(id=-(i * 2 + (sgn > 0) + 1), t=ep(r["ts"]), sleeve=sl, acct=ac, kind=r["kind"] or "pot", side="TRANSFER", asset="CASH", klass="cash", qty=None,
                                price=None, fill=None, usd=None, fx=None, value=r2(sgn * r["amount"]), fee=0, pnl=None, gas=None,
                                reason=f"£{r['amount']:.2f} cash {lbl(r['from_sleeve'], fa)} -> {lbl(r['to_sleeve'], ta)}: {r['reason']}"))
+    # v7.3 inter-pot loans: LOAN rows (borrower +, lender -) and REPAY rows (principal back), like TRANSFER rows (no fees)
+    for r in con.execute("SELECT * FROM loans ORDER BY id"):
+        sub_ = f" ({r['sub']})" if r["sub"] else ""
+        for sl, sgn in ((r["borrower"], 1), (r["lender"], -1)):
+            trades.append(dict(id=-(10 ** 6 + r["id"] * 4 + (sgn > 0)), t=ep(r["ts"]), sleeve=sl, acct=r["account"], kind="loan", side="LOAN", asset=r["asset"], klass="cash",
+                               qty=None, price=None, fill=None, usd=None, fx=None, value=r2(sgn * r["amount"]), fee=0, pnl=None, gas=None, loan_id=r["id"],
+                               reason=f"{POTN.get(r['borrower'])}{sub_} borrowed £{r['amount']:.2f} from {POTN.get(r['lender'])} ({ACN[r['account']]}) for {r['asset']}" + (f" - {r['reason'].split(': ', 1)[-1]}" if r["reason"] else "")))
+            if (r["repaid"] or 0) > 0.004:
+                trades.append(dict(id=-(10 ** 6 + r["id"] * 4 + 2 + (sgn > 0)), t=ep(r["repaid_ts"] or r["ts"]), sleeve=sl, acct=r["account"], kind="loan", side="REPAY", asset=r["asset"], klass="cash",
+                                   qty=None, price=None, fill=None, usd=None, fx=None, value=r2(-sgn * r["repaid"]), fee=0, pnl=None, gas=None, loan_id=r["id"],
+                                   reason=f"{POTN.get(r['borrower'])}{sub_} repaid £{r['repaid']:.2f} of £{r['amount']:.2f} to {POTN.get(r['lender'])} ({ACN[r['account']]}) - {r['asset']} closed"
+                                          + ("" if r["status"] == "repaid" else f"; £{r['amount'] - r['repaid']:.2f} still owed")))
     trades.sort(key=lambda x: (x["t"], x["id"]), reverse=True)
 
     # ---- CORE plan / DAY status ----
@@ -385,16 +401,17 @@ def build(con):
     #   P&L = equity - start; pot = sum of its two cells; account = sum of its three pot cells; total = sum of the pots.
     #   (The equity HISTORY - chart, max drawdown - still comes from the stored equity rows.)
     R2 = lambda x: round(x + 0.0, 2)
-    sleeves = {}
+    sleeves = {}; LO = loans_open(con)
     for sl in SLEEVES:
         ss = stats(con, sl); sp = [p for p in positions if p["sleeve"] == sl]
         cells = {}
         for ac in ACCOUNTS:                                   # v6: the pot's slice of each account
             xs = stats(con, sl, ac); ap = [p for p in sp if p["acct"] == ac]; ff = fees[sl][ac]
             inv_ = R2(sum(p["value"] or 0 for p in ap)); cash_ = R2(acash.get((sl, ac), 0.0))
-            eq_ = R2(cash_ + inv_)
+            lent_ = R2(sum(l["out"] for l in LO if l["lender"] == sl and l["account"] == ac)); owed_ = R2(sum(l["out"] for l in LO if l["borrower"] == sl and l["account"] == ac))
+            eq_ = R2(cash_ + inv_ + lent_ - owed_)                # v7.3: + money lent to another pot - money borrowed from one
             cells[ac] = dict(start=r2(base[sl][ac]), target=r2((c.get("accounts") or {}).get("funding", {}).get(sl, {}).get(ac)),
-                             equity=eq_, cash=cash_, invested=inv_, open_n=len(ap),
+                             equity=eq_, cash=cash_, invested=inv_, lent=lent_, borrowed=owed_, open_n=len(ap),
                              pnl=R2(eq_ - R2(base[sl][ac])), ret=round((eq_ / base[sl][ac] - 1) * 100, 3) if base[sl][ac] else None,
                              realized=r2(xs["realized"]), unrealized=R2(sum(p["pnl"] or 0 for p in ap)), fees=r2(sum(ff.values())))
         tot = lambda k: R2(sum(cells[ac][k] for ac in ACCOUNTS))
@@ -403,7 +420,7 @@ def build(con):
                            pnl=tot("pnl"), realized=tot("realized"), unrealized=tot("unrealized"),
                            win_rate=round(ss["win_rate"] * 100, 1) if ss["win_rate"] is not None else None, closed=ss["closed"],
                            trades=ss["trades"], cash=tot("cash"), open_n=len(sp), max_dd=round(ss["max_dd"] * 100, 3),
-                           invested=tot("invested"), fees=tot("fees"))
+                           invested=tot("invested"), fees=tot("fees"), lent=tot("lent"), borrowed=tot("borrowed"))
         sleeves[sl]["accts"] = cells
     cur_eq = R2(sum(sleeves[s_]["equity"] for s_ in SLEEVES)); tstart_ = R2(sum(sleeves[s_]["start"] for s_ in SLEEVES))
     ceq = sleeves["core"]["equity"] or 0
@@ -466,7 +483,7 @@ def build(con):
         ff = {k: sum(fees[s_][ac][k] for s_ in SLEEVES) for k in fees["core"][ac]}
         accounts[ac] = dict(label=(AC.get(ac) or {}).get("label", ac), where=(AC.get(ac) or {}).get("where", ""),
                             start=st_, target=r2(sum(float((AC.get("funding") or {}).get(s_, {}).get(ac, 0)) for s_ in SLEEVES)),
-                            equity=eq_, cash=cash_, invested=inv_, pnl=sm("pnl"),
+                            equity=eq_, cash=cash_, invested=inv_, pnl=sm("pnl"), lent=sm("lent"), borrowed=sm("borrowed"),
                             ret=round((eq_ / st_ - 1) * 100, 3) if st_ else None, open_n=len(ap),
                             realized=sm("realized"), unrealized=sm("unrealized"), closed=xs["closed"], trades=xs["trades"],
                             win_rate=round(xs["win_rate"] * 100, 1) if xs["win_rate"] is not None else None, max_dd=round(xs["max_dd"] * 100, 3),
@@ -489,6 +506,11 @@ def build(con):
         themes=[dict(key=k, label=v.get("label", k), watch=bool(v.get("watch")), n=len(v.get("tickers", []))) for k, v in (c["stocks"].get("universe") or {}).items()]
                + [dict(key=k, label=l, watch=True, n=sum(1 for x in (CC.get("watch_ids") or {}).values() if x == k)) for k, l in cth.items()]
                + [dict(key=k, label=l, watch=False, n=sum(1 for x in assets if x.get("tk") == k), crypto=True) for k, l in CTL.items()],
+        loans=[dict(id=r["id"], t=ep(r["ts"]), account=r["account"], lender=r["lender"], borrower=r["borrower"], sub=r["sub"], asset=r["asset"],
+                    amount=r2(r["amount"]), repaid=r2(r["repaid"] or 0), out=r2(r["amount"] - (r["repaid"] or 0)), status=r["status"],
+                    repaid_t=ep(r["repaid_ts"]) if r["repaid_ts"] else None, reason=r["reason"])
+               for r in con.execute("SELECT * FROM loans WHERE status='open' OR ts>=? ORDER BY id DESC LIMIT 50", ((t_now - timedelta(days=7)).isoformat(),))],
+        loan_rules=c.get("loans") or {},
         day_universe=dict(t=ep(DU["ts"]) if DU.get("ts") else None, n=DU.get("n"), screened=DU.get("screened"), excluded=DU.get("excluded") or {}, base_excluded=dx_,
                           memes_known=DU.get("memes_known"), meme_allow=DU.get("meme_allow") or [], warm_h=warm_h, top_n=CC.get("top_n"),
                           warming=sorted(x["a"] for x in assets if x.get("warm") is not None), rules={k: v for k, v in (CC.get("day_universe") or {}).items() if k != "meme_blocklist"},

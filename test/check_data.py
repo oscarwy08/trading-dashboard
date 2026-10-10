@@ -47,6 +47,9 @@ def main(D):
         lt_, bw_ = sum(Z[k]["accts"][ac].get("lent", 0) for k in POTS), sum(Z[k]["accts"][ac].get("borrowed", 0) for k in POTS)
         eq(lt_, bw_, f"{ac} loans: lent = borrowed")
         eq(bw_, sum(l["out"] for l in D.get("loans") or [] if l["status"] == "open" and l["account"] == ac), f"{ac} loans = outstanding loans list", 0.011)
+        cap_ = float((D.get("loan_rules") or {}).get("max_outstanding_pct", 20)) / 100 * (D.get("accounts") or {}).get(ac, {}).get("start", 0)
+        n[0] += 1
+        if bw_ > cap_ + 0.011: fails.append(f"{ac} loans outstanding {bw_} > {cap_:.2f} (max_outstanding_pct of the account start)")
     for l in D.get("loans") or []:
         if l["status"] == "open" and l["lender"] == l["borrower"]: fails.append(f"loan {l['id']} lender = borrower")
     eq(sum(p["value"] or 0 for p in P), S["invested"], "Overview invested = sum of all positions")

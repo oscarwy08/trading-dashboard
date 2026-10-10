@@ -231,6 +231,14 @@ risk:
   fee_slippage_pct: 0.3         # applied per side to fill price
   max_price_age_min: 45         # don't trade on stale prices
   min_trade_size: 5             # GBP; skip buys (and rebalance trades) smaller than this
+loans:                          # v7.3 (2026-10-10): temporary borrowing between pots INSIDE one account (never crypto<->stocks)
+  enabled: true                 # only for an exceptional setup that lacks cash: first CORE's uninvested cash (minus what today's
+  risk_min_score: 0.65          #   scheduled tranches / queued CORE buys need), then the other short-term pot's cash. RISK: setup
+  burst_min_conf: 0.75          #   score >= 0.65 with the intraday trend agreeing; DAY burst: confidence >= 0.75 and EV after costs > 0
+  max_outstanding_pct: 20       # total outstanding loans per account <= 20% of that account's starting value (£20 of £100)
+  allow_multiple: false         # one open loan (= one position) per borrowing pot x account at a time
+                                # size: enough for ONE position (min trade .. that pot's max position); principal repaid to the
+                                # lender when the position closes, before anything else; P&L stays with the borrower (table loans)
 
 gas:                            # simulated Monad network fee per trade (paper), on top of fee_slippage_pct
   rpc: https://rpc.monad.xyz    # eth_gasPrice fetched every collector cycle

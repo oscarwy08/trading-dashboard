@@ -1,7 +1,7 @@
 """Short text scorecard for the AI routine to relay. All amounts in GBP (£). Total + one line per account (v6: Crypto =
 Monad wallet, Stocks = Trading 212) + one line per pot (with its crypto / stocks split)."""
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from common import ACCOUNTS, KILL, LON, SLEEVES, acct_start, db, rebase, transfer_adj, transfer_adj_acct, usd_gbp
 from dashboard import stats
 
@@ -36,6 +36,8 @@ for r in con.execute("SELECT asset, klass, side, cost, gas FROM trades WHERE sid
         pp = _t.cost_parts(_c, r["asset"], "stock", r["side"]); tot = sum(pp.values()) or 1; parts = {k: cost * v / tot for k, v in pp.items()}
     for k, v in parts.items(): fdet[a][k] = fdet[a].get(k, 0.0) + v; fee[a] += v
 LBL = {"crypto": "CRYPTO acct (Monad wallet)", "stocks": "STOCKS acct (Trading 212)"}
+from common import loan_net as _loan_net
+_ln = _loan_net(con)                       # v7.3: pot value incl. money lent (+) / borrowed (-) inside the account
 for a in ACCOUNTS:
     x = stats(con, None, a); cash = sum(acash.get((s_, a), 0.0) for s_ in SLEEVES); inv = sum(pv.get((s_, a), 0.0) for s_ in SLEEVES)
     st = sum(base[s_][a] for s_ in SLEEVES); eqv = cash + inv
@@ -43,7 +45,8 @@ for a in ACCOUNTS:
     print(f"{LBL[a]} £{eqv:.2f} ({pct(eqv / st - 1 if st else None)} vs £{st:.0f}) | P&L £{eqv - st:+.2f} | day £{d0:+.2f} | cash £{cash:.2f} | "
           f"invested £{inv:.2f} | realised £{x['realized']:+.2f} | fees £{fee[a]:.2f} ("
           + ", ".join(f"{k} £{v:.3f}" for k, v in fdet[a].items() if v) + ")"
-          + " | by pot: " + ", ".join(f"{s_.upper()} £{acash.get((s_, a), 0) + pv.get((s_, a), 0):.2f} (cash £{acash.get((s_, a), 0):.2f})" for s_ in SLEEVES))
+          + " | by pot: " + ", ".join(f"{s_.upper()} £{acash.get((s_, a), 0) + pv.get((s_, a), 0) + _ln.get((s_, a), 0):.2f} (cash £{acash.get((s_, a), 0):.2f}"
+                                       + (f", {'lent' if _ln[(s_, a)] > 0 else 'owes'} £{abs(_ln[(s_, a)]):.2f}" if abs(_ln.get((s_, a), 0)) > 0.004 else "") + ")" for s_ in SLEEVES))
 asp = json.loads((con.execute("SELECT value FROM state WHERE key='account_split'").fetchone() or ["null"])[0])
 if asp and asp.get("pending"):
     print("Account split: pending settlement inside each account (when the cash is free): "
@@ -82,5 +85,12 @@ try:
                   f"{sum(1 for d in _st.get('cands', []) if d.get('bought'))}/{len(_st.get('cands', []))} setups taken last cycle")
 except Exception as e: print(f"  DAY sub-strategy stats n/a ({e})")
 fx = usd_gbp(con)
+try:   # v7.3 inter-pot loans (same account only)
+    from common import loans_open
+    _lo = loans_open(con)
+    if _lo: print("LOANS outstanding: " + "; ".join(f"{l['borrower'].upper()} owes {l['lender'].upper()} £{l['out']:.2f} ({l['account']}) for {l['asset']}" for l in _lo))
+    _rp = con.execute("SELECT borrower, lender, account, asset, repaid FROM loans WHERE status='repaid' AND repaid_ts>=?", ((datetime.now(timezone.utc) - timedelta(hours=24)).isoformat(),)).fetchall()
+    if _rp: print("LOANS repaid (24h): " + "; ".join(f"{r[0].upper()} -> {r[1].upper()} £{r[4]:.2f} ({r[2]}) {r[3]}" for r in _rp))
+except Exception as e: print(f"LOANS n/a ({e})")
 print(f"GBP/USD {1/fx[0]:.4f} ({fx[2]}, {fx[1][:16]} UTC)" if fx else "GBP/USD n/a")
 if KILL.exists(): print("KILL SWITCH ON")

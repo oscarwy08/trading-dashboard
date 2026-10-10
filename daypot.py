@@ -190,7 +190,7 @@ def sub_realized(con, since=""):
         ac = "stocks" if k == "stock" else "crypto"; out[(sb, ac)] = out.get((sb, ac), 0.0) + (p or 0.0)
     return out
 
-def sub_ledger(start, cash, positions, realized, shares, accounts=("crypto", "stocks")):
+def sub_ledger(start, cash, positions, realized, shares, accounts=("crypto", "stocks"), borrowed=None, lent=None):
     """v7.1 DAY sub-strategy ledger - ONE definition used by the trader (sizing) and the dashboard (display).
     Per account ac and sub-strategy sb:
       cash[sb]   = share x DAY start money of ac + realised P&L of sb in ac - cost (incl. buy fees + gas) of sb's open positions
@@ -201,6 +201,8 @@ def sub_ledger(start, cash, positions, realized, shares, accounts=("crypto", "st
     Identity: DAY cash of ac = start + all realised P&L - cost of all open positions, so the sub cash sums to the account's
     DAY cash and the sub equities to its DAY equity. Any residual (should be ~0; e.g. pre-split history) is spread by share
     and reported as 'residual'.
+    v7.3 loans: borrowed {(sb, ac): £ outstanding} adds to that sub's cash and is a liability (equity = cash + value - owed);
+    lent {ac: £ the Day pot lent to another pot} is taken from the subs' cash by share and is a receivable (equity + lent share).
     start: {ac: £}, cash: {ac: £}, positions: [dict(sub, acct, cost, value)], realized: {(sb, ac): £}, shares: {sb: 0-1}.
     Returns {ac: {sb: dict(cash, free, value, cost, equity, open_n), 'residual': £}} (unrounded)."""
     out = {}
@@ -209,11 +211,12 @@ def sub_ledger(start, cash, positions, realized, shares, accounts=("crypto", "st
         for sb in SUBS:
             ps = [p for p in positions if p["acct"] == ac and p["sub"] == sb]
             cost = sum(p["cost"] or 0.0 for p in ps); value = sum((p["value"] if p["value"] is not None else p["cost"]) or 0.0 for p in ps)
-            cell[sb] = dict(cash=shares[sb] * start.get(ac, 0.0) + realized.get((sb, ac), 0.0) - cost, value=value, cost=cost,
-                            open_n=len(ps))
+            ow = (borrowed or {}).get((sb, ac), 0.0); ln = (lent or {}).get(ac, 0.0) * shares[sb]
+            cell[sb] = dict(cash=shares[sb] * start.get(ac, 0.0) + realized.get((sb, ac), 0.0) - cost + ow - ln, value=value, cost=cost,
+                            open_n=len(ps), owed=ow, lent=ln)
         resid = cash.get(ac, 0.0) - sum(cell[sb]["cash"] for sb in SUBS)
         for sb in SUBS:
             x = cell[sb]; x["cash"] += resid * shares[sb]
-            x["free"] = max(0.0, min(x["cash"], cash.get(ac, 0.0))); x["equity"] = x["cash"] + x["value"]
+            x["free"] = max(0.0, min(x["cash"], cash.get(ac, 0.0))); x["equity"] = x["cash"] + x["value"] + x["lent"] - x["owed"]
         cell["residual"] = resid; out[ac] = cell
     return out

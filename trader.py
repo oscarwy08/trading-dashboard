@@ -24,9 +24,9 @@ close and DAY stock positions are flattened 15 min before it, RISK stock entries
 Stock costs are broker-like (cost_pct: spread, FX fee on non-GBP, UK stamp duty on non-AIM London buys; no gas).
 Costs per trade: fee+slippage (risk.fee_slippage_pct, in the fill price) + simulated Monad gas (state 'gas' from the
 collector, or gas.fallback_gbp) paid from cash on top and recorded in trades.gas."""
-import json
+import json, math
 from datetime import datetime, timedelta, timezone, time as dtime
-from common import ACCOUNTS, KILL, LON, RISK_RESUME, SLEEVES, acct_of, acct_start, cfg, db, funding, iso, log, move_cash, now, sync_pot_cash, usd_gbp
+from common import ACCOUNTS, KILL, LON, RISK_RESUME, SLEEVES, acct_of, acct_start, cfg, db, funding, iso, loans_open, log, move_cash, now, sync_pot_cash, usd_gbp
 import daypot, markets, riskpot, stockrank
 
 L = log("trader")
@@ -233,7 +233,10 @@ def main():
         return pnl
 
     def val(p): q = px.get(p["asset"]); return p["qty"] * q["price"] if q else p["cost"]
-    def acct_eq(s, ac): return cash[(s, ac)] + sum(val(p) for (sl, _), p in pos.items() if sl == s and acct_of(p["klass"]) == ac)
+    loans = loans_open(con)                               # v7.3 inter-pot loans inside one account (outstanding)
+    def lent(s, ac): return sum(l["out"] for l in loans if l["lender"] == s and l["account"] == ac)
+    def owed(s, ac, sub=None): return sum(l["out"] for l in loans if l["borrower"] == s and l["account"] == ac and (sub is None or l["sub"] == sub))
+    def acct_eq(s, ac): return cash[(s, ac)] + lent(s, ac) - owed(s, ac) + sum(val(p) for (sl, _), p in pos.items() if sl == s and acct_of(p["klass"]) == ac)
     def sleeve_eq(s): return sum(acct_eq(s, ac) for ac in ACCOUNTS)
 
     # ---- score every asset (DAY signal; sentiment also used by CORE tranche timing) ----
@@ -484,6 +487,48 @@ def main():
         sig("core", a, None, None, None, "BUY", f"tranche {pl['n']}/{ntr}{fin} £{size:.2f} ({trig}); now £{cur:.2f}/£{T:.2f}")
     sset(con, "core_plan", plan); sset(con, "order_queue", queue)
 
+    # ================= v7.3 inter-pot loans (same account only, never crypto <-> stocks) =================
+    LN = c.get("loans") or {}
+    def core_reserve(ac):    # cash CORE still needs today: the next tranche of every asset still being built that has not had
+        r = 0.0              # today's tranche yet + queued CORE buys (never lent out)
+        for a_, (ac_, w_) in tg.items():
+            pl_ = plan.get(a_) or {}
+            if ac_ != ac or pl_.get("status") != "building": continue
+            if pl_.get("last_day") == day and pl_.get("day_n", 0) >= int(K["max_tranches_per_day"]): continue
+            T_ = w_ * acct_eq("core", ac); cur_ = val(pos[("core", a_)]) if ("core", a_) in pos else 0.0
+            r += min(max(T_ - cur_, 0.0), max(T_ / ntr, mint)) + gas_of("stock" if ac == "stocks" else "crypto")
+        r += sum(float(o.get("value") or 0) for o in queue if o.get("side") == "BUY" and o.get("sleeve") == "core" and acc(o["a"]) == ac)
+        return r
+    def loan_room(ac):       # total outstanding per account <= max_outstanding_pct of the account's starting value
+        startv = sum(acct_start(con, c)[s_][ac] for s_ in SLEEVES)
+        return float(LN.get("max_outstanding_pct", 20)) / 100 * startv - sum(l["out"] for l in loans if l["account"] == ac)
+    def borrow(borrower, a, need, sub=None, why="", min_need=0.0):
+        """Borrow `need` (the shortfall for ONE position of asset a) from CORE's uninvested cash (minus what today's
+        tranches / queued CORE buys need), then the other short-term pot's cash - same account only, total outstanding per
+        account <= max_outstanding_pct of its start value. A loan that cannot cover min_need (the trade would still be
+        impossible) is not taken. Returns the amount borrowed (0 = none). Lender keeps a receivable, borrower a
+        liability, so neither pot's value changes."""
+        if not LN.get("enabled", True) or need <= 0: return 0.0
+        ac = acc(a); amt = min(need, loan_room(ac)); other = "risk" if borrower == "day" else "day"
+        if owed(borrower, ac) > 1e-9 and not LN.get("allow_multiple", False): return 0.0   # one loan (= one position) at a time per pot x account
+        def avail_of(lender):
+            if lender == borrower or owed(lender, ac) > 1e-9: return 0.0      # a pot that owes money does not lend
+            return max(0.0, cash[(lender, ac)] - (core_reserve(ac) if lender == "core" else 0.0))
+        if amt < max(min_need, 0.01) - 1e-9 or min(amt, sum(avail_of(x) for x in ("core", other))) < max(min_need, 0.01) - 1e-9: return 0.0
+        got = 0.0
+        for lender in ("core", other):
+            av_ = avail_of(lender); take = min(math.ceil((amt - got) * 100 - 1e-6) / 100, av_)   # whole pence, rounded up (no 4.9999 < £5)
+            take = round(take, 4)
+            if take < 0.01: continue
+            cash[(lender, ac)] -= take; cash[(borrower, ac)] += take; got += take
+            reason = f"{borrower} borrows £{take:.2f} from {lender} ({ac} account) for {a}: {why}"
+            cur = con.execute("INSERT INTO loans(ts,account,lender,borrower,sub,asset,amount,repaid,status,reason) VALUES(?,?,?,?,?,?,?,0,'open',?)",
+                              (ts, ac, lender, borrower, sub, a, take, reason))
+            loans.append(dict(id=cur.lastrowid, account=ac, lender=lender, borrower=borrower, sub=sub, asset=a, amount=take, repaid=0.0, out=take, ts=ts))
+            out.append(f"[loan] {reason}")
+            if got >= amt - 1e-9: break
+        return got
+
     # ================= DAY risk + entries (v7: momentum + burst) =================
     deq = sleeve_eq("day")
     con.execute("INSERT OR IGNORE INTO state VALUES(?,?)", (f"day_start:day:{day}", str(deq)))
@@ -503,7 +548,8 @@ def main():
     d_start = acct_start(con, c)["day"]; d_since = (sget(con, "account_split") or {}).get("ts", ""); d_sh = daypot.sub_shares(SUBC)
     def ledger():
         dp = [dict(sub=sub_of(x), acct=acct_of(p["klass"]), cost=p["cost"], value=val(p)) for (sl, x), p in pos.items() if sl == "day"]
-        return daypot.sub_ledger(d_start, {ac: cash[("day", ac)] for ac in ACCOUNTS}, dp, daypot.sub_realized(con, d_since), d_sh, ACCOUNTS)
+        return daypot.sub_ledger(d_start, {ac: cash[("day", ac)] for ac in ACCOUNTS}, dp, daypot.sub_realized(con, d_since), d_sh, ACCOUNTS,
+                                 borrowed={(sb, ac): owed("day", ac, sb) for sb in daypot.SUBS for ac in ACCOUNTS}, lent={ac: lent("day", ac) for ac in ACCOUNTS})
     def budget(sub, ac): return max(0.0, ledger()[ac][sub]["equity"])
     def in_use(sub, ac): return ledger()[ac][sub]["value"]
     def free(sub, ac): return ledger()[ac][sub]["free"]
@@ -581,6 +627,15 @@ def main():
         a, ac = d["a"], d["acct"]; q = px[a]
         raw = daypot.conf_size(DB, d["conf"], free("burst", ac))
         avail = free("burst", ac) - gas_of(q["klass"]); value = min(max(raw, mint), avail)
+        if (value < mint and d["conf"] >= max(thr_b, float(LN.get("burst_min_conf", 0.75))) and d["ev"] > max(evmin, 0.0) and not gate(a)
+                and nb[ac] < int(DB["max_open_per_account"])):
+            # v7.3: exceptional burst setup short of cash -> borrow the shortfall for ONE position: confidence-sized on the burst
+            # budget (its equity), at least the min trade, at most max_position_pct of that budget
+            bud = max(0.0, ledger()[ac]["burst"]["equity"])
+            tgt = max(mint, min(daypot.conf_size(DB, d["conf"], bud), float(DB.get("max_position_pct", 33)) / 100 * bud))
+            fr = max(0.0, free("burst", ac)) - gas_of(q["klass"])
+            if borrow("day", a, tgt - fr, "burst", f"burst confidence {d['conf']:.2f} >= {float(LN.get('burst_min_conf', 0.75)):g}, EV {d['ev']:+.2f}%", min_need=mint - fr):
+                avail = free("burst", ac) - gas_of(q["klass"]); value = min(tgt, avail); d["loan"] = True
         why = (gate(a) or
                (f"confidence {d['conf']:.2f} < threshold {thr_b:.2f}" if d["conf"] < thr_b else None) or
                (f"expected value {d['ev']:+.2f}% after costs <= {evmin:g}%" if d["ev"] <= evmin else None) or
@@ -646,7 +701,12 @@ def main():
               f"cooldown after exit {last_exit[:16]}" if last_exit and datetime.fromisoformat(last_exit) > t - timedelta(hours=RP["cooldown_h"]) else
               f"max {RP['max_open']} open" if nrisk >= RP["max_open"] else
               f"max {RP['max_new_per_day']} new per day" if new_today >= RP["max_new_per_day"] else None)
-        value = min(req * RP["position_pct"] / 100, float(RP["max_position_gbp"]), cash_for("risk", a) - gas_of(q["klass"]))
+        tgt = min(req * RP["position_pct"] / 100, float(RP["max_position_gbp"]))
+        value = min(tgt, cash_for("risk", a) - gas_of(q["klass"]))
+        if not no and value < mint and tgt >= mint and comb >= float(LN.get("risk_min_score", 0.65)) and m is not None and m > 0:
+            # v7.3: exceptional breakout (score >= 0.65, intraday trend agreeing) short of cash -> borrow the shortfall for ONE position
+            if borrow("risk", a, tgt - value, None, f"breakout score {comb} >= {float(LN.get('risk_min_score', 0.65)):g}, trend {m:+.2f}", min_need=mint - value):
+                value = min(tgt, cash_for("risk", a) - gas_of(q["klass"]))
         if not no and value < mint: no = f"size £{value:.2f} < min trade £{mint:.0f} ({acash('risk', a)})"
         rstat.append(dict(a=a, kind=kind, score=bscore, comb=comb, mom=m, ok=ok, why=why, block=no))
         if no:
@@ -659,6 +719,18 @@ def main():
     sset(con, "riskpot_status", dict(ts=ts, equity=sleeve_eq("risk"), start=rstart, base=base, dd_pct=dd * 100, halted=bool(halt),
                                      halt=halt, open_n=nrisk, new_today=new_today, cands=sorted(rstat, key=lambda x: (x["block"] is not None, -x["comb"]))[:30]))
 
+    # v7.3: repay loans whose position has closed - principal first, borrower -> lender, out of the sale proceeds (the P&L
+    # stays with the borrower). If the borrower's cash is short (a loss), it repays what it has; the rest stays owed and is
+    # retried every cycle.
+    for l in loans:
+        if l["out"] <= 1e-9 or (l["borrower"], l["asset"]) in pos: continue
+        k = (l["borrower"], l["account"]); pay = round(min(l["out"], max(0.0, cash[k])), 6)
+        if pay <= 1e-9: continue
+        cash[k] -= pay; cash[(l["lender"], l["account"])] += pay; l["repaid"] += pay; l["out"] -= pay
+        done = l["out"] <= 1e-6
+        if done: l["out"] = 0.0
+        con.execute("UPDATE loans SET repaid=?, status=?, repaid_ts=? WHERE id=?", (l["repaid"], "repaid" if done else "open", ts, l["id"]))
+        out.append(f"[loan] {l['borrower']} repays £{pay:.2f} to {l['lender']} ({l['account']} account) - {l['asset']} closed" + ("" if done else f"; £{l['out']:.2f} still owed"))
     for (k, ac), v in cash.items(): con.execute("INSERT OR REPLACE INTO acct_cash VALUES(?,?,?)", (k, ac, v))
     sync_pot_cash(con)
     eqs = {s: sleeve_eq(s) for s in SLEEVES}; equity = sum(eqs.values()); pv = equity - sum(cash.values())
