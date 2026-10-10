@@ -3,6 +3,55 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7 (2026-10-10): DAY pot = Momentum + Burst sub-strategies (paper only)
+The Day pot (£30 crypto + £30 stocks) is shared by two sub-strategies; each has a BUDGET of `share_pct` (50/50) of the
+DAY money (cash + positions) in each account and can only use what its own open positions leave free (never more than the
+account's real cash). Every DAY order is tagged with its sub-strategy (`trades.sub` = momentum | burst; pre-v7 day trades
+count as momentum) and carries `trades.conf` (burst confidence 0-1 / momentum signal score). Config: `day.momentum`,
+`day.burst`; code: `daypot.py` (pure helpers) + the DAY sections of trader.py.
+- **Momentum** (original score entries, strategy.buy_threshold): position = 50% of the momentum budget of that account
+  (min £5), max 3 open. Exits upgraded: target = max(4%, 2.5 x 1h ATR) capped 12%, stop = max(2%, 1.2 x ATR) capped 5%;
+  a trailing stop arms at +3% (net of the sell cost) and gives back 40% of the peak gain (peak +8% -> exit at +4.8%); at the
+  target a position whose signal is still a buy becomes a 'runner' (trail tightened to 20% of the gain) instead of being
+  sold, so winners can run past the old fixed +5%. Signal exit (score <= sell_threshold) as before.
+- **Burst** (quick breakout trades): price breaks the prior 24h high (crypto: also CoinGecko's high_24h) or the high of a
+  tight (<= 4%) 4h range, by >= 0.1% and <= 3% (no chasing); hard filters: last-hour volume >= 2x the average hour
+  (crypto: CoinGecko rolling 24h total_volume deltas; stocks: Yahoo 15-min bars, state `stock_vol`; with no volume data
+  only a 24h-high break may trade), hourly RSI < 80, fresh sentiment >= -0.1 (none = neutral), broad market not falling
+  (crypto: BTC 1h >= -0.5% and 4h >= -1.5%; stocks: index proxy of the listing exchange ^GSPC / ^FTSE / ^AXJO, state
+  `market_proxy`, fetched by the collector only while that exchange is open and never written to prices; fallback
+  EQQQ.L/VUSA.L). Target = clamp(3 x ATR, 3%, 8%), stop = clamp(1 x ATR, 1.5%, 2.5%), trailing after +2% (40% give-back),
+  max hold 6h, 1h cooldown per asset after any DAY exit, max 3 open bursts per account, NO trades-per-day cap.
+  - **Confidence** 0-1 per setup = weighted breakout strength 0.25, volume spike 0.25, sentiment 0.15, market regime 0.15,
+    the setup type's measured hit rate 0.20 (24h-high and 4h-range breaks tracked separately over 14 days, Beta prior
+    0.5 x 20 pseudo-trades). It is a ranking heuristic, NOT a probability of profit and never a guarantee.
+  - **Expected value after costs** = p x target - (1-p) x stop - round-trip costs (p = setup hit rate), blended with the
+    setup's measured expectancy as trades accumulate (weight n vs 10). Taken only if confidence >= threshold AND EV > 0.
+  - **Capital-based caution** (no loss-streak cooldown, no separate loss budget): threshold = 0.55 + 0.30 x (DAY pot loss
+    today / start-of-day equity) / 15% -> rises gradually over the whole daily-stop range (0.85 at the stop); gains never
+    lower it. Size = confidence x 33% of the burst cash still free (shrinks as losses deplete it); raised to the £5 min trade
+    when that much is free - with ~£15 per burst budget the min trade dominates, so in practice most bursts are £5.
+- **Both**: only trades whose target (%) >= 4 x round-trip costs (`day.min_move_cost_x`; crypto 0.6% -> 2.4%, US stocks
+  0.5% -> 2%, London non-AIM 0.7% -> 2.8%; gas both sides included). Entries 08:00-21:00 UK (stocks not in the last 30 min),
+  everything flat by 22:00 UK (stocks 15 min before their close). **DAY daily loss stop raised from 5% to 15%** of the
+  pot's start-of-day equity (`day.daily_loss_cap_pct`, user request 2026-10-10): at the stop all new DAY entries halt for
+  the rest of the UK day; open positions keep their own stops. CORE and RISK unchanged. KILL halts everything.
+- **15-minute granularity**: cycles run every 15 min (GitHub Actions schedule `7,22,37,52 * * * *`, often started 5-20 min
+  late or skipped under load; box_cycle.sh while the box is awake). Breakouts, stops, targets and trailing stops are only
+  checked at those snapshots, so fills can be well past a level (a -1.5% stop can fill at -3% after a fast drop) and short
+  spikes between cycles are missed. ATR is built from ~4 snapshots per hour, so it under-states the true hourly range.
+- **Dashboard (Day tab)**: gauges for today's loss vs the 15% stop, the current burst confidence threshold (base marked)
+  and remaining cash per account x sub-strategy; a sub-strategy table (budget/free, trades, win rate, avg win %, avg loss %,
+  profit factor, P&L after fees, fees, expectancy per trade; All time / Today; account switch); open positions with strategy,
+  ATR levels, trailing level, sell-by time; Burst setups with a confidence bar (threshold line), component mini-bars,
+  volume, RSI, target/stop, EV after costs and the decision (taken / skipped + reason); today's orders with strategy and
+  confidence. data.json: sleeves.day.subs (stats), sleeves.day.status (state day_subs), positions[].sub/tp_pct/sl_pct/trail.
+- **Realistic expectations**: positions are £5-£15, so a +5% winner is £0.25-£0.75 and a 2% stop ~£0.10-£0.30 plus ~£0.03-
+  £0.09 fees. Crypto round trips cost 0.6% - a 3% burst target nets ~2.4%. Breakout setups typically win 35-50% of the time;
+  with 2:1 targets that is roughly break-even to modestly positive before slippage at 15-min granularity. Expect single-digit
+  £ per month either way on £60; the value is in measuring (per-sub stats) which setups actually have an edge.
+- test/sim.py v7 scenario: see Layout. Last run: logs/sim_v7.txt.
+
 ## v6 (2026-10-10): two accounts - Crypto (Monad wallet) + Stocks (Trading 212 Invest)
 The £200 is modelled as two real-world accounts, 50/50: **Crypto account £100** (Monad wallet: all crypto, fees = venue
 fee + gas) and **Stocks account £100** (Trading 212 Invest: all stocks/ETFs, fees = spread + FX + UK stamp duty). Each
@@ -135,6 +184,7 @@ collector.py          prices (USD): ONE CoinGecko top-300 markets snapshot (2 ca
 riskpot.py            RISK pot screen/scores (crypto breakout from the markets snapshot; stock breakout from daily closes)
 stockrank.py          CORE stock scoring/selection + display-only investment plans (pure DB, no network)
 trader.py             three sleeves: CORE long holds / DAY intraday / RISK speculative: signals + paper trades + risk rules
+daypot.py             v7 DAY helpers: hourly bars/ATR, breakout, volume ratios, market regime, confidence, EV, sizing, per-sub stats
 maintenance.py        daily DB pruning + VACUUM (keeps the committed DB small)
 rebalance_pots.py     move UNINVESTED cash between pots inside ONE account (TRANSFER, no reset; backs up the DB)
 transfer_accounts.py  MANUAL move between the Crypto and Stocks accounts (TRANSFER, rebased; backs up the DB)
@@ -149,6 +199,9 @@ test/sim.py           backtest-style dry run on a throwaway DB copy (simulated c
                       v4 adds RISK: breakout entries via the real screen, 12% stop, trailing take-profit, 7-day max hold,
                       max 5 open / 3 new per day / <= £8, drawdown-cap halt + RISK_RESUME, DAY ignores risk-only coins,
                       cash reconciliation for all three pots, TRANSFER rebasing. Last run: logs/sim_v4.txt (ALL CHECKS PASSED)
+                      v7 adds a scripted DAY day: burst take-profit / trailing / ATR stop / 6h max hold, skips (no volume, RSI >= 80,
+                      negative sentiment, BTC falling), 1h cooldown, momentum winner via trailing/target, stock burst flattened
+                      before the close, max open per account, sub tags + stats, threshold over the 15% stop, sizing, EV, 4x-cost filter
 dashboard.py          exports docs/data.json (pure SQLite -> JSON, no AI) and installs the static SPA from web/
 web/                  SPA templates: index.html, app.js, styles.css (edit here; dashboard.py copies them to docs/)
 snapshot.py           docs/snapshot.png via headless Chrome (box only, at scorecard time)
@@ -227,10 +280,11 @@ rebalance, then is rebuilt in tranches. Plan state: state keys core_plan / core_
 DAY £60 (intraday). Same momentum + sentiment score as before (coins/stocks priced only for the RISK pot are ignored):
 momentum = 0.35*4h return + 0.35*24h return (scaled, clipped) + 0.2*EMA6/24 hourly cross + 0.1*RSI(14h) term;
 with sentiment < 12h old: combined = (1-w)*momentum + w*score, w = 0.4*confidence.
-Buy when combined >= 0.35 (0.30 for MON/WLD/XRP); exit on combined <= -0.20, stop-loss 3%, take-profit 5%.
-Size 25% of DAY sleeve equity per position, max 3 open. New entries only 08:00-21:00 UK; ALL day positions are
+Buy when combined >= 0.35 (0.30 for MON/WLD/XRP); exit on combined <= -0.20. v7: this is now the 'momentum'
+sub-strategy with ATR-scaled target/stop + trailing stop (was fixed stop-loss 3% / take-profit 5%, 25% of DAY equity per
+position) and a second 'burst' sub-strategy shares the pot - see the v7 section at the top. Max 3 open momentum positions. New entries only 08:00-21:00 UK; ALL day positions are
 force-closed at/after 22:00 UK (the */15 cron cycle at 22:00), and any day position found before 08:00 or carried from a
-previous UK day is closed too (flat overnight). Daily loss cap: DAY equity <= -5% vs its UK-day start halts new DAY
+previous UK day is closed too (flat overnight). Daily loss cap: DAY equity <= -15% (v7; was 5%) vs its UK-day start halts new DAY
 entries for the rest of that UK day (exits still run; CORE unaffected).
 RISK £40 (speculative, v4). Universe:
 - crypto: each cycle ONE CoinGecko markets snapshot of the top 300 by market cap (per_page 250 + page 6 of 50; plus a

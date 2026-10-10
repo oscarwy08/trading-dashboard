@@ -67,6 +67,20 @@ for sl in SLEEVES:
           + (f", best {best['asset']} £{best['pnl']:+.2f}, worst {worst['asset']} £{worst['pnl']:+.2f}" if closed else "")
           + f" | {extra} | open: {', '.join(opn) or 'none'}"
           + " | " + " / ".join(f"{a} £{acash.get((sl, a), 0) + pv.get((sl, a), 0):.2f} (cash £{acash.get((sl, a), 0):.2f})" for a in ACCOUNTS))
+# ---- v7: DAY sub-strategies (momentum | burst) ----
+try:
+    from dashboard import day_sub_stats
+    from datetime import datetime as _dt
+    _ss = day_sub_stats(con, _dt.now(LON)); _st = json.loads((con.execute("SELECT value FROM state WHERE key='day_subs'").fetchone() or ["{}"])[0]) or {}
+    for sb in ("momentum", "burst"):
+        a_, t_ = _ss[sb]["all:all"], _ss[sb]["today:all"]
+        f_ = lambda v, u="%": "n/a" if v is None else f"{v:+.2f}{u}"
+        print(f"  DAY {sb:8} all: {a_['trades']} trades, win {a_['win_rate'] if a_['win_rate'] is not None else 'n/a'}%, avg win {f_(a_['avg_win'])}, "
+              f"avg loss {f_(a_['avg_loss'])}, PF {a_['pf'] if a_['pf'] is not None else 'n/a'}, P&L £{a_['pnl']:+.2f} after £{a_['fees']:.2f} fees, "
+              f"expectancy {f_(a_['exp_pct'])}/trade | today: {t_['trades']} trades, P&L £{t_['pnl']:+.2f}")
+    if _st: print(f"  DAY burst threshold {_st.get('threshold')} (Day pot today {_st.get('day_pnl_pct', 0):+.2f}%), "
+                  f"{sum(1 for d in _st.get('cands', []) if d.get('bought'))}/{len(_st.get('cands', []))} setups taken last cycle")
+except Exception as e: print(f"  DAY sub-strategy stats n/a ({e})")
 fx = usd_gbp(con)
 print(f"GBP/USD {1/fx[0]:.4f} ({fx[2]}, {fx[1][:16]} UTC)" if fx else "GBP/USD n/a")
 if KILL.exists(): print("KILL SWITCH ON")

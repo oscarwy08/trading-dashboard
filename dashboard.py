@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from common import (ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
                     transfer_adj, transfer_adj_acct, usd_gbp)
-import markets, stockrank, trader
+import daypot, markets, stockrank, trader
 
 def plain(a):   # v5: xStock name -> normal ticker (AMDx -> AMD); historical orders keep the xStock name, alias links them
     m = re.match(r"^([A-Z][A-Z0-9.]*)x$", a or ""); return m.group(1) if m else a
@@ -21,6 +21,24 @@ EQUITY_FULL_H = 48       # keep every equity point for the last 48 h, hourly bef
 MAX_TRADES = 500
 MAX_SENTIMENT = 300
 MAX_REASONS = 12         # per asset: latest signal + recent non-HOLD signals with full reasons
+
+def day_sub_stats(con, lt):
+    """v7: per DAY sub-strategy (momentum | burst; pre-v7 day trades count as momentum) closed-trade stats - all time and
+    today (UK), for the whole pot and per account: trades, win rate, avg win/loss %, profit factor, P&L after all fees,
+    expectancy (£ and % per trade), fees paid (buys + sells incl. gas)."""
+    d0 = datetime.combine(lt.date(), datetime.min.time(), LON).astimezone(timezone.utc).isoformat()
+    rows = [dict(r) for r in con.execute("SELECT ts, klass, side, value, gas, pnl, cost, COALESCE(sub,'momentum') sub FROM trades "
+                                         "WHERE sleeve='day' AND side IN ('BUY','SELL') ORDER BY id")]
+    out = {}
+    for sb in daypot.SUBS:
+        out[sb] = {}
+        for per in ("all", "today"):
+            for sc in ("all",) + ACCOUNTS:
+                xs = [r for r in rows if r["sub"] == sb and (per == "all" or r["ts"] >= d0) and (sc == "all" or acct_of(r["klass"]) == sc)]
+                st_ = daypot.sub_stats([r for r in xs if r["side"] == "SELL"])
+                st_["fees"] = round(sum((r["cost"] or 0) + (r["gas"] or 0) for r in xs), 4)
+                out[sb][f"{per}:{sc}"] = st_
+    return out
 
 def stats(con, sleeve=None, account=None):
     """Stats for the whole paper money (sleeve=None, account=None), one pot ('core'/'day'/'risk'), one account
@@ -181,7 +199,8 @@ def build(con):
     # ---- positions ----
     positions = []
     RP = c.get("riskpot") or {}
-    stops = dict(core=(K["stop_loss_pct"], None), day=(DY["stop_loss_pct"], DY["take_profit_pct"]), risk=(RP.get("stop_loss_pct"), None))
+    stops = dict(core=(K["stop_loss_pct"], None), day=(None, None), risk=(RP.get("stop_loss_pct"), None))
+    dmeta = json.loads((con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone() or ["{}"])[0]) or {}
     peaks = json.loads((con.execute("SELECT value FROM state WHERE key='risk_peaks'").fetchone() or ["{}"])[0]) or {}
     for r in con.execute("SELECT * FROM positions ORDER BY opened"):
         sl_pct, tp_pct = stops.get(r["sleeve"], (None, None))
@@ -194,6 +213,16 @@ def build(con):
                               pnl_pct=round((now_gbp / r["entry"] - 1) * 100, 2) if now_gbp and r["entry"] else None,
                               stop=sig(r["entry"] * (1 - sl_pct / 100)) if sl_pct else None,
                               take=sig(r["entry"] * (1 + tp_pct / 100)) if tp_pct else None, opened=ep(r["opened"])))
+        if r["sleeve"] == "day":     # v7: per-position ATR-scaled levels (prices at which the net-of-sell-cost P&L hits them)
+            md = dmeta.get(r["asset"]) or {}; SC = DY.get(md.get("sub", "momentum")) or {}
+            fs = trader.cost_pct(c, r["asset"], r["klass"], "SELL"); lvl = lambda x: sig(r["entry"] * (1 + x / 100) / (1 - fs))
+            pkg = (md["peak"] * (1 - fs) / r["entry"] - 1) * 100 if md.get("peak") else None
+            gb = float(SC.get("runner_giveback_pct", 20) if md.get("runner") else SC.get("trail_giveback_pct", 40))
+            ton = pkg is not None and pkg >= float(SC.get("trail_after_pct", 99))
+            positions[-1].update(sub=md.get("sub", "momentum"), stop=lvl(-md["sl"]) if md.get("sl") else None, take=lvl(md["tp"]) if md.get("tp") else None,
+                                 tp_pct=md.get("tp"), sl_pct=md.get("sl"), atr=md.get("atr"), conf=md.get("conf"), ev=md.get("ev"), score=md.get("score"), runner=bool(md.get("runner")),
+                                 peak_pct=round(pkg, 2) if pkg is not None else None, trail_on=ton, trail=lvl(pkg * (1 - gb / 100)) if ton else None,
+                                 expires=ep(r["opened"]) + int(float(SC["max_hold_h"]) * 3600) if SC.get("max_hold_h") else None)
         if r["sleeve"] == "risk":
             pk = peaks.get(r["asset"]); on = bool(pk and pk * (1 - rk["fee_slippage_pct"] / 100) / r["entry"] - 1 >= RP["trail_after_pct"] / 100)
             positions[-1].update(peak=sig(pk), trail_on=on, trail=sig(pk * (1 - RP["trail_pct"] / 100)) if on else None,
@@ -219,7 +248,7 @@ def build(con):
                    price=sig(r["price"]), fill=sig(r["fill"]), usd=sig(r["price_usd"]), fx=sig(r["usd_gbp"], 5),
                    value=r2(r["value"]), fee=round(r["cost"], 4) if r["cost"] is not None else None, pnl=r2(r["pnl"]),
                    gas=sig(r["gas"], 3) if r["gas"] is not None else None,
-                   reason=r["reason"] or "", alias=plain(r["asset"]) if plain(r["asset"]) != r["asset"] else None,
+                   reason=r["reason"] or "", sub=(r["sub"] or ("momentum" if r["sleeve"] == "day" else None)), conf=r["conf"], alias=plain(r["asset"]) if plain(r["asset"]) != r["asset"] else None,
                    fees={k: sig(v, 3) for k, v in tparts.get(r["id"], {}).items() if v})
               for r in con.execute("SELECT * FROM trades ORDER BY id DESC LIMIT ?", (MAX_TRADES,))]
     POTN = dict(core="Core pot", day="Day pot", risk="Risk pot"); ACN = dict(crypto="Crypto account", stocks="Stocks account")
@@ -341,9 +370,10 @@ def build(con):
     sleeves["day"].update(day_start=r2(ds.get("start")), day_pnl=r2(ds["equity"] - ds["start"]) if ds.get("start") else None,
                           day_pnl_pct=ds.get("pnl_pct"), halted=bool(ds.get("halted")), entries_open=bool(ds.get("entries_open")),
                           flat_now=bool(ds.get("flat_now")),
-                          rules=dict(alloc=DY["alloc_pct"], max_open=DY["max_open_positions"], stop=DY["stop_loss_pct"],
-                                     take=DY["take_profit_pct"], start=DY["entry_start_uk"], cutoff=DY["entry_cutoff_uk"],
-                                     flatten=DY["flatten_uk"], cap=DY["daily_loss_cap_pct"]))
+                          rules=dict(start=DY["entry_start_uk"], cutoff=DY["entry_cutoff_uk"], flatten=DY["flatten_uk"], cap=DY["daily_loss_cap_pct"],
+                                     cost_x=DY.get("min_move_cost_x"), momentum=DY["momentum"], burst=DY["burst"],
+                                     max_open=DY["momentum"]["max_open"] + 2 * DY["burst"]["max_open_per_account"]),
+                          subs=day_sub_stats(con, lt), status=json.loads((con.execute("SELECT value FROM state WHERE key='day_subs'").fetchone() or ["{}"])[0]) or {})
     rst = json.loads((con.execute("SELECT value FROM state WHERE key='riskpot_status'").fetchone() or ["{}"])[0]) or {}
     rsc = json.loads((con.execute("SELECT value FROM state WHERE key='risk_screen'").fetchone() or ["{}"])[0]) or {}
     RC = RP.get("crypto") or {}
@@ -406,8 +436,8 @@ def build(con):
                    day_pnl=r2(cur_eq - day_start) if day_start else None, day_pnl_pct=risk.get("day_pnl_pct")),
         risk=dict(halted=bool(risk.get("halted")), day=risk.get("day"), day_start=day_start, kill=KILL.exists(),
                   fx_stale=bool(fx[3]) if fx else True, open_n=len(positions), last_halt=dict(t=ep(halt["ts"]), reason=halt["reason"]) if halt else None,
-                  limits=dict(max_open=DY["max_open_positions"], max_pos_pct=DY["max_position_pct"], stop=DY["stop_loss_pct"],
-                              take=DY["take_profit_pct"], daily_cap=DY["daily_loss_cap_pct"], fee=rk["fee_slippage_pct"],
+                  limits=dict(max_open=DY["momentum"]["max_open"], burst_max_open=DY["burst"]["max_open_per_account"],
+                              stop=DY["momentum"]["stop"]["min_pct"], take=DY["momentum"]["take_profit"]["min_pct"], daily_cap=DY["daily_loss_cap_pct"], fee=rk["fee_slippage_pct"],
                               core_stop=K["stop_loss_pct"], risk_stop=RP.get("stop_loss_pct"), risk_cap=RP.get("drawdown_cap_pct"),
                               min_trade=rk["min_trade_size"], buy=st["buy_threshold"], focus_buy=st["focus_buy_threshold"],
                               sell=st["sell_threshold"])),

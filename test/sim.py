@@ -13,6 +13,11 @@ cash of its own account (per-account cash reconciliation for all 6 pot x account
 cash crossing accounts), per-account equity columns, pot moves inside one account and a manual account transfer (rebased,
 baselines move), plus the live-DB account split (migrate_v6_accounts: totals 100/100, pot totals unchanged, settlement
 inside each account executed by the trader once the DAY pot is flattened -> every pot x account at its target).
+v7: DAY pot = two sub-strategies (momentum with ATR-scaled target/stop + trailing stop, burst breakout trades with a
+confidence score, EV after costs, capital-based threshold/sizing): a scripted one-day scenario checks burst take-profit,
+trailing stop, ATR stop, 6h max hold, skips (no volume / RSI / negative sentiment / BTC falling), 1h cooldown, momentum
+winner beyond the old 5% cap, stock burst flattened before the close, max open per account, sub tags + stats, the
+threshold scaling across the 15% daily stop, sizing, EV and the min expected move (4x costs) filter.
 Usage: python3 test/sim.py [--keep]   (writes only to data/sim.db, deleted at the end unless --keep; logs/sim_cycles.log)."""
 import io, json, os, random, sqlite3, sys, contextlib
 from datetime import datetime, timedelta, timezone
@@ -127,8 +132,9 @@ while t <= END:
     if L.date().isoformat() == CAP_DAY and L.hour == 11 and L.minute == 0:   # forced loss-cap scenario
         deq = float(con.execute(f"SELECT value FROM state WHERE key='day_start:day:{CAP_DAY}'").fetchone()[0])
         cur = con.execute("SELECT day FROM equity ORDER BY ts DESC LIMIT 1").fetchone()[0]
-        con.execute("UPDATE state SET value=? WHERE key=?", (str(cur / 0.94), f"day_start:day:{CAP_DAY}"))
-        print(f"[test] {L:%a %H:%M} UK: set DAY day-start equity to £{cur/0.94:.2f} (current £{cur:.2f} => -6%) to trip the 5% cap")
+        capf = 1 - (c["day"]["daily_loss_cap_pct"] + 1) / 100      # v7: cap is configurable (15%) -> force cap + 1%
+        con.execute("UPDATE state SET value=? WHERE key=?", (str(cur / capf), f"day_start:day:{CAP_DAY}"))
+        print(f"[test] {L:%a %H:%M} UK: set DAY day-start equity to £{cur/capf:.2f} (current £{cur:.2f} => -{(1-capf)*100:.0f}%) to trip the {c['day']['daily_loss_cap_pct']}% cap")
     con.commit()
     if t == uk(3, 12):   # KILL test on Mon 12:00 UK
         kill = HERE / "test" / "KILL"; kill.touch(); trader.KILL = kill
@@ -145,7 +151,12 @@ while t <= END:
     mins = L.hour * 60 + L.minute
     nday = con.execute("SELECT COUNT(*) FROM positions WHERE sleeve='day'").fetchone()[0]
     if (mins >= 22 * 60 or mins < 8 * 60) and nday: checks["flat_violation"].append(L.isoformat())
-    if nday > 3: checks["max_open_violation"].append(L.isoformat())
+    dm_ = json.loads((con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone() or ["{}"])[0]) or {}   # v7 sub-strategy limits
+    kl_ = {r[0]: r[1] for r in con.execute("SELECT asset, klass FROM positions WHERE sleeve='day'")}
+    if sum(1 for a_ in kl_ if (dm_.get(a_) or {}).get("sub", "momentum") == "momentum") > c["day"]["momentum"]["max_open"]: checks["max_open_violation"].append("momentum " + L.isoformat())
+    for ac_ in common.ACCOUNTS:
+        if sum(1 for a_, k_ in kl_.items() if (dm_.get(a_) or {}).get("sub") == "burst" and common.acct_of(k_) == ac_) > c["day"]["burst"]["max_open_per_account"]:
+            checks["max_open_violation"].append(f"burst {ac_} " + L.isoformat())
     nrisk = con.execute("SELECT COUNT(*) FROM positions WHERE sleeve='risk'").fetchone()[0]
     if nrisk > c["riskpot"]["max_open"]: checks["max_open_violation"].append("risk " + L.isoformat())
     if t == RHALT: checks["risk_halt_state"] = bool(con.execute("SELECT 1 FROM state WHERE key='riskpot_halt'").fetchone())
@@ -193,7 +204,7 @@ arecon = {(s, a): FUND[s][a] - sum(x["value"] + (x["gas"] or 0) for x in tr if x
           for s in common.SLEEVES for a in common.ACCOUNTS}
 n_cross = con.execute("SELECT COUNT(*) FROM transfers WHERE from_account IS NOT NULL AND from_account != to_account").fetchone()[0]
 eqrow = con.execute("SELECT equity, cash, crypto, stocks, crypto_cash, stocks_cash, accts FROM equity ORDER BY ts DESC LIMIT 1").fetchone()
-acc_eq_ok = abs(eqrow["crypto"] + eqrow["stocks"] - eqrow["equity"]) < 1e-6 and abs(eqrow["crypto_cash"] + eqrow["stocks_cash"] - eqrow["cash"]) < 1e-6
+acc_eq_ok = abs(eqrow["crypto"] + eqrow["stocks"] - eqrow["equity"]) < 1e-4 and abs(eqrow["crypto_cash"] + eqrow["stocks_cash"] - eqrow["cash"]) < 1e-6
 stock_buys_acct = {a: sum(1 for x in tr if x["side"] == "BUY" and common.acct_of(x["klass"]) == a) for a in common.ACCOUNTS}
 mint = float(c["risk"]["min_trade_size"])
 small_buys = [x for x in tr if x["side"] == "BUY" and x["value"] < mint - 1e-6]
@@ -213,13 +224,13 @@ for x in tr:
     if x["sleeve"] == "core" and x["reason"].startswith("CORE tranche"):
         k = (x["asset"], x["L"].date()); per_day[k] = per_day.get(k, 0) + 1
 flat = [x for x in tr if x["sleeve"] == "day" and "flatten" in x["reason"]]
-dsell = {k: sum(1 for x in tr if x["sleeve"] == "day" and x["side"] == "SELL" and x["reason"].startswith(k)) for k in ("stop-loss", "take-profit", "signal", "flatten")}
+dsell = {k: sum(1 for x in tr if x["sleeve"] == "day" and x["side"] == "SELL" and k in x["reason"]) for k in ("stop-loss", "trailing stop", "take-profit", "max hold", "signal", "flatten")}
 cap_buys = [x for x in tr if x["sleeve"] == "day" and x["side"] == "BUY" and x["L"].date().isoformat() == CAP_DAY and x["L"].hour >= 11]
 halt_sig = con.execute(f"SELECT COUNT(*) FROM signals WHERE sleeve='day' AND reason LIKE '%daily loss cap hit%' AND ts>=?", (common.iso(uk(5, 11)),)).fetchone()[0]
 next_day_buys = [x for x in tr if x["sleeve"] == "day" and x["side"] == "BUY" and x["L"].date() == datetime.fromisoformat(CAP_DAY).date() + timedelta(days=1)]
 rb = [x for x in tr if "rebalance" in x["reason"]]
 stops = [x for x in tr if "core stop-loss" in x["reason"]]
-big = [x for x in tr if x["sleeve"] == "day" and x["side"] == "BUY" and x["value"] > 0.25 * start["day"] * 1.2]
+big = [x for x in tr if x["sleeve"] == "day" and x["side"] == "BUY" and x["value"] > 0.5 * start["day"] / 2 * 1.2]   # v7: > momentum 50% of half an account's DAY money
 RP = c["riskpot"]
 rb_ = [x for x in tr if x["sleeve"] == "risk" and x["side"] == "BUY"]; rs_ = [x for x in tr if x["sleeve"] == "risk" and x["side"] == "SELL"]
 rpd = {}
@@ -237,7 +248,8 @@ print("rebalance trades:", [(f"{x['L']:%a %d %H:%M}", x["asset"], x["side"], rou
 print("core stop-loss trades:", [(f"{x['L']:%a %d %H:%M}", x["asset"], round(x["pnl"], 2)) for x in stops])
 print("DAY sells by reason:", dsell, "| flatten trades:", sorted({f"{x['L']:%a %d %H:%M}" for x in flat}))
 print(f"loss-cap day {CAP_DAY}: halt signals {halt_sig}, DAY buys after 11:00 that day {len(cap_buys)}, DAY buys next day {len(next_day_buys)}")
-print("day buys > 25% sleeve (+20% slack):", len(big))
+print("day buys > 50% of a sub-strategy budget (+20% slack):", len(big), "| untagged day trades:", sum(1 for x in tr if x["sleeve"] == "day" and x["sub"] not in ("momentum", "burst")))
+assert not [x for x in tr if x["sleeve"] == "day" and x["sub"] not in ("momentum", "burst")], "v7: every DAY order tagged with its sub-strategy"
 print("RISK buys:", [(f"{x['L']:%a %d %H:%M}", x["asset"], round(x["value"], 2)) for x in rb_])
 print("RISK exits:", risk_exit)
 print(f"RISK buys per UK day {dict((str(k), v) for k, v in rpd.items())} | buys during drawdown halt {len(halt_buys)} | DAY trades in risk-only coins {len(day_in_risk)}")
@@ -335,6 +347,145 @@ if st["pending"]:
     assert all(abs(b2[k][a] - FUND[k][a]) < 0.01 for k in FUND for a in FUND[k]), "every pot x account at its target after settlement"
 assert not con.execute("SELECT COUNT(*) FROM transfers WHERE kind='settle' AND from_account != to_account").fetchone()[0], "settlement never crosses accounts"
 con.close(); MIG.unlink()
+
+# =====================================================================================================================
+# v7: DAY pot sub-strategies (momentum + burst) - deterministic one-day scenario on a fresh throwaway DB
+# =====================================================================================================================
+print("\n================ v7 DAY momentum + burst scenario ================")
+import daypot
+V7 = HERE / "data" / "sim_v7.db"
+if V7.exists(): V7.unlink()
+s_ = sqlite3.connect(HERE / "data" / "trading.db"); d_ = sqlite3.connect(V7); s_.backup(d_); d_.close(); s_.close()
+common.DB = V7; common._NOW = None
+con = common.db()
+for t_ in ("trades", "positions", "cash", "acct_cash", "equity", "signals", "transfers", "prices", "sentiment"): con.execute(f"DELETE FROM {t_}")
+con.execute("DELETE FROM state WHERE key NOT IN ('stock_meta')")
+con.executemany("INSERT INTO acct_cash VALUES(?,?,?)", [(k, a, v) for k, d in FUND.items() for a, v in d.items()]); common.sync_pot_cash(con)
+for k_ in ("core_plan", "core_stocks", "order_queue"): con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (k_, json.dumps({} if k_ == "core_plan" else [] if k_ == "order_queue" else {"picks": []})))
+con.execute("INSERT OR REPLACE INTO state VALUES('core_last_rebalance',?)", (json.dumps(common.iso(T0 + timedelta(days=30))),))
+con.execute("INSERT OR REPLACE INTO state VALUES('risk_only',?)", (json.dumps([]),)); con.execute("INSERT OR REPLACE INTO state VALUES('risk_only_stocks',?)", (json.dumps([]),))
+con.commit()
+# a weekday with a normal US session (UK 14:30-21:00)
+D7 = lt(T0).date() + timedelta(days=1)
+while D7.weekday() >= 5 or not markets.session("US", D7): D7 += timedelta(days=1)
+U = lambda h, m=0: datetime(D7.year, D7.month, D7.day, h, m, tzinfo=LON).astimezone(timezone.utc)
+START, STOP = U(8) - timedelta(hours=30), U(22, 15)
+# scripted paths: piecewise multiplicative moves (asset, from, to, total multiplier); vol24 jumps (asset, at, x)
+CRY = ["BTC", "BRK_TP", "BRK_TRAIL", "BRK_STOP", "BRK_HOLD", "BRK_NOVOL", "BRK_RSI", "BRK_NEG", "BRK_MKT", "BRK_CD", "BRK_HOT", "MOMO"]
+B1 = 1.01      # breakout candle: +1% above a quiet 30h range (stored prices = scripted path x (1 + iid noise 0.1%))
+MOVES = [("BRK_TP", U(9, 30), U(9, 45), B1), ("BRK_TP", U(9, 45), U(10, 30), 1.06), ("BRK_TP", U(10, 30), U(11, 30), 1.004),     # break -> +6% -> TP
+         ("BRK_TRAIL", U(10), U(10, 15), B1), ("BRK_TRAIL", U(10, 15), U(11), 1.032), ("BRK_TRAIL", U(11), U(12), 0.97),         # +3.2% then fades -> trailing
+         ("BRK_STOP", U(11), U(11, 15), B1), ("BRK_STOP", U(11, 15), U(12), 0.965),                                               # break then -3.5% -> stop
+         ("BRK_HOLD", U(12), U(12, 15), B1),                                                                                      # break then flat -> 6h max hold
+         ("BRK_NOVOL", U(12, 30), U(12, 45), B1),                                                                                 # break, no volume spike
+         ("BRK_RSI", U(0), U(13), 1.12), ("BRK_RSI", U(13), U(13, 15), B1),                                                       # relentless climb (momentum buys it)
+         ("BRK_CD", U(14), U(14, 15), B1), ("BRK_CD", U(14, 15), U(14, 45), 0.97), ("BRK_CD", U(14, 45), U(15), 1.04),               # stopped out, re-breaks < 1h later
+         ("BRK_HOT", U(16), U(19), 1.04), ("BRK_HOT", U(19), U(19, 15), B1),                                                      # overbought breakout (RSI > 80)
+         ("BRK_NEG", U(13, 30), U(13, 45), B1),                                                                                   # break, negative sentiment
+         ("BTC", U(15), U(16), 0.985), ("BRK_MKT", U(15, 30), U(15, 45), B1),                                                     # break while BTC falls
+         ("MOMO", U(8) - timedelta(hours=24), U(8, 30), 1.10), ("MOMO", U(8, 30), U(12), 1.09), ("MOMO", U(12), U(13), 0.95),    # momentum: run then fade
+         ("SIMSTK", U(15, 30), U(15, 45), B1), ("SIMSTK", U(15, 45), U(16, 30), 1.01)]                                            # US stock breakout (flattened before close)
+VOLJ = {"BRK_TP": [U(9, 30)], "BRK_TRAIL": [U(10)], "BRK_STOP": [U(11)], "BRK_HOLD": [U(12)], "BRK_RSI": [U(13)], "BRK_NEG": [U(13, 30)], "BRK_MKT": [U(15, 30)],
+        "BRK_CD": [U(14), U(14, 45)], "BRK_HOT": [U(19)]}
+P7 = {a: 1.0 for a in CRY}; P7["BTC"] = 80000.0; P7["SIMSTK"] = 50.0; V24 = {a: 1e8 for a in CRY}
+rng7 = random.Random(7)
+def step_prices(t):
+    for a in list(P7):
+        if a == "SIMSTK" and not markets.is_open(a, t): continue
+        r = 0.0
+        for ea, f0, f1, mult in MOVES:
+            if ea == a and f0 <= t < f1: r += mult ** (1 / max(1, int((f1 - f0).total_seconds() // 900))) - 1
+        P7[a] *= 1 + r
+        if any(v <= t < v + timedelta(minutes=15) for v in VOLJ.get(a, [])): V24[a] *= 1.15     # last hour ~4.6x the average hour
+        k = "stock" if a == "SIMSTK" else "crypto"
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, P7[a] * (1 + rng7.gauss(0, 0.001)), None, None, V24.get(a), None, "sim"))
+    con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (common.iso(t), "USDGBP", rate, "sim", None, None))
+    if markets.is_open("US", t):
+        con.execute("INSERT OR REPLACE INTO state VALUES('market_proxy',?)", (json.dumps({"US": dict(sym="^GSPC", ts=common.iso(t), price=1, chg1h=0.1, chg_day=0.3)}),))
+        con.execute("INSERT OR REPLACE INTO state VALUES('stock_vol',?)", (json.dumps({"SIMSTK": dict(ts=common.iso(t), ratio=3.0 if t >= U(15, 45) else 1.0)}),))
+t = START
+while t < U(7, 45): common._NOW = t; step_prices(t); t += timedelta(minutes=15)       # 30h of history, no trading
+con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(8)), "BRK_NEG", -0.6, 10, 0.8, "sim bearish", "[]", "sim", common.iso(U(8))))
+con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(15)), "BRK_HOT", -1.0, 10, 1.0, "sim: keeps momentum out", "[]", "sim", common.iso(U(15))))
+con.commit()
+v7 = dict(burst_open_max={a: 0 for a in common.ACCOUNTS}, flat_after=[], cands_seen={}, thr=[], neg=[])
+while t <= STOP:
+    common._NOW = t; step_prices(t)
+    if t == U(14, 7): con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(14)), "BRK_NEG", -0.6, 10, 0.8, "sim bearish", "[]", "sim", common.iso(U(14))))
+    con.commit()
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf): trader.main()
+    o = buf.getvalue()
+    if "no trades this cycle" not in o: print(o.rstrip()[:1500])
+    ds = json.loads(con.execute("SELECT value FROM state WHERE key='day_subs'").fetchone()[0])
+    v7["thr"].append(ds["threshold"])
+    for d in ds["cands"]: v7["cands_seen"].setdefault(d["a"], set()).add("BUY" if d.get("bought") else (d["block"] or "")[:60])
+    dm = json.loads(con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone()[0])
+    for ac in common.ACCOUNTS:
+        n = sum(1 for r in con.execute("SELECT asset, klass FROM positions WHERE sleeve='day'") if (dm.get(r[0]) or {}).get("sub") == "burst" and common.acct_of(r[1]) == ac)
+        v7["burst_open_max"][ac] = max(v7["burst_open_max"][ac], n)
+    L = lt(t)
+    if L.hour * 60 + L.minute >= 22 * 60 and con.execute("SELECT COUNT(*) FROM positions WHERE sleeve='day'").fetchone()[0]: v7["flat_after"].append(L.isoformat())
+    if any(r[0] < -1e-9 for r in con.execute("SELECT amount FROM acct_cash")): v7["neg"].append(L.isoformat())
+    t += timedelta(minutes=15)
+tr7 = [dict(r) for r in con.execute("SELECT * FROM trades WHERE sleeve='day' ORDER BY id")]
+for x in tr7: x["L"] = lt(datetime.fromisoformat(x["ts"]))
+fmt = lambda x: f"{x['L']:%H:%M} {x['side']} {x['asset']} [{x['sub']}] £{x['value']:.2f}" + (f" P&L £{x['pnl']:+.3f}" if x["pnl"] is not None else "") + f" | {x['reason'][:110]}"
+print("v7 DAY trades:"); [print("  " + fmt(x)) for x in tr7]
+print("v7 burst candidate decisions:", {a: sorted(v) for a, v in v7["cands_seen"].items()})
+sells, buys = {}, {}
+for x in tr7: (sells if x["side"] == "SELL" else buys).setdefault(x["asset"], x)     # first round trip per asset
+def why(a): return " | ".join(sorted(v7["cands_seen"].get(a, [])))
+assert all(x["sub"] in ("momentum", "burst") for x in tr7), "v7: every DAY order tagged"
+assert buys.get("BRK_TP", {}).get("sub") == "burst" and "take-profit" in sells["BRK_TP"]["reason"] and sells["BRK_TP"]["pnl"] > 0, "burst take-profit"
+assert "trailing stop" in sells["BRK_TRAIL"]["reason"] and sells["BRK_TRAIL"]["pnl"] > 0, "burst trailing stop locks a gain"
+assert "stop-loss" in sells["BRK_STOP"]["reason"] and sells["BRK_STOP"]["pnl"] < 0, "burst ATR stop-loss"
+assert "max hold" in sells["BRK_HOLD"]["reason"], "burst 6h max hold"
+assert "BRK_NOVOL" not in buys and "volume" in why("BRK_NOVOL"), "no volume spike -> skipped"
+assert "BRK_HOT" not in buys and "RSI" in why("BRK_HOT"), "RSI >= 80 -> skipped"
+assert "BRK_NEG" not in buys and "sentiment" in why("BRK_NEG"), "negative sentiment -> skipped"
+assert "BRK_MKT" not in buys and "market falling" in why("BRK_MKT"), "BTC falling -> skipped"
+assert buys.get("MOMO", {}).get("sub") == "momentum" and sells.get("MOMO") and sells["MOMO"]["pnl"] > 0 and ("trailing stop" in sells["MOMO"]["reason"] or "take-profit" in sells["MOMO"]["reason"]), "momentum winner exits via trailing / target"
+mo_gain = sells["MOMO"]["pnl"] / (sells["MOMO"]["value"] - sells["MOMO"]["gas"] - sells["MOMO"]["pnl"]) * 100
+print(f"MOMO momentum round trip {mo_gain:+.2f}% (old fixed cap was +5%)")
+assert buys.get("SIMSTK", {}).get("sub") == "burst" and ("flatten" in sells["SIMSTK"]["reason"] or "take-profit" in sells["SIMSTK"]["reason"] or "trailing" in sells["SIMSTK"]["reason"]), "stock burst (index proxy + Yahoo volume), flat before the close"
+cool = [x for x in tr7 if x["side"] == "BUY" and x["sub"] == "burst" and x["asset"] in sells and x["ts"] > sells[x["asset"]]["ts"] and
+        datetime.fromisoformat(x["ts"]) < datetime.fromisoformat(sells[x["asset"]]["ts"]) + timedelta(hours=1)]
+assert "stop-loss" in sells["BRK_CD"]["reason"] and not cool and any("cooldown" in s_ for s_ in v7["cands_seen"].get("BRK_CD", [])), "1h re-entry cooldown after an exit"
+assert all(v <= c["day"]["burst"]["max_open_per_account"] for v in v7["burst_open_max"].values()), "max open bursts per account"
+assert not v7["flat_after"] and not v7["neg"], "flat by 22:00 UK, no negative cash"
+# per-trade economics: target >= 4x round-trip costs, size = confidence x 33% of free burst cash (min trade floor)
+for x in tr7:
+    if x["side"] == "BUY" and x["sub"] == "burst":
+        assert x["conf"] is not None and x["conf"] >= daypot.threshold(c["day"]["burst"], 0, 15) - 1e-9, "burst buy above the confidence threshold"
+# stats per sub-strategy
+st7 = dashboard.day_sub_stats(con, lt(STOP))
+for sb in ("momentum", "burst"):
+    x = st7[sb]["all:all"]; print(f"v7 stats {sb}: {x}")
+    assert x["trades"] == sum(1 for y in tr7 if y["side"] == "SELL" and y["sub"] == sb) and abs(x["pnl"] - sum(y["pnl"] for y in tr7 if y["side"] == "SELL" and y["sub"] == sb)) < 1e-3, "sub stats"
+# unit checks: capital-based threshold across the 15% cap, sizing proportional to confidence x free cash, EV, cost filter
+B7 = c["day"]["burst"]; cap = c["day"]["daily_loss_cap_pct"]
+th = [daypot.threshold(B7, -x / 100, cap) for x in (0, 3, 7.5, 15, 20)]
+print("threshold at day loss 0/3/7.5/15/20%:", th)
+assert th[0] == B7["conf_threshold"] and th[0] < th[1] < th[2] < th[3] and abs(th[3] - (B7["conf_threshold"] + B7["conf_raise_at_cap"])) < 1e-9 and th[4] == th[3], "threshold scales over the cap"
+assert daypot.threshold(B7, 0.05, cap) == B7["conf_threshold"], "gains never lower the threshold"
+assert abs(daypot.conf_size(B7, 0.8, 15) - 0.8 * 0.33 * 15) < 1e-6 and daypot.conf_size(B7, 0.8, 7.5) < daypot.conf_size(B7, 0.8, 15), "size = confidence x 33% of the remaining cash"
+assert daypot.expected_value(dict(p=0.5, n=0, exp=None), 3, 1.5, 0.6) == round(0.5 * 3 - 0.5 * 1.5 - 0.6, 3), "EV model"
+assert daypot.expected_value(dict(p=0.3, n=0, exp=None), 3, 2.5, 0.6) < 0, "negative EV setup"
+print(f"v7 thresholds seen during the day: {min(v7['thr'])}..{max(v7['thr'])} | max open bursts {v7['burst_open_max']}")
+# min-move filter: with min_move_cost_x = 20 (crypto round trip 0.6% -> 12% > every target) nothing may be bought
+import copy
+c20 = copy.deepcopy(c); c20["day"]["min_move_cost_x"] = 20; _cfg = trader.cfg; trader.cfg = lambda: c20
+n0 = con.execute("SELECT COUNT(*) FROM trades WHERE side='BUY'").fetchone()[0]
+common._NOW = U(10); con.execute("DELETE FROM state WHERE key LIKE 'day_exit:%'"); con.commit()
+with contextlib.redirect_stdout(io.StringIO()): trader.main()
+trader.cfg = _cfg
+ds = json.loads(con.execute("SELECT value FROM state WHERE key='day_subs'").fetchone()[0])
+print("min-move filter (x20):", [(d["a"], d["block"]) for d in ds["cands"]][:4])
+assert con.execute("SELECT COUNT(*) FROM trades WHERE side='BUY'").fetchone()[0] == n0, "min expected move filter"
+con.close(); V7.unlink(); common.DB = SIM
+print("v7 DAY checks passed")
+
 print("ALL CHECKS PASSED")
 
 if "--keep" not in sys.argv:

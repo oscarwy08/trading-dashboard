@@ -167,6 +167,8 @@ def db():
     con.executescript(SCHEMA)
     cols = {r[1] for r in con.execute("PRAGMA table_info(trades)")}
     if "gas" not in cols: con.execute("ALTER TABLE trades ADD COLUMN gas REAL")   # simulated Monad gas (GBP) per trade
+    if "sub" not in cols: con.execute("ALTER TABLE trades ADD COLUMN sub TEXT")    # v7: DAY sub-strategy (momentum | burst)
+    if "conf" not in cols: con.execute("ALTER TABLE trades ADD COLUMN conf REAL")  # v7: DAY burst confidence 0-1 / momentum signal score
     ecols = {r[1] for r in con.execute("PRAGMA table_info(equity)")}
     for col in ("risk", "risk_cash"):                                              # RISK pot (v4)
         if col not in ecols: con.execute(f"ALTER TABLE equity ADD COLUMN {col} REAL")

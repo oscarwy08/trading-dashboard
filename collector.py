@@ -237,12 +237,51 @@ def intraday_stocks(con, c, risk=True):
         out += [s for bad, _, s in sorted(sc) if not bad] + [s for _, _, s in sorted(sc)[:n]]
     return list(dict.fromkeys(out))
 
-def stock_quote(sym):
-    """(sym, price in quote currency, meta) from Yahoo (regularMarketPrice: real-time for US, ~15 min delayed for London)."""
+def vol_ratio(r, now_ts=None):
+    """v7: last-hour volume vs the average hour from Yahoo 15-min bars (5 days): sum of the last 4 COMPLETED bars vs the
+    mean 4-bar sum of all earlier bars. None if volume is missing/zero (e.g. indices, some London ETFs)."""
     try:
-        r = yahoo(sym)[0]; return sym, r["meta"]["regularMarketPrice"], r["meta"]
+        ts_, vs = r["timestamp"], r["indicators"]["quote"][0]["volume"]
+        bars = [(t, v) for t, v in zip(ts_, vs) if v is not None]
+        now_ts = now_ts or datetime.now(timezone.utc).timestamp()
+        bars = [b for b in bars if b[0] + 900 <= now_ts]                     # drop the bar still in progress
+        while bars and bars[-1][1] == 0: bars.pop()                          # trailing empty (after-close) bars
+        if len(bars) < 12: return None
+        last, prev = bars[-4:], bars[:-4]
+        avg = sum(v for _, v in prev) / len(prev) * 4
+        return dict(ratio=round(sum(v for _, v in last) / avg, 3), v1h=sum(v for _, v in last), avg1h=round(avg)) if avg > 0 else None
+    except Exception: return None
+
+def stock_quote(sym):
+    """(sym, price in quote currency, meta, volume info) from Yahoo (regularMarketPrice: real-time for US, ~15 min delayed
+    for London). v7: 5 days of 15-min bars (same single call) for the DAY burst volume-spike check."""
+    try:
+        r = yahoo(sym, "5d", "15m")[0]; return sym, r["meta"]["regularMarketPrice"], r["meta"], vol_ratio(r)
     except Exception as e:
-        L.error("stock %s: Yahoo quote failed: %s", sym, e); return sym, None, None
+        L.error("stock %s: Yahoo quote failed: %s", sym, e); return sym, None, None, None
+
+def market_proxy(con, c, ts, status):
+    """v7: broad-market filter for DAY burst stock entries - index proxy per exchange (config day.burst.market.stocks.proxy,
+    e.g. ^GSPC / ^FTSE / ^AXJO), fetched only while that exchange is open: 1h change (last vs 4 bars back) and change vs
+    the previous session close. Stored in state 'market_proxy' (NOT in prices, so nothing ever trades an index)."""
+    import markets
+    P = ((((c.get("day") or {}).get("burst") or {}).get("market") or {}).get("stocks") or {}).get("proxy") or {}
+    now_ = datetime.now(timezone.utc); cur = st_get(con, "market_proxy") or {}; done = []
+    for ex, sym in P.items():
+        if not markets.is_open(ex, now_): continue
+        try:
+            r, pts = yahoo(sym, "5d", "15m")
+            tz = markets.EXCH[ex]["tz"]; today = datetime.fromtimestamp(pts[-1][0], timezone.utc).astimezone(tz).date()
+            prev = [p for t_, p in pts if datetime.fromtimestamp(t_, timezone.utc).astimezone(tz).date() < today]
+            last = r["meta"].get("regularMarketPrice") or pts[-1][1]
+            ago = [p for t_, p in pts if t_ <= pts[-1][0] - 3600]
+            cur[ex] = dict(sym=sym, ts=ts, price=last, chg1h=round((last / ago[-1] - 1) * 100, 3) if ago else None,
+                           chg_day=round((last / prev[-1] - 1) * 100, 3) if prev else None)
+            done.append(f"{sym} 1h {cur[ex]['chg1h']}% day {cur[ex]['chg_day']}%")
+        except Exception as e:
+            L.warning("market proxy %s failed: %s", sym, e)
+    st_set(con, "market_proxy", cur)
+    status["market_proxy"] = ", ".join(done) or "all markets closed"
 
 def stocks(con, c, ts, status):
     """Intraday stock quotes (Yahoo, 8 threads; DB writes on the main thread), converted to USD (prices table is USD).
@@ -261,13 +300,16 @@ def stocks(con, c, ts, status):
         if not last or (lc and datetime.fromisoformat(last) < lc + timedelta(minutes=25)): todo.append(s)   # closing price (Yahoo LSE delay ~15 min)
     with ThreadPoolExecutor(8) as ex: res = list(ex.map(stock_quote, todo))
     ok = 0
-    for sym, price, meta in res:
+    svol = st_get(con, "stock_vol") or {}
+    for sym, price, meta, vi in res:
         if not price: continue
+        if vi: svol[sym] = dict(ts=ts, **vi)
         f = usd_factor(con, meta.get("currency"))
         if not f: L.warning("stock %s: unknown currency %s", sym, meta.get("currency")); continue
         stock_meta(con, sym, meta)
         con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (ts, sym, "stock", price * f, None, None, None, None, "yahoo"))
         ok += 1
+    st_set(con, "stock_vol", {k: v for k, v in svol.items() if v["ts"] >= (now_ - timedelta(days=2)).isoformat()})
     status["stocks"] = f"{ok}/{len(todo)} quotes ok (Yahoo), {len(syms) - len(todo)} skipped (market closed, closing price stored)"
 
 def gas(con, c, ts, status):
@@ -357,7 +399,7 @@ def backfill(con, c, crypto_rows, cg_limit=3):
 def main():
     c, con, ts, status = cfg(), db(), iso(), {}
     rows = {}
-    for name, fn in (("coingecko", crypto), ("fx", fxrate), ("kyberswap", kyber), ("gas", gas), ("stocks", stocks)):
+    for name, fn in (("coingecko", crypto), ("fx", fxrate), ("kyberswap", kyber), ("gas", gas), ("stocks", stocks), ("market_proxy", market_proxy)):
         try:
             r = fn(con, c, ts, status)
             if name == "coingecko": rows = r
