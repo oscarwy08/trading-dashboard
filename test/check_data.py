@@ -126,12 +126,13 @@ def main(D):
         if isinstance(thr, (int, float)) and b0 is not None:
             frac = min(1.0, max(0.0, -(r.get("dd_pct") or 0) / cap))
             eq(thr, min(0.99, b0 + (b1 - b0) * frac), "risk threshold = base + (top - base) x drawdown / stop", 0.002)
-        Wt = R.get("weights") or {}
         for x in r.get("cands") or []:
             w = f"risk cand {x.get('a')}"
             if "conf" not in x: continue
             n[0] += 1
+            if x.get("setup") not in (None, "", "breakout", "dip"): fails.append(f"{w} setup {x.get('setup')!r} is not breakout or dip")
             if not (0 <= x["conf"] <= 1) or any(not (0 <= v <= 1) for v in (x.get("parts") or {}).values()): fails.append(f"{w} confidence/components outside 0-1")
+            Wt = (R.get("dip_weights") if x.get("setup") == "dip" else R.get("weights")) or {}
             if Wt and x.get("parts"):
                 core = {k: v for k, v in Wt.items() if k != "freshness"}
                 if core and all(k in x["parts"] for k in core):

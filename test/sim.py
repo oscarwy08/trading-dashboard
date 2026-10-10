@@ -586,6 +586,8 @@ r_ = subprocess.run([sys.executable, str(HERE / "test" / "test_universe.py")], c
 assert r_.returncode == 0, "test_universe.py (DAY universe filter + sentiment mapping)"
 r_ = subprocess.run([sys.executable, str(HERE / "test" / "test_loans.py")], capture_output=True, text=True); print(r_.stdout.strip()[-1500:])
 assert r_.returncode == 0, "test_loans.py (v7.3 inter-pot loans: triggers, lenders, CORE tranche reserve, cap, repayment)"
+r_ = subprocess.run([sys.executable, str(HERE / "test" / "test_dip.py")], capture_output=True, text=True); print(r_.stdout.strip()[-2000:])
+assert r_.returncode == 0, "test_dip.py (dip-and-bounce bought, falling knife rejected)"
 print("v7 DAY checks passed")
 
 print("ALL CHECKS PASSED")

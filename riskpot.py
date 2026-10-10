@@ -1,6 +1,6 @@
-"""RISK pot helpers (pure functions + DB reads, no network): crypto breakout screen from one CoinGecko markets snapshot
-and the daily-close breakout score for the speculative stocks (normal exchange tickers, v5). Used by collector.py (screen -> which coins to price),
-trader.py (entries) and dashboard.py (candidate table)."""
+"""RISK pot helpers (pure functions + DB reads, no network): crypto breakout screen from one CoinGecko markets snapshot,
+the daily-close breakout score for the speculative stocks (normal exchange tickers, v5), and the dip / pullback buy (v7.7).
+Used by collector.py (screen -> which coins to price), trader.py (entries) and dashboard.py (candidate table)."""
 import re
 from statistics import mean
 
@@ -74,14 +74,19 @@ def stock_score(con, sym, price_usd=None):
 # ---------------- v7.4: Day-style decision for the RISK pot (confidence + EV after costs + capital-based threshold) ----------------
 def clip01(v): return max(0.0, min(1.0, v))
 
-def setup_stats(con, R, t=None):
+def setup_stats(con, R, t=None, sub=None):
     """Measured record of the RISK pot's closed trades over the last record_days: hit rate with a Beta prior
-    ((wins + p0*n0) / (n + n0)) and the observed expectancy in % per trade after all fees (same model as the DAY burst)."""
+    ((wins + p0*n0) / (n + n0)) and the observed expectancy in % per trade after all fees (same model as the DAY burst).
+    sub='dip' counts only dip sells; sub='breakout' counts breakout sells and older rows with no setup tag.
+    sub=None counts every RISK sell (the pot's own record)."""
     from datetime import datetime, timedelta, timezone
     p0, n0 = float(R.get("hit_prior", 0.5)), float(R.get("hit_prior_n", 20))
     since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(R.get("record_days", 30)))).isoformat()
     pcts = []
-    for v, g, pnl in con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve='risk' AND side='SELL' AND ts>=? ORDER BY id DESC", (since,)):
+    for v, g, pnl, sb in con.execute(
+            "SELECT value, gas, pnl, sub FROM trades WHERE sleeve='risk' AND side='SELL' AND ts>=? ORDER BY id DESC", (since,)):
+        if sub == "dip" and sb != "dip": continue
+        if sub == "breakout" and sb not in (None, "", "breakout"): continue
         basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)
     w = sum(1 for x in pcts if x > 0)
     return dict(p=(w + p0 * n0) / (len(pcts) + n0), n=len(pcts), wins=w, exp=sum(pcts) / len(pcts) if pcts else None)
@@ -144,3 +149,117 @@ def size(R, conf, cash_free, pot_equity, mint):
     cap = min(float(R.get("max_position_gbp", 8)), float(R.get("max_position_pct", R.get("position_pct", 20))) / 100 * max(0.0, pot_equity))
     raw = clip01(conf) * float(R.get("conf_size_pct", 50)) / 100 * max(0.0, cash_free)
     return round(max(mint, min(raw, cap)), 4), round(cap, 4)      # the min trade wins if 20% of a shrunken pot is below it
+
+# ---------------- v7.7: dip / pullback buy (second RISK setup; breakouts are unchanged) ----------------
+def dip_confidence(R, pullback, support, bounce, sent, regime, hr, freshness=None):
+    """Weighted 0-1 confidence of a DIP setup. Components 0-1: pullback depth vs typical volatility, proximity to
+    support, bounce confirmation, sentiment ((score+1)/2, none = 0.5), market regime, this setup's own measured hit
+    rate (Beta prior while no dip has closed). Freshness scales the result (1 = unchanged) and is its own mini-bar."""
+    import freshness as frsh
+    D = R.get("dip") or {}
+    W = dict(D.get("weights") or dict(pullback=0.20, support=0.15, bounce=0.20, sentiment=0.15, market=0.10, hit_rate=0.20))
+    wf = float(W.pop("freshness", 0) or 0)
+    parts = dict(pullback=clip01(pullback), support=clip01(support), bounce=clip01(bounce),
+                 sentiment=0.5 if sent is None else clip01((float(sent) + 1) / 2),
+                 market=clip01(0.5 if regime is None else regime), hit_rate=clip01(0.5 if hr is None else hr))
+    base = sum(W[k] * parts[k] for k in W) / (sum(W.values()) or 1)
+    conf, fr = frsh.adjust_confidence(base, 1.0 if freshness is None else freshness, wf, sum(W.values()))
+    out = {k: round(v, 2) for k, v in parts.items()}; out["freshness"] = fr
+    return conf, out
+
+def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=None):
+    """A pullback buy on snapshot prices [(ts, price), ...]. Shows a row once the drop from a recent high is large
+    enough to be a dip. It is tradable only when that dip follows an uptrend or positive sentiment, stays shallower
+    than a breakdown, is not still a one-day pump, and has turned up (higher low or a short average reclaimed, last
+    bar up, off the low). A steady rise is not a dip. Returns show, ok, why (one sentence), trend_ok, conf, parts."""
+    from datetime import timedelta
+    D = R.get("dip") or {}
+    blank = dict(show=False, ok=False, why="", trend_ok=False, pullback=None, conf=None, parts=None, rsi=None)
+    if not D.get("enabled", True) or not pts or len(pts) < 8:
+        return blank
+    t, price = pts[-1]
+    span_h = (t - pts[0][0]).total_seconds() / 3600
+    if span_h < float(D.get("min_history_h", 30)):
+        return blank
+    excl = timedelta(hours=float(D.get("swing_exclude_h", 1.5)))
+    window = [(ts, p) for ts, p in pts if t - timedelta(hours=float(D.get("high_lookback_h", 36))) <= ts <= t - excl]
+    if len(window) < 4:
+        return blank
+    high_px = max(p for _, p in window)
+    high_ts = max(ts for ts, p in window if p == high_px)
+    after = [(ts, p) for ts, p in pts if ts >= high_ts]
+    low_px = min(p for _, p in after)
+    if high_px <= 0 or low_px <= 0:
+        return blank
+    pullback = (high_px - low_px) / high_px * 100
+    lo_min = float(D.get("pullback_min_pct", 4))
+    hi_max = float(D.get("pullback_max_pct", 18))
+    if pullback < lo_min:
+        return blank                                   # still rising, or only a wiggle: leave the breakout row in charge
+    before = [p for ts, p in pts if t - timedelta(hours=float(D.get("trend_lookback_h", 48))) <= ts <= high_ts]
+    swing = min(before) if before else high_px
+    trend_ok = bool(before) and swing > 0 and high_px / swing - 1 >= float(D.get("trend_min_pct", 8)) / 100 and swing < high_px
+    sent_pos = sent is not None and float(sent) > float(D.get("sentiment_min", 0))
+    prices = [p for _, p in pts]
+    last_up = prices[-1] > prices[-2]
+    nb = max(2, int(D.get("bounce_bars", 3)))
+    higher_low = len(prices) >= nb * 2 and min(prices[-nb:]) > min(prices[-2 * nb:-nb])
+    ma_n = max(2, int(D.get("ma_bars", 6)))
+    ma = sum(prices[-ma_n:]) / ma_n if len(prices) >= ma_n else None
+    reclaimed = ma is not None and price >= ma
+    day = [p for ts, p in pts if ts >= t - timedelta(hours=24)]
+    avg = sum(day) / len(day) if day else None
+    slow_n = max(ma_n * 4, 16)
+    slow = sum(prices[-slow_n:]) / slow_n if len(prices) >= slow_n else None
+    import daypot
+    if atr is None or atr <= 0:
+        atr = daypot.atr_pct(pts) or 2.0
+    rsi = daypot.rsi_h(pts)
+    band = float(D.get("support_near_pct", 2))
+    dists = [abs(price / lv - 1) * 100 for lv in (low_px, avg, slow, ma) if lv]
+    near = min(dists) if dists else 99
+    if near <= band: sup_s = 1.0
+    elif near >= band * 4: sup_s = 0.0
+    else: sup_s = 1 - (near - band) / (band * 3)
+    typical = max(float(atr), 0.8) * float(D.get("pullback_atr_x", 1.2))
+    full_until = hi_max * 0.65
+    if pullback < typical * 0.5: pb_s = 0.25 * pullback / (typical * 0.5)
+    elif pullback < typical: pb_s = 0.35 + 0.65 * (pullback - typical * 0.5) / (typical * 0.5)
+    elif pullback <= full_until: pb_s = 1.0
+    elif pullback >= hi_max: pb_s = 0.1
+    else: pb_s = 1 - 0.9 * (pullback - full_until) / (hi_max - full_until)
+    lift = float(D.get("bounce_min_pct", 0.4))
+    lifted = price >= low_px * (1 + lift / 100)
+    vol_ok = vol is not None and vol >= float(D.get("volume_x", 1.2))
+    confirmed = bool(lifted and last_up and (higher_low or reclaimed or vol_ok))
+    b_s = 0.0
+    if confirmed:
+        b_s = 0.62 + (0.15 if higher_low else 0) + (0.13 if reclaimed else 0) + (0.10 if vol_ok else 0)
+        if rsi is not None and rsi <= float(D.get("rsi_oversold", 40)): b_s += 0.08
+    else:
+        if lifted: b_s += 0.25
+        if last_up: b_s += 0.15
+    old = [p for ts, p in pts if ts <= t - timedelta(hours=24)]
+    r24 = (price / old[-1] - 1) * 100 if old and old[-1] else None
+    chasing = r24 is not None and r24 > float(D.get("chase_24h_pct", 60))
+    too_deep = pullback > hi_max
+    if chasing:
+        why = f"Still a one-day pump: up {r24:.0f}% over 24 hours, so this dip is not bought."
+    elif too_deep:
+        why = f"Still falling: down {pullback:.1f}% from the recent high, too deep to be a dip."
+    elif not trend_ok and not sent_pos:
+        why = f"Pulled back {pullback:.1f}%, but there is no uptrend and sentiment is not positive."
+    elif not confirmed:
+        why = f"Still falling: pulled back {pullback:.1f}% and the last bars have not turned up."
+    else:
+        lead = "Uptrend" if trend_ok else "Positive sentiment"
+        if abs(price / low_px - 1) * 100 <= band * 1.5: loc = " toward the recent low"
+        elif avg and abs(price / avg - 1) * 100 <= band: loc = " toward the day average"
+        elif reclaimed: loc = " and back above a short average"
+        else: loc = ""
+        rsi_bit = f" RSI {rsi:.0f} was oversold." if rsi is not None and rsi <= float(D.get("rsi_oversold", 40)) else ""
+        why = f"{lead}, pulled back {pullback:.1f}%{loc}, and the last bars turned up.{rsi_bit}"
+    ok = bool(confirmed and (trend_ok or sent_pos) and not too_deep and not chasing)
+    conf, parts = dip_confidence(R, pb_s, sup_s, b_s, sent, regime, hr, freshness)
+    return dict(show=True, ok=ok, why=why, trend_ok=trend_ok, pullback=round(pullback, 2), conf=conf, parts=parts,
+                rsi=round(rsi, 1) if rsi is not None else None)

@@ -404,7 +404,8 @@ const cl01 = v => Math.max(0, Math.min(1, v || 0));
 const mbar = (v, thr, fc = '', sm = false) => `<div class="mbar${sm ? ' sm' : ''}"><i class="${fc}" style="width:${(cl01(v) * 100).toFixed(1)}%"></i>${isNum(thr) ? `<b style="left:${(cl01(thr) * 100).toFixed(1)}%" title="threshold ${(thr * 100).toFixed(0)}%"></b>` : ''}</div>`;
 const bval = (v, thr, fc, txt) => `<div class="bval">${mbar(v, thr, fc)}<span>${txt}</span></div>`;
 const confBar = (v, thr) => isNum(v) ? bval(v, thr, isNum(thr) ? (v >= thr ? 'ok' : 'lo') : '', (v * 100).toFixed(0) + '%') : '<span class="muted">-</span>';
-const COMPN = {breakout: 'Breakout', volume: 'Volume', sentiment: 'Sentiment', market: 'Market', hit_rate: 'Hit rate', freshness: 'Freshness'};
+const COMPN = {breakout: 'Breakout', pullback: 'Pullback', support: 'Support', bounce: 'Bounce', volume: 'Volume', sentiment: 'Sentiment', market: 'Market', hit_rate: 'Hit rate', freshness: 'Freshness'};
+const setupTag = s => s === 'dip' ? '<span class="tag blue">Dip</span>' : s === 'breakout' ? '<span class="tag">Breakout</span>' : '<span class="muted">-</span>';
 const compBars = p => `<div class="comp">${Object.keys(COMPN).filter(k => p && isNum(p[k])).map(k => `<span>${COMPN[k]}</span>${mbar(p[k], null, '', true)}<span>${(p[k] * 100).toFixed(0)}%</span>`).join('')}</div>`;
 const subTag = s => s ? `<span class="tag ${s === 'burst' ? 'risk' : 'blue'}">${esc(SUBN[s] || s)}</span>` : '<span class="muted">-</span>';
 const lvlTxt = d => d ? `max(${d.min_pct}%, ${d.atr_x}x ATR)${d.max_pct ? `, max ${d.max_pct}%` : ''}` : '-';
@@ -506,8 +507,9 @@ function renderRiskPot() {
   const r0 = D.sleeves.risk; if (!r0) return; const r = potV('risk'), R = r0.rules || {}, sc = r0.screen || {}, SU = r0.setup || {};
   const thr = isNum(r0.threshold) ? r0.threshold : R.conf_threshold, W = R.weights || {};
   $('#risk-intro').innerHTML = `A <b>${fM0(r0.start)}</b> pot (${r0.accts ? `${fM0(r0.accts.crypto.start)} Crypto account + ${fM0(r0.accts.stocks.start)} Stocks account` : r0.pct + '% of the account'}) for <b>high-risk</b> bets: small and mid-size crypto coins and niche stocks ` +
-    `(quantum, space, nuclear, bitcoin miners). It looks for a <b>breakout</b> - a strong move up with heavy trading, near its recent high - while the short-term trend agrees. ` +
-    `Each setup gets a <b>confidence</b> score (0-1: breakout strength, volume spike, news sentiment, market mood and the pot's own measured hit rate) - a ranking, not a promise of profit. ` +
+    `(quantum, space, nuclear, bitcoin miners). It buys two kinds of setup. A <b>breakout</b> is a strong move up with heavy trading, near a recent high, while the short-term trend agrees. ` +
+    `A <b>dip</b> is a coin already in an uptrend, or with positive news, that pulls back toward a recent low or average and then turns up. A coin that is still falling is skipped. ` +
+    `Each setup gets its own <b>confidence</b> score from 0 to 1 (a ranking, not a promise of profit), with a bar for each ingredient, including that setup's own hit rate. ` +
     `It is bought only if confidence is at least the threshold <b>and</b> its expected value after costs is positive. The threshold starts at <b>${R.conf_threshold}</b> and rises to <b>${R.conf_at_stop}</b> as the pot's fall approaches the ${R.cap}% stop. ` +
     `Size = confidence x ${R.conf_size_pct}% of the cash the pot still has in that account (min £${R.min_trade}, max £${R.max_pos} or ${R.pos_pct}% of the pot), up to <b>${R.max_open}</b> open at a time; no daily limit on new trades. ` +
     `Exits: <b>-${R.stop}%</b> stop-loss; once a position has been up <b>+${R.trail_after}%</b> it is sold if it falls <b>${R.trail}%</b> from its peak (locks in gains); anything still held after <b>${R.hold} days</b> is sold. ` +
@@ -548,12 +550,13 @@ function renderRiskPot() {
   $('#risk-sum-sub').querySelectorAll('a[data-per]').forEach(a => a.onclick = e => { e.preventDefault(); S.riskPer = a.dataset.per; renderRiskPot(); });
   const P = (D.positions || []).filter(p => p.sleeve === 'risk' && inAcct(p));
   const cols = [{k: 'asset', l: 'Asset', asc: 1, f: x => assetCell(x.asset)}, {k: 'acct', l: 'Account', asc: 1, f: x => acctTag(x.acct)}, {k: 'opened', l: 'Opened', f: x => esc(fTs(x.opened))},
+    {k: 'setup', l: 'Setup', f: x => setupTag(x.setup || 'breakout') + (x.why ? `<div class="muted small">${esc(x.why)}</div>` : ''), tip: 'Breakout or dip, and the reason in plain English, from when it was bought. Positions from before dips were added were breakouts.'},
     {k: 'conf', l: 'Confidence', num: 1, f: x => isNum(x.conf) ? confBar(x.conf, null) + (isNum(x.ev) ? `<div class="muted small">EV ${fPct(x.ev)}</div>` : '') : '<span class="muted">-</span>', tip: 'Confidence and expected value when it was bought (positions bought before v7.4 have none).'},
     {k: 'entry', l: 'Avg buy', num: 1, f: x => fP(x.entry)}, {k: 'now', l: 'Now', num: 1, f: x => fP(x.now)}, {k: 'value', l: 'Value', num: 1, f: x => fM(x.value)},
     {k: 'pnl', l: 'P&L', num: 1, f: x => pnlCell(x.pnl, x.pnl_pct)},
     {k: 'stop', l: 'Stop / trailing', num: 1, nosort: 1, f: x => `<span class="neg">${fP(x.stop)}</span> / ${x.trail_on ? `<span class="pos">${fP(x.trail)}</span>` : `<span class="muted">from ${fP(x.trail_arm)}</span>`}`},
     {k: 'expires', l: 'Sold by', f: x => `${esc(fTs(x.expires))}<div class="muted small">${esc(until(x.expires))}</div>`}];
-  table($('#risk-pos'), cols, P, {k: 'opened', d: -1}, renderRiskPot, {empty: 'No open risk positions - waiting for a breakout', key: x => x.asset, onRow: openAsset});
+  table($('#risk-pos'), cols, P, {k: 'opened', d: -1}, renderRiskPot, {empty: 'No open risk positions - waiting for a breakout or a dip', key: x => x.asset, onRow: openAsset});
   $('#risk-open-sub').textContent = `${P.length} open · stop -${R.stop}% · trailing ${R.trail}% after +${R.trail_after}% · max ${R.hold} days`;
   const priced = new Set((D.assets || []).map(a => a.a));
   const TOPN = 8;
@@ -562,14 +565,15 @@ function renderRiskPot() {
   byConf.forEach(x => { if (x.bought) topIds.add(x.a); });
   const shownC = S.riskAll ? byConf : byConf.filter(x => topIds.has(x.a));
   const hiddenN = byConf.length - shownC.length;
-  $('#risk-cand-sub').innerHTML = `Breakout candidates at the last 15-minute run (${esc(ago(r0.status_t))}), best confidence first. Hard rules first (real breakout, trend, news, market open, cooldown, limits); then <b>confidence ≥ ${(thr * 100).toFixed(0)}%</b> and <b>expected value after costs &gt; ${R.ev_min}%</b> (each setup's own stop, target, volatility and confidence). Coins use the pot's Crypto-account cash, shares its Stocks-account cash. ` +
+  $('#risk-cand-sub').innerHTML = `Breakout and dip candidates at the last 15-minute run (${esc(ago(r0.status_t))}), best confidence first. Hard rules first (the setup itself, news, market open, cooldown, limits); then <b>confidence ≥ ${(thr * 100).toFixed(0)}%</b> and <b>expected value after costs &gt; ${R.ev_min}%</b>. A dip uses its own bars (pullback, support, bounce) and its own hit rate. Coins use the pot's Crypto-account cash, shares its Stocks-account cash. ` +
     `Showing <b>${shownC.length}</b> of ${byConf.length}.` +
     (byConf.length > TOPN ? ` <a href="#risk" id="risk-all">${S.riskAll ? 'Show top ' + TOPN : 'Show all ' + byConf.length}</a>` : '');
   const riskAll = $('#risk-all'); if (riskAll) riskAll.onclick = e => { e.preventDefault(); S.riskAll = !S.riskAll; renderRiskPot(); };
   table($('#risk-cands'), [
     {k: 'a', l: 'Asset', asc: 1, f: x => assetCell(x.a, x.kind === 'stock' ? (themeOf(x.a) || 'Stock') : 'Crypto')},
-    {k: 'why', l: 'Setup', asc: 1, wrap: 1, f: x => esc((x.why || '').split(' | no: ')[0])},
-    {k: 'mom', l: 'Trend', num: 1, f: x => isNum(x.mom) ? `<span class="${cls(x.mom)}">${x.mom.toFixed(2)}</span>` : '<span class="muted">-</span>', tip: 'Short-term trend (4h / 24h / moving averages, -1 to +1). Must be at least ' + R.confirm + '.'},
+    {k: 'setup', l: 'Setup', asc: 1, f: x => setupTag(x.setup || 'breakout')},
+    {k: 'plain', l: 'Why', asc: 1, wrap: 1, f: x => esc(x.plain || (x.why || '').split(' | no: ')[0])},
+    {k: 'mom', l: 'Trend', num: 1, f: x => isNum(x.mom) ? `<span class="${cls(x.mom)}">${x.mom.toFixed(2)}</span>` : '<span class="muted">-</span>', tip: 'Short-term trend (4h / 24h / moving averages, -1 to +1). A breakout needs it at least ' + R.confirm + '. A dip can be bought while this is still negative, once the bounce is confirmed.'},
     {k: 'vol', l: 'Volume', num: 1, f: x => isNum(x.vol) ? x.vol.toFixed(1) + 'x' : '<span class="muted">n/a</span>', tip: 'Last hour\'s trading volume vs the average hour.'},
     {k: 'conf', l: 'Confidence', num: 1, f: x => confBar(x.conf, thr), tip: 'Weighted 0-1 score; the marker is the current threshold. Freshness scales it (a fresh price leaves it unchanged).'},
     {k: 'parts', l: 'Components', nosort: 1, f: x => compBars(x.parts)},
@@ -587,7 +591,8 @@ function renderRiskPot() {
     sc.top || [], S.rsSort, renderRiskPot, {empty: 'Screen not run yet', key: x => x.a, onRow: a => priced.has(a) && openAsset(a), limit: 25});
   $('#risk-screen').closest('.card').classList.toggle('hidden', S.acct === 'stocks');
   const tr = (D.trades || []).filter(t => t.sleeve === 'risk' && inAcct(t)), real = tr.reduce((a, t) => a + (t.pnl || 0), 0);
-  table($('#risk-trades'), [{k: 'conf', l: 'Confidence', num: 1, f: r => isNum(r.conf) ? confBar(r.conf, null) : '<span class="muted">-</span>'}, ...orderCols().filter(c => c.k !== 'sleeve')], tr, {k: 't', d: -1}, renderRiskPot, {empty: 'No risk pot orders yet', limit: 30, key: r => r.asset, onRow: openAsset});
+  table($('#risk-trades'), [{k: 'sub', l: 'Setup', f: r => (r.side === 'BUY' || r.side === 'SELL') ? setupTag(r.sub || 'breakout') : '<span class="muted">-</span>'},
+    {k: 'conf', l: 'Confidence', num: 1, f: r => isNum(r.conf) ? confBar(r.conf, null) : '<span class="muted">-</span>'}, ...orderCols().filter(c => c.k !== 'sleeve')], tr, {k: 't', d: -1}, renderRiskPot, {empty: 'No risk pot orders yet', limit: 30, key: r => r.asset, onRow: openAsset});
   $('#risk-tr-sub').innerHTML = `${tr.filter(t => !CASHROW(t)).length} orders · realised <span class="${cls(real)}">${fM(real, true)}</span>`;
 }
 

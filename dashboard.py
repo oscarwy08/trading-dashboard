@@ -294,7 +294,8 @@ def build(con):
             positions[-1].update(peak=sig(pk), trail_on=on, trail=sig(pk * (1 - RP["trail_pct"] / 100)) if on else None,
                                  trail_arm=sig(r["entry"] * (1 + RP["trail_after_pct"] / 100) / (1 - rk["fee_slippage_pct"] / 100)),
                                  expires=ep(r["opened"]) + int(RP["max_hold_days"] * 86400),
-                                 conf=(rmeta.get(r["asset"]) or {}).get("conf"), ev=(rmeta.get(r["asset"]) or {}).get("ev"))
+                                 conf=(rmeta.get(r["asset"]) or {}).get("conf"), ev=(rmeta.get(r["asset"]) or {}).get("ev"),
+                                 setup=(rmeta.get(r["asset"]) or {}).get("setup"), why=(rmeta.get(r["asset"]) or {}).get("why"))
     pos_by = {}
     for p in positions: pos_by.setdefault(p["asset"], []).append(p["sleeve"])
 
@@ -521,7 +522,8 @@ def build(con):
         setup=rst.get("setup") or {}, stats=risk_stats(con, lt),
         rules=dict(pos_pct=RP.get("max_position_pct"), max_pos=RP.get("max_position_gbp"), max_open=RP.get("max_open"),
                    conf_threshold=RP.get("conf_threshold"), conf_at_stop=RP.get("conf_threshold_at_stop"), conf_size_pct=RP.get("conf_size_pct"),
-                   weights=RP.get("confidence_weights"), ev_min=RP.get("ev_min_pct"), ev_win=RP.get("ev_win_pct"), ev_loss=RP.get("ev_loss_pct"),
+                   weights=RP.get("confidence_weights"), dip_weights=(RP.get("dip") or {}).get("weights"),
+                   ev_min=RP.get("ev_min_pct"), ev_win=RP.get("ev_win_pct"), ev_loss=RP.get("ev_loss_pct"),
                    volume_x=RP.get("volume_x"), record_days=RP.get("record_days"), confirm=RP.get("confirm_momentum"), min_trade=c["risk"]["min_trade_size"],
                    stop=RP.get("stop_loss_pct"), trail_after=RP.get("trail_after_pct"), trail=RP.get("trail_pct"),
                    hold=RP.get("max_hold_days"), cap=RP.get("drawdown_cap_pct"), cooldown=RP.get("cooldown_h"), top_n=RC.get("top_n"),

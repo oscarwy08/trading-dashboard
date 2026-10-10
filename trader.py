@@ -6,11 +6,11 @@ stored USD->GBP rate (table fx).
         a drift band, wide stop-loss from average cost, no take-profit.
   DAY  (intraday): momentum + sentiment signal, tight stop / take-profit, max 3 positions, entry window, force-flat at
         22:00 UK (first cycle at/after 22:00, or any cycle before 08:00 / on a later UK day), daily loss cap on the sleeve.
-  RISK (speculative, v4): small/mid-cap crypto (CoinGecko top-300 breakout screen, liquidity/market-cap floors, Monad
+        RISK (speculative, v4): small/mid-cap crypto (CoinGecko top-300 breakout screen, liquidity/market-cap floors, Monad
         ecosystem tokens with a KyberSwap liquidity check) + speculative stocks (v5: quantum, British early-stage, rare
-        earths, global small caps, photonics/robotics small caps); breakout score +
-        sentiment, max 5 x 20% positions, 12% stop, trailing take-profit (10% from peak after +15%), 7-day max hold,
-        30% sleeve drawdown cap (no new entries until RISK_RESUME is created).
+        earths, global small caps, photonics/robotics small caps). Two entries: a breakout, or a dip that has bounced
+        (v7.7). Confidence + sentiment, max 5 positions, 12% stop, trailing take-profit (10% from peak after +15%),
+        7-day max hold, 30% sleeve drawdown cap (no new entries until RISK_RESUME is created).
 Each sleeve has its own cash and positions; the same asset can be held in both.
 v6 (2026-10-10): two accounts - crypto (Monad wallet) and stocks (Trading 212). Cash is kept per pot x account (table
 acct_cash); a crypto trade only uses/returns the pot's crypto cash, a stock trade only its stocks cash (buy() refuses to
@@ -337,7 +337,8 @@ def main():
                 reason = tag_gap(a, p["entry"] * (1 - RP["stop_loss_pct"] / 100) / (1 - f), q["price"], reason)
             elif "trailing" in reason:
                 reason = tag_gap(a, pk * (1 - RP["trail_pct"] / 100), q["price"], reason)
-            pnl = sell("risk", a, p["qty"], reason); peaks.pop(a, None)
+            meta = rmeta.get(a) or {}
+            pnl = sell("risk", a, p["qty"], reason, sub=meta.get("setup") or "breakout", conf=meta.get("conf")); peaks.pop(a, None)
             sset(con, f"risk_exit:{a}", ts); sig("risk", a, None, None, None, "SELL", f"{reason}; P&L £{pnl:+.2f}")
         else:
             sig("risk", a, None, None, None, "HOLD", f"open {chg*100:+.1f}%, peak +{pk_gain*100:.1f}%, {held_d:.1f} d"
@@ -761,7 +762,9 @@ def main():
     # measured hit rate); it is taken only if confidence >= threshold AND expected value after costs > ev_min_pct. The
     # threshold rises from conf_threshold (0.55) to conf_threshold_at_stop (0.85) as the drawdown approaches the 30% stop.
     # Size = confidence x conf_size_pct% of the account's remaining RISK cash (min £5, max £8 / 20% of the pot).
-    rss = riskpot.setup_stats(con, RP, t); thr_r = riskpot.threshold(RP, dd); evmin_r = float(RP.get("ev_min_pct", 0.0))
+    rss_all = riskpot.setup_stats(con, RP, t)
+    rss = riskpot.setup_stats(con, RP, t, sub="breakout"); dss = riskpot.setup_stats(con, RP, t, sub="dip")
+    thr_r = riskpot.threshold(RP, dd); evmin_r = float(RP.get("ev_min_pct", 0.0))
     raw_c = []
     rs = sget(con, "risk_screen") or {}
     for d in rs.get("top") or []:
@@ -770,6 +773,15 @@ def main():
         if sym not in px: continue
         sc_, ok_, why_ = riskpot.stock_score(con, sym, px[sym]["price_usd"])
         if sc_ is not None: raw_c.append((sym, sc_, ok_, why_, "stock"))
+    def pack(a, kind, setup, plain, bscore, ok, why, m, minfo, conf, parts, ss, vol, se, mkinfo, at_, block, trend_ok=False):
+        q = px[a]
+        size0, cap0 = riskpot.size(RP, conf, cash_for("risk", a) - gas_of(q["klass"]), req, mint)
+        rtc = rt_cost(a, size0); ev, ev_w, ev_l, ev_p = riskpot.setup_ev(RP, conf, at_, rtc, ss)
+        return dict(a=a, kind=kind, setup=setup, acct=acc(a), score=bscore, mom=m, ok=ok, why=why, plain=plain,
+                    conf=conf, parts=parts, ev=ev, rt_cost=round(rtc, 3), ev_win=ev_w, ev_loss=ev_l, ev_p=ev_p,
+                    atr=round(at_, 2) if at_ else None, hit=round(ss["p"], 3), hit_n=ss["n"],
+                    vol=round(vol, 2) if vol is not None else None, sent=se["score"] if se else None,
+                    market=mkinfo, size=round(size0, 2), cap=cap0, block=block, minfo=minfo, trend_ok=bool(trend_ok))
     rstat = []
     for a, bscore, ok, why, kind in raw_c:
         if ("risk", a) in pos or any(x["a"] == a for x in rstat): continue
@@ -777,37 +789,52 @@ def main():
         se = sentiment(con, a, st["sentiment_max_age_h"])
         vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
         mok, reg, mkinfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
-        at_ = atr_of(a); fr = fr_of(a, q, se)
-        conf, parts = riskpot.confidence(RP, bscore, vol, sent_in(se), reg, rss["p"], freshness=fr)
-        size0, cap0 = riskpot.size(RP, conf, cash_for("risk", a) - gas_of(q["klass"]), req, mint)
-        rtc = rt_cost(a, size0); ev, ev_w, ev_l, ev_p = riskpot.setup_ev(RP, conf, at_, rtc, rss)
+        at_ = atr_of(a); fr = fr_of(a, q, se); sin = sent_in(se)
         last_exit = sget(con, f"risk_exit:{a}")
-        hard = ("not a breakout (" + why.split("| no: ")[-1] + ")" if not ok else
-                f"trend: {minfo}" if m is None else
-                f"short-term trend {m} < {RP['confirm_momentum']} ({minfo})" if m < RP["confirm_momentum"] else
-                f"sentiment {se['score']:+.2f} blocks entry" if se and se["score"] <= RP["sentiment_block"] and se["confidence"] >= 0.5 else
-                "drawdown cap: entries halted until review" if halt else
-                closed_msg(a) if not mopen(a) else
-                f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= 15 else
-                "no current price" if not q["fresh"] else "stale FX rate" if fx_stale else
-                f"cooldown after exit {last_exit[:16]}" if last_exit and datetime.fromisoformat(last_exit) > t - timedelta(hours=RP["cooldown_h"]) else None)
-        if hard and fr < 0.999 and "freshness" not in hard:
-            age = q.get("age_min"); hard += f"; data freshness {fr:.0%}" + (f" (price {age:.0f} min)" if age is not None else "")
-        rstat.append(dict(a=a, kind=kind, acct=acc(a), score=bscore, mom=m, ok=ok, why=why, conf=conf, parts=parts, ev=ev, rt_cost=round(rtc, 3),
-                          ev_win=ev_w, ev_loss=ev_l, ev_p=ev_p, atr=round(at_, 2) if at_ else None,
-                          hit=round(rss["p"], 3), hit_n=rss["n"], vol=round(vol, 2) if vol is not None else None, sent=se["score"] if se else None,
-                          market=mkinfo, size=round(size0, 2), cap=cap0, block=hard, minfo=minfo))
+        shared = (f"sentiment {se['score']:+.2f} blocks entry" if se and se["score"] <= RP["sentiment_block"] and se["confidence"] >= 0.5 else
+                  "drawdown cap: entries halted until review" if halt else
+                  closed_msg(a) if not mopen(a) else
+                  f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= 15 else
+                  "no current price" if not q["fresh"] else "stale FX rate" if fx_stale else
+                  f"cooldown after exit {last_exit[:16]}" if last_exit and datetime.fromisoformat(last_exit) > t - timedelta(hours=RP["cooldown_h"]) else None)
+        def note(hard):
+            if hard and fr < 0.999 and "freshness" not in hard:
+                age = q.get("age_min"); hard += f"; data freshness {fr:.0%}" + (f" (price {age:.0f} min)" if age is not None else "")
+            return hard
+        head, _, tail = (why or "").partition(" | no: ")
+        brk_plain = f"Breakout: {head}." if ok else f"Not a breakout: {tail or head}."
+        if not ok: brk_spec = "not a breakout (" + (tail or head) + ")"
+        elif m is None: brk_spec = f"trend: {minfo}"
+        elif m < RP["confirm_momentum"]: brk_spec = f"short-term trend {m} < {RP['confirm_momentum']} ({minfo})"
+        else: brk_spec = shared
+        brk_hard = note(brk_spec)
+        conf, parts = riskpot.confidence(RP, bscore, vol, sin, reg, rss["p"], freshness=fr)
+        brk = pack(a, kind, "breakout", brk_plain, bscore, ok, why, m, minfo, conf, parts, rss, vol, se, mkinfo, at_, brk_hard)
+        dip_r = riskpot.dip(pts, RP, sent=sin, regime=reg, hr=dss["p"], freshness=fr, vol=vol, atr=at_) if (RP.get("dip") or {}).get("enabled", True) else None
+        chosen = brk
+        if dip_r and dip_r.get("show"):
+            dip_hard = note(None if dip_r["ok"] else dip_r["why"])
+            if dip_hard is None: dip_hard = note(shared)
+            dip_row = pack(a, kind, "dip", dip_r["why"], bscore, ok, why, m, minfo, dip_r["conf"], dip_r["parts"], dss, vol, se, mkinfo, at_, dip_hard, dip_r["trend_ok"])
+            brk_open, dip_open = brk["block"] is None, dip_row["block"] is None
+            if dip_open and not brk_open: chosen = dip_row
+            elif brk_open and dip_open and dip_row["conf"] > brk["conf"]: chosen = dip_row
+            elif not brk_open: chosen = dip_row          # both blocked: explain the pullback
+        rstat.append(chosen)
     refresh([d["a"] for d in rstat if not d["block"]])
     for d in sorted(rstat, key=lambda d: (d["block"] is not None, -d["conf"])):
         a = d["a"]; q = px[a]; m = d["mom"]
         if not d["block"]:
             avail = cash_for("risk", a) - gas_of(q["klass"])
             value, cap_ = riskpot.size(RP, d["conf"], avail, req, mint); value = min(value, avail)
+            # A breakout borrows when 4h momentum agrees. A dip borrows when the prior uptrend is there
+            # (4h momentum is often still negative at the bounce) — same confidence, EV and cash rules.
+            trend_agrees = bool(d.get("trend_ok")) if d["setup"] == "dip" else (m is not None and m > 0)
+            trend_txt = "uptrend" if d["setup"] == "dip" else f"trend {m:+.2f}"
             if (value < mint and d["conf"] >= max(thr_r, float(LN.get("risk_min_score", 0.65))) and d["ev"] > max(evmin_r, 0.0)
-                    and m is not None and m > 0 and nrisk < RP["max_open"]):
-                # v7.3/v7.4: exceptional setup (confidence >= 0.65, trend agreeing) short of cash -> borrow for ONE position
+                    and trend_agrees and nrisk < RP["max_open"]):
                 tgt = max(mint, min(cap_, riskpot.size(RP, d["conf"], max(avail, 0.0), req, mint)[0]))
-                if borrow("risk", a, tgt - max(avail, 0.0), None, f"confidence {d['conf']:.2f} >= {float(LN.get('risk_min_score', 0.65)):g}, trend {m:+.2f}, EV {d['ev']:+.2f}%",
+                if borrow("risk", a, tgt - max(avail, 0.0), None, f"{d['setup']} confidence {d['conf']:.2f} >= {float(LN.get('risk_min_score', 0.65)):g}, {trend_txt}, EV {d['ev']:+.2f}%",
                           min_need=mint - max(avail, 0.0)):
                     avail = cash_for("risk", a) - gas_of(q["klass"]); value = min(tgt, avail); d["loan"] = True
             d["block"] = ((f"confidence {d['conf']:.2f} < threshold {thr_r:.2f}" if d["conf"] < thr_r else None) or
@@ -815,22 +842,24 @@ def main():
                           (f"max {RP['max_open']} open" if nrisk >= RP["max_open"] else None) or
                           (f"size £{value:.2f} < min trade £{mint:.0f} ({acash('risk', a)})" if value < mint else None))
         if d["block"]:
-            if d["ok"]: sig("risk", a, m, d["sent"], d["conf"], "SKIP", f"{d['block']}; {d['why']}")
+            if d["setup"] == "dip" or d["ok"]: sig("risk", a, m, d["sent"], d["conf"], "SKIP", f"{d['block']}; {d['plain']}")
             continue
-        buy("risk", a, value, f"RISK breakout ({d['kind']}): confidence {d['conf']:.2f} >= {thr_r:.2f}, EV {d['ev']:+.2f}% after costs; {d['why']}; {d['minfo']}; {d['market']}",
-            conf=d["conf"])
+        label = "dip" if d["setup"] == "dip" else "breakout"
+        buy("risk", a, value, f"RISK {label} ({d['kind']}): {d['plain']} Confidence {d['conf']:.2f} >= {thr_r:.2f}, EV {d['ev']:+.2f}% after costs; {d['minfo']}; {d['market']}",
+            sub=d["setup"], conf=d["conf"])
         peaks[a] = q["price"]; nrisk += 1; new_today += 1; d["bought"] = round(value, 2)
-        rmeta[a] = dict(conf=d["conf"], ev=d["ev"], opened=ts)
-        sig("risk", a, m, d["sent"], d["conf"], "BUY", f"£{value:.2f} confidence {d['conf']:.2f}, EV {d['ev']:+.2f}%; {d['why']}; {d['minfo']}")
+        rmeta[a] = dict(conf=d["conf"], ev=d["ev"], opened=ts, setup=d["setup"], why=d["plain"])
+        sig("risk", a, m, d["sent"], d["conf"], "BUY", f"£{value:.2f} {label} confidence {d['conf']:.2f}, EV {d['ev']:+.2f}%; {d['plain']}")
     sset(con, "risk_peaks", {a: v for a, v in peaks.items() if ("risk", a) in pos})
     sset(con, "risk_meta", {a: v for a, v in rmeta.items() if ("risk", a) in pos})
     if rstat:
-        out.append("[risk] setups: " + "; ".join(f"{d['a']} conf {d['conf']:.2f} EV {d['ev']:+.2f}% -> " + (f"BUY £{d['bought']:.2f}" if d.get("bought") else f"skip ({d['block']})")
+        out.append("[risk] setups: " + "; ".join(f"{d['a']} {d['setup']} conf {d['conf']:.2f} EV {d['ev']:+.2f}% -> " + (f"BUY £{d['bought']:.2f}" if d.get("bought") else f"skip ({d['block']})")
                                                    for d in sorted(rstat, key=lambda d: -d["conf"])[:5]))
+    def _ss(s): return dict(p=round(s["p"], 3), n=s["n"], wins=s["wins"], exp=round(s["exp"], 3) if s["exp"] is not None else None)
     sset(con, "riskpot_status", dict(ts=ts, equity=sleeve_eq("risk"), start=rstart, base=base, dd_pct=dd * 100, halted=bool(halt),
                                      halt=halt, open_n=nrisk, new_today=new_today, threshold=thr_r, base_threshold=float(RP.get("conf_threshold", 0.55)),
                                      top_threshold=float(RP.get("conf_threshold_at_stop", 0.85)), ev_min=evmin_r,
-                                     setup=dict(p=round(rss["p"], 3), n=rss["n"], wins=rss["wins"], exp=round(rss["exp"], 3) if rss["exp"] is not None else None),
+                                     setup=_ss(rss_all), setups=dict(breakout=_ss(rss), dip=_ss(dss)),
                                      cands=sorted(rstat, key=lambda x: (x.get("bought") is None, x["block"] is not None, -x["conf"]))[:30]))
 
     # v7.3: repay loans whose position has closed - principal first, borrower -> lender, out of the sale proceeds (the P&L

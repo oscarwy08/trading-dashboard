@@ -6,6 +6,13 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7.7 (2026-10-10): RISK pot can buy a dip, not only a breakout (paper only)
+- **Two setup types.** A breakout is unchanged (near a recent high, short-term trend agreeing). A dip is a coin already in an uptrend, or with positive sentiment, that has pulled back toward a recent low, the day average or a short average, and then turned up (higher low or the short average reclaimed, last bar up). A move still making new lows, a drop deeper than 18%, or a coin still up more than 60% on the day is not bought.
+- **Its own confidence** (0-1): pullback depth against typical volatility, how close price is to support, bounce confirmation, sentiment, market regime, that setup's own measured hit rate, and data freshness. Same threshold (0.55, rising toward 0.85 as the drawdown approaches 30%), same rule that expected value after costs must be positive, same size, same 12% stop, trail, 7-day hold and 5-open cap. One row per coin: if both a breakout and a dip qualify, the higher confidence is kept.
+- **Borrowing.** A breakout still borrows only when the short-term trend is up. A dip borrows when confidence is at least 0.65, the prior uptrend is there, and expected value is positive — the 4-hour trend is often still down at the bounce.
+- **Dashboard.** The Risk setups table, open positions and orders say Breakout or Dip, with a one-sentence reason. Dip rows use their own mini-bars.
+- **Day pot.** Not given a dip entry. Day momentum already buys a pullback when its combined score is still a buy, and every Day position is flat by 22:00 UK, so a second entry would need its own hold and exit rules. Left as a breakout-plus-momentum pot.
+
 ## v7.6 (2026-10-10): gold-backed tokens in the Core crypto universe (paper only)
 - **PAXG and XAUT** are candidates in the Crypto account's Core universe, theme "Real-world assets (tokenised)" (`core.crypto_universe`). They are not in `targets_pct`. The Monday rebalance scores them with the same momentum / trend-quality / sentiment rules as the stocks and adds one only if it qualifies, at one normal slot (the fixed coins keep their ratios and share what is left). No fixed share.
 - They stay out of the Day pot (`day_universe.exclude_symbols`, and still excluded from the Risk screen). Daily closes come from CoinGecko, one coin per cycle.
@@ -433,8 +440,9 @@ Entry (breakout + sentiment): crypto score = 0.35 x 24h move (20% = full) + 0.25
 the 20-day high + 0.2 x trend (above a rising 50d average); must be +3% over 5 days, at >= 97% of the 20-day high, above
 the 50d average. v7.4: the decision is Day-style (see the v7.4 section): confidence >= threshold AND expected value after
 costs > 0, with the intraday momentum model (same as DAY, >= 2h history) >= 0 as a hard gate; no entry while fresh
-sentiment <= -0.3 (conf >= 0.5). Size = confidence x 50% of the account's remaining RISK cash (min £5, max £8 / 20% of
-the pot); max 5 open, no daily cap, 24h cooldown per asset after an exit.
+sentiment <= -0.3 (conf >= 0.5). v7.7 adds a second setup, a dip / pullback buy (see the v7.7 section): same threshold,
+expected value, size and exits, its own confidence. One position per coin, max 5 open. Size = confidence x 50% of the account's remaining RISK cash (min £5, max £8 / 20% of
+the pot); no daily cap, 24h cooldown per asset after an exit.
 Exits: stop-loss 12% from average cost (incl. fees/gas); trailing take-profit: once the peak is >= +15% above cost, sell
 when price falls 10% from the peak (peak in state risk_peaks); max hold 7 days; sentiment exit <= -0.5 (conf >= 0.6).
 Drawdown cap: if the pot is down 30% vs its base (start £40, or the equity at the last review) new entries stop

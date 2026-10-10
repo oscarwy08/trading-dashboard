@@ -171,8 +171,31 @@ riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mi
   ev_min_pct: 0.0
   conf_size_pct: 50             # size = confidence x 50% of the account's remaining RISK cash, min £5 (risk.min_trade_size),
   max_position_pct: 20          #   max 20% of the RISK pot and max_position_gbp
-  confirm_momentum: 0.0         # intraday momentum (4h/24h/EMA, same model as DAY) must be >= this (needs >= 2h history)
+  confirm_momentum: 0.0         # BREAKOUTS only: intraday momentum (4h/24h/EMA, same model as DAY) must be >= this (needs >= 2h history)
   min_history_h: 2
+  # Second setup (v7.7): a dip / pullback buy. A coin already in an uptrend, or with positive sentiment, that has dropped
+  # back toward a recent low or average and then turned up. A coin that is still falling is not bought. Same threshold,
+  # EV, size, stop, trail, max hold, max 5 open and borrowing rules as a breakout; its own confidence weights.
+  dip:
+    enabled: true
+    min_history_h: 30           # snapshot history required before a pullback is judged
+    trend_lookback_h: 48        # window for the leg that has to be up
+    high_lookback_h: 36         # the high the pullback is measured from
+    swing_exclude_h: 1.5        # that high is at least this old, so the dip has had time to form
+    trend_min_pct: 8            # that high is at least this far above the low before it
+    pullback_min_pct: 4         # drop from the high; less than this is noise, not a setup
+    pullback_max_pct: 18        # deeper than this is a breakdown, not a dip
+    pullback_atr_x: 1.2         # pullback bar: full marks once the drop is about this many 1h ATRs (a shallow wiggle scores low)
+    support_near_pct: 2.0       # "at support" within this % of the pullback low, the 24h average, or a short average
+    ma_bars: 6                  # short average, in snapshots (~90 min at the 15-min cycle)
+    rsi_oversold: 40            # RSI at or under this adds to the bounce bar; it is not required
+    bounce_bars: 3              # higher low: the last few bars against the few before them
+    bounce_min_pct: 0.4         # price has lifted at least this far off the low, and the last bar is up
+    volume_x: 1.2               # last hour vs the average hour counts as buying volume; unknown volume is not a fail
+    sentiment_min: 0.0          # sentiment above this counts as positive (qualifies a dip when there is no uptrend)
+    chase_24h_pct: 60           # still up more than this over 24h: the same pump a breakout will not chase
+    weights: {pullback: 0.20, support: 0.15, bounce: 0.20, sentiment: 0.15, market: 0.10, hit_rate: 0.20, freshness: 0.15}
+                                # freshness scales the other six (1 = unchanged); it is not mixed into the average
   sentiment_block: -0.3         # no entry while fresh sentiment <= this (conf >= 0.5); exit if <= sentiment_exit (conf >= 0.6)
   sentiment_exit: -0.5
   max_position_gbp: 8
