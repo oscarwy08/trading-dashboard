@@ -27,8 +27,10 @@ def day_sub_stats(con, lt):
     today (UK), for the whole pot and per account: trades, win rate, avg win/loss %, profit factor, P&L after all fees,
     expectancy (£ and % per trade), fees paid (buys + sells incl. gas)."""
     d0 = datetime.combine(lt.date(), datetime.min.time(), LON).astimezone(timezone.utc).isoformat()
-    rows = [dict(r) for r in con.execute("SELECT ts, klass, side, value, gas, pnl, cost, COALESCE(sub,'momentum') sub FROM trades "
+    rows = [dict(r) for r in con.execute("SELECT ts, asset, klass, side, value, gas, pnl, cost, COALESCE(sub,'momentum') sub FROM trades "
                                          "WHERE sleeve='day' AND side IN ('BUY','SELL') ORDER BY id")]
+    opened = {r[0]: r[1] for r in con.execute("SELECT asset, opened FROM positions WHERE sleeve='day'")}
+    for r in rows: r["open"] = r["side"] == "BUY" and r["asset"] in opened and r["ts"] >= opened[r["asset"]]   # buy of a still-open position
     out = {}
     for sb in daypot.SUBS:
         out[sb] = {}
@@ -36,8 +38,42 @@ def day_sub_stats(con, lt):
             for sc in ("all",) + ACCOUNTS:
                 xs = [r for r in rows if r["sub"] == sb and (per == "all" or r["ts"] >= d0) and (sc == "all" or acct_of(r["klass"]) == sc)]
                 st_ = daypot.sub_stats([r for r in xs if r["side"] == "SELL"])
-                st_["fees"] = round(sum((r["cost"] or 0) + (r["gas"] or 0) for r in xs), 4)
+                fo = sum((r["cost"] or 0) + (r["gas"] or 0) for r in xs if r["open"])
+                st_["fees"] = round(sum((r["cost"] or 0) + (r["gas"] or 0) for r in xs), 4)       # all fees paid (closed + still open)
+                st_["fees_open"] = round(fo, 4)                                                     # buy fees + gas of positions still open
+                st_["fees_closed"] = round(st_["fees"] - fo, 4)                                     # fees of closed trades (already inside their P&L)
                 out[sb][f"{per}:{sc}"] = st_
+    return out
+
+def day_ledger(con, c, positions, acash, base):
+    """v7.1 DAY sub-strategy money per account (daypot.sub_ledger - the SAME definition the trader sizes with), rounded so
+    every figure reconciles to the penny with the Day pot cards:
+      budget (= equity) = the sub-strategy's own money incl. its open positions at market = cash + value
+      cash / free       = its money NOT tied up in open positions (free = what it may still spend, capped by the account cash)
+      value             = market value of its open positions (sum of the rounded position values shown in the table)
+    Per account: momentum cash + burst cash = the Day pot's cash in that account, momentum + burst budget = its Day value.
+    'all' = the two accounts summed. P&L: realised (closed trades, after all fees) + open (value - cost incl. buy fees)."""
+    DY = c["day"]; sh = daypot.sub_shares(DY); since = (json.loads((con.execute("SELECT value FROM state WHERE key='account_split'").fetchone() or ["null"])[0]) or {}).get("ts", "")
+    dp = [p for p in positions if p["sleeve"] == "day"]
+    raw = {(r["asset"]): r["cost"] for r in con.execute("SELECT asset, cost FROM positions WHERE sleeve='day'")}
+    real = daypot.sub_realized(con, since)
+    L = daypot.sub_ledger({ac: base["day"][ac] for ac in ACCOUNTS}, {ac: acash.get(("day", ac), 0.0) for ac in ACCOUNTS},
+                          [dict(sub=p.get("sub", "momentum"), acct=p["acct"], cost=raw.get(p["asset"], p["cost"]), value=p["value"]) for p in dp], real, sh, ACCOUNTS)
+    R2 = lambda x: round(x + 0.0, 2); out = {}
+    for ac in ACCOUNTS:
+        cash_ac = R2(acash.get(("day", ac), 0.0)); cell = {}; left = cash_ac
+        for i, sb in enumerate(daypot.SUBS):
+            ps = [p for p in dp if p["acct"] == ac and p.get("sub", "momentum") == sb]
+            val = R2(sum(p["value"] or 0 for p in ps)); cost = R2(sum(p["cost"] or 0 for p in ps))
+            cash_ = left if i == len(daypot.SUBS) - 1 else R2(L[ac][sb]["cash"]); left = R2(left - cash_)
+            st_ = R2(sh[sb] * base["day"][ac])
+            eq_ = R2(cash_ + val)
+            cell[sb] = dict(start=st_, budget=eq_, cash=cash_, free=R2(max(0.0, min(cash_, cash_ac))), value=val, cost=cost,
+                            open_pnl=R2(sum(p["pnl"] or 0 for p in ps)), realized=R2(real.get((sb, ac), 0.0)), pnl=R2(eq_ - st_), open_n=len(ps))
+        cell["residual"] = round(L[ac]["residual"], 4); out[ac] = cell
+    out["all"] = {sb: {k: (sum(out[ac][sb][k] for ac in ACCOUNTS) if k == "open_n" else R2(sum(out[ac][sb][k] for ac in ACCOUNTS)))
+                       for k in out[ACCOUNTS[0]][sb]} for sb in daypot.SUBS}
+    out["shares"] = {sb: round(v * 100, 2) for sb, v in sh.items()}
     return out
 
 def stats(con, sleeve=None, account=None):
@@ -209,7 +245,7 @@ def build(con):
         val = r["qty"] * now_gbp if now_gbp is not None else None
         positions.append(dict(sleeve=r["sleeve"], acct=acct_of(r["klass"]), tranches=r["tranches"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]), entry=sig(r["entry"]), now=sig(now_gbp),
                               now_usd=sig(usd), cost=r2(r["cost"]), value=r2(val),
-                              pnl=r2(val - r["cost"]) if val is not None else None,
+                              pnl=r2(r2(val) - r2(r["cost"])) if val is not None else None,   # = shown value - shown cost (reconciles)
                               pnl_pct=round((now_gbp / r["entry"] - 1) * 100, 2) if now_gbp and r["entry"] else None,
                               stop=sig(r["entry"] * (1 - sl_pct / 100)) if sl_pct else None,
                               take=sig(r["entry"] * (1 + tp_pct / 100)) if tp_pct else None, opened=ep(r["opened"])))
@@ -325,23 +361,32 @@ def build(con):
     hh, mm = map(int, K["rebalance_time_uk"].split(":"))
     rb_at = datetime.combine(rb_day, datetime.min.time().replace(hour=hh, minute=mm), LON)
     if last_rb and datetime.fromisoformat(last_rb.strip('"')) >= rb_at: rb_at += timedelta(days=7)
+    # v7.1 reconciled figures: every total is the sum of its (already rounded) parts, all from ONE price snapshot:
+    #   cell (pot x account): cash = rounded cash, invested = sum of the rounded position values, equity = cash + invested,
+    #   P&L = equity - start; pot = sum of its two cells; account = sum of its three pot cells; total = sum of the pots.
+    #   (The equity HISTORY - chart, max drawdown - still comes from the stored equity rows.)
+    R2 = lambda x: round(x + 0.0, 2)
     sleeves = {}
     for sl in SLEEVES:
         ss = stats(con, sl); sp = [p for p in positions if p["sleeve"] == sl]
-        sleeves[sl] = dict(start=r2(sc[sl]), pct=c["sleeve_split_pct"].get(sl, 0), equity=r2(ss["equity"]), ret=round(ss["ret"] * 100, 3),
-                           pnl=r2(ss["equity"] - sc[sl]), realized=r2(ss["realized"]), unrealized=r2(sum(p["pnl"] or 0 for p in sp)),
-                           win_rate=round(ss["win_rate"] * 100, 1) if ss["win_rate"] is not None else None, closed=ss["closed"],
-                           trades=ss["trades"], cash=r2(cash_now.get(sl)), open_n=len(sp), max_dd=round(ss["max_dd"] * 100, 3),
-                           invested=r2(sum(p["value"] or 0 for p in sp)))
         cells = {}
         for ac in ACCOUNTS:                                   # v6: the pot's slice of each account
             xs = stats(con, sl, ac); ap = [p for p in sp if p["acct"] == ac]; ff = fees[sl][ac]
-            inv_ = sum(p["value"] or 0 for p in ap); cash_ = acash.get((sl, ac), 0.0)
+            inv_ = R2(sum(p["value"] or 0 for p in ap)); cash_ = R2(acash.get((sl, ac), 0.0))
+            eq_ = R2(cash_ + inv_)
             cells[ac] = dict(start=r2(base[sl][ac]), target=r2((c.get("accounts") or {}).get("funding", {}).get(sl, {}).get(ac)),
-                             equity=r2(cash_ + inv_), cash=r2(cash_), invested=r2(inv_), open_n=len(ap),
-                             pnl=r2(cash_ + inv_ - base[sl][ac]), ret=round(((cash_ + inv_) / base[sl][ac] - 1) * 100, 3) if base[sl][ac] else None,
-                             realized=r2(xs["realized"]), unrealized=r2(sum(p["pnl"] or 0 for p in ap)), fees=r2(sum(ff.values())))
+                             equity=eq_, cash=cash_, invested=inv_, open_n=len(ap),
+                             pnl=R2(eq_ - R2(base[sl][ac])), ret=round((eq_ / base[sl][ac] - 1) * 100, 3) if base[sl][ac] else None,
+                             realized=r2(xs["realized"]), unrealized=R2(sum(p["pnl"] or 0 for p in ap)), fees=r2(sum(ff.values())))
+        tot = lambda k: R2(sum(cells[ac][k] for ac in ACCOUNTS))
+        st0 = tot("start"); eq0 = tot("equity")
+        sleeves[sl] = dict(start=st0, pct=c["sleeve_split_pct"].get(sl, 0), equity=eq0, ret=round((eq0 / st0 - 1) * 100, 3) if st0 else 0,
+                           pnl=tot("pnl"), realized=tot("realized"), unrealized=tot("unrealized"),
+                           win_rate=round(ss["win_rate"] * 100, 1) if ss["win_rate"] is not None else None, closed=ss["closed"],
+                           trades=ss["trades"], cash=tot("cash"), open_n=len(sp), max_dd=round(ss["max_dd"] * 100, 3),
+                           invested=tot("invested"), fees=tot("fees"))
         sleeves[sl]["accts"] = cells
+    cur_eq = R2(sum(sleeves[s_]["equity"] for s_ in SLEEVES)); tstart_ = R2(sum(sleeves[s_]["start"] for s_ in SLEEVES))
     ceq = sleeves["core"]["equity"] or 0
     caeq = {ac: sleeves["core"]["accts"][ac]["equity"] or 0 for ac in ACCOUNTS}
     cpos = {p["asset"]: p for p in positions if p["sleeve"] == "core"}
@@ -367,8 +412,9 @@ def build(con):
                    band=K["drift_band_pp"], stop=K["stop_loss_pct"], sent_delay=K["sentiment_delay_score"],
                    rebalance=f"{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][int(K['rebalance_weekday'])]} {K['rebalance_time_uk']} UK"))
     ds = risk.get("day_sleeve") or {}
-    sleeves["day"].update(day_start=r2(ds.get("start")), day_pnl=r2(ds["equity"] - ds["start"]) if ds.get("start") else None,
-                          day_pnl_pct=ds.get("pnl_pct"), halted=bool(ds.get("halted")), entries_open=bool(ds.get("entries_open")),
+    dst_ = r2(ds.get("start")); deq_ = sleeves["day"]["equity"]
+    sleeves["day"].update(day_start=dst_, day_pnl=R2(deq_ - dst_) if dst_ else None,
+                          day_pnl_pct=round((deq_ / dst_ - 1) * 100, 3) if dst_ else None, ledger=day_ledger(con, c, positions, acash, base), halted=bool(ds.get("halted")), entries_open=bool(ds.get("entries_open")),
                           flat_now=bool(ds.get("flat_now")),
                           rules=dict(start=DY["entry_start_uk"], cutoff=DY["entry_cutoff_uk"], flatten=DY["flatten_uk"], cap=DY["daily_loss_cap_pct"],
                                      cost_x=DY.get("min_move_cost_x"), momentum=DY["momentum"], burst=DY["burst"],
@@ -396,15 +442,16 @@ def build(con):
     accounts = {}
     for ac in ACCOUNTS:
         xs = stats(con, None, ac); ap = [p for p in positions if p["acct"] == ac]
-        inv_ = sum(p["value"] or 0 for p in ap); cash_ = sum(acash.get((s_, ac), 0.0) for s_ in SLEEVES)
-        st_ = sum(base[s_][ac] for s_ in SLEEVES); ff = {k: sum(fees[s_][ac][k] for s_ in SLEEVES) for k in fees["core"][ac]}
+        PC = [sleeves[s_]["accts"][ac] for s_ in SLEEVES]; sm = lambda k: R2(sum(x[k] for x in PC))
+        inv_, cash_, st_, eq_ = sm("invested"), sm("cash"), sm("start"), sm("equity")
+        ff = {k: sum(fees[s_][ac][k] for s_ in SLEEVES) for k in fees["core"][ac]}
         accounts[ac] = dict(label=(AC.get(ac) or {}).get("label", ac), where=(AC.get(ac) or {}).get("where", ""),
-                            start=r2(st_), target=r2(sum(float((AC.get("funding") or {}).get(s_, {}).get(ac, 0)) for s_ in SLEEVES)),
-                            equity=r2(cash_ + inv_), cash=r2(cash_), invested=r2(inv_), pnl=r2(cash_ + inv_ - st_),
-                            ret=round(((cash_ + inv_) / st_ - 1) * 100, 3) if st_ else None, open_n=len(ap),
-                            realized=r2(xs["realized"]), unrealized=r2(sum(p["pnl"] or 0 for p in ap)), closed=xs["closed"], trades=xs["trades"],
+                            start=st_, target=r2(sum(float((AC.get("funding") or {}).get(s_, {}).get(ac, 0)) for s_ in SLEEVES)),
+                            equity=eq_, cash=cash_, invested=inv_, pnl=sm("pnl"),
+                            ret=round((eq_ / st_ - 1) * 100, 3) if st_ else None, open_n=len(ap),
+                            realized=sm("realized"), unrealized=sm("unrealized"), closed=xs["closed"], trades=xs["trades"],
                             win_rate=round(xs["win_rate"] * 100, 1) if xs["win_rate"] is not None else None, max_dd=round(xs["max_dd"] * 100, 3),
-                            fees={k: sig(v, 4) for k, v in ff.items() if v}, fees_total=r2(sum(ff.values())),
+                            fees={k: sig(v, 4) for k, v in ff.items() if v}, fees_total=sm("fees"),
                             pots={s_: sleeves[s_]["accts"][ac] for s_ in SLEEVES})
     asplit = json.loads((con.execute("SELECT value FROM state WHERE key='account_split'").fetchone() or ["null"])[0])
     if asplit:
@@ -427,13 +474,14 @@ def build(con):
                 source=fx[2] if fx else None, stale=bool(fx[3]) if fx else True,
                 alt=round(1 / fx_alt["alt_rate"], 4) if fx_alt and fx_alt["alt_rate"] else None,
                 alt_source=fx_alt["alt_source"] if fx_alt else None),
-        stats=dict(equity=r2(cur_eq), ret=round(s["ret"] * 100, 3), btc_ret=round(s["btc_ret"] * 100, 3) if s["btc_ret"] is not None else None,
-                   realized=r2(s["realized"]), trades=s["trades"], closed=s["closed"],
+        stats=dict(equity=cur_eq, start=tstart_, ret=round((cur_eq / tstart_ - 1) * 100, 3) if tstart_ else 0, btc_ret=round(s["btc_ret"] * 100, 3) if s["btc_ret"] is not None else None,
+                   realized=R2(sum(sleeves[s_]["realized"] for s_ in SLEEVES)), trades=s["trades"], closed=s["closed"],
                    win_rate=round(s["win_rate"] * 100, 1) if s["win_rate"] is not None else None,
                    max_dd=round(s["max_dd"] * 100, 3), best=r2(s["best"]), worst=r2(s["worst"]),
-                   unrealized=r2(sum(p["pnl"] or 0 for p in positions)),
-                   cash=equity["cash"][-1] if equity["cash"] else None,
-                   day_pnl=r2(cur_eq - day_start) if day_start else None, day_pnl_pct=risk.get("day_pnl_pct")),
+                   unrealized=R2(sum(sleeves[s_]["unrealized"] for s_ in SLEEVES)),
+                   cash=R2(sum(sleeves[s_]["cash"] for s_ in SLEEVES)), invested=R2(sum(sleeves[s_]["invested"] for s_ in SLEEVES)),
+                   pnl=R2(cur_eq - tstart_), day_start=r2(day_start),
+                   day_pnl=R2(cur_eq - r2(day_start)) if day_start else None, day_pnl_pct=round((cur_eq / r2(day_start) - 1) * 100, 3) if day_start else None),
         risk=dict(halted=bool(risk.get("halted")), day=risk.get("day"), day_start=day_start, kill=KILL.exists(),
                   fx_stale=bool(fx[3]) if fx else True, open_n=len(positions), last_halt=dict(t=ep(halt["ts"]), reason=halt["reason"]) if halt else None,
                   limits=dict(max_open=DY["momentum"]["max_open"], burst_max_open=DY["burst"]["max_open_per_account"],

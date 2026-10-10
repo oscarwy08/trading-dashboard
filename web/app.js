@@ -55,7 +55,8 @@ const until = t => { if (!isNum(t)) return ''; const s = t - Date.now() / 1000; 
   return s < 3600 ? `in ${Math.round(s / 60)} min` : s < 86400 ? `in ${(s / 3600).toFixed(0)} h` : `in ${(s / 86400).toFixed(1)} days`; };
 const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : null;
 const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return 'link'; } };
-const stat = (l, v, c = '', s = '') => `<div class="stat"><div class="l">${esc(l)}</div><div class="v ${c}">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+// tip = plain-English explanation of the figure (hover / long-press tooltip, marked with ⓘ)
+const stat = (l, v, c = '', s = '', tip = '') => `<div class="stat"${tip ? ` title="${esc(tip)}"` : ''}><div class="l">${esc(l)}${tip ? ' <span class="tipi" aria-hidden="true">ⓘ</span>' : ''}</div><div class="v ${c}">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
 
 /* ---------- chart helpers ---------- */
 function mkChart(el, opts = {}) {
@@ -126,7 +127,7 @@ function table(el, cols, rows, st, onSort, opts = {}) {
       if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
       return (typeof x === 'string' ? x.localeCompare(y) : x - y) * st.d; });
   }
-  const th = cols.map(c => `<th${c.nosort || !st ? '' : ` data-k="${c.k}"`} class="${c.num ? 'num' : ''} ${st && st.k === c.k ? 'sorted' : ''}">${esc(c.l)}${st && st.k === c.k ? `<span class="ar">${st.d > 0 ? '▲' : '▼'}</span>` : ''}</th>`).join('');
+  const th = cols.map(c => `<th${c.nosort || !st ? '' : ` data-k="${c.k}"`}${c.tip ? ` title="${esc(c.tip)}"` : ''} class="${c.num ? 'num' : ''} ${st && st.k === c.k ? 'sorted' : ''}">${esc(c.l)}${c.tip ? ' <span class="tipi" aria-hidden="true">ⓘ</span>' : ''}${st && st.k === c.k ? `<span class="ar">${st.d > 0 ? '▲' : '▼'}</span>` : ''}</th>`).join('');
   const shown = opts.limit ? sorted.slice(0, opts.limit) : sorted;
   const body = shown.length ? shown.map(r => `<tr${opts.key ? ` data-id="${esc(opts.key(r))}"` : ''}>` +
       cols.map(c => `<td class="${c.num ? 'num' : ''} ${c.wrap ? 'wrap' : ''}">${c.f ? c.f(r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('')
@@ -160,17 +161,17 @@ function statusWords() {
   return {txt: 'All normal', c: 'pos'};
 }
 function renderOverview() {
-  const s = D.stats, Z = D.sleeves, start = D.start;
+  const s = D.stats, Z = D.sleeves, start = isNum(D.stats.start) ? D.stats.start : D.start;
   $$('.js-start').forEach(e => e.textContent = start.toFixed(0));
   const pnl = s.equity - start;
   $('#ov-value').textContent = fM(s.equity);
   $('#ov-pnl').innerHTML = `<span class="${cls(pnl)}">${fM(pnl, true)} (${fPct(s.ret)})</span><span class="muted">all time</span>`;
   const inv = (D.positions || []).reduce((a, p) => a + (p.value || 0), 0), cash = potCash();
-  const fees = (D.gas.fees || 0) + (D.gas.paid || 0), A = D.accounts || {};
-  $('#ov-stats').innerHTML = stat("Today's P&L", `<span class="${cls(s.day_pnl)}">${fM(s.day_pnl, true)}</span>`, '', `${fPct(s.day_pnl_pct)} since midnight UK`) +
-    stat('Cash', fM(cash), '', A.crypto ? `Crypto ${fM(A.crypto.cash)} · Stocks ${fM(A.stocks.cash)}` : 'ready to invest') +
-    stat('Invested', fM(inv), '', `${(D.positions || []).length} holdings`) +
-    stat('Fees & gas paid', fM(fees), '', A.crypto ? `Crypto ${fM(A.crypto.fees_total)} · Stocks ${fM(A.stocks.fees_total)}` : `incl. ${fGas(D.gas.paid)} network gas`);
+  const A = D.accounts || {}, fees = A.crypto ? (A.crypto.fees_total || 0) + (A.stocks.fees_total || 0) : (D.gas.fees || 0) + (D.gas.paid || 0);
+  $('#ov-stats').innerHTML = stat("Today's P&L", `<span class="${cls(s.day_pnl)}">${fM(s.day_pnl, true)}</span>`, '', `${fPct(s.day_pnl_pct)} since midnight UK`, 'Change in the total value (all pots, both accounts) since midnight UK, after all fees.') +
+    stat('Cash', fM(cash), '', A.crypto ? `Crypto ${fM(A.crypto.cash)} · Stocks ${fM(A.stocks.cash)}` : 'ready to invest', 'Money not in any position, summed over all pots and both accounts.') +
+    stat('Invested', fM(inv), '', `${(D.positions || []).length} holdings`, 'Current value of all open positions. Cash + invested = total value.') +
+    stat('Fees & gas paid', fM(fees), '', A.crypto ? `Crypto ${fM(A.crypto.fees_total)} · Stocks ${fM(A.stocks.fees_total)}` : `incl. ${fGas(D.gas.paid)} network gas`, 'All trading fees, spreads, FX, stamp duty and network gas paid so far (open and closed trades). They are already included in the values and P&L.');
   renderAccountCards();
   // cards
   const btcV = (D.equity.btc || []).filter(isNum).slice(-1)[0];
@@ -207,7 +208,7 @@ function renderAccountCards() {
       [['spread', f.spread], ['FX', f.fx], ['stamp duty', f.stamp], ['early xStock fees', f.xstock]].filter(y => y[1]).map(y => `${y[0]} ${fFee(y[1])}`).join(' + ') || 'none yet';
     return `<div class="card acct" data-acct="${a}" tabindex="0" role="button" aria-label="Show ${esc(x.label)}"><div class="acct-h"><div><div class="nm">${esc(x.label)}</div><div class="wh">${esc(x.where)}</div></div>${acctTag(a)}</div>` +
       `<div class="big">${fM(x.equity)}</div><div class="pl"><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span> <span class="muted">since ${fM0(x.start)} start</span></div>` +
-      `<div class="acct-kv">${stat('Cash', fM(x.cash))}${stat('Invested', fM(x.invested), '', `${x.open_n} holding${x.open_n === 1 ? '' : 's'}`)}${stat('Fees paid', fM(x.fees_total), '', esc(fl))}</div>` +
+      `<div class="acct-kv">${stat('Cash', fM(x.cash), '', '', 'Money in this account not in a position (all three pots).')}${stat('Invested', fM(x.invested), '', `${x.open_n} holding${x.open_n === 1 ? '' : 's'}`, 'Current value of this account\'s open positions. Cash + invested = account value.')}${stat('Fees paid', fM(x.fees_total), '', esc(fl), 'All fees paid in this account (open and closed trades); already included in value and P&L.')}</div>` +
       `<div class="acct-pots">${POTS.map(k => { const c = (x.pots || {})[k] || {}; return `<b>${esc(POT[k])}</b><span>${fM(c.cash)} cash</span><span class="num">${fM(c.equity)}</span><span class="num ${cls(c.pnl)}">${fM(c.pnl, true)}</span>`; }).join('')}</div></div>`; }).join('') +
     (pend.length ? `<div class="note" style="grid-column:1/-1;margin-top:0">Account split ${esc(fTs(sp.t))}: Crypto ${fM0(A.crypto.start)} / Stocks ${fM0(A.stocks.start)}. Still to settle inside each account (pot to pot, never between accounts) as soon as the cash is free: ${pend.map(l => `${esc(l.account === 'crypto' ? 'Crypto' : 'Stocks')} ${esc(POT[l.from])} → ${esc(POT[l.to])} ${fM(l.amount)}`).join(' · ')}.</div>` : '');
   $$('.acct', el).forEach(c => { const go = () => { setAcct(c.dataset.acct); location.hash = 'portfolio'; }; c.onclick = go; c.onkeydown = e => { if (e.key === 'Enter') go(); }; });
@@ -261,10 +262,10 @@ function renderPortfolio() {
   const realP = S.acct ? (S.pPot ? ((Z[S.pPot].accts || {})[S.acct] || {}).realized : (D.accounts[S.acct] || {}).realized) : S.pPot ? Z[S.pPot].realized : D.stats.realized;
   $('#pf-stats').innerHTML = stat(scope + ' value', fM(total), '', S.pPot ? (S.acct ? esc(ACC[S.acct]) : ACCTS.map(a => `${a === 'crypto' ? 'Crypto' : 'Stocks'} ${fM(valOf(S.pPot, a))}`).join(' · ')) :
       S.acct ? POTS.map(k => `${POT[k].replace(' pot', '')} ${fM(valOf(k, S.acct))}`).join(' · ') : ACCTS.map(a => `${a === 'crypto' ? 'Crypto' : 'Stocks'} ${fM((D.accounts || {})[a] ? D.accounts[a].equity : null)}`).join(' · ')) +
-    stat('Cash', fM(cashT), '', S.pPot ? (S.acct ? esc(ACC[S.acct]) : acctCashLine(S.pPot)) : POTS.map(k => `${POT[k].replace(' pot', '')} ${fM(cashOf(k, S.acct))}`).join(' · ')) +
-    stat('Holdings value', fM(inv), '', `${P.length} position${P.length === 1 ? '' : 's'}`) +
-    stat('Unrealised P&L', `<span class="${cls(unr)}">${fM(unr, true)}</span>`, '', cost ? fPct(unr / cost * 100) + ' on cost' : '') +
-    stat('Realised P&L', `<span class="${cls(realP)}">${fM(realP, true)}</span>`, '', 'from closed trades');
+    stat('Cash', fM(cashT), '', S.pPot ? (S.acct ? esc(ACC[S.acct]) : acctCashLine(S.pPot)) : POTS.map(k => `${POT[k].replace(' pot', '')} ${fM(cashOf(k, S.acct))}`).join(' · '), 'Money not in any position (sum of the pots shown).') +
+    stat('Holdings value', fM(inv), '', `${P.length} position${P.length === 1 ? '' : 's'}`, 'Current value of the open positions shown below. Cash + holdings = value.') +
+    stat('Unrealised P&L', `<span class="${cls(unr)}">${fM(unr, true)}</span>`, '', cost ? fPct(unr / cost * 100) + ' on cost' : '', 'Open positions: value now minus what they cost incl. buy fees.') +
+    stat('Realised P&L', `<span class="${cls(realP)}">${fM(realP, true)}</span>`, '', 'from closed trades', 'Profit or loss of closed trades after all their fees.');
   const cols = [
     {k: 'asset', l: 'Asset', asc: 1, f: r => assetCell(r.asset)},
     {k: 'sleeve', l: 'Pot', asc: 1, f: r => potTag(r.sleeve)},
@@ -307,9 +308,9 @@ function renderCore() {
     `<b>Stocks account</b> (Trading 212, ${fM((CA.stocks || {}).equity)}): split equally across ${stocks.length || 'the'} stocks picked every ${esc(R.rebalance || 'Monday')} from a watchlist of ` +
     `${(c0.universe || []).reduce((a, u) => a + u.tickers.length, 0)} growth stocks in ${(c0.universe || []).length} themes (max ${c0.max_per_theme} per theme). Each account's cash only buys that account's assets. ` +
     `New money goes in gradually - up to ${R.tranches} pieces per holding, at most ${R.per_day} per holding per day, preferring dips. Each holding has a ${R.stop}% stop-loss; there is no profit-taking, the weekly rebalance trims winners that grow more than ${R.band} points above target.`;
-  const built = T.filter(t => t.status === 'built').length, inv = T.reduce((a, t) => a + (t.value || 0), 0);
-  $('#core-stats').innerHTML = stat('Core pot value' + acctLbl(), fM(c.equity), '', `<span class="${cls(c.pnl)}">${fM(c.pnl, true)} (${fPct(c.ret)})</span>`) +
-    stat('Cash to invest', fM(c.cash), '', S.acct ? `${esc(ACC[S.acct])} · ${fM(inv)} invested` : `${acctCashLine('core')} · ${fM(inv)} invested`) +
+  const built = T.filter(t => t.status === 'built').length, inv = c.invested || 0;   // v7.1: same invested figure as every other card
+  $('#core-stats').innerHTML = stat('Core pot value' + acctLbl(), fM(c.equity), '', `${fM(c.cash)} cash + ${fM(c.invested)} invested · <span class="${cls(c.pnl)}">${fM(c.pnl, true)} (${fPct(c.ret)})</span>`, 'What it is worth now: cash + open positions at the current price (fees already paid are included). P&L = value minus the starting money.') +
+    stat('Cash to invest', fM(c.cash), '', S.acct ? `${esc(ACC[S.acct])} · ${fM(inv)} invested` : `${acctCashLine('core')} · ${fM(inv)} invested`, 'Core pot money not yet in a holding (both accounts unless one is selected).') +
     stat('Build progress', `${built} / ${T.length}`, '', `holdings fully built · ${c.equity ? (inv / c.equity * 100).toFixed(0) : 0}% invested`) +
     stat('Next rebalance', esc(fTs(c.next_rebalance)), '', `${until(c.next_rebalance)} · re-picks stocks`) +
     stat('Stocks last picked', esc(fTs(c.picks_ts)), '', esc(c.picks_source || ''));
@@ -400,35 +401,51 @@ function renderDay() {
   const acs = S.acct ? [S.acct] : ['crypto', 'stocks'], SU = SS.setups || {};
   const hit = ['24h', '4h'].map(k => { const x = SU[k] || {}; return `${k} break ${isNum(x.p) ? (x.p * 100).toFixed(0) + '%' : '-'} (${x.n || 0})`; }).join(' · ');
   const CT = (SS.cands || []).filter(x => !S.acct || x.acct === S.acct);
-  $('#day-stats').innerHTML = stat('Day pot value' + acctLbl(), fM(d.equity), '', `<span class="${cls(d.pnl)}">${fM(d.pnl, true)} (${fPct(d.ret)})</span> all time`) +
-    stat("Today's P&L", `<span class="${cls(d0.day_pnl)}">${fM(d0.day_pnl, true)}</span>`, '', `${fPct(d0.day_pnl_pct)} · whole pot · limit -${R.cap}%`) +
-    stat('Status', esc(st[0]), st[1], st[2]) + stat('Open positions', `${d0.open_n}`, '', S.acct ? `${d.open_n} in this account` : `momentum max ${M.max_open} · burst max ${B.max_open_per_account}/account`) +
-    stat('Cash', fM(d.cash), '', S.acct ? esc(ACC[S.acct]) : acctCashLine('day')) +
-    stat('Burst setups now', `${CT.filter(x => x.bought).length} bought / ${CT.length}`, '', `measured hit rate: ${hit}`);
-  // gauges: today's loss vs the daily stop, confidence threshold, remaining cash per account x sub-strategy
+  // v7.1: every figure below comes from data.json's reconciled numbers (sleeves.day + sleeves.day.ledger): pot value = cash +
+  // open positions; per account, momentum + burst budgets = the Day value there and momentum + burst free = the Day cash there.
+  const LG = d0.ledger || {}, LS = LG[S.acct || 'all'] || {}, SH = LG.shares || {};
+  const nOpen = S.acct ? d.open_n : d0.open_n;
+  $('#day-stats').innerHTML = stat('Day pot value' + acctLbl(), fM(d.equity), '', `${fM(d.cash)} cash + ${fM(d.invested)} in positions · <span class="${cls(d.pnl)}">${fM(d.pnl, true)} (${fPct(d.ret)})</span> since the ${fM0(d.start)} start`,
+      'What the Day pot is worth now: its cash plus its open positions at the current price (after the fees already paid on the buys).') +
+    stat("Today's P&L", `<span class="${cls(d0.day_pnl)}">${fM(d0.day_pnl, true)}</span>`, '', `${fPct(d0.day_pnl_pct)} vs ${fM(d0.day_start)} at midnight UK · whole pot · stop -${R.cap}%`,
+      'Change in the whole Day pot value since midnight UK (closed and open trades, after all fees). The daily stop uses this number.') +
+    stat('Status', esc(st[0]), st[1], st[2]) +
+    stat('Open positions' + acctLbl(), `${nOpen}`, '', `momentum max ${M.max_open} · burst max ${B.max_open_per_account}/account`, 'Number of Day positions held right now.') +
+    stat('Cash' + acctLbl(), fM(d.cash), '', S.acct ? `free for new trades: momentum ${fM((LS.momentum || {}).free)} + burst ${fM((LS.burst || {}).free)}` : `${acctCashLine('day')} · = momentum ${fM((LS.momentum || {}).free)} + burst ${fM((LS.burst || {}).free)} free`,
+      'Day pot money not tied up in open positions. It is exactly the sum of the two sub-strategies\' free cash.') +
+    stat('Burst setups now', `${CT.filter(x => x.bought).length} bought / ${CT.length}`, '', `measured hit rate: ${hit}`, 'Breakout setups seen at the last 15-minute check, and how many were bought.');
+  // gauges: today's loss vs the daily stop, confidence threshold, free cash per account x sub-strategy (from the ledger)
   const lossPct = Math.max(0, -(isNum(d0.day_pnl_pct) ? d0.day_pnl_pct : 0)), lf = lossPct / (R.cap || 15);
-  const thrV = isNum(SS.threshold) ? SS.threshold : B.conf_threshold, BU = SS.budgets || {};
-  const cashRows = acs.map(ac => ['momentum', 'burst'].map(k => { const x = (BU[k] || {})[ac] || {};
-    return `<div class="g-row"><span>${esc(ACC[ac].split(' ')[0])} · ${SUBN[k]}</span>${mbar(x.budget ? x.free / x.budget : 0, null, '')}<span>${fM(x.free)} <span class="muted">of ${fM(x.budget)}</span></span></div>`; }).join('')).join('');
+  const thrV = isNum(SS.threshold) ? SS.threshold : B.conf_threshold;
+  const cashRows = acs.map(ac => ['momentum', 'burst'].map(k => { const x = (LG[ac] || {})[k] || {};
+    return `<div class="g-row" title="${esc(`${ACC[ac]} · ${SUBN[k]}: budget ${fM(x.budget)} = ${fM(x.cash)} cash + ${fM(x.value)} in open positions. Free = the cash it can still spend.`)}"><span>${esc(ACC[ac].split(' ')[0])} · ${SUBN[k]}</span>${mbar(x.budget ? x.free / x.budget : 0, null, '')}<span>${fM(x.free)} <span class="muted">free of ${fM(x.budget)}</span></span></div>`; }).join('')).join('');
+  const freeT = acs.reduce((a, ac) => a + ['momentum', 'burst'].reduce((b, k) => b + (((LG[ac] || {})[k] || {}).free || 0), 0), 0);
   $('#day-gauges').innerHTML =
     `<div class="gauge"><div class="g-h">Today's loss vs the ${R.cap}% daily stop</div>${bval(lf, null, lf >= 1 ? 'neg' : lf > 0.5 ? 'neg' : lf > 0 ? 'lo' : 'ok', `${lossPct.toFixed(2)}% <span class="muted">of ${R.cap}%</span>`)}` +
     `<div class="muted small">${lf >= 1 ? 'Stop reached - no new Day trades today' : `${(lf * 100).toFixed(0)}% of the daily stop used · Day pot today ${fPct(d0.day_pnl_pct)}`}</div></div>` +
     `<div class="gauge"><div class="g-h">Burst confidence threshold</div>${bval(thrV, B.conf_threshold, '', (thrV * 100).toFixed(0) + '%')}` +
     `<div class="muted small">base ${(B.conf_threshold * 100).toFixed(0)}% (marker), rises to ${((B.conf_threshold + B.conf_raise_at_cap) * 100).toFixed(0)}% at the ${R.cap}% stop · also needs expected value after costs &gt; ${B.ev_min_pct}%</div></div>` +
-    `<div class="gauge"><div class="g-h">Remaining cash per account</div>${cashRows}<div class="muted small">free to open new trades (sub-strategy budget minus open positions)</div></div>`;
-  // per sub-strategy stats
+    `<div class="gauge"><div class="g-h">Free cash per account and sub-strategy</div>${cashRows}<div class="muted small">Budget = the sub-strategy's own money (its ${SH.momentum ?? M.share_pct}% / ${SH.burst ?? B.share_pct}% share of the Day start money + its closed-trade P&L) incl. its open positions at today's price. Free = budget minus its open positions = cash it can still spend. Total free ${fM(freeT)} = Day cash card.</div></div>`;
+  // per sub-strategy stats (money columns from the ledger; trade stats for the chosen period)
   const per = S.dayPer || 'all', sc = S.acct || 'all', subs = d0.subs || {};
-  const srows = ['momentum', 'burst'].map(k => { const x = (subs[k] || {})[`${per}:${sc}`] || {}, bb = ((SS.budgets || {})[k]) || {};
-    const budg = acs.reduce((a, ac) => a + ((bb[ac] || {}).budget || 0), 0), fr = acs.reduce((a, ac) => a + ((bb[ac] || {}).free || 0), 0), on = acs.reduce((a, ac) => a + ((bb[ac] || {}).open_n || 0), 0);
-    return Object.assign({sub: k, budg, fr, on}, x); });
-  table($('#day-subs'), [{k: 'sub', l: 'Strategy', f: r => subTag(r.sub)}, {k: 'budg', l: 'Budget / free', num: 1, f: r => `${fM(r.budg)}<div class="muted small">${fM(r.fr)} free · ${r.on} open</div>`},
-    {k: 'trades', l: 'Trades', num: 1, f: r => r.trades ?? 0}, {k: 'win_rate', l: 'Win rate', num: 1, f: r => isNum(r.win_rate) ? r.win_rate.toFixed(0) + '%' : '-'},
+  const srows = ['momentum', 'burst'].map(k => Object.assign({sub: k}, (subs[k] || {})[`${per}:${sc}`] || {}, {L: LS[k] || {}}));
+  const both = S.acct ? '' : ' (both accounts)';
+  table($('#day-subs'), [{k: 'sub', l: 'Strategy', f: r => subTag(r.sub)},
+    {k: 'budg', l: 'Budget' + both, num: 1, sv: r => r.L.budget, tip: 'The sub-strategy\'s own money incl. its open positions at today\'s price = free cash + value of its open positions. Momentum + Burst = Day pot value.',
+      f: r => `${fM(r.L.budget)}<div class="muted small">${fM(r.L.free)} free + ${fM(r.L.value)} in ${r.L.open_n || 0} open</div>`},
+    {k: 'trades', l: 'Closed trades', num: 1, f: r => r.trades ?? 0, tip: 'Round trips (buy + sell) finished in the chosen period. Open positions are not counted here.'},
+    {k: 'win_rate', l: 'Win rate', num: 1, f: r => isNum(r.win_rate) ? r.win_rate.toFixed(0) + '%' : '-', tip: 'Share of closed trades that made money after fees.'},
     {k: 'avg_win', l: 'Avg win', num: 1, f: r => `<span class="pos">${fPct(r.avg_win)}</span>`}, {k: 'avg_loss', l: 'Avg loss', num: 1, f: r => `<span class="neg">${fPct(r.avg_loss)}</span>`},
-    {k: 'pf', l: 'Profit factor', num: 1, f: r => isNum(r.pf) ? (r.pf >= 99 ? '∞ <span class="muted small">no losses</span>' : r.pf.toFixed(2)) : '-'}, {k: 'pnl', l: 'P&L after fees', num: 1, f: r => pnlCell(r.pnl)},
-    {k: 'fees', l: 'Fees paid', num: 1, f: r => fM(r.fees)},
-    {k: 'exp_gbp', l: 'Expectancy / trade', num: 1, f: r => isNum(r.exp_gbp) ? `<span class="${cls(r.exp_gbp)}">${fM(r.exp_gbp, true)}</span><div class="muted small">${fPct(r.exp_pct)}</div>` : '-'}],
+    {k: 'pf', l: 'Profit factor', num: 1, f: r => isNum(r.pf) ? (r.pf >= 99 ? '∞ <span class="muted small">no losses</span>' : r.pf.toFixed(2)) : '-', tip: 'Money won on winners divided by money lost on losers (closed trades).'},
+    {k: 'pnl', l: 'Closed P&L', num: 1, f: r => pnlCell(r.pnl), tip: 'Profit or loss of closed trades in the chosen period, after ALL their fees (buy and sell).'},
+    {k: 'opnl', l: 'Open P&L', num: 1, sv: r => r.L.open_pnl, f: r => pnlCell(r.L.open_pnl), tip: 'Profit or loss of positions still open, right now: value minus what they cost incl. the buy fees already paid.'},
+    {k: 'fees', l: 'Fees', num: 1, f: r => `${fM(r.fees)}<div class="muted small">${fM(r.fees_closed)} closed · ${fM(r.fees_open)} on open buys</div>`,
+      tip: 'All fees + gas paid in the chosen period = fees of closed trades (already inside Closed P&L) + buy fees of positions still open (already inside Open P&L).'},
+    {k: 'exp_gbp', l: 'Expectancy / trade', num: 1, f: r => isNum(r.exp_gbp) ? `<span class="${cls(r.exp_gbp)}">${fM(r.exp_gbp, true)}</span><div class="muted small">${fPct(r.exp_pct)}</div>` : '-', tip: 'Average closed-trade P&L after fees.'}],
     srows, {k: 'sub', d: 1}, renderDay, {key: r => r.sub});
-  $('#day-subs-sub').innerHTML = ['all', 'today'].map(p => `<a href="#day" class="${p === per ? '' : 'muted'}" data-per="${p}">${p === 'all' ? 'All time' : 'Today'}</a>`).join(' · ') + ` · ${S.acct ? esc(ACC[S.acct]) : 'whole pot'} · closed trades, P&L net of all fees`;
+  const lm = LS.momentum || {}, lb = LS.burst || {};
+  $('#day-subs-sub').innerHTML = ['all', 'today'].map(p => `<a href="#day" class="${p === per ? '' : 'muted'}" data-per="${p}">${p === 'all' ? 'All time' : 'Today'}</a>`).join(' · ') +
+    ` · ${S.acct ? esc(ACC[S.acct]) : 'whole pot, both accounts summed'} · budget ${fM(lm.budget)} + ${fM(lb.budget)} = ${fM(d.equity)} Day value · free ${fM(lm.free)} + ${fM(lb.free)} = ${fM(d.cash)} cash`;
   $('#day-subs-sub').querySelectorAll('a[data-per]').forEach(a => a.onclick = e => { e.preventDefault(); S.dayPer = a.dataset.per; renderDay(); });
   const P = (D.positions || []).filter(p => p.sleeve === 'day' && inAcct(p));
   const cols = [{k: 'asset', l: 'Asset', asc: 1, f: r => assetCell(r.asset)}, {k: 'sub', l: 'Strategy', asc: 1, f: r => subTag(r.sub)}, {k: 'acct', l: 'Account', asc: 1, f: r => acctTag(r.acct)}, {k: 'opened', l: 'Opened', f: r => esc(fTs(r.opened))},
@@ -464,8 +481,8 @@ function renderRiskPot() {
     `Exits: <b>-${R.stop}%</b> stop-loss; once a position has been up <b>+${R.trail_after}%</b> it is sold if it falls <b>${R.trail}%</b> from its peak (locks in gains); anything still held after <b>${R.hold} days</b> is sold. ` +
     `If the pot falls <b>${R.cap}%</b>, new trades stop until reviewed. Only coins listed on CoinGecko with ≥ ${fUsd(R.min_mcap)} market cap and ≥ ${fUsd(R.min_vol)} daily volume (no stablecoins, wrapped or exchange tokens). Expect big swings.`;
   const st = D.risk.kill ? ['Paused', 'neg', 'kill switch on'] : r0.halted ? ['Paused', 'neg', `down ${fPct(r0.dd_pct)} - waiting for review`] : ['Active', 'pos', `${r0.new_today || 0} of ${R.per_day} new trades today`];
-  $('#risk-stats').innerHTML = stat('Risk pot value' + acctLbl(), fM(r.equity), '', `<span class="${cls(r.pnl)}">${fM(r.pnl, true)} (${fPct(r.ret)})</span> since start`) +
-    stat('Cash', fM(r.cash), '', `${fM(r.invested)} invested${S.acct ? '' : ' · ' + acctCashLine('risk')}`) + stat('Open positions', `${r0.open_n} / ${R.max_open}`, '', `max £${R.max_pos} each${S.acct ? ` · ${r.open_n} in this account` : ''}`) +
+  $('#risk-stats').innerHTML = stat('Risk pot value' + acctLbl(), fM(r.equity), '', `${fM(r.cash)} cash + ${fM(r.invested)} invested · <span class="${cls(r.pnl)}">${fM(r.pnl, true)} (${fPct(r.ret)})</span> since start`, 'What it is worth now: cash + open positions at the current price (fees already paid are included). P&L = value minus the starting money.') +
+    stat('Cash', fM(r.cash), '', `${fM(r.invested)} invested${S.acct ? '' : ' · ' + acctCashLine('risk')}`, 'Risk pot money not in a position. Each account\'s cash can only buy that account\'s assets.') + stat('Open positions', `${r0.open_n} / ${R.max_open}`, '', `max £${R.max_pos} each${S.acct ? ` · ${r.open_n} in this account` : ''}`) +
     stat('Status', esc(st[0]), st[1], st[2]) + stat('Drawdown', `<span class="${cls(r0.dd_pct)}">${fPct(r0.dd_pct)}</span>`, '', `whole pot · limit -${R.cap}% · win rate ${isNum(r0.win_rate) ? r0.win_rate.toFixed(0) + '%' : '-'} of ${r0.closed}`);
   const P = (D.positions || []).filter(p => p.sleeve === 'risk' && inAcct(p));
   const cols = [{k: 'asset', l: 'Asset', asc: 1, f: x => assetCell(x.asset)}, {k: 'acct', l: 'Account', asc: 1, f: x => acctTag(x.acct)}, {k: 'opened', l: 'Opened', f: x => esc(fTs(x.opened))},

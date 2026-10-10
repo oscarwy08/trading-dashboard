@@ -496,9 +496,16 @@ def main():
     halted = halted or sget(con, f"day_halt:{day}") is not None          # stays halted for the rest of the UK day
     window = e0 <= mins < e1 and not flat_now
     def sub_of(a): return (dmeta.get(a) or {}).get("sub", "momentum")
-    def budget(sub, ac): return max(0.0, acct_eq("day", ac)) * float(SUBC[sub]["share_pct"]) / 100
-    def in_use(sub, ac): return sum(p["cost"] for (sl, x), p in pos.items() if sl == "day" and acct_of(p["klass"]) == ac and sub_of(x) == sub)
-    def free(sub, ac): return max(0.0, min(budget(sub, ac) - in_use(sub, ac), cash[("day", ac)]))
+    # v7.1 sub-strategy ledger (daypot.sub_ledger, same definition as the dashboard): budget = the sub-strategy's own equity
+    # (its share of the DAY start money + its realised P&L, incl. its open positions at market); free = its cash not tied up
+    # in its open positions (never more than the account's DAY cash). Recomputed on every call (buys/sells change it).
+    d_start = acct_start(con, c)["day"]; d_since = (sget(con, "account_split") or {}).get("ts", ""); d_sh = daypot.sub_shares(SUBC)
+    def ledger():
+        dp = [dict(sub=sub_of(x), acct=acct_of(p["klass"]), cost=p["cost"], value=val(p)) for (sl, x), p in pos.items() if sl == "day"]
+        return daypot.sub_ledger(d_start, {ac: cash[("day", ac)] for ac in ACCOUNTS}, dp, daypot.sub_realized(con, d_since), d_sh, ACCOUNTS)
+    def budget(sub, ac): return max(0.0, ledger()[ac][sub]["equity"])
+    def in_use(sub, ac): return ledger()[ac][sub]["value"]
+    def free(sub, ac): return ledger()[ac][sub]["free"]
     def rt_cost(a, value):   # round-trip cost in % of the position (both sides + gas both sides)
         k = klass_of(a); return (cost_pct(c, a, k, "BUY") + cost_pct(c, a, k, "SELL")) * 100 + 2 * gas_of(k) / max(value, 1e-9) * 100
     mcx = float(D.get("min_move_cost_x", 4)); scl = int(D.get("stock_entry_stop_before_close_min", 30))
@@ -585,9 +592,9 @@ def main():
     nday = sum(1 for (sl, _) in pos if sl == "day")
     sset(con, "day_meta", dmeta)
     sset(con, "day_subs", dict(ts=ts, threshold=thr_b, base_threshold=float(DB.get("conf_threshold", 0.55)), day_pnl_pct=round(day_pnl * 100, 3), ev_min=evmin, setups={k: dict(p=round(v["p"], 3), n=v["n"], exp=round(v["exp"], 3) if v["exp"] is not None else None) for k, v in sstats.items()},
-                               budgets={sb: {ac: dict(budget=round(budget(sb, ac), 2), in_use=round(in_use(sb, ac), 2), free=round(free(sb, ac), 2),
-                                                      open_n=sum(1 for (sl, x), p in pos.items() if sl == "day" and sub_of(x) == sb and acct_of(p["klass"]) == ac))
-                                             for ac in ACCOUNTS} for sb in SUBC},
+                               budgets=(lambda L: {sb: {ac: dict(budget=round(L[ac][sb]["equity"], 4), cash=round(L[ac][sb]["cash"], 4), in_use=round(L[ac][sb]["value"], 4),
+                                                              cost=round(L[ac][sb]["cost"], 4), free=round(L[ac][sb]["free"], 4), open_n=L[ac][sb]["open_n"])
+                                                     for ac in ACCOUNTS} for sb in SUBC})(ledger()),
                                cands=sorted(cands, key=lambda d: (d.get("bought") is None, d["block"] is not None, -d["conf"]))[:25]))
 
     # ================= RISK entries: breakout + sentiment, drawdown cap =================

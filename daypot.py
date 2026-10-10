@@ -176,3 +176,44 @@ def sub_stats(rows):
                 avg_loss=round(al, 2) if al is not None else None, pf=round(gw / gl, 2) if gl > 0 else (None if not gw else 99.0),
                 pnl=round(sum(pnls), 4), exp_gbp=round(sum(pnls) / n, 4) if n else None,
                 exp_pct=round(wr * (aw or 0) + (1 - wr) * (al or 0), 2) if n else None)
+
+def sub_shares(DC):
+    """{sub: share 0-1} of the DAY money per account from day.<sub>.share_pct (normalised to sum to 1)."""
+    raw = {sb: float((DC.get(sb) or {}).get("share_pct", 50)) for sb in SUBS}; tot = sum(raw.values()) or 1.0
+    return {sb: v / tot for sb, v in raw.items()}
+
+def sub_realized(con, since=""):
+    """{(sub, account): realised P&L} of closed DAY trades (SELL pnl is already net of ALL fees incl. the buy's, which sit in
+    the position cost). Pre-v7 day trades without a sub count as momentum. since = ISO ts (only trades after it)."""
+    out = {}
+    for sb, k, p in con.execute("SELECT COALESCE(sub,'momentum'), klass, pnl FROM trades WHERE sleeve='day' AND side='SELL' AND ts>?", (since or "",)):
+        ac = "stocks" if k == "stock" else "crypto"; out[(sb, ac)] = out.get((sb, ac), 0.0) + (p or 0.0)
+    return out
+
+def sub_ledger(start, cash, positions, realized, shares, accounts=("crypto", "stocks")):
+    """v7.1 DAY sub-strategy ledger - ONE definition used by the trader (sizing) and the dashboard (display).
+    Per account ac and sub-strategy sb:
+      cash[sb]   = share x DAY start money of ac + realised P&L of sb in ac - cost (incl. buy fees + gas) of sb's open positions
+                   (= the money sb has NOT got tied up; 'free to open new trades' = this, never more than the account's real cash)
+      value[sb]  = market value of sb's open positions
+      equity[sb] = cash[sb] + value[sb]  (= the sub-strategy's BUDGET: its own money incl. open positions; a loss or fee of one
+                   sub-strategy only shrinks its own budget, never the other's)
+    Identity: DAY cash of ac = start + all realised P&L - cost of all open positions, so the sub cash sums to the account's
+    DAY cash and the sub equities to its DAY equity. Any residual (should be ~0; e.g. pre-split history) is spread by share
+    and reported as 'residual'.
+    start: {ac: £}, cash: {ac: £}, positions: [dict(sub, acct, cost, value)], realized: {(sb, ac): £}, shares: {sb: 0-1}.
+    Returns {ac: {sb: dict(cash, free, value, cost, equity, open_n), 'residual': £}} (unrounded)."""
+    out = {}
+    for ac in accounts:
+        cell = {}
+        for sb in SUBS:
+            ps = [p for p in positions if p["acct"] == ac and p["sub"] == sb]
+            cost = sum(p["cost"] or 0.0 for p in ps); value = sum((p["value"] if p["value"] is not None else p["cost"]) or 0.0 for p in ps)
+            cell[sb] = dict(cash=shares[sb] * start.get(ac, 0.0) + realized.get((sb, ac), 0.0) - cost, value=value, cost=cost,
+                            open_n=len(ps))
+        resid = cash.get(ac, 0.0) - sum(cell[sb]["cash"] for sb in SUBS)
+        for sb in SUBS:
+            x = cell[sb]; x["cash"] += resid * shares[sb]
+            x["free"] = max(0.0, min(x["cash"], cash.get(ac, 0.0))); x["equity"] = x["cash"] + x["value"]
+        cell["residual"] = resid; out[ac] = cell
+    return out

@@ -14,6 +14,7 @@ ${PY:-python} ingest_sentiment.py || echo "::warning::sentiment ingest failed"
 ${PY:-python} trader.py           || { echo "::error::trader failed"; fail=1; }
 ${PY:-python} maintenance.py      || echo "::warning::maintenance failed"
 ${PY:-python} dashboard.py        || { echo "::error::dashboard failed"; fail=1; }
+${PY:-python} test/check_data.py docs/data.json || echo "::warning::dashboard figures do not reconcile (test/check_data.py)"
 ${PY:-python} daily_summary.py > data/daily_summary.txt 2>&1 || echo "::warning::daily_summary failed"
 cat data/daily_summary.txt
 if [ -s logs/trading.log ] && grep -qE " (WARNING|ERROR) " logs/trading.log; then

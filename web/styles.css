@@ -195,3 +195,7 @@ input[type=search]{min-width:0;width:100%}.tools{width:100%}#updated-ago{display
 .gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
 .gauge{display:flex;flex-direction:column;gap:8px}.g-h{font-weight:700;color:var(--hi)}
 .g-row{display:grid;grid-template-columns:120px 1fr auto;gap:8px;align-items:center;font-size:13px}.g-row>span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+/* v7.1: ⓘ marks a figure with a plain-English tooltip (title) */
+.tipi{opacity:.55;font-size:.85em;cursor:help}
+.stat[title],th[title],.g-row[title]{cursor:help}
+.tg-row[data-a],.pick[data-a]{cursor:pointer}

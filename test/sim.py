@@ -81,6 +81,8 @@ SENT = [("MON", uk(1, 23, 30), -0.7, 0.8)]       # strongly negative sentiment S
 END = uk(10, 20)                                     # through the following Monday 10:00 UK (two rebalances)
 CAP_DAY = uk(5, 0).astimezone(LON).date().isoformat()   # Wed: force the DAY loss cap mid-morning
 
+sys.path.insert(0, str(HERE / "test")); import check_data
+RECON = dict(runs=0, checks=0, fails=[])
 checks = {"flat_violation": [], "entry_window_violation": [], "max_open_violation": [], "neg_cash": [], "kill_trades": None}
 log = open(HERE / "logs" / "sim_cycles.log", "w")
 t = T0; steps = 0
@@ -164,6 +166,17 @@ while t <= END:
         checks["risk_resumed"] = not con.execute("SELECT 1 FROM state WHERE key='riskpot_halt'").fetchone() and not (HERE / "test" / "RISK_RESUME").exists()
         trader.RISK_RESUME = common.RISK_RESUME
     if any(r[0] < -1e-9 for r in con.execute("SELECT amount FROM acct_cash")): checks["neg_cash"].append(L.isoformat())
+    if steps % 12 == 5 or t + timedelta(minutes=15) > END:   # v7.1: every 3h the dashboard export must reconcile (test/check_data.py)
+        check_data.fails.clear(); D_ = json.loads(json.dumps(dashboard.build(common.db())))
+        check_data.main(D_); RECON["runs"] += 1; RECON["checks"] = check_data.n[0]
+        RECON["fails"] += [f"{L:%a %H:%M} {f_}" for f_ in check_data.fails]
+        ss_ = json.loads((con.execute("SELECT value FROM state WHERE key='day_subs'").fetchone() or ["{}"])[0]).get("budgets") or {}
+        for sb_, x_ in ss_.items():          # the trader sizes with the same ledger the Day tab shows
+            for ac_, y_ in x_.items():
+                lg_ = D_["sleeves"]["day"]["ledger"][ac_][sb_]
+                if abs(y_["cash"] - lg_["cash"]) > 0.011: RECON["fails"].append(f"{L:%a %H:%M} trader {sb_}/{ac_} cash {y_['cash']:.4f} != Day tab {lg_['cash']}")
+                if any(p_["value"] is None for p_ in D_["positions"]): continue
+                if abs(y_["budget"] - lg_["budget"]) > 0.011: RECON["fails"].append(f"{L:%a %H:%M} trader {sb_}/{ac_} budget {y_['budget']:.4f} != Day tab {lg_['budget']}")
     t += timedelta(minutes=15); steps += 1
 
 # ---------------- post-run checks ----------------
@@ -267,7 +280,8 @@ assert rb_ and all(x["value"] <= RP["max_position_gbp"] + 1e-9 for x in rb_), "r
 assert max(rpd.values()) <= RP["max_new_per_day"], "risk max new per day"
 assert risk_exit["risk stop-loss"] and risk_exit["trailing take-profit"] and risk_exit["max hold"], "risk exits (stop / trailing / max hold)"
 assert all(x["pnl"] / (x["value"] + 1e-9) < -0.10 for x in stop_pnl), "risk stop around -12%"
-assert not [x for x in rb_ if x["asset"] == "FADEX" and datetime.fromisoformat(x["ts"]) < uk(2, 9, 15)], "a +80% pump (24h > +60%) must not be chased"
+assert not [x for x in rb_ if x["asset"] == "FADEX" and uk(1, 9) <= datetime.fromisoformat(x["ts"]) < uk(2, 9, 15)], "a +80% pump (24h > +60%) must not be chased"
+# (v7.1: a random-walk breakout BEFORE the scripted pump is a legitimate entry, not chasing - the old check was flaky)
 assert not halt_buys and checks["risk_halt_state"] and checks["risk_resumed"], "risk drawdown cap halt / resume"
 assert not day_in_risk, "DAY traded a risk-only coin"
 assert not checks["max_open_violation"], "max open"
@@ -277,6 +291,8 @@ assert n_cross == 0 and acc_eq_ok and all(stock_buys_acct.values()), "v6: no aut
 assert GAS_LIVE in gas_vals and float(c["gas"]["fallback_gbp"]) in gas_vals, "gas live + fallback"
 if DROP: assert DROP not in cs["picks"] and drop_sells and new_picks and all(new_buys.values()), "Monday re-pick"
 assert len(cs["picks"]) == stockrank.n_picks(c, eqc) or len(cs["picks"]) == len([1 for r in RANK0.values() if r["eligible"]]), "pick count"
+print(f"v7.1 reconciliation (check_data on dashboard.build every 3h + trader ledger = Day tab): {RECON['runs']} exports x {RECON['checks']} checks, failures: {RECON['fails'][:10]}")
+assert not RECON["fails"], "dashboard figures must reconcile"
 print("checks:", {k: (v if isinstance(v, int) or v is None else len(v)) for k, v in checks.items()})
 print("final:", [dict(r) for r in con.execute("SELECT ts, equity, core, day FROM equity ORDER BY ts DESC LIMIT 1")])
 print("MON tranche times (sentiment delay Sat 23:30 until ~11:30 UK Sun):", tranche.get("MON"))

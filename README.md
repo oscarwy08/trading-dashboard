@@ -3,6 +3,31 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7.1 (2026-10-10): dashboard figures reconcile + one sub-strategy money definition
+- **Sub-strategy ledger** (`daypot.sub_ledger`, used by BOTH the trader for sizing and dashboard.py for display): per account,
+  a sub-strategy's **cash** = its share (50%) of the Day start money + its realised P&L (closed trades, after all fees) - the
+  cost (incl. buy fees + gas) of its open positions; **budget** = its own equity = cash + its open positions at market;
+  **free** = its cash (capped by the account's Day cash). Momentum + Burst cash = the Day cash of that account and Momentum +
+  Burst budget = its Day value, to the penny. Before v7.1 the budget was 50% of the *shared* Day equity and "free" = budget -
+  cost, so one sub-strategy's fees/losses shrank the other's budget (Burst showed £14.96 of £15 after Momentum's buy fees)
+  and the free amounts did not add up to the cash (£44.96 vs £45.01).
+- **dashboard.py** builds every total from its rounded parts from ONE price snapshot: cell (pot x account) value = cash +
+  invested (sum of the shown position values), position P&L = shown value - shown cost; pot = its two cells; account = its
+  three pot cells; total = the pots; today's P&L = value now - value at midnight UK. `sleeves.day.ledger` = per account and
+  `all` (summed) x sub-strategy: start, budget, cash, free, value, cost, open_pnl, realized, pnl, open_n. Sub stats add
+  `fees_closed` (already inside the closed P&L) and `fees_open` (buy fees of positions still open, inside the open P&L).
+- **Day tab**: cards say what they are made of (value = cash + positions; cash = momentum free + burst free), tooltips (ⓘ)
+  explain each figure, "Free cash per account and sub-strategy" bars come from the ledger, the sub-strategy table shows
+  Budget (both accounts summed, or the selected account) = free + positions, Closed trades, Closed P&L, Open P&L and Fees =
+  closed + on open buys (so "fees £0.05 with 0 trades" now reads "£0.00 closed · £0.05 on open buys"). Overview / Portfolio /
+  account / Core / Risk cards use the same value = cash + invested definitions and have tooltips; the Core tab's
+  "invested" is the pot's invested figure (was the sum of target rows only). daily_summary labels closed vs open-buy fees.
+- **Checks**: `python3 test/check_data.py [docs/data.json | URL]` asserts ~190 reconciliations (positions, pot x account
+  cells, pots, accounts, totals, Day ledger vs pot cards, sub stats); ci_cycle.sh runs it every cycle (warning in the log on a
+  mismatch). `/workspace/tools/check.js` (box) runs it on the exact data.json the page loaded, checks the Day tab in the DOM
+  (cash card = sum of free bars, sub budgets = pot value) and fails on JS errors (exit 2). test/sim.py runs check_data on a
+  dashboard export every 3 simulated hours and checks that the trader's ledger (state day_subs) equals the Day tab's.
+
 ## Great reset (2026-10-10, v7 rules): fresh £200
 The first run (2026-10-09 20:22 UTC -> 2026-10-10 ~14:50 UK, v3-v7 with migrations; final numbers in the archive summary) was archived
 and the account restarted from scratch with all current rules (`great_reset.py 2026-10-10`, run in the box clone under the lock):
@@ -214,6 +239,7 @@ migrate_v5_xstocks.py one-off xStocks -> normal tickers migration (idempotent; r
 ingest_sentiment.py   loads data/sentiment/*.json into SQLite
 reset_sleeves.py      DISABLED (superseded by great_reset.py)
 great_reset.py        one-off great reset 2026-10-10: archive to data/archive/ + fresh £200 v7 start (refuses to run twice)
+test/check_data.py    v7.1 reconciliation of docs/data.json (every total = sum of its parts; run by ci_cycle.sh + check.js)
 test/sim.py           backtest-style dry run on a throwaway DB copy (simulated clock + synthetic prices); deletes the copy.
                       v4 adds RISK: breakout entries via the real screen, 12% stop, trailing take-profit, 7-day max hold,
                       max 5 open / 3 new per day / <= £8, drawdown-cap halt + RISK_RESUME, DAY ignores risk-only coins,

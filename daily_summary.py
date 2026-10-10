@@ -75,8 +75,8 @@ try:
     for sb in ("momentum", "burst"):
         a_, t_ = _ss[sb]["all:all"], _ss[sb]["today:all"]
         f_ = lambda v, u="%": "n/a" if v is None else f"{v:+.2f}{u}"
-        print(f"  DAY {sb:8} all: {a_['trades']} trades, win {a_['win_rate'] if a_['win_rate'] is not None else 'n/a'}%, avg win {f_(a_['avg_win'])}, "
-              f"avg loss {f_(a_['avg_loss'])}, PF {a_['pf'] if a_['pf'] is not None else 'n/a'}, P&L £{a_['pnl']:+.2f} after £{a_['fees']:.2f} fees, "
+        print(f"  DAY {sb:8} all: {a_['trades']} closed trades, win {a_['win_rate'] if a_['win_rate'] is not None else 'n/a'}%, avg win {f_(a_['avg_win'])}, "
+              f"avg loss {f_(a_['avg_loss'])}, PF {a_['pf'] if a_['pf'] is not None else 'n/a'}, closed P&L £{a_['pnl']:+.2f} (after its fees £{a_.get('fees_closed', 0):.2f}; + £{a_.get('fees_open', 0):.2f} buy fees on open positions), "
               f"expectancy {f_(a_['exp_pct'])}/trade | today: {t_['trades']} trades, P&L £{t_['pnl']:+.2f}")
     if _st: print(f"  DAY burst threshold {_st.get('threshold')} (Day pot today {_st.get('day_pnl_pct', 0):+.2f}%), "
                   f"{sum(1 for d in _st.get('cands', []) if d.get('bought'))}/{len(_st.get('cands', []))} setups taken last cycle")
