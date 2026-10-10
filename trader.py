@@ -117,10 +117,19 @@ def pick_stocks(con, c, stock_equity):
     info = {s: rk[s] for s in picks}
     return picks, info, f"composite score, {sum(1 for r in rk.values() if r['eligible'])}/{len(rk)} eligible, {n} slots for £{stock_equity:.0f} of Core stocks money"
 
-def core_targets(c, picks):
-    """{asset: (account, weight within the CORE money of that account)} - crypto targets in the Crypto account,
-    stock picks in the Stocks account (v6)."""
-    t = {a: ("crypto", w) for a, w in stockrank.crypto_weights(c).items()}
+def pick_crypto(con, c, crypto_equity):
+    """CORE crypto candidates (core.crypto_universe) with the same score, eligibility and per-theme cap as the stocks.
+    Nothing here is a fixed target. Returns (picks, info, source)."""
+    rk = stockrank.rank_crypto(con, c)
+    n = stockrank.n_picks(c, crypto_equity)
+    picks = stockrank.select(c, rk, n)
+    info = {s: rk[s] for s in picks}
+    return picks, info, f"composite score, {sum(1 for r in rk.values() if r['eligible'])}/{len(rk)} eligible, {n} slots for £{crypto_equity:.0f} of Core crypto money"
+
+def core_targets(c, picks, crypto_picks=None):
+    """{asset: (account, weight within the CORE money of that account)} - fixed crypto targets plus any ranked
+    crypto candidates, in the Crypto account; stock picks in the Stocks account (v6)."""
+    t = {a: ("crypto", w) for a, w in stockrank.crypto_weights(c, crypto_picks).items()}
     t.update({s: ("stocks", w) for s, w in stockrank.pick_weights(c, picks).items()})
     return t
 
@@ -150,10 +159,12 @@ def gas_gbp(con, c):
     return float(g.get("fallback_gbp", 0.001))
 
 def init_core(con, c):
-    """Called on account reset: pick stocks, mark every target asset as 'building', no rebalance until next week."""
+    """Called on account reset: pick stocks and any qualifying crypto candidates, mark every target as 'building'."""
     picks, info, src = pick_stocks(con, c, funding(c)["core"]["stocks"])
+    cpicks, cinfo, csrc = pick_crypto(con, c, funding(c)["core"]["crypto"])
     sset(con, "core_stocks", dict(picks=picks, info=info, source=src, ts=iso()))
-    sset(con, "core_plan", {a: dict(status="building", n=0, last_day=None, day_n=0) for a in core_targets(c, picks)})
+    sset(con, "core_crypto", dict(picks=cpicks, info=cinfo, source=csrc, ts=iso()))
+    sset(con, "core_plan", {a: dict(status="building", n=0, last_day=None, day_n=0) for a in core_targets(c, picks, cpicks)})
     sset(con, "core_last_rebalance", iso())
     return picks
 
@@ -420,6 +431,7 @@ def main():
     # ================= CORE =================
     plan = sget(con, "core_plan") or {}
     picks = (sget(con, "core_stocks") or {}).get("picks", [])
+    crypto_picks = (sget(con, "core_crypto") or {}).get("picks", [])
     # queued stock orders (rebalance decided while the stock's market was closed) -> execute at the first open cycle
     queue = sget(con, "order_queue") or []; keep = []
     for o in queue:
@@ -461,8 +473,14 @@ def main():
     if forced or (t >= rb_at and (not last_rb or datetime.fromisoformat(last_rb) < rb_at)):
         new_picks, info, src = pick_stocks(con, c, acct_eq("core", "stocks"))
         if not new_picks: new_picks = picks       # keep old picks rather than dropping stocks on missing data
+        new_cp, cinfo, csrc = pick_crypto(con, c, acct_eq("core", "crypto"))
+        if not new_cp:                            # no daily history yet is not a reason to drop a candidate
+            prev = sget(con, "core_crypto") or {}
+            new_cp = crypto_picks
+            if prev.get("picks"): cinfo, csrc = prev.get("info") or cinfo, prev.get("source") or csrc
         sset(con, "core_stocks", dict(picks=new_picks, info=info, source=src, ts=ts))
-        tg = core_targets(c, new_picks); ceq = sleeve_eq("core"); aeq = {ac: acct_eq("core", ac) for ac in ACCOUNTS}
+        sset(con, "core_crypto", dict(picks=new_cp, info=cinfo, source=csrc, ts=ts))
+        tg = core_targets(c, new_picks, new_cp); ceq = sleeve_eq("core"); aeq = {ac: acct_eq("core", ac) for ac in ACCOUNTS}
         band = K["drift_band_pp"]; log_rb = []
         for a in list(plan):
             if a not in tg: plan.pop(a)
@@ -501,12 +519,12 @@ def main():
                 log_rb.append(f"BUY {a} £{v:.2f}"); sig("core", a, None, None, None, "BUY", f"rebalance top-up £{v:.2f} {w*100:.1f}% -> {w_t*100:.0f}%")
         sset(con, "core_last_rebalance", ts)
         if forced: con.execute("DELETE FROM state WHERE key='core_force_rebalance'")
-        sset(con, "core_rebalance_log", dict(ts=ts, picks=new_picks, equity=ceq, acct_equity=aeq, actions=log_rb, forced=forced or None))
+        sset(con, "core_rebalance_log", dict(ts=ts, picks=new_picks, crypto_picks=new_cp, equity=ceq, acct_equity=aeq, actions=log_rb, forced=forced or None))
         out.append(f"[core] REBALANCE{' (forced: ' + str(forced) + ')' if forced else ''} (picks {', '.join(new_picks)}): " + "; ".join(log_rb))
-        picks = new_picks
+        picks = new_picks; crypto_picks = new_cp
 
     # staggered entry: tranches for assets still being built
-    tg = core_targets(c, picks); ntr = int(K["tranches"])
+    tg = core_targets(c, picks, crypto_picks); ntr = int(K["tranches"])
     for a, (ac, w_t) in tg.items():
         pl = plan.setdefault(a, dict(status="building", n=0, last_day=None, day_n=0))
         if pl.get("status") != "building": continue

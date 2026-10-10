@@ -62,6 +62,7 @@ Each account divides its funds across three pots with distinct strategies:
 - **Smaller Tokens**: Down to ~$50M market cap, liquidity permitting
 - **Preferred Chain**: Monad ecosystem tokens prioritized
 - **Memecoin Policy**: ALL memecoins excluded EXCEPT DOGE and PEPE (explicitly allowed)
+- **Gold-backed tokens**: PAXG and XAUT are Core crypto candidates (real-world-asset theme), ranked with the stocks, never a fixed share, and never traded by the Day pot
 
 ### Stock Focus
 - Growth-oriented with thematic concentration:

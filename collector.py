@@ -438,7 +438,37 @@ def daily(con, c, status):
     if todo or not con.execute("SELECT 1 FROM state WHERE key='stock_rank'").fetchone():
         rk = rank(con, c)
         con.execute("INSERT OR REPLACE INTO state VALUES('stock_rank',?)", (json.dumps(dict(ts=iso(), data=rk)),))
-    status["daily"] = f"{have}/{len(uni)} fresh (+{ok} this cycle)"
+    try: extra = crypto_daily(con, c)
+    except Exception as e: L.warning("crypto daily failed: %s", e); extra = 0
+    status["daily"] = f"{have}/{len(uni)} fresh (+{ok} this cycle)" + (f", crypto candidates +{extra}" if extra else "")
+
+def crypto_daily(con, c):
+    """Daily USD closes for one CORE crypto candidate (CoinGecko market_chart; days=365 is daily on the free API).
+    One coin per cycle, same staleness window as the stock closes, so two candidates refresh without extra bursts."""
+    from stockrank import crypto_ids
+    ids = crypto_ids(c)
+    if not ids: return 0
+    maxh = float(c["stocks"].get("daily_max_age_h", 20))
+    cut = (datetime.now(timezone.utc) - timedelta(hours=maxh)).isoformat()
+    last = {r[0][len("dfetch:"):]: r[1] for r in con.execute("SELECT key, value FROM state WHERE key LIKE 'dfetch:%'")}
+    todo = sorted([s for s in ids if str(last.get(s, "")).strip('"') < cut], key=lambda s: str(last.get(s, "")))
+    if not todo: return 0
+    sym = todo[0]; cid = ids[sym]
+    time.sleep(2)
+    d = get(f"{CG}/coins/{cid}/market_chart", {"vs_currency": "usd", "days": "365"}, tries=1)
+    pts = (d or {}).get("prices") or []
+    if not pts:
+        L.warning("crypto daily %s (%s) unavailable", sym, cid); return 0
+    by = {}
+    for ms, p in pts:
+        if not p or p <= 0: continue
+        by[datetime.fromtimestamp(ms / 1000, timezone.utc).date().isoformat()] = float(p)
+    for day, p in by.items():
+        con.execute("INSERT OR REPLACE INTO daily_closes VALUES(?,?,?)", (sym, day, p))
+    con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"cgid:{sym}", cid))
+    con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"dfetch:{sym}", iso()))
+    L.info("crypto daily %s: %d closes", sym, len(by))
+    return 1
 
 def backfill(con, c, crypto_rows, cg_limit=3):
     """One-off hourly history so momentum works from day one. Yahoo for stocks (all at once),
