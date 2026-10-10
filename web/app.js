@@ -124,6 +124,14 @@ function spark(vals) {
 const sideTag = a => a ? `<span class="tag ${a === 'BUY' ? 'buy' : a === 'SELL' ? 'sell' : a === 'TRANSFER' || a === 'CONVERT' || a === 'LOAN' || a === 'REPAY' ? 'xfer' : ''}">${esc(a === 'BUY' ? 'Buy' : a === 'SELL' ? 'Sell' : a === 'HOLD' ? 'Hold' : a === 'SKIP' ? 'Skip' : a === 'TRANSFER' ? 'Transfer' : a === 'CONVERT' ? 'Convert' : a === 'LOAN' ? 'Loan' : a === 'REPAY' ? 'Repay' : a)}</span>` : '<span class="muted">-</span>';
 const pnlCell = (v, pct) => isNum(v) ? `<span class="${cls(v)}">${fM(v, true)}${isNum(pct) ? ` <span style="opacity:.85">(${fPct(pct)})</span>` : ''}</span>` : '<span class="muted">-</span>';
 
+/* 'open positions +£X · closed trades -£Y (after fees)'. Both lines are always shown; they add up to the headline.
+   Fees are already inside those two numbers. */
+const pnlBreakdown = (bd) => {
+  if (!bd || !isNum(bd.open) || !isNum(bd.closed)) return '';
+  return `<div class="pnl-bd">open positions <span class="${cls(bd.open)}">${fM(bd.open, true)}</span> · closed trades <span class="${cls(bd.closed)}">${fM(bd.closed, true)}</span> (after fees)</div>`;
+};
+const ageTxt = m => !isNum(m) ? '-' : m < 1 ? 'just now' : m < 90 ? Math.round(m) + ' min' : (m / 60).toFixed(1) + ' h';
+
 /* ---------- generic sortable table ---------- */
 function table(el, cols, rows, st, onSort, opts = {}) {
   const sorted = rows.slice();
@@ -136,8 +144,9 @@ function table(el, cols, rows, st, onSort, opts = {}) {
   }
   const th = cols.map(c => `<th${c.nosort || !st ? '' : ` data-k="${c.k}"`}${c.tip ? ` title="${esc(c.tip)}"` : ''} class="${c.num ? 'num' : ''} ${st && st.k === c.k ? 'sorted' : ''}">${esc(c.l)}${c.tip ? ' <span class="tipi" aria-hidden="true">ⓘ</span>' : ''}${st && st.k === c.k ? `<span class="ar">${st.d > 0 ? '▲' : '▼'}</span>` : ''}</th>`).join('');
   const shown = opts.limit ? sorted.slice(0, opts.limit) : sorted;
+  const cell = (c, r) => { try { return c.f ? c.f(r) : esc(r[c.k]); } catch (e) { return '<span class="muted">-</span>'; } };
   const body = shown.length ? shown.map(r => `<tr${opts.key && opts.key(r) ? ` data-id="${esc(opts.key(r))}"` : ''}>` +
-      cols.map(c => `<td class="${c.num ? 'num' : ''} ${c.wrap ? 'wrap' : ''}">${c.f ? c.f(r) : esc(r[c.k])}</td>`).join('') + '</tr>').join('')
+      cols.map(c => `<td class="${c.num ? 'num' : ''} ${c.wrap ? 'wrap' : ''}">${cell(c, r)}</td>`).join('') + '</tr>').join('')
     : `<tr><td class="emptyrow" colspan="${cols.length}">${esc(opts.empty || 'Nothing to show')}</td></tr>`;
   el.innerHTML = `<thead><tr>${th}</tr></thead><tbody>${body}${shown.length && opts.foot ? opts.foot : ''}</tbody>`;
   if (st) $$('th[data-k]', el).forEach(h => h.onclick = () => { const k = h.dataset.k;
@@ -172,10 +181,10 @@ function renderOverview() {
   $$('.js-start').forEach(e => e.textContent = start.toFixed(0));
   const pnl = s.equity - start;
   $('#ov-value').textContent = fM(s.equity);
-  $('#ov-pnl').innerHTML = `<span class="${cls(pnl)}">${fM(pnl, true)} (${fPct(s.ret)})</span><span class="muted">all time</span>`;
+  $('#ov-pnl').innerHTML = `<span class="${cls(pnl)}">${fM(pnl, true)} (${fPct(s.ret)})</span><span class="muted">all time</span>` + pnlBreakdown(s.pnl_breakdown);
   const inv = (D.positions || []).reduce((a, p) => a + (p.value || 0), 0), cash = potCash();
   const A = D.accounts || {}, fees = A.crypto ? (A.crypto.fees_total || 0) + (A.stocks.fees_total || 0) : (D.gas.fees || 0) + (D.gas.paid || 0);
-  $('#ov-stats').innerHTML = stat("Today's P&L", `<span class="${cls(s.day_pnl)}">${fM(s.day_pnl, true)}</span>`, '', `${fPct(s.day_pnl_pct)} since midnight UK`, 'Change in the total value (all pots, both accounts) since midnight UK, after all fees.') +
+  $('#ov-stats').innerHTML = stat("Today's P&L", `<span class="${cls(s.day_pnl)}">${fM(s.day_pnl, true)}</span>`, '', `${fPct(s.day_pnl_pct)} since midnight UK` + pnlBreakdown(s.day_pnl_breakdown), 'Change in the total value (all pots, both accounts) since midnight UK, after all fees. Open positions and closed trades underneath add up to this number.') +
     stat('Cash', fM(cash), '', A.crypto ? `Crypto ${fM(A.crypto.cash)} · Stocks ${fM(A.stocks.cash)}` : 'ready to invest', 'Money not in any position, summed over all pots and both accounts.') +
     stat('Invested', fM(inv), '', `${(D.positions || []).length} holdings`, 'Current value of all open positions. Cash + invested = total value.') +
     stat('Fees & gas paid', fM(fees), '', A.crypto ? `Crypto ${fM(A.crypto.fees_total)} · Stocks ${fM(A.stocks.fees_total)}` : `incl. ${fGas(D.gas.paid)} network gas`, 'All trading fees, spreads, FX, stamp duty and network gas paid so far (open and closed trades). They are already included in the values and P&L.');
@@ -193,10 +202,11 @@ function renderOverview() {
     `<div class="card"><div class="lbl">Cash vs invested</div><div class="bar2"><span style="width:${ip.toFixed(1)}%;background:var(--blue)"></span><span style="width:${(100 - ip).toFixed(1)}%;background:#536471"></span></div>` +
     `<p class="plain"><b>${fM(inv)}</b> (${ip.toFixed(0)}%) is invested and <b>${fM(cash)}</b> is cash. The Core pot invests its cash gradually; the Risk pot only buys on breakouts, so it can sit in cash for a while.</p></div>` +
     `<div class="card"><div class="lbl">Compared with Bitcoin</div><p class="plain" style="margin-top:10px">${btcWords}</p></div>` +
-    `<div class="card"><div class="lbl">Status</div><p class="plain" style="margin-top:10px"><b class="${st.c}">${esc(st.txt)}.</b> ${dayLine} Next Core rebalance: <b>${esc(dlong.format((core.next_rebalance || 0) * 1000))}</b> UK.</p></div>`;
+    `<div class="card"><div class="lbl">Status</div><p class="plain" style="margin-top:10px"><b class="${st.c}">${esc(st.txt)}.</b> ${dayLine} Next Core rebalance: <b>${esc(dlong.format((core.next_rebalance || 0) * 1000))}</b> UK.` +
+    `${D.freshness && isNum(D.freshness.score) ? ` Data freshness <b>${Math.round(D.freshness.score * 100)}%</b>${D.freshness.stale ? ` · ${D.freshness.stale} price${D.freshness.stale === 1 ? '' : 's'} older than the full-credit window` : ''}${isNum(D.freshness.oldest_min) ? ` · oldest ${ageTxt(D.freshness.oldest_min)}` : ''}.` : ''}</p></div>`;
   // pots
   const pot = (k, x, desc) => `<a class="pot" href="#${k}"><div><div class="pot-n">${POT[k]}</div><div class="pot-d">${desc}</div></div>` +
-    `<div class="pot-v"><b>${fM(x.equity)}</b><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span></div></a>`;
+    `<div class="pot-v"><b>${fM(x.equity)}</b><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span>${pnlBreakdown(x.pnl_breakdown)}</div></a>`;
   const split = k => { const z = (Z[k] || {}).accts; return z ? `<br>Crypto ${fM(z.crypto.equity)} (${fM(z.crypto.cash)} cash) · Stocks ${fM(z.stocks.equity)} (${fM(z.stocks.cash)} cash)` : ''; };
   $('#ov-pots').innerHTML = pot('core', core, `Long-term holdings · started ${fM0(core.start)} · ${core.open_n} holdings${split('core')}`) +
     pot('day', d, `Short-term trades, flat by ${esc((d.rules || {}).flatten)} UK · started ${fM0(d.start)} · ${d.open_n} open${split('day')}`) +
@@ -214,7 +224,7 @@ function renderAccountCards() {
     const fl = a === 'crypto' ? `fee ${fFee(f.fee || 0)} + gas ${fGas(f.gas || 0)}` :
       [['spread', f.spread], ['FX', f.fx], ['stamp duty', f.stamp], ['early xStock fees', f.xstock]].filter(y => y[1]).map(y => `${y[0]} ${fFee(y[1])}`).join(' + ') || 'none yet';
     return `<div class="card acct" data-acct="${a}" tabindex="0" role="button" aria-label="Show ${esc(x.label)}"><div class="acct-h"><div><div class="nm">${esc(x.label)}</div><div class="wh">${esc(x.where)}</div></div>${acctTag(a)}</div>` +
-      `<div class="big">${fM(x.equity)}</div><div class="pl"><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span> <span class="muted">since ${fM0(x.start)} start</span></div>` +
+      `<div class="big">${fM(x.equity)}</div><div class="pl"><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span> <span class="muted">since ${fM0(x.start)} start</span>${pnlBreakdown(x.pnl_breakdown)}</div>` +
       `<div class="acct-kv">${stat('Cash', fM(x.cash), '', '', 'Money in this account not in a position (all three pots).')}${stat('Invested', fM(x.invested), '', `${x.open_n} holding${x.open_n === 1 ? '' : 's'}`, 'Current value of this account\'s open positions. Cash + invested = account value.')}${stat('Fees paid', fM(x.fees_total), '', esc(fl), 'All fees paid in this account (open and closed trades); already included in value and P&L.')}</div>` +
       `<div class="acct-pots">${POTS.map(k => { const c = (x.pots || {})[k] || {}; return `<b>${esc(POT[k])}</b><span>${fM(c.cash)} cash</span><span class="num">${fM(c.equity)}</span><span class="num ${cls(c.pnl)}">${fM(c.pnl, true)}</span>`; }).join('')}</div></div>`; }).join('') +
     (pend.length ? `<div class="note" style="grid-column:1/-1;margin-top:0">Account split ${esc(fTs(sp.t))}: Crypto ${fM0(A.crypto.start)} / Stocks ${fM0(A.stocks.start)}. Still to settle inside each account (pot to pot, never between accounts) as soon as the cash is free: ${pend.map(l => `${esc(l.account === 'crypto' ? 'Crypto' : 'Stocks')} ${esc(POT[l.from])} → ${esc(POT[l.to])} ${fM(l.amount)}`).join(' · ')}.</div>` : '');
@@ -317,7 +327,7 @@ function renderCore() {
     `New money goes in gradually - up to ${R.tranches} pieces per holding, at most ${R.per_day} per holding per day, preferring dips. Each holding has a ${R.stop}% stop-loss; there is no profit-taking, the weekly rebalance trims winners that grow more than ${R.band} points above target.`;
   $('#core-intro').insertAdjacentHTML('beforeend', loanNote('core'));   // v7.3 open loans of this pot
   const built = T.filter(t => t.status === 'built').length, inv = c.invested || 0;   // v7.1: same invested figure as every other card
-  $('#core-stats').innerHTML = stat('Core pot value' + acctLbl(), fM(c.equity), '', `${fM(c.cash)} cash + ${fM(c.invested)} invested · <span class="${cls(c.pnl)}">${fM(c.pnl, true)} (${fPct(c.ret)})</span>`, 'What it is worth now: cash + open positions at the current price (fees already paid are included). P&L = value minus the starting money.') +
+  $('#core-stats').innerHTML = stat('Core pot value' + acctLbl(), fM(c.equity), '', `${fM(c.cash)} cash + ${fM(c.invested)} invested · <span class="${cls(c.pnl)}">${fM(c.pnl, true)} (${fPct(c.ret)})</span>` + pnlBreakdown(c.pnl_breakdown), 'What it is worth now: cash + open positions at the current price (fees already paid are included). P&L = value minus the starting money. Open positions and closed trades underneath add up to that P&L.') +
     stat('Cash to invest', fM(c.cash), '', S.acct ? `${esc(ACC[S.acct])} · ${fM(inv)} invested` : `${acctCashLine('core')} · ${fM(inv)} invested`, 'Core pot money not yet in a holding (both accounts unless one is selected).') +
     stat('Build progress', `${built} / ${T.length}`, '', `holdings fully built · ${c.equity ? (inv / c.equity * 100).toFixed(0) : 0}% invested`) +
     stat('Next rebalance', esc(fTs(c.next_rebalance)), '', `${until(c.next_rebalance)} · re-picks stocks`) +
@@ -392,7 +402,7 @@ const cl01 = v => Math.max(0, Math.min(1, v || 0));
 const mbar = (v, thr, fc = '', sm = false) => `<div class="mbar${sm ? ' sm' : ''}"><i class="${fc}" style="width:${(cl01(v) * 100).toFixed(1)}%"></i>${isNum(thr) ? `<b style="left:${(cl01(thr) * 100).toFixed(1)}%" title="threshold ${(thr * 100).toFixed(0)}%"></b>` : ''}</div>`;
 const bval = (v, thr, fc, txt) => `<div class="bval">${mbar(v, thr, fc)}<span>${txt}</span></div>`;
 const confBar = (v, thr) => isNum(v) ? bval(v, thr, isNum(thr) ? (v >= thr ? 'ok' : 'lo') : '', (v * 100).toFixed(0) + '%') : '<span class="muted">-</span>';
-const COMPN = {breakout: 'Breakout', volume: 'Volume', sentiment: 'Sentiment', market: 'Market', hit_rate: 'Hit rate'};
+const COMPN = {breakout: 'Breakout', volume: 'Volume', sentiment: 'Sentiment', market: 'Market', hit_rate: 'Hit rate', freshness: 'Freshness'};
 const compBars = p => `<div class="comp">${Object.keys(COMPN).filter(k => p && isNum(p[k])).map(k => `<span>${COMPN[k]}</span>${mbar(p[k], null, '', true)}<span>${(p[k] * 100).toFixed(0)}%</span>`).join('')}</div>`;
 const subTag = s => s ? `<span class="tag ${s === 'burst' ? 'risk' : 'blue'}">${esc(SUBN[s] || s)}</span>` : '<span class="muted">-</span>';
 const lvlTxt = d => d ? `max(${d.min_pct}%, ${d.atr_x}x ATR)${d.max_pct ? `, max ${d.max_pct}%` : ''}` : '-';
@@ -401,7 +411,7 @@ function renderDay() {
   $('#day-intro').innerHTML = `A <b>${fM0(d0.start)}</b> pot (${d0.accts ? `${fM0(d0.accts.crypto.start)} in the Crypto account for coins, ${fM0(d0.accts.stocks.start)} in the Stocks account for shares` : ''}) shared by two sub-strategies, each with <b>${M.share_pct}% / ${B.share_pct}%</b> of the Day money in each account. ` +
     `<b>Momentum</b>: buys on the price-momentum + news score; target ${esc(lvlTxt(M.take_profit))}, stop ${esc(lvlTxt(M.stop))} (ATR = typical 1-hour move), a trailing stop once up +${M.trail_after_pct}% that gives back ${M.trail_giveback_pct}% of the gain, and a strong winner can keep running past its target. ` +
     `<b>Burst</b>: quick trades on breakouts above the 24h high (or a tight 4h range) with a volume spike (${B.volume_x}x), RSI under ${B.rsi_max}, no negative news and a market that isn't falling; target ${esc(lvlTxt(B.take_profit))}, stop ${esc(lvlTxt(B.stop))}, max ${B.max_hold_h}h, ${B.cooldown_h}h cooldown per asset. ` +
-    `Each burst setup gets a <b>confidence</b> score (0-1: breakout strength, volume, sentiment, market, and that setup type's measured hit rate) - a ranking, not a promise of profit. It is taken only if confidence is at least the threshold <b>and</b> its expected value after costs is positive. The threshold starts at <b>${B.conf_threshold}</b> and rises in step with the Day pot's loss today (+${(B.conf_raise_at_cap / R.cap).toFixed(3)} per 1% lost, ${(B.conf_threshold + B.conf_raise_at_cap).toFixed(2)} at the ${R.cap}% daily limit); size = confidence x ${B.max_position_pct}% of the burst cash still free, so it shrinks as losses use cash up (min trade £${D.risk.limits.min_trade}). Max ${B.max_open_per_account} open bursts per account. ` +
+    `Each burst setup gets a <b>confidence</b> score (0-1: breakout strength, volume, sentiment, market, that setup type's measured hit rate, and how fresh the price is) - a ranking, not a promise of profit. It is taken only if confidence is at least the threshold <b>and</b> its expected value after costs is positive. The threshold starts at <b>${B.conf_threshold}</b> and rises in step with the Day pot's loss today (+${(B.conf_raise_at_cap / R.cap).toFixed(3)} per 1% lost, ${(B.conf_threshold + B.conf_raise_at_cap).toFixed(2)} at the ${R.cap}% daily limit); size = confidence x ${B.max_position_pct}% of the burst cash still free, so it shrinks as losses use cash up (min trade £${D.risk.limits.min_trade}, or whatever is still free if that is at least £${B.cash_floor_gbp ?? 4}). Max ${B.max_open_per_account} open bursts per account. ` +
     `Every trade's target must be at least ${R.cost_x}x its round-trip costs. New trades only ${esc(R.start)}-${esc(R.cutoff)} UK, <b>everything is sold by ${esc(R.flatten)} UK</b> (shares 15 min before their market closes). If the pot drops ${R.cap}% in a day, all new trades stop until the next day. ` +
     `<span class="muted">Prices are checked every 15 minutes, so exits can fill past their level.</span>`;
   $('#day-intro').insertAdjacentHTML('beforeend', loanNote('day'));   // v7.3 open loans of this pot
@@ -416,10 +426,10 @@ function renderDay() {
   // open positions; per account, momentum + burst budgets = the Day value there and momentum + burst free = the Day cash there.
   const LG = d0.ledger || {}, LS = LG[S.acct || 'all'] || {}, SH = LG.shares || {};
   const nOpen = S.acct ? d.open_n : d0.open_n;
-  $('#day-stats').innerHTML = stat('Day pot value' + acctLbl(), fM(d.equity), '', `${fM(d.cash)} cash + ${fM(d.invested)} in positions · <span class="${cls(d.pnl)}">${fM(d.pnl, true)} (${fPct(d.ret)})</span> since the ${fM0(d.start)} start`,
-      'What the Day pot is worth now: its cash plus its open positions at the current price (after the fees already paid on the buys).') +
-    stat("Today's P&L", `<span class="${cls(d0.day_pnl)}">${fM(d0.day_pnl, true)}</span>`, '', `${fPct(d0.day_pnl_pct)} vs ${fM(d0.day_start)} at midnight UK · whole pot · stop -${R.cap}%`,
-      'Change in the whole Day pot value since midnight UK (closed and open trades, after all fees). The daily stop uses this number.') +
+  $('#day-stats').innerHTML = stat('Day pot value' + acctLbl(), fM(d.equity), '', `${fM(d.cash)} cash + ${fM(d.invested)} in positions · <span class="${cls(d.pnl)}">${fM(d.pnl, true)} (${fPct(d.ret)})</span> since the ${fM0(d.start)} start` + pnlBreakdown(d.pnl_breakdown),
+      'What the Day pot is worth now: its cash plus its open positions at the current price (after the fees already paid on the buys). Open positions and closed trades underneath add up to the P&L.') +
+    stat("Today's P&L", `<span class="${cls(d0.day_pnl)}">${fM(d0.day_pnl, true)}</span>`, '', `${fPct(d0.day_pnl_pct)} vs ${fM(d0.day_start)} at midnight UK · whole pot · stop -${R.cap}%` + pnlBreakdown(d0.day_pnl_breakdown),
+      'Change in the whole Day pot value since midnight UK. Open positions and closed trades (sells since midnight, after fees) add up to this number. The daily stop uses it.') +
     stat('Status', esc(st[0]), st[1], st[2]) +
     stat('Open positions' + acctLbl(), `${nOpen}`, '', `momentum max ${M.max_open} · burst max ${B.max_open_per_account}/account`, 'Number of Day positions held right now.') +
     stat('Cash' + acctLbl(), fM(d.cash), '', S.acct ? `free for new trades: momentum ${fM((LS.momentum || {}).free)} + burst ${fM((LS.burst || {}).free)}` : `${acctCashLine('day')} · = momentum ${fM((LS.momentum || {}).free)} + burst ${fM((LS.burst || {}).free)} free`,
@@ -466,16 +476,22 @@ function renderDay() {
     {k: 'trail', l: 'Trailing / sell by', num: 1, nosort: 1, f: r => (r.trail_on ? `${fP(r.trail)}<div class="muted small">peak +${(r.peak_pct || 0).toFixed(1)}%</div>` : '<span class="muted">not armed</span>') + (r.expires ? `<div class="muted small">by ${esc(fTs(r.expires))}</div>` : '')}];
   table($('#day-pos'), cols, P, {k: 'opened', d: -1}, renderDay, {empty: d0.flat_now ? 'No positions - the Day pot is flat overnight' : 'No open day positions' + acctLbl(), key: r => r.asset, onRow: openAsset});
   $('#day-open-sub').textContent = `${P.length} open · sold automatically at ${R.flatten} UK`;
-  // burst setups and why they were (not) traded
-  const C = CT;
-  table($('#day-cands'), [{k: 'a', l: 'Asset', asc: 1, f: r => assetCell(r.a)}, {k: 'acct', l: 'Account', asc: 1, f: r => acctTag(r.acct)},
+  // burst setups and why they were (not) traded. An account filter that hides every row still shows them, with a note,
+  // so a Stocks filter cannot make a crypto-only cycle look like "no setups".
+  const allC = SS.cands || [];
+  let C = CT, candNote = '';
+  if (!C.length && allC.length && S.acct) {
+    C = allC;
+    candNote = ` The ${S.acct === 'stocks' ? 'Stocks' : 'Crypto'} account filter hid all of them, so every setup is shown.`;
+  }
+  table($('#day-cands'), [{k: 'a', l: 'Asset', asc: 1, f: r => assetCell(r.a || '?')}, {k: 'acct', l: 'Account', asc: 1, f: r => acctTag(r.acct)},
     {k: 'info', l: 'Setup', asc: 1, wrap: 1, f: r => esc(r.info || '-')}, {k: 'vol', l: 'Volume', num: 1, f: r => isNum(r.vol) ? r.vol.toFixed(1) + 'x' : '<span class="muted">n/a</span>'},
-    {k: 'rsi', l: 'RSI', num: 1, f: r => r.rsi ?? '-'}, {k: 'tp', l: 'Target / stop', num: 1, f: r => `<span class="pos">+${r.tp}%</span> / <span class="neg">-${r.sl}%</span>`},
+    {k: 'rsi', l: 'RSI', num: 1, f: r => r.rsi ?? '-'}, {k: 'tp', l: 'Target / stop', num: 1, f: r => `<span class="pos">+${isNum(r.tp) ? r.tp : '-'}%</span> / <span class="neg">-${isNum(r.sl) ? r.sl : '-'}%</span>`},
     {k: 'conf', l: 'Confidence', num: 1, f: r => confBar(r.conf, thrV)}, {k: 'parts', l: 'Components', nosort: 1, f: r => compBars(r.parts)},
     {k: 'ev', l: 'Expected value', num: 1, f: r => isNum(r.ev) ? `<span class="${cls(r.ev)}">${fPct(r.ev)}</span><div class="muted small">after ${fPct(r.rt_cost, 2, false)} costs · hit ${isNum(r.hit) ? (r.hit * 100).toFixed(0) + '%' : '-'} (${r.hit_n || 0})</div>` : '-'},
     {k: 'block', l: 'Decision', asc: 1, wrap: 1, f: r => r.bought ? `<span class="tag buy">Taken</span> ${fM(r.bought)}` : `<span class="tag">Skipped</span> <span class="muted">${esc(r.block || '-')}</span>`}],
-    C, {k: 'conf', d: -1}, renderDay, {empty: 'No breakout setups in the last cycle', key: r => r.a, onRow: openAsset});
-  $('#day-cands-sub').textContent = `${C.length} setup${C.length === 1 ? '' : 's'} at the last cycle${SS.ts ? ' (' + fTs(Date.parse(SS.ts) / 1000) + ' UK)' : ''}`;
+    C, {k: 'conf', d: -1}, renderDay, {empty: 'No breakout setups in the last cycle. Only coins that broke a high, or nearly did, are listed.', key: r => r.a, onRow: openAsset});
+  $('#day-cands-sub').textContent = `${C.length} setup${C.length === 1 ? '' : 's'} at the last cycle${SS.ts ? ' (' + fTs(Date.parse(SS.ts) / 1000) + ' UK)' : ''}` + candNote;
   table($('#day-trades'), [{k: 'sub', l: 'Strategy', asc: 1, f: r => subTag(r.sub)},
     {k: 'conf', l: 'Confidence', num: 1, f: r => !isNum(r.conf) ? '<span class="muted">-</span>' : r.sub === 'burst' ? confBar(r.conf, null) : `<span class="muted small">score</span> ${r.conf.toFixed(2)}`},
     ...orderCols().filter(c => c.k !== 'sleeve')], tr, {k: 't', d: -1}, renderDay, {empty: 'No day trades yet today', key: r => r.asset, onRow: openAsset});
@@ -497,7 +513,7 @@ function renderRiskPot() {
   $('#risk-intro').insertAdjacentHTML('beforeend', loanNote('risk'));   // v7.3 open loans of this pot
   const st = D.risk.kill ? ['Paused', 'neg', 'kill switch on'] : r0.halted ? ['Paused', 'neg', `down ${fPct(r0.dd_pct)} - waiting for review`] : ['Active', 'pos', `${r0.new_today || 0} new today · no daily cap`];
   const CT = (r0.cands || []).filter(x => !S.acct || (x.acct || (x.kind === 'stock' ? 'stocks' : 'crypto')) === S.acct);
-  $('#risk-stats').innerHTML = stat('Risk pot value' + acctLbl(), fM(r.equity), '', `${fM(r.cash)} cash + ${fM(r.invested)} in positions${r.borrowed ? ` - ${fM(r.borrowed)} borrowed` : ''}${r.lent ? ` + ${fM(r.lent)} lent` : ''} · <span class="${cls(r.pnl)}">${fM(r.pnl, true)} (${fPct(r.ret)})</span> since start`,
+  $('#risk-stats').innerHTML = stat('Risk pot value' + acctLbl(), fM(r.equity), '', `${fM(r.cash)} cash + ${fM(r.invested)} in positions${r.borrowed ? ` - ${fM(r.borrowed)} borrowed` : ''}${r.lent ? ` + ${fM(r.lent)} lent` : ''} · <span class="${cls(r.pnl)}">${fM(r.pnl, true)} (${fPct(r.ret)})</span> since start` + pnlBreakdown(r.pnl_breakdown),
       'What it is worth now: cash + open positions at the current price (fees already paid are included), minus money it owes another pot. P&L = value minus the starting money.') +
     stat('Cash' + acctLbl(), fM(r.cash), '', `${fM(r.invested)} in positions${S.acct ? '' : ' · ' + acctCashLine('risk')}`, 'Risk pot money not in a position. Each account\'s cash can only buy that account\'s assets.') +
     stat('Open positions', `${r0.open_n} / ${R.max_open}`, '', `max £${R.max_pos} each${S.acct ? ` · ${r.open_n} in this account` : ''}`, 'Positions held right now (whole pot) and the limit.') +
@@ -538,17 +554,26 @@ function renderRiskPot() {
   table($('#risk-pos'), cols, P, {k: 'opened', d: -1}, renderRiskPot, {empty: 'No open risk positions - waiting for a breakout', key: x => x.asset, onRow: openAsset});
   $('#risk-open-sub').textContent = `${P.length} open · stop -${R.stop}% · trailing ${R.trail}% after +${R.trail_after}% · max ${R.hold} days`;
   const priced = new Set((D.assets || []).map(a => a.a));
-  $('#risk-cand-sub').innerHTML = `Breakout candidates at the last 15-minute run (${esc(ago(r0.status_t))}), best confidence first. Hard rules first (real breakout, trend, news, market open, cooldown, limits); then <b>confidence ≥ ${(thr * 100).toFixed(0)}%</b> and <b>expected value after costs &gt; ${R.ev_min}%</b>. Coins use the pot's Crypto-account cash, shares its Stocks-account cash.`;
+  const TOPN = 8;
+  const byConf = CT.slice().sort((a, b) => (b.conf ?? -1) - (a.conf ?? -1));
+  const topIds = new Set(byConf.slice(0, TOPN).map(x => x.a));
+  byConf.forEach(x => { if (x.bought) topIds.add(x.a); });
+  const shownC = S.riskAll ? byConf : byConf.filter(x => topIds.has(x.a));
+  const hiddenN = byConf.length - shownC.length;
+  $('#risk-cand-sub').innerHTML = `Breakout candidates at the last 15-minute run (${esc(ago(r0.status_t))}), best confidence first. Hard rules first (real breakout, trend, news, market open, cooldown, limits); then <b>confidence ≥ ${(thr * 100).toFixed(0)}%</b> and <b>expected value after costs &gt; ${R.ev_min}%</b> (each setup's own stop, target, volatility and confidence). Coins use the pot's Crypto-account cash, shares its Stocks-account cash. ` +
+    `Showing <b>${shownC.length}</b> of ${byConf.length}.` +
+    (byConf.length > TOPN ? ` <a href="#risk" id="risk-all">${S.riskAll ? 'Show top ' + TOPN : 'Show all ' + byConf.length}</a>` : '');
+  const riskAll = $('#risk-all'); if (riskAll) riskAll.onclick = e => { e.preventDefault(); S.riskAll = !S.riskAll; renderRiskPot(); };
   table($('#risk-cands'), [
     {k: 'a', l: 'Asset', asc: 1, f: x => assetCell(x.a, x.kind === 'stock' ? (themeOf(x.a) || 'Stock') : 'Crypto')},
     {k: 'why', l: 'Setup', asc: 1, wrap: 1, f: x => esc((x.why || '').split(' | no: ')[0])},
     {k: 'mom', l: 'Trend', num: 1, f: x => isNum(x.mom) ? `<span class="${cls(x.mom)}">${x.mom.toFixed(2)}</span>` : '<span class="muted">-</span>', tip: 'Short-term trend (4h / 24h / moving averages, -1 to +1). Must be at least ' + R.confirm + '.'},
     {k: 'vol', l: 'Volume', num: 1, f: x => isNum(x.vol) ? x.vol.toFixed(1) + 'x' : '<span class="muted">n/a</span>', tip: 'Last hour\'s trading volume vs the average hour.'},
-    {k: 'conf', l: 'Confidence', num: 1, f: x => confBar(x.conf, thr), tip: 'Weighted 0-1 score; the marker is the current threshold.'},
+    {k: 'conf', l: 'Confidence', num: 1, f: x => confBar(x.conf, thr), tip: 'Weighted 0-1 score; the marker is the current threshold. Freshness scales it (a fresh price leaves it unchanged).'},
     {k: 'parts', l: 'Components', nosort: 1, f: x => compBars(x.parts)},
-    {k: 'ev', l: 'Expected value', num: 1, f: x => isNum(x.ev) ? `<span class="${cls(x.ev)}">${fPct(x.ev)}</span><div class="muted small">after ${fPct(x.rt_cost, 2, false)} costs · hit ${isNum(x.hit) ? (x.hit * 100).toFixed(0) + '%' : '-'} (${x.hit_n || 0})</div>` : '-', tip: 'Hit rate x average win - miss rate x average loss - round-trip costs, in % per trade (an estimate).'},
+    {k: 'ev', l: 'Expected value', num: 1, f: x => isNum(x.ev) ? `<span class="${cls(x.ev)}">${fPct(x.ev)}</span><div class="muted small">after ${fPct(x.rt_cost, 2, false)} costs${isNum(x.ev_p) ? ` · p ${(x.ev_p * 100).toFixed(0)}%` : ''}${isNum(x.ev_win) ? ` · +${x.ev_win}% / -${x.ev_loss}%` : ''}</div>` : '-', tip: 'This setup only: confidence as the chance of hitting, times its own target and stop distances (scaled by its volatility), minus round-trip costs. Blended with closed trades as they build up. The 12% stop and the trail are unchanged.'},
     {k: 'block', l: 'Decision', wrap: 1, sv: x => x.bought ? 0 : x.block ? 2 : 1, f: x => x.bought ? `<span class="tag buy">Taken</span> ${fM(x.bought)}${x.loan ? ' <span class="muted small">(with a loan)</span>' : ''}` : `<span class="tag">Skipped</span> <span class="muted">${esc(x.block || '-')}</span>`}],
-    CT, S.rcSort || {k: 'conf', d: -1}, renderRiskPot, {empty: 'No candidates yet', key: x => x.a, onRow: a => priced.has(a) && openAsset(a), limit: 25});
+    shownC, S.rcSort || {k: 'conf', d: -1}, renderRiskPot, {empty: 'No candidates yet', key: x => x.a, onRow: a => priced.has(a) && openAsset(a)});
   $('#risk-screen-sub').innerHTML = `Every 15 minutes the top ${R.top_n} coins by market cap are screened: ${sc.liquid ?? '-'} pass the size/volume/scam filters, ${sc.ok ?? '-'} look like a breakout right now` +
     `${sc.monad ? ` (${sc.monad} Monad-ecosystem tokens checked for KyberSwap liquidity)` : ''}. The best ones are tracked live (Markets tab). Updated ${esc(ago(sc.t))}.`;
   table($('#risk-screen'), [
@@ -587,6 +612,7 @@ function renderMarkets() {
     {k: 'spark', l: 'Trend', nosort: 1, f: r => spark(r.spark)},
     {k: 'score', l: 'Signal', f: r => isNum(r.warm) ? `<span class="tag" title="New in the Day pot universe: its price and volume history is built from the 15-minute snapshots. Day trades start once ${r.warm_h}h of history exist.">warming up ${r.warm.toFixed(1)}h / ${r.warm_h}h</span>` : scoreBar(r.score, r.action === 'BUY' || r.action === 'SELL' ? sideTag(r.action) : '')},
     {k: 'rank', l: 'Core score', num: 1, f: r => isNum(r.rank) ? r.rank.toFixed(2) : '<span class="muted">-</span>'},
+    {k: 'age_min', l: 'Data age', num: 1, f: r => `<span title="${isNum(r.src_t) ? 'Provider time ' + fTs(r.src_t) : 'Snapshot ' + fTs(r.t)}">${ageTxt(isNum(r.age_min) ? r.age_min : (isNum(r.t) ? (Date.now() / 1000 - r.t) / 60 : null))}</span>`},
     {k: 'open', l: 'Market', sv: r => r.open ? 1 : 0, f: r => r.k === 'crypto' ? '<span class="muted">24/7</span>' : r.open ? '<span class="up">open</span>' : '<span class="muted">closed</span>'},
     {k: 'pos', l: 'Held', sv: r => posVal(r.a), f: r => (r.pos ? (r.held || []).map(potTag).join(' ') : '') + (r.risk_u ? ' <span class="tag" title="in the Risk pot stock universe">risk</span>' : '') || '<span class="muted">-</span>'},
   ];
@@ -712,7 +738,7 @@ function showDrawer(a) {
   if (first) $('.drawer-panel').scrollTop = 0;
   const p = posBy(a), se = sentLatest(a);
   $('#d-title').innerHTML = `${esc(a)} ${posAll(a).map(x => potTag(x.sleeve)).join(' ')}`;
-  $('#d-sub').textContent = A ? `${A.k === 'stock' ? (A.name ? A.name + ' · ' : '') + (A.ex === 'LSE' ? 'London share (LSE/AIM)' : A.ex === 'ASX' ? 'ASX share' : 'US share') + (A.theme ? ' · ' + A.theme : '') + (A.open ? ' · market open' : ' · market closed') : 'Crypto' + (A && A.watch ? ' · ' + A.theme : '')} · price from ${A.src} · ${ago(A.t)}` : '';
+  $('#d-sub').textContent = A ? `${A.k === 'stock' ? (A.name ? A.name + ' · ' : '') + (A.ex === 'LSE' ? 'London share (LSE/AIM)' : A.ex === 'ASX' ? 'ASX share' : 'US share') + (A.theme ? ' · ' + A.theme : '') + (A.open ? ' · market open' : ' · market closed') : 'Crypto' + (A && A.watch ? ' · ' + A.theme : '')} · price from ${A.src} · provider ${isNum(A.age_min) ? ageTxt(A.age_min) : ago(A.src_t || A.t)}` : '';
   const k = [['Price', fP(A && A.gbp), ''], ['Price in $', fP(A && A.usd, '$'), ''], ['24h', fPct(A && A.chg), cls(A && A.chg)],
     ['Signal', A && isNum(A.score) ? (A.score >= 0 ? '+' : '') + A.score.toFixed(2) : '-', cls(A && A.score)],
     ['Sentiment', se ? (se.s >= 0 ? '+' : '') + se.s.toFixed(2) : '-', cls(se && se.s)],

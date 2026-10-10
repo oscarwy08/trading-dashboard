@@ -86,16 +86,49 @@ def setup_stats(con, R, t=None):
     w = sum(1 for x in pcts if x > 0)
     return dict(p=(w + p0 * n0) / (len(pcts) + n0), n=len(pcts), wins=w, exp=sum(pcts) / len(pcts) if pcts else None)
 
-def confidence(R, brk, vol, sent, regime, hr):
+def confidence(R, brk, vol, sent, regime, hr, freshness=None):
     """Weighted 0-1 confidence of a RISK setup (a ranking heuristic, not a probability of profit). Components 0-1:
     breakout = the screen's breakout score (-1..1, negative = 0); volume = last hour vs the average hour (2x = half way,
     4x+ = full; unknown = 0.4); sentiment = (score + 1) / 2 (none = 0.5); market = the DAY burst market-regime score;
-    hit_rate = the RISK pot's measured hit rate (Beta prior)."""
-    W = R.get("confidence_weights") or dict(breakout=0.30, volume=0.20, sentiment=0.15, market=0.15, hit_rate=0.20)
+    hit_rate = the RISK pot's measured hit rate (Beta prior). Freshness scales the result (1 = unchanged)."""
+    import freshness as frsh
+    W = dict(R.get("confidence_weights") or dict(breakout=0.30, volume=0.20, sentiment=0.15, market=0.15, hit_rate=0.20))
+    wf = float(W.pop("freshness", 0) or 0)
     vx = float(R.get("volume_x", 2))
     parts = dict(breakout=clip01(brk or 0), volume=0.4 if vol is None else clip01((vol - 1) / (2 * vx - 1)),
                  sentiment=0.5 if sent is None else clip01((sent + 1) / 2), market=clip01(regime if regime is not None else 0.5), hit_rate=clip01(hr))
-    return round(sum(W[k] * parts[k] for k in W) / sum(W.values()), 3), {k: round(v, 2) for k, v in parts.items()}
+    base = sum(W[k] * parts[k] for k in W) / sum(W.values())
+    conf, fr = frsh.adjust_confidence(base, 1.0 if freshness is None else freshness, wf, sum(W.values()))
+    out = {k: round(v, 2) for k, v in parts.items()}; out["freshness"] = fr
+    return conf, out
+
+def setup_ev(R, conf, atr, rt_cost, ss):
+    """Expected value in % per trade AFTER costs, for THIS setup. The stop (12%) and the trail (arm at +15%, sell 10%
+    off the peak) are unchanged; only the estimate moves. Win distance is the gain locked when the trail first arms,
+    loss distance is the prior average loss (usually cut before the full stop), both scaled by this setup's volatility
+    (1h ATR vs ev_atr_ref_pct; unknown ATR keeps the fixed priors). Hit probability comes from the setup's confidence,
+    blended with the measured hit rate as trades close, then with the measured expectancy (daypot.expected_value).
+    Returns (ev, win%, loss%, p)."""
+    import daypot
+    stop = float(R.get("stop_loss_pct", 12))
+    target = float(R.get("trail_after_pct", 15)) * (1 - float(R.get("trail_pct", 10)) / 100)
+    win_prior, loss_prior = float(R.get("ev_win_pct", 12)), float(R.get("ev_loss_pct", 8))
+    ref = float(R.get("ev_atr_ref_pct", 4)) or 4.0
+    if atr and atr > 0:
+        scale = max(0.55, min(1.8, float(atr) / ref))
+        win, loss = target * scale, min(stop, loss_prior * scale)
+    else:
+        win, loss = win_prior, loss_prior
+    p_conf = max(0.05, min(0.95, float(0.5 if conf is None else conf)))
+    n = int((ss or {}).get("n") or 0)
+    if n and (ss or {}).get("wins") is not None:
+        pn = float(R.get("ev_prior_n", 10))
+        p = (n * (ss["wins"] / n) + pn * p_conf) / (n + pn)
+    else:
+        p = p_conf
+    p = max(0.05, min(0.95, p))
+    ev = daypot.expected_value(dict(p=p, n=n, exp=(ss or {}).get("exp")), win, loss, rt_cost, int(R.get("ev_prior_n", 10)))
+    return ev, round(win, 3), round(loss, 3), round(p, 3)
 
 def threshold(R, dd):
     """Capital-based caution: conf_threshold (0.55) at no drawdown, rising linearly to conf_threshold_at_stop (0.85) as the

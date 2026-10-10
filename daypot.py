@@ -142,13 +142,32 @@ def expected_value(ss, tp, sl, rt_cost, prior_n=10):
     if not ss["n"] or ss["exp"] is None: return round(model, 3)
     return round((ss["n"] * ss["exp"] + prior_n * model) / (ss["n"] + prior_n), 3)
 
-def confidence(B, brk, vol, sent, regime, hr):  # hr = setup-type hit rate (0-1)
-    """Weighted 0-1 confidence of a burst setup (a heuristic ranking score, not a probability)."""
-    W = B.get("confidence_weights") or dict(breakout=0.25, volume=0.25, sentiment=0.15, market=0.15, hit_rate=0.20)
+def confidence(B, brk, vol, sent, regime, hr, freshness=None):  # hr = setup-type hit rate (0-1)
+    """Weighted 0-1 confidence of a burst setup (a heuristic ranking score, not a probability).
+    The freshness weight does not join the average: fr=1 leaves the score identical to the other components alone,
+    and a staler quote scales it down (freshness.adjust_confidence)."""
+    import freshness as frsh
+    W = dict(B.get("confidence_weights") or dict(breakout=0.25, volume=0.25, sentiment=0.15, market=0.15, hit_rate=0.20))
+    wf = float(W.pop("freshness", 0) or 0)
     vx = float(B.get("volume_x", 2))
     parts = dict(breakout=brk, volume=0.4 if vol is None else clip((vol - 1) / (2 * vx - 1)),
                  sentiment=0.5 if sent is None else clip((sent + 1) / 2), market=regime, hit_rate=hr)
-    return round(sum(W[k] * parts[k] for k in W) / sum(W.values()), 3), {k: round(v, 2) for k, v in parts.items()}
+    base = sum(W[k] * parts[k] for k in W) / sum(W.values())
+    conf, fr = frsh.adjust_confidence(base, 1.0 if freshness is None else freshness, wf, sum(W.values()))
+    out = {k: round(v, 2) for k, v in parts.items()}; out["freshness"] = fr
+    return conf, out
+
+def burst_spend(free_cash, gas, raw, mint, floor):
+    """How much of the burst budget to spend on one setup.
+    avail >= min trade: the usual size (confidence-sized, raised to the min trade, capped at the cash free).
+    floor <= avail < min trade: spend the remaining cash (a £4.98 budget must not skip a good setup).
+    avail < floor: spend nothing here; the caller may still borrow under the inter-pot rules.
+    Returns (value, avail)."""
+    avail = (free_cash or 0.0) - (gas or 0.0)
+    mint, floor = float(mint), float(floor)
+    if avail + 1e-9 >= mint: return min(max(raw, mint), avail), avail
+    if avail + 1e-9 >= floor and avail > 0: return avail, avail
+    return 0.0, avail
 
 def conf_size(B, conf, free_cash):
     """Position size proportional to confidence: confidence x max_position_pct of the burst sub-strategy's CURRENT

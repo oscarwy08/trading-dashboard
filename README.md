@@ -1,7 +1,18 @@
 # Paper trading system (Oscar) — PAPER ONLY
 
+> **For AI agents**: Read [AGENTS.md](AGENTS.md) first, then [PROJECT_BRIEF.md](PROJECT_BRIEF.md) and this file.  
+> **For humans**: Start with [PROJECT_BRIEF.md](PROJECT_BRIEF.md) for the big picture, then return here for technical details.
+
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
+
+## v7.5 (2026-10-10): P&L in words, fresher fills, burst floor, Risk EV per setup (paper only)
+- **P&L cards** (Overview today and all-time, each account, each pot, Day today) show `open positions` and `closed trades (after fees)` underneath the headline. The two add up to that headline exactly, in pence. Fees are already inside both numbers. Today's closed figure is sells since midnight UK; the open figure is the rest of the day's move.
+- **Data freshness.** Every price stores the provider's last-updated time. Right before a live fill the trader asks for a fresh quote (one batched CoinGecko call, at most 8 Yahoo quotes, at most 4 KyberSwap routes on Monad). Age is a confidence component on Day burst and Risk: a fresh price leaves the score unchanged, an older one scales it down, and a setup skipped for that says so. Full credit is 10 min for crypto and 5 min for stocks. Sentiment's weight fades to zero by 12 hours; the hard sentiment gates still use the raw score. If a cycle was missed and price went through a stop, the fill is the real price and the reason says `[gap fill]`. Only a missing price (or, offline, one older than 45 min) blocks a trade. Sim and tests stay offline.
+- **Burst cash.** If the burst budget is under the £5 minimum but at least £4 (`day.burst.cash_floor_gbp`), that remaining cash is spent. Below £4, an exceptional setup still borrows under the existing inter-pot rules.
+- **Day burst list.** If the account filter hides every setup, the rows are shown anyway with a note. A quiet cycle (nothing broke out) still says so.
+- **Risk setups.** The table shows the top 8 by confidence (anything bought stays visible) with a show-all toggle.
+- **Risk EV** is per setup: confidence as the hit chance, the trail distance and the usual loss scaled by that coin's volatility, minus its own costs, blended with measured results as trades close. The 12% stop and the trail rules are unchanged.
 
 ## v7.4 (2026-10-10): RISK pot decides like the Day pot's burst (paper only)
 - **Confidence 0-1 per setup** (riskpot.confidence, weights `riskpot.confidence_weights`): breakout strength (the screen's

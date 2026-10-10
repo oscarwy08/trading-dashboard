@@ -38,6 +38,7 @@ main{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
 .explain{color:var(--mut);font-size:14px;margin:4px 0 0;max-width:760px}
 .intro .explain{max-width:none}
 .note{color:var(--mut);font-size:13px;margin-top:10px}
+.pnl-bd{color:var(--mut);font-size:13px;margin-top:6px;line-height:1.4}
 .link{font-size:14px;font-weight:600}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid2>.card{margin-bottom:0}.grid2{margin-bottom:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}.grid3>.card{margin-bottom:0}

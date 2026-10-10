@@ -151,16 +151,18 @@ riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mi
   # v7.4 Day-style decision (like the DAY burst): confidence 0-1 per setup + expected value after costs; a setup is taken only if
   # confidence >= threshold AND EV > ev_min_pct. Hard gates that stay: real breakout, intraday trend (confirm_momentum),
   # sentiment block, drawdown halt, market open, fresh price, cooldown, max_open.
-  confidence_weights: {breakout: 0.30, volume: 0.20, sentiment: 0.15, market: 0.15, hit_rate: 0.20}
+  confidence_weights: {breakout: 0.30, volume: 0.20, sentiment: 0.15, market: 0.15, hit_rate: 0.20, freshness: 0.15}
+                                # freshness scales the other five (1 = unchanged); it is not mixed into the average
   volume_x: 2                   # volume component: last hour vs the average hour (2x = half way, 4x+ = full; unknown = 0.4)
   conf_threshold: 0.55          # threshold at no drawdown ...
   conf_threshold_at_stop: 0.85  # ... rising linearly to this as the drawdown approaches drawdown_cap_pct (30%)
   hit_prior: 0.5                # measured hit rate of RISK closed trades (last record_days) with a Beta prior of hit_prior_n trades
   hit_prior_n: 20
   record_days: 30
-  ev_win_pct: 12                # EV model prior: p x avg win - (1 - p) x avg loss - round-trip costs (blended with the measured
-  ev_loss_pct: 8                #   expectancy as trades build up, ev_prior_n weight); losses are usually cut before the full 12% stop
-  ev_prior_n: 10
+  ev_win_pct: 12                # fallback win% when this setup has no ATR yet. Otherwise the estimate uses the trail distance
+  ev_loss_pct: 8                #   (arm +15%, give back 10% -> ~13.5% locked) and this average loss, scaled by the setup's own
+  ev_atr_ref_pct: 4             #   1h ATR vs this reference, with hit probability = its confidence (blended with measured results)
+  ev_prior_n: 10                # the 12% stop and the trail RULES are unchanged; only the EV estimate is per setup
   ev_min_pct: 0.0
   conf_size_pct: 50             # size = confidence x 50% of the account's remaining RISK cash, min £5 (risk.min_trade_size),
   max_position_pct: 20          #   max 20% of the RISK pot and max_position_gbp
@@ -225,7 +227,8 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
     # confidence 0-1 = weighted breakout strength, volume spike, sentiment, market regime and the setup type's measured hit
     # rate (24h-high vs 4h-range breaks tracked separately, prior-smoothed over the last 14 days). A ranking
     # heuristic, NOT a probability of profit. Decision per setup; caution only via capital (size / threshold below):
-    confidence_weights: {breakout: 0.25, volume: 0.25, sentiment: 0.15, market: 0.15, hit_rate: 0.20}
+    confidence_weights: {breakout: 0.25, volume: 0.25, sentiment: 0.15, market: 0.15, hit_rate: 0.20, freshness: 0.15}
+                                # freshness scales the other five (a fresh quote leaves confidence unchanged)
     conf_threshold: 0.55        # base: take a setup only if confidence >= threshold ...
     conf_raise_at_cap: 0.30     # ... threshold = base + 0.30 x (DAY pot loss today / start-of-day equity) / daily_loss_cap:
                                 #   capital-based caution rising gradually over the whole cap range (+0.02 per 1% lost with a
@@ -240,11 +243,17 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
     record_days: 14             # ... measured over the last 14 days per setup type (old results age out)
     max_position_pct: 33        # size = confidence x 33% of the burst sub-strategy's CURRENT remaining cash (shrinks as losses
                                 #   deplete it); raised to risk.min_trade_size (£5) when that much cash is free
+    cash_floor_gbp: 4           # if free cash is under the £5 min trade but at least this, spend what is left (a £4.98
+                                #   budget must not skip a good setup). Below the floor, an exceptional setup (confidence
+                                #   >= loans.burst_min_conf and EV > 0) can still borrow under the inter-pot rules
 
 risk:
   fee_slippage_pct: 0.3         # applied per side to fill price
-  max_price_age_min: 45         # don't trade on stale prices
-  min_trade_size: 5             # GBP; skip buys (and rebalance trades) smaller than this
+  max_price_age_min: 45         # offline / sim: a price older than this is unusable (same gate as before)
+  price_dead_min: 180           # live: after a failed refresh, ignore a price older than this; younger prices are usable
+                                #   and the freshness score penalises them (full credit inside fresh_full_min)
+  fresh_full_min: {crypto: 10, stock: 5}   # minutes of provider-timestamp age that still score full freshness
+  min_trade_size: 5             # GBP; skip buys (and rebalance trades) smaller than this (DAY burst may use cash_floor_gbp)
 loans:                          # v7.3 (2026-10-10): temporary borrowing between pots INSIDE one account (never crypto<->stocks)
   enabled: true                 # only for an exceptional setup that lacks cash: first CORE's uninvested cash (minus what today's
   risk_min_score: 0.65          #   scheduled tranches / queued CORE buys need), then the other short-term pot's cash. RISK: setup
