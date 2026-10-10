@@ -129,6 +129,11 @@ def burst_case(conf, ev):
     for i in range(97):
         _ts = (t - timedelta(minutes=15 * (96 - i))).isoformat()
         con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (_ts, "TESTB", "crypto", 2.0 * (1.0005 ** i), None, None, 5e7, 4e8, "coingecko", _ts))
+    # Earlier cases can cross 22:00 UK and flatten Day. This case then sets Day crypto cash to £3, which
+    # against today's stored day-start looks like a loss past the 15% cap, so the burst is halted before
+    # the loan. Rebase that start (and clear the halt); this case is about the loan rules.
+    day = common._NOW.astimezone(common.LON).date().isoformat()
+    con.execute("DELETE FROM state WHERE key IN (?,?)", (f"day_halt:{day}", f"day_start:day:{day}"))
     con.commit(); con.close()
     daypot.breakout = lambda con_, a_, pts, DB: dict(kind="24h", strength=0.9, info="synthetic 24h-high break") if a_ == "TESTB" else _orig["breakout"](con_, a_, pts, DB)
     daypot.crypto_vol_ratio = lambda con_, a_, t_: 3.0 if a_ == "TESTB" else _orig["crypto_vol_ratio"](con_, a_, t_)
