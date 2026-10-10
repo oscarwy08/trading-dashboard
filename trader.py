@@ -256,7 +256,7 @@ def main():
     RP = c.get("riskpot") or {}
 
     # ================= RISK exits: stop / trailing take-profit / max hold / sentiment =================
-    peaks = sget(con, "risk_peaks") or {}
+    peaks = sget(con, "risk_peaks") or {}; rmeta = sget(con, "risk_meta") or {}     # v7.4 rmeta: confidence + EV at entry
     for (sl, a), p in list(pos.items()):
         if sl != "risk": continue
         q = px.get(a)
@@ -659,7 +659,7 @@ def main():
                                                      for ac in ACCOUNTS} for sb in SUBC})(ledger()),
                                cands=sorted(cands, key=lambda d: (d.get("bought") is None, d["block"] is not None, -d["conf"]))[:25]))
 
-    # ================= RISK entries: breakout + sentiment, drawdown cap =================
+    # ================= RISK entries (v7.4 Day-style: confidence + EV after costs, drawdown-based threshold) =================
     req = sleeve_eq("risk"); rstart = sum(acct_start(con, c)["risk"].values())
     base = float(sget(con, "riskpot_base") or rstart); halt = sget(con, "riskpot_halt")
     if RISK_RESUME.exists():
@@ -673,51 +673,78 @@ def main():
         out.append(f"[risk] HALT new entries: pot £{req:.2f} is {dd*100:.1f}% vs £{base:.2f} (cap -{RP['drawdown_cap_pct']}%) - create RISK_RESUME after review")
     nrisk = sum(1 for (sl, _) in pos if sl == "risk")
     new_today = con.execute("SELECT COUNT(*) FROM trades WHERE sleeve='risk' AND side='BUY' AND ts>=?",
-                            (datetime.combine(lt.date(), dtime(0), LON).astimezone(timezone.utc).isoformat(),)).fetchone()[0]
-    cands = []
+                            (datetime.combine(lt.date(), dtime(0), LON).astimezone(timezone.utc).isoformat(),)).fetchone()[0]   # info only (v7.4: no daily cap)
+    # v7.4 Day-style decision: every setup gets a confidence 0-1 (breakout strength, volume spike, sentiment, market regime,
+    # measured hit rate); it is taken only if confidence >= threshold AND expected value after costs > ev_min_pct. The
+    # threshold rises from conf_threshold (0.55) to conf_threshold_at_stop (0.85) as the drawdown approaches the 30% stop.
+    # Size = confidence x conf_size_pct% of the account's remaining RISK cash (min £5, max £8 / 20% of the pot).
+    rss = riskpot.setup_stats(con, RP, t); thr_r = riskpot.threshold(RP, dd); evmin_r = float(RP.get("ev_min_pct", 0.0))
+    ev_win, ev_loss = float(RP.get("ev_win_pct", 12)), float(RP.get("ev_loss_pct", 8))
+    raw_c = []
     rs = sget(con, "risk_screen") or {}
     for d in rs.get("top") or []:
-        if d["a"] in px and px[d["a"]]["klass"] == "crypto": cands.append((d["a"], d["score"], d["ok"], d["why"], "crypto"))
+        if d["a"] in px and px[d["a"]]["klass"] == "crypto": raw_c.append((d["a"], d["score"], d["ok"], d["why"], "crypto"))
     for sym in stockrank.risk_stocks(c):
         if sym not in px: continue
         sc_, ok_, why_ = riskpot.stock_score(con, sym, px[sym]["price_usd"])
-        if sc_ is not None: cands.append((sym, sc_, ok_, why_, "stock"))
+        if sc_ is not None: raw_c.append((sym, sc_, ok_, why_, "stock"))
     rstat = []
-    for a, bscore, ok, why, kind in sorted(cands, key=lambda x: (not x[2], -x[1])):
-        if ("risk", a) in pos: continue
-        q = px[a]; m, minfo = momentum(hist.get(a) or history(con, a), RP.get("min_history_h", 2))
-        se = sentiment(con, a, st["sentiment_max_age_h"]); w = st["sentiment_weight"] * se["confidence"] if se else 0
-        comb = round((1 - w) * bscore + w * (se["score"] if se else 0), 3)
+    for a, bscore, ok, why, kind in raw_c:
+        if ("risk", a) in pos or any(x["a"] == a for x in rstat): continue
+        q = px[a]; pts = hist.get(a) or history(con, a); m, minfo = momentum(pts, RP.get("min_history_h", 2))
+        se = sentiment(con, a, st["sentiment_max_age_h"])
+        vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
+        mok, reg, mkinfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
+        conf, parts = riskpot.confidence(RP, bscore, vol, se["score"] if se else None, reg, rss["p"])
+        size0, cap0 = riskpot.size(RP, conf, cash_for("risk", a) - gas_of(q["klass"]), req, mint)
+        rtc = rt_cost(a, size0); ev = daypot.expected_value(rss, ev_win, ev_loss, rtc, int(RP.get("ev_prior_n", 10)))
         last_exit = sget(con, f"risk_exit:{a}")
-        no = ("not a breakout (" + why.split("| no: ")[-1] + ")" if not ok else
-              f"score {comb} < {RP['entry_score']}" if comb < RP["entry_score"] else
-              f"momentum {minfo}" if m is None else
-              f"intraday momentum {m} < {RP['confirm_momentum']} ({minfo})" if m < RP["confirm_momentum"] else
-              f"sentiment {se['score']:+.2f} blocks entry" if se and se["score"] <= RP["sentiment_block"] and se["confidence"] >= 0.5 else
-              "drawdown cap: entries halted until review" if halt else
-              closed_msg(a) if not mopen(a) else
-              f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= 15 else
-              "stale price" if not q["fresh"] else "stale FX rate" if fx_stale else
-              f"cooldown after exit {last_exit[:16]}" if last_exit and datetime.fromisoformat(last_exit) > t - timedelta(hours=RP["cooldown_h"]) else
-              f"max {RP['max_open']} open" if nrisk >= RP["max_open"] else
-              f"max {RP['max_new_per_day']} new per day" if new_today >= RP["max_new_per_day"] else None)
-        tgt = min(req * RP["position_pct"] / 100, float(RP["max_position_gbp"]))
-        value = min(tgt, cash_for("risk", a) - gas_of(q["klass"]))
-        if not no and value < mint and tgt >= mint and comb >= float(LN.get("risk_min_score", 0.65)) and m is not None and m > 0:
-            # v7.3: exceptional breakout (score >= 0.65, intraday trend agreeing) short of cash -> borrow the shortfall for ONE position
-            if borrow("risk", a, tgt - value, None, f"breakout score {comb} >= {float(LN.get('risk_min_score', 0.65)):g}, trend {m:+.2f}", min_need=mint - value):
-                value = min(tgt, cash_for("risk", a) - gas_of(q["klass"]))
-        if not no and value < mint: no = f"size £{value:.2f} < min trade £{mint:.0f} ({acash('risk', a)})"
-        rstat.append(dict(a=a, kind=kind, score=bscore, comb=comb, mom=m, ok=ok, why=why, block=no))
-        if no:
-            if ok: sig("risk", a, m, se["score"] if se else None, comb, "SKIP", f"{no}; {why}")
+        hard = ("not a breakout (" + why.split("| no: ")[-1] + ")" if not ok else
+                f"trend: {minfo}" if m is None else
+                f"short-term trend {m} < {RP['confirm_momentum']} ({minfo})" if m < RP["confirm_momentum"] else
+                f"sentiment {se['score']:+.2f} blocks entry" if se and se["score"] <= RP["sentiment_block"] and se["confidence"] >= 0.5 else
+                "drawdown cap: entries halted until review" if halt else
+                closed_msg(a) if not mopen(a) else
+                f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= 15 else
+                "stale price" if not q["fresh"] else "stale FX rate" if fx_stale else
+                f"cooldown after exit {last_exit[:16]}" if last_exit and datetime.fromisoformat(last_exit) > t - timedelta(hours=RP["cooldown_h"]) else None)
+        rstat.append(dict(a=a, kind=kind, acct=acc(a), score=bscore, mom=m, ok=ok, why=why, conf=conf, parts=parts, ev=ev, rt_cost=round(rtc, 3),
+                          hit=round(rss["p"], 3), hit_n=rss["n"], vol=round(vol, 2) if vol is not None else None, sent=se["score"] if se else None,
+                          market=mkinfo, size=round(size0, 2), cap=cap0, block=hard, minfo=minfo))
+    for d in sorted(rstat, key=lambda d: (d["block"] is not None, -d["conf"])):
+        a = d["a"]; q = px[a]; m = d["mom"]
+        if not d["block"]:
+            avail = cash_for("risk", a) - gas_of(q["klass"])
+            value, cap_ = riskpot.size(RP, d["conf"], avail, req, mint); value = min(value, avail)
+            if (value < mint and d["conf"] >= max(thr_r, float(LN.get("risk_min_score", 0.65))) and d["ev"] > max(evmin_r, 0.0)
+                    and m is not None and m > 0 and nrisk < RP["max_open"]):
+                # v7.3/v7.4: exceptional setup (confidence >= 0.65, trend agreeing) short of cash -> borrow for ONE position
+                tgt = max(mint, min(cap_, riskpot.size(RP, d["conf"], max(avail, 0.0), req, mint)[0]))
+                if borrow("risk", a, tgt - max(avail, 0.0), None, f"confidence {d['conf']:.2f} >= {float(LN.get('risk_min_score', 0.65)):g}, trend {m:+.2f}, EV {d['ev']:+.2f}%",
+                          min_need=mint - max(avail, 0.0)):
+                    avail = cash_for("risk", a) - gas_of(q["klass"]); value = min(tgt, avail); d["loan"] = True
+            d["block"] = ((f"confidence {d['conf']:.2f} < threshold {thr_r:.2f}" if d["conf"] < thr_r else None) or
+                          (f"expected value {d['ev']:+.2f}% after costs <= {evmin_r:g}%" if d["ev"] <= evmin_r else None) or
+                          (f"max {RP['max_open']} open" if nrisk >= RP["max_open"] else None) or
+                          (f"size £{value:.2f} < min trade £{mint:.0f} ({acash('risk', a)})" if value < mint else None))
+        if d["block"]:
+            if d["ok"]: sig("risk", a, m, d["sent"], d["conf"], "SKIP", f"{d['block']}; {d['why']}")
             continue
-        buy("risk", a, value, f"RISK breakout {comb} >= {RP['entry_score']} ({kind}): {why}; {minfo}")
-        peaks[a] = q["price"]; nrisk += 1; new_today += 1
-        sig("risk", a, m, se["score"] if se else None, comb, "BUY", f"£{value:.2f} breakout {comb}; {why}; {minfo}")
+        buy("risk", a, value, f"RISK breakout ({d['kind']}): confidence {d['conf']:.2f} >= {thr_r:.2f}, EV {d['ev']:+.2f}% after costs; {d['why']}; {d['minfo']}; {d['market']}",
+            conf=d["conf"])
+        peaks[a] = q["price"]; nrisk += 1; new_today += 1; d["bought"] = round(value, 2)
+        rmeta[a] = dict(conf=d["conf"], ev=d["ev"], opened=ts)
+        sig("risk", a, m, d["sent"], d["conf"], "BUY", f"£{value:.2f} confidence {d['conf']:.2f}, EV {d['ev']:+.2f}%; {d['why']}; {d['minfo']}")
     sset(con, "risk_peaks", {a: v for a, v in peaks.items() if ("risk", a) in pos})
+    sset(con, "risk_meta", {a: v for a, v in rmeta.items() if ("risk", a) in pos})
+    if rstat:
+        out.append("[risk] setups: " + "; ".join(f"{d['a']} conf {d['conf']:.2f} EV {d['ev']:+.2f}% -> " + (f"BUY £{d['bought']:.2f}" if d.get("bought") else f"skip ({d['block']})")
+                                                   for d in sorted(rstat, key=lambda d: -d["conf"])[:5]))
     sset(con, "riskpot_status", dict(ts=ts, equity=sleeve_eq("risk"), start=rstart, base=base, dd_pct=dd * 100, halted=bool(halt),
-                                     halt=halt, open_n=nrisk, new_today=new_today, cands=sorted(rstat, key=lambda x: (x["block"] is not None, -x["comb"]))[:30]))
+                                     halt=halt, open_n=nrisk, new_today=new_today, threshold=thr_r, base_threshold=float(RP.get("conf_threshold", 0.55)),
+                                     top_threshold=float(RP.get("conf_threshold_at_stop", 0.85)), ev_min=evmin_r,
+                                     setup=dict(p=round(rss["p"], 3), n=rss["n"], wins=rss["wins"], exp=round(rss["exp"], 3) if rss["exp"] is not None else None),
+                                     cands=sorted(rstat, key=lambda x: (x.get("bought") is None, x["block"] is not None, -x["conf"]))[:30]))
 
     # v7.3: repay loans whose position has closed - principal first, borrower -> lender, out of the sale proceeds (the P&L
     # stays with the borrower). If the borrower's cash is short (a loss), it repays what it has; the rest stays owed and is

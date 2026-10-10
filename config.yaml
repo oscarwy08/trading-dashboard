@@ -148,15 +148,29 @@ riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mi
   stocks: [AAOI, POET, LWLG, LPTH, AXTI, GHH.L, IQE.L, SERV, RR]   # extra small caps (photonics / robotics)
   stock_intraday_n: 8           # + held + breakout-ok names
   # breakout + sentiment entry: score -1..1 per candidate (see trader.risk_score), combined with fresh sentiment like DAY
-  entry_score: 0.45             # combined score needed to buy
+  # v7.4 Day-style decision (like the DAY burst): confidence 0-1 per setup + expected value after costs; a setup is taken only if
+  # confidence >= threshold AND EV > ev_min_pct. Hard gates that stay: real breakout, intraday trend (confirm_momentum),
+  # sentiment block, drawdown halt, market open, fresh price, cooldown, max_open.
+  confidence_weights: {breakout: 0.30, volume: 0.20, sentiment: 0.15, market: 0.15, hit_rate: 0.20}
+  volume_x: 2                   # volume component: last hour vs the average hour (2x = half way, 4x+ = full; unknown = 0.4)
+  conf_threshold: 0.55          # threshold at no drawdown ...
+  conf_threshold_at_stop: 0.85  # ... rising linearly to this as the drawdown approaches drawdown_cap_pct (30%)
+  hit_prior: 0.5                # measured hit rate of RISK closed trades (last record_days) with a Beta prior of hit_prior_n trades
+  hit_prior_n: 20
+  record_days: 30
+  ev_win_pct: 12                # EV model prior: p x avg win - (1 - p) x avg loss - round-trip costs (blended with the measured
+  ev_loss_pct: 8                #   expectancy as trades build up, ev_prior_n weight); losses are usually cut before the full 12% stop
+  ev_prior_n: 10
+  ev_min_pct: 0.0
+  conf_size_pct: 50             # size = confidence x 50% of the account's remaining RISK cash, min £5 (risk.min_trade_size),
+  max_position_pct: 20          #   max 20% of the RISK pot and max_position_gbp
   confirm_momentum: 0.0         # intraday momentum (4h/24h/EMA, same model as DAY) must be >= this (needs >= 2h history)
   min_history_h: 2
   sentiment_block: -0.3         # no entry while fresh sentiment <= this (conf >= 0.5); exit if <= sentiment_exit (conf >= 0.6)
   sentiment_exit: -0.5
-  position_pct: 20              # of RISK pot equity per position (£8 of £40); never above max_position_gbp
   max_position_gbp: 8
   max_open: 5
-  max_new_per_day: 3
+                                # (v7.4: no daily cap on new RISK trades - the confidence threshold + max_open + cash decide)
   cooldown_h: 24                # no re-entry into the same asset within 24h of an exit
   stop_loss_pct: 12             # from average cost (incl. fees + gas)
   trail_after_pct: 15           # once the position has been up >= 15% (peak) ...
@@ -234,6 +248,7 @@ risk:
 loans:                          # v7.3 (2026-10-10): temporary borrowing between pots INSIDE one account (never crypto<->stocks)
   enabled: true                 # only for an exceptional setup that lacks cash: first CORE's uninvested cash (minus what today's
   risk_min_score: 0.65          #   scheduled tranches / queued CORE buys need), then the other short-term pot's cash. RISK: setup
+                                #   confidence (v7.4; the breakout score before) >= 0.65 with the intraday trend agreeing;
   burst_min_conf: 0.75          #   score >= 0.65 with the intraday trend agreeing; DAY burst: confidence >= 0.75 and EV after costs > 0
   max_outstanding_pct: 20       # total outstanding loans per account <= 20% of that account's starting value (£20 of £100)
   allow_multiple: false         # one open loan (= one position) per borrowing pot x account at a time

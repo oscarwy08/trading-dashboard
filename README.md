@@ -3,6 +3,29 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7.4 (2026-10-10): RISK pot decides like the Day pot's burst (paper only)
+- **Confidence 0-1 per setup** (riskpot.confidence, weights `riskpot.confidence_weights`): breakout strength (the screen's
+  breakout score) 30%, volume spike (last hour vs the average hour; 2x = half, 4x+ = full) 20%, news sentiment 15%, market
+  regime (BTC 1h/4h for coins, the exchange's index for shares - the same model as the DAY burst) 15%, and the RISK pot's
+  measured hit rate (closed trades of the last 30 days, Beta prior 50% x 20 trades) 20%. A ranking, not a probability.
+- **Trade only if** confidence >= threshold **and** expected value after costs > 0 (p x 12% avg win - (1 - p) x 8% avg
+  loss - round-trip costs, blended with the measured expectancy as trades build up; `ev_win_pct` / `ev_loss_pct`).
+  Hard gates kept: real breakout, intraday trend >= 0, sentiment block, drawdown halt, market open, fresh prices, 24h
+  cooldown, max 5 open.
+- **Threshold** rises linearly from 0.55 (no drawdown) to 0.85 as the drawdown approaches the 30% stop (riskpot.threshold).
+- **Size** = confidence x 50% (`conf_size_pct`) of the account's remaining RISK cash, min £5, max £8 or 20% of the pot -
+  sizes shrink as cash is used up. The **3-new-per-day cap is removed**; 5 open max, 12% stop, trailing (after +15%, sell
+  10% below the peak), 7-day max hold and the 30% drawdown stop are unchanged. Short of cash for a setup with confidence
+  >= 0.65 and the trend agreeing -> v7.3 loan.
+- **Risk tab** in the Day tab's style: summary cards, gauges (drawdown vs stop, confidence threshold, cash per account),
+  results table (closed trades, win rate, avg win/loss, profit factor, closed / open P&L, fees closed vs open buys,
+  expectancy; all time / today), positions with their entry confidence + EV, setups table (confidence bar with the
+  threshold marker, component mini-bars, EV after costs, decision + reason) and a confidence column on the orders.
+- State `riskpot_status` gains threshold / setup stats / per-candidate conf, parts, ev, size, decision; `risk_meta`
+  keeps confidence + EV per open position; orders carry `conf`. check_data.py checks the Risk results (crypto + stocks
+  = total, fees = closed + open buys, closed P&L = realised), the threshold formula, confidence = weighted components and
+  that every buy met threshold + EV + size rules; test/sim.py asserts the same on every cycle of its run.
+
 ## v7.3 (2026-10-10): temporary inter-pot loans (same account only, paper only)
 - A RISK or DAY pot that lacks the cash for an **exceptional** setup may borrow from another pot **in the same account**
   (crypto lends to crypto, stocks to stocks; never across accounts). Exceptional = RISK setup score >= 0.65 with the
@@ -289,7 +312,7 @@ test/test_universe.py v7.2 DAY crypto universe filter + sentiment symbol mapping
 test/check_data.py    v7.1 reconciliation of docs/data.json (every total = sum of its parts; run by ci_cycle.sh + check.js)
 test/sim.py           backtest-style dry run on a throwaway DB copy (simulated clock + synthetic prices); deletes the copy.
                       v4 adds RISK: breakout entries via the real screen, 12% stop, trailing take-profit, 7-day max hold,
-                      max 5 open / 3 new per day / <= £8, drawdown-cap halt + RISK_RESUME, DAY ignores risk-only coins,
+                      max 5 open / <= £8 (v7.4: no daily cap; confidence / EV / drawdown threshold checked), drawdown-cap halt + RISK_RESUME, DAY ignores risk-only coins,
                       cash reconciliation for all three pots, TRANSFER rebasing. Last run: logs/sim_v4.txt (ALL CHECKS PASSED)
                       v7 adds a scripted DAY day: burst take-profit / trailing / ATR stop / 6h max hold, skips (no volume, RSI >= 80,
                       negative sentiment, BTC falling), 1h cooldown, momentum winner via trailing/target, stock burst flattened
@@ -393,9 +416,10 @@ Entry (breakout + sentiment): crypto score = 0.35 x 24h move (20% = full) + 0.25
 24h high + 0.2 x volume/market-cap; must be up >= 4% (24h) and >= 5% (7d), within 8% of the 24h high, not dropping
 (1h > -2%) and not a > +60% one-day pump. Stocks: 0.35 x 5-day return (15%) + 0.25 x 20-day (40%) + 0.2 x closeness to
 the 20-day high + 0.2 x trend (above a rising 50d average); must be +3% over 5 days, at >= 97% of the 20-day high, above
-the 50d average. Combined with fresh sentiment like DAY (w = 0.4 x confidence); buy when combined >= 0.45 AND the
-intraday momentum model (same as DAY, >= 2h history) >= 0; no entry while fresh sentiment <= -0.3 (conf >= 0.5).
-Size 20% of the pot equity, max £8; max 5 open, max 3 new per UK day, 24h cooldown per asset after an exit.
+the 50d average. v7.4: the decision is Day-style (see the v7.4 section): confidence >= threshold AND expected value after
+costs > 0, with the intraday momentum model (same as DAY, >= 2h history) >= 0 as a hard gate; no entry while fresh
+sentiment <= -0.3 (conf >= 0.5). Size = confidence x 50% of the account's remaining RISK cash (min £5, max £8 / 20% of
+the pot); max 5 open, no daily cap, 24h cooldown per asset after an exit.
 Exits: stop-loss 12% from average cost (incl. fees/gas); trailing take-profit: once the peak is >= +15% above cost, sell
 when price falls 10% from the peak (peak in state risk_peaks); max hold 7 days; sentiment exit <= -0.5 (conf >= 0.6).
 Drawdown cap: if the pot is down 30% vs its base (start £40, or the equity at the last review) new entries stop

@@ -70,3 +70,44 @@ def stock_score(con, sym, price_usd=None):
     fails = [w for cond, w in ((r5 >= 0.03, "5d < +3%"), (nh >= 0.97, "not at a 20-day high"), (above, "below 50d avg")) if not cond]
     why = f"5d {r5*100:+.1f}%, 20d {r20*100:+.1f}%, {nh*100:.0f}% of 20d high, {'above' if above else 'below'} 50d avg{' (rising)' if rising else ''}"
     return score, not fails, why + ("" if not fails else " | no: " + ", ".join(fails))
+
+# ---------------- v7.4: Day-style decision for the RISK pot (confidence + EV after costs + capital-based threshold) ----------------
+def clip01(v): return max(0.0, min(1.0, v))
+
+def setup_stats(con, R, t=None):
+    """Measured record of the RISK pot's closed trades over the last record_days: hit rate with a Beta prior
+    ((wins + p0*n0) / (n + n0)) and the observed expectancy in % per trade after all fees (same model as the DAY burst)."""
+    from datetime import datetime, timedelta, timezone
+    p0, n0 = float(R.get("hit_prior", 0.5)), float(R.get("hit_prior_n", 20))
+    since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(R.get("record_days", 30)))).isoformat()
+    pcts = []
+    for v, g, pnl in con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve='risk' AND side='SELL' AND ts>=? ORDER BY id DESC", (since,)):
+        basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)
+    w = sum(1 for x in pcts if x > 0)
+    return dict(p=(w + p0 * n0) / (len(pcts) + n0), n=len(pcts), wins=w, exp=sum(pcts) / len(pcts) if pcts else None)
+
+def confidence(R, brk, vol, sent, regime, hr):
+    """Weighted 0-1 confidence of a RISK setup (a ranking heuristic, not a probability of profit). Components 0-1:
+    breakout = the screen's breakout score (-1..1, negative = 0); volume = last hour vs the average hour (2x = half way,
+    4x+ = full; unknown = 0.4); sentiment = (score + 1) / 2 (none = 0.5); market = the DAY burst market-regime score;
+    hit_rate = the RISK pot's measured hit rate (Beta prior)."""
+    W = R.get("confidence_weights") or dict(breakout=0.30, volume=0.20, sentiment=0.15, market=0.15, hit_rate=0.20)
+    vx = float(R.get("volume_x", 2))
+    parts = dict(breakout=clip01(brk or 0), volume=0.4 if vol is None else clip01((vol - 1) / (2 * vx - 1)),
+                 sentiment=0.5 if sent is None else clip01((sent + 1) / 2), market=clip01(regime if regime is not None else 0.5), hit_rate=clip01(hr))
+    return round(sum(W[k] * parts[k] for k in W) / sum(W.values()), 3), {k: round(v, 2) for k, v in parts.items()}
+
+def threshold(R, dd):
+    """Capital-based caution: conf_threshold (0.55) at no drawdown, rising linearly to conf_threshold_at_stop (0.85) as the
+    pot's drawdown (dd, e.g. -0.12) approaches the drawdown_cap_pct (30%) stop; gains never lower it."""
+    base, top, cap = float(R.get("conf_threshold", 0.55)), float(R.get("conf_threshold_at_stop", 0.85)), float(R.get("drawdown_cap_pct", 30)) / 100
+    frac = clip01(max(0.0, -dd) / cap) if cap else 0.0
+    return round(min(0.99, base + (top - base) * frac), 3)
+
+def size(R, conf, cash_free, pot_equity, mint):
+    """Position size by confidence on the CURRENT remaining cash of the account: conf x conf_size_pct% of the free cash,
+    at most min(max_position_gbp £8, max_position_pct 20% of the pot) and at least the min trade (mint, £5). Returns
+    (size, cap)."""
+    cap = min(float(R.get("max_position_gbp", 8)), float(R.get("max_position_pct", R.get("position_pct", 20))) / 100 * max(0.0, pot_equity))
+    raw = clip01(conf) * float(R.get("conf_size_pct", 50)) / 100 * max(0.0, cash_free)
+    return round(max(mint, min(raw, cap)), 4), round(cap, 4)      # the min trade wins if 20% of a shrunken pot is below it

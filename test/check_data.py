@@ -96,6 +96,40 @@ def main(D):
                     for f in ("trades", "pnl", "fees"):
                         eq(m[f"{per}:all"][f], sum(m[f"{per}:{ac}"][f] or 0 for ac in ACC), f"day sub {s} {per} {f} = crypto + stocks", 0.0002)
         if ST: eq(sum(ST[s]["all:all"]["fees"] for s in ST), d.get("fees", sum(d["accts"][ac]["fees"] for ac in ACC)), "day sub fees = Day pot fees", 0.01)
+    # ---- Risk tab (v7.4 Day-style) ----
+    r = Z.get("risk")
+    if r and "stats" in r:
+        R = r.get("rules") or {}; RS = r["stats"]
+        for key, v in RS.items():
+            eq(v["fees"], v["fees_closed"] + v["fees_open"], f"risk {key} fees = closed + open buys", 0.0002)
+        for per in ("all", "today"):
+            for f in ("trades", "pnl", "fees"):
+                eq(RS[f"{per}:all"][f], sum(RS[f"{per}:{ac}"][f] or 0 for ac in ACC), f"risk {per} {f} = crypto + stocks", 0.0002)
+        eq(RS["all:all"]["fees"], r.get("fees", sum(r["accts"][ac]["fees"] for ac in ACC)), "risk stats fees = Risk pot fees", 0.01)
+        eq(RS["all:all"]["pnl"], r["realized"], "risk closed P&L (table) = Risk realised", 0.011)
+        eq(r["unrealized"], sum(p["pnl"] or 0 for p in P if p["sleeve"] == "risk"), "risk open P&L = sum of its positions' P&L")
+        b0, b1, cap = R.get("conf_threshold"), R.get("conf_at_stop"), R.get("cap") or 30
+        thr = r.get("threshold")
+        if isinstance(thr, (int, float)) and b0 is not None:
+            frac = min(1.0, max(0.0, -(r.get("dd_pct") or 0) / cap))
+            eq(thr, min(0.99, b0 + (b1 - b0) * frac), "risk threshold = base + (top - base) x drawdown / stop", 0.002)
+        Wt = R.get("weights") or {}
+        for x in r.get("cands") or []:
+            w = f"risk cand {x.get('a')}"
+            if "conf" not in x: continue
+            n[0] += 1
+            if not (0 <= x["conf"] <= 1) or any(not (0 <= v <= 1) for v in (x.get("parts") or {}).values()): fails.append(f"{w} confidence/components outside 0-1")
+            if Wt and x.get("parts"):
+                eq(x["conf"], sum(Wt[k] * x["parts"][k] for k in Wt) / sum(Wt.values()), f"{w} confidence = weighted components", 0.006)
+            if x.get("bought"):
+                n[0] += 1
+                if isinstance(thr, (int, float)) and x["conf"] < thr - 1e-9: fails.append(f"{w} bought below the threshold ({x['conf']} < {thr})")
+                if x.get("ev") is None or x["ev"] <= (R.get("ev_min") or 0): fails.append(f"{w} bought with EV {x.get('ev')} <= {R.get('ev_min')}")
+                if x["bought"] < (R.get("min_trade") or 5) - 0.01 or x["bought"] > (R.get("max_pos") or 8) + 0.01: fails.append(f"{w} size £{x['bought']} outside min trade .. max position")
+                if x.get("block"): fails.append(f"{w} bought but blocked: {x['block']}")
+            elif not x.get("block"): fails.append(f"{w} neither bought nor blocked")
+        for p in P:
+            if p["sleeve"] == "risk" and p.get("conf") is not None and not (0 <= p["conf"] <= 1): fails.append(f"risk position {p['asset']} confidence {p['conf']}")
     return fails
 
 if __name__ == "__main__":

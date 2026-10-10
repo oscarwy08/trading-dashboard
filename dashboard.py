@@ -45,6 +45,23 @@ def day_sub_stats(con, lt):
                 out[sb][f"{per}:{sc}"] = st_
     return out
 
+def risk_stats(con, lt):
+    """v7.4 RISK pot closed-trade stats (same model as the DAY sub-strategy table): all time and today (UK), whole pot and
+    per account: trades, win rate, avg win/loss %, profit factor, P&L after all fees, expectancy, fees (closed / open buys)."""
+    d0 = datetime.combine(lt.date(), datetime.min.time(), LON).astimezone(timezone.utc).isoformat()
+    rows = [dict(r) for r in con.execute("SELECT ts, asset, klass, side, value, gas, pnl, cost FROM trades WHERE sleeve='risk' AND side IN ('BUY','SELL') ORDER BY id")]
+    opened = {r[0]: r[1] for r in con.execute("SELECT asset, opened FROM positions WHERE sleeve='risk'")}
+    for r in rows: r["open"] = r["side"] == "BUY" and r["asset"] in opened and r["ts"] >= opened[r["asset"]]
+    out = {}
+    for per in ("all", "today"):
+        for sc in ("all",) + ACCOUNTS:
+            xs = [r for r in rows if (per == "all" or r["ts"] >= d0) and (sc == "all" or acct_of(r["klass"]) == sc)]
+            st_ = daypot.sub_stats([r for r in xs if r["side"] == "SELL"])
+            fo = sum((r["cost"] or 0) + (r["gas"] or 0) for r in xs if r["open"])
+            st_["fees"] = round(sum((r["cost"] or 0) + (r["gas"] or 0) for r in xs), 4); st_["fees_open"] = round(fo, 4)
+            st_["fees_closed"] = round(st_["fees"] - fo, 4); out[f"{per}:{sc}"] = st_
+    return out
+
 def day_ledger(con, c, positions, acash, base):
     """v7.1 DAY sub-strategy money per account (daypot.sub_ledger - the SAME definition the trader sizes with), rounded so
     every figure reconciles to the penny with the Day pot cards:
@@ -242,6 +259,7 @@ def build(con):
     stops = dict(core=(K["stop_loss_pct"], None), day=(None, None), risk=(RP.get("stop_loss_pct"), None))
     dmeta = json.loads((con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone() or ["{}"])[0]) or {}
     peaks = json.loads((con.execute("SELECT value FROM state WHERE key='risk_peaks'").fetchone() or ["{}"])[0]) or {}
+    rmeta = json.loads((con.execute("SELECT value FROM state WHERE key='risk_meta'").fetchone() or ["{}"])[0]) or {}   # v7.4 conf/EV at entry
     for r in con.execute("SELECT * FROM positions ORDER BY opened"):
         sl_pct, tp_pct = stops.get(r["sleeve"], (None, None))
         usd = lp[r["asset"]]["price"] if r["asset"] in lp else None
@@ -267,7 +285,8 @@ def build(con):
             pk = peaks.get(r["asset"]); on = bool(pk and pk * (1 - rk["fee_slippage_pct"] / 100) / r["entry"] - 1 >= RP["trail_after_pct"] / 100)
             positions[-1].update(peak=sig(pk), trail_on=on, trail=sig(pk * (1 - RP["trail_pct"] / 100)) if on else None,
                                  trail_arm=sig(r["entry"] * (1 + RP["trail_after_pct"] / 100) / (1 - rk["fee_slippage_pct"] / 100)),
-                                 expires=ep(r["opened"]) + int(RP["max_hold_days"] * 86400))
+                                 expires=ep(r["opened"]) + int(RP["max_hold_days"] * 86400),
+                                 conf=(rmeta.get(r["asset"]) or {}).get("conf"), ev=(rmeta.get(r["asset"]) or {}).get("ev"))
     pos_by = {}
     for p in positions: pos_by.setdefault(p["asset"], []).append(p["sleeve"])
 
@@ -465,8 +484,13 @@ def build(con):
         screen=dict(t=ep(rsc["ts"]) if rsc.get("ts") else None, universe=rsc.get("universe"), liquid=rsc.get("liquid"), ok=rsc.get("ok"),
                     monad=rsc.get("monad"), top=[{k: (sig(v, 4) if isinstance(v, float) else v) for k, v in d.items()} for d in (rsc.get("top") or [])[:25]]),
         stocks=stockrank.risk_stocks(c), stock_themes=RP.get("stock_themes") or [],
-        rules=dict(entry=RP.get("entry_score"), pos_pct=RP.get("position_pct"), max_pos=RP.get("max_position_gbp"), max_open=RP.get("max_open"),
-                   per_day=RP.get("max_new_per_day"), stop=RP.get("stop_loss_pct"), trail_after=RP.get("trail_after_pct"), trail=RP.get("trail_pct"),
+        threshold=rst.get("threshold"), base_threshold=rst.get("base_threshold"), top_threshold=rst.get("top_threshold"), ev_min=rst.get("ev_min"),
+        setup=rst.get("setup") or {}, stats=risk_stats(con, lt),
+        rules=dict(pos_pct=RP.get("max_position_pct"), max_pos=RP.get("max_position_gbp"), max_open=RP.get("max_open"),
+                   conf_threshold=RP.get("conf_threshold"), conf_at_stop=RP.get("conf_threshold_at_stop"), conf_size_pct=RP.get("conf_size_pct"),
+                   weights=RP.get("confidence_weights"), ev_min=RP.get("ev_min_pct"), ev_win=RP.get("ev_win_pct"), ev_loss=RP.get("ev_loss_pct"),
+                   volume_x=RP.get("volume_x"), record_days=RP.get("record_days"), confirm=RP.get("confirm_momentum"), min_trade=c["risk"]["min_trade_size"],
+                   stop=RP.get("stop_loss_pct"), trail_after=RP.get("trail_after_pct"), trail=RP.get("trail_pct"),
                    hold=RP.get("max_hold_days"), cap=RP.get("drawdown_cap_pct"), cooldown=RP.get("cooldown_h"), top_n=RC.get("top_n"),
                    min_mcap=RC.get("min_mcap_usd"), max_mcap=RC.get("max_mcap_usd"), min_vol=RC.get("min_vol_usd"), sent_block=RP.get("sentiment_block"),
                    sent_exit=RP.get("sentiment_exit")))

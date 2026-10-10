@@ -61,6 +61,7 @@ RISKC = {"MOONX": 1.0, "DUMPX": 1.0, "SLOWX": 1.0, "BRKA": 2.0, "BRKB": 2.0, "BR
 NOISE = {"SLOWX": 0.05, "BRKA": 0.2, "BRKB": 0.2, "BRKC": 0.2, "BRKD": 0.2, "MOONX": 0.3, "DUMPX": 0.3}
 for a, p0 in RISKC.items(): last[a] = (p0, "crypto")
 series = {a: [] for a in RISKC}
+RV = {a: 2e7 for a in RISKC}     # v7.4: RISK coins' rolling 24h volume (volume component of the confidence): +8%/step in up-moves
 rng = random.Random(42); drift = {a: 0.0 for a in last}
 lt = lambda t: t.astimezone(LON)
 def uk(day_off, h, m=0):   # UK local time relative to T0's UK date
@@ -83,6 +84,7 @@ CAP_DAY = uk(5, 0).astimezone(LON).date().isoformat()   # Wed: force the DAY los
 
 sys.path.insert(0, str(HERE / "test")); import check_data
 RECON = dict(runs=0, checks=0, fails=[])
+RTH, RCS, RBAD = [], {}, []     # v7.4 RISK: (drawdown %, threshold) per cycle, decisions per candidate, buys that broke the rule
 checks = {"flat_violation": [], "entry_window_violation": [], "max_open_violation": [], "neg_cash": [], "kill_trades": None}
 log = open(HERE / "logs" / "sim_cycles.log", "w")
 t = T0; steps = 0
@@ -98,7 +100,8 @@ while t <= END:
             if ea == a and e0 <= t < e1:
                 n = max(1, int((e1 - e0).total_seconds() // 900)); r += mult ** (1 / n) - 1
         p *= 1 + r; last[a] = (p, k)
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, p, None, None, None, None, "sim"))
+        if a in RV and any(ea == a and e0 <= t < e1 and mult > 1 for ea, e0, e1, mult in EVENTS): RV[a] *= 1.08
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, p, None, None, RV.get(a), None, "sim"))
     con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (common.iso(t), "USDGBP", rate, "sim", None, None))
     rows = []
     for a in RISKC:
@@ -161,6 +164,12 @@ while t <= END:
             checks["max_open_violation"].append(f"burst {ac_} " + L.isoformat())
     nrisk = con.execute("SELECT COUNT(*) FROM positions WHERE sleeve='risk'").fetchone()[0]
     if nrisk > c["riskpot"]["max_open"]: checks["max_open_violation"].append("risk " + L.isoformat())
+    rst_ = json.loads((con.execute("SELECT value FROM state WHERE key='riskpot_status'").fetchone() or ["{}"])[0]) or {}   # v7.4
+    if "threshold" in rst_:
+        RTH.append((rst_["dd_pct"], rst_["threshold"]))
+        for d_ in rst_.get("cands") or []:
+            RCS.setdefault(d_["a"], set()).add("BUY" if d_.get("bought") else (d_.get("block") or "")[:40])
+            if d_.get("bought") and (d_["conf"] < rst_["threshold"] - 1e-9 or d_["ev"] <= rst_.get("ev_min", 0)): RBAD.append((L.isoformat(), d_["a"], d_["conf"], rst_["threshold"], d_["ev"]))
     if t == RHALT: checks["risk_halt_state"] = bool(con.execute("SELECT 1 FROM state WHERE key='riskpot_halt'").fetchone())
     if t == RRESUME:
         checks["risk_resumed"] = not con.execute("SELECT 1 FROM state WHERE key='riskpot_halt'").fetchone() and not (HERE / "test" / "RISK_RESUME").exists()
@@ -281,7 +290,16 @@ print(f"themes of picks: {[RANK0.get(a, {}).get('theme') for a in cs['picks']]} 
 print(f"buys below £{mint:.0f} min trade: {len(small_buys)} | gas values seen: {gas_vals} | trades without gas: {len(no_gas)} | gas total £{sum(x['gas'] or 0 for x in tr):.4f}")
 assert not small_buys, "buy below min trade"
 assert rb_ and all(x["value"] <= RP["max_position_gbp"] + 1e-9 for x in rb_), "risk position size"
-assert max(rpd.values()) <= RP["max_new_per_day"], "risk max new per day"
+# v7.4 RISK = Day-style: every buy has confidence >= the threshold of that cycle and EV after costs > 0; the threshold follows
+# the drawdown (0.55 flat -> 0.85 at the 30% stop); no daily cap on new trades (the 4 simultaneous breakouts on day 4 may all
+# be bought if cash / max_open allow); sizes between the min trade and min(£8, 20% of the pot)
+thr_ok = all(abs(th - min(0.99, RP["conf_threshold"] + (RP["conf_threshold_at_stop"] - RP["conf_threshold"]) * min(1, max(0, -dd / RP["drawdown_cap_pct"])))) < 0.002 for dd, th in RTH)
+print(f"v7.4 RISK: {len(RTH)} cycles, threshold range {min(t_ for _, t_ in RTH):.3f}-{max(t_ for _, t_ in RTH):.3f} (max drawdown {min(d_ for d_, _ in RTH):.1f}%), "
+      f"buys with conf/EV recorded {sum(1 for x in rb_ if x['conf'] is not None)}/{len(rb_)}, rule breaks {RBAD[:3]}, max buys in one UK day {max(rpd.values())}")
+print("v7.4 RISK decisions:", {a: sorted(v)[:4] for a, v in RCS.items() if a in RISKC})
+assert thr_ok and max(t_ for _, t_ in RTH) >= RP["conf_threshold_at_stop"] - 0.01, "risk threshold rises with the drawdown (0.85 at the stop)"
+assert not RBAD and all(x["conf"] is not None and x["conf"] >= RP["conf_threshold"] - 1e-9 and "EV +" in x["reason"] for x in rb_), "risk buys: confidence >= threshold and EV > 0"
+assert all(x["value"] >= mint - 1e-6 for x in rb_), "risk size >= min trade"
 assert risk_exit["risk stop-loss"] and risk_exit["trailing take-profit"] and risk_exit["max hold"], "risk exits (stop / trailing / max hold)"
 assert all(x["pnl"] / (x["value"] + 1e-9) < -0.10 for x in stop_pnl), "risk stop around -12%"
 assert not [x for x in rb_ if x["asset"] == "FADEX" and uk(1, 9) <= datetime.fromisoformat(x["ts"]) < uk(2, 9, 15)], "a +80% pump (24h > +60%) must not be chased"

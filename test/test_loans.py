@@ -59,10 +59,14 @@ def snap():
     return cash, loans, pos, ln
 
 common._NOW = trader.now().replace(second=0)
+# v7.4: the RISK loan trigger is the setup CONFIDENCE (>= 0.65, trend agreeing). Stub: TESTX's confidence = its screen score
+# (0.80 / 0.60 below), so this test is about the loan rules, not about the confidence model (test/sim.py covers that).
+import riskpot
+_rconf = riskpot.confidence
+riskpot.confidence = lambda R, brk, *a: (brk, dict(breakout=brk, volume=brk, sentiment=brk, market=brk, hit_rate=brk)) if brk in (0.80, 0.60) else _rconf(R, brk, *a)
 print("1. exceptional breakout short of cash -> borrow from CORE")
 c = setup(0.80, risk_cash=3.0, core_cash=60.0)
 before, _, _, _ = snap(); out = run(); cash, loans, pos, ln = snap()
-tgt = min(C0["riskpot"]["position_pct"] / 100 * 20, C0["riskpot"]["max_position_gbp"])   # ~20% of a ~£20-40 pot, capped
 check(len(loans) == 1 and loans[0]["lender"] == "core" and loans[0]["borrower"] == "risk" and loans[0]["account"] == "crypto", f"one loan core -> risk in the crypto account: {loans}")
 check(("risk", "TESTX") in pos and pos[("risk", "TESTX")] >= 5 - 1e-6, f"TESTX bought for >= £5 ({pos.get(('risk', 'TESTX'))})")
 if loans:
