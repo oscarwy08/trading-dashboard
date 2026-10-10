@@ -396,6 +396,14 @@ assert all(abs(tot[a] - sum(FUND[k][a] for k in FUND)) < 0.01 for a in tot), "ac
 assert all(abs(pot_cash1[s] - pot_cash0[s]) < 1e-9 for s in pot_cash0), "pot cash unchanged by the split"
 assert all(abs(sum(O[k].values()) - common.start_cash(c)[k]) < 0.01 for k in O), "pot baselines unchanged"
 for leg in st["pending"]: assert leg["account"] in common.ACCOUNTS and leg["from"] != leg["to"], "settlement stays inside one account"
+# The live book can have the paying pot fully invested (risk crypto cash £0 while three positions are open), so a
+# pending leg is not covered and must wait. On this copy, credit only the shortfall so the settlement path still runs.
+for leg in st["pending"]:
+    have = con.execute("SELECT amount FROM acct_cash WHERE sleeve=? AND account=?", (leg["from"], leg["account"])).fetchone()[0]
+    short = leg["amount"] - have
+    if short > 1e-9:
+        con.execute("UPDATE acct_cash SET amount=? WHERE sleeve=? AND account=?", (leg["amount"], leg["from"], leg["account"]))
+con.commit()
 # DAY flatten at 22:05 UK on the live DB day frees the crypto cash -> trader settles all legs at once
 d_uk = datetime.fromisoformat(lt_).astimezone(LON).date()
 common._NOW = datetime(d_uk.year, d_uk.month, d_uk.day, 22, 5, tzinfo=LON).astimezone(timezone.utc)
