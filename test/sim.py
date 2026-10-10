@@ -101,7 +101,7 @@ while t <= END:
                 n = max(1, int((e1 - e0).total_seconds() // 900)); r += mult ** (1 / n) - 1
         p *= 1 + r; last[a] = (p, k)
         if a in RV and any(ea == a and e0 <= t < e1 and mult > 1 for ea, e0, e1, mult in EVENTS): RV[a] *= 1.08
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, p, None, None, RV.get(a), None, "sim"))
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, p, None, None, RV.get(a), None, "sim", common.iso(t)))
     con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (common.iso(t), "USDGBP", rate, "sim", None, None))
     rows = []
     for a in RISKC:
@@ -233,7 +233,9 @@ eqrow = con.execute("SELECT equity, cash, crypto, stocks, crypto_cash, stocks_ca
 acc_eq_ok = abs(eqrow["crypto"] + eqrow["stocks"] - eqrow["equity"]) < 1e-4 and abs(eqrow["crypto_cash"] + eqrow["stocks_cash"] - eqrow["cash"]) < 1e-6
 stock_buys_acct = {a: sum(1 for x in tr if x["side"] == "BUY" and common.acct_of(x["klass"]) == a) for a in common.ACCOUNTS}
 mint = float(c["risk"]["min_trade_size"])
-small_buys = [x for x in tr if x["side"] == "BUY" and x["value"] < mint - 1e-6]
+floor = float(c["day"]["burst"].get("cash_floor_gbp", 4))
+small_buys = [x for x in tr if x["side"] == "BUY" and x["value"] < mint - 1e-6
+              and not (x["sleeve"] == "day" and x.get("sub") == "burst" and x["value"] >= floor - 1e-6)]
 gas_vals = sorted({round(x["gas"], 6) for x in tr if x["gas"] is not None}); no_gas = [x for x in tr if x["gas"] is None]
 rbl = json.loads(con.execute("SELECT value FROM state WHERE key='core_rebalance_log'").fetchone()[0])
 cs = json.loads(con.execute("SELECT value FROM state WHERE key='core_stocks'").fetchone()[0])
@@ -460,7 +462,7 @@ def step_prices(t):
         P7[a] *= 1 + r
         if any(v <= t < v + timedelta(minutes=15) for v in VOLJ.get(a, [])): V24[a] *= 1.15     # last hour ~4.6x the average hour
         k = "stock" if a == "SIMSTK" else "crypto"
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, P7[a] * (1 + rng7.gauss(0, 0.001)), None, None, V24.get(a), None, "sim"))
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, P7[a] * (1 + rng7.gauss(0, 0.001)), None, None, V24.get(a), None, "sim", common.iso(t)))
     con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (common.iso(t), "USDGBP", rate, "sim", None, None))
     if markets.is_open("US", t):
         con.execute("INSERT OR REPLACE INTO state VALUES('market_proxy',?)", (json.dumps({"US": dict(sym="^GSPC", ts=common.iso(t), price=1, chg1h=0.1, chg_day=0.3)}),))
@@ -534,6 +536,19 @@ assert daypot.threshold(B7, 0.05, cap) == B7["conf_threshold"], "gains never low
 assert abs(daypot.conf_size(B7, 0.8, 15) - 0.8 * 0.33 * 15) < 1e-6 and daypot.conf_size(B7, 0.8, 7.5) < daypot.conf_size(B7, 0.8, 15), "size = confidence x 33% of the remaining cash"
 assert daypot.expected_value(dict(p=0.5, n=0, exp=None), 3, 1.5, 0.6) == round(0.5 * 3 - 0.5 * 1.5 - 0.6, 3), "EV model"
 assert daypot.expected_value(dict(p=0.3, n=0, exp=None), 3, 2.5, 0.6) < 0, "negative EV setup"
+import freshness as _fr
+_Bplain = dict(B7); _Bplain["confidence_weights"] = {k: v for k, v in B7["confidence_weights"].items() if k != "freshness"}
+_cf, _ = daypot.confidence(B7, 0.8, 2.0, 0.2, 0.6, 0.5, freshness=1)
+_cold, _ = daypot.confidence(_Bplain, 0.8, 2.0, 0.2, 0.6, 0.5)
+_dead, _pd = daypot.confidence(B7, 0.8, 2.0, 0.2, 0.6, 0.5, freshness=0)
+assert _cf == _cold and _dead < _cf and _pd["freshness"] == 0, "fresh quote leaves confidence unchanged; a dead quote scales it down"
+assert _fr.sentiment_factor(0, 12) == 1 and _fr.sentiment_factor(12, 12) == 0 and abs(_fr.sentiment_factor(6, 12) - 0.5) < 1e-9, "sentiment weight decays to 0 by 12h"
+assert dashboard.pnl_parts(-0.03, -0.08) == {"open": 0.05, "closed": -0.08}, "P&L parts sum to the headline in pence"
+_e_hi = riskpot.setup_ev(c["riskpot"], 0.8, 3.0, 0.6, dict(p=0.5, n=0, wins=0, exp=None))
+_e_lo = riskpot.setup_ev(c["riskpot"], 0.55, 8.0, 0.6, dict(p=0.5, n=0, wins=0, exp=None))
+assert _e_hi[0] != _e_lo[0] and _e_hi[0] > 0 and _e_lo[0] > 0, "risk EV differs by confidence and volatility, and stays positive at the threshold"
+_sp, _ = daypot.burst_spend(4.98, 0, 1.5, 5, 4); _sp5, _ = daypot.burst_spend(9.92, 0, 1.5, 5, 4); _sp0, _ = daypot.burst_spend(3.2, 0, 1.0, 5, 4)
+assert abs(_sp - 4.98) < 1e-9 and abs(_sp5 - 5) < 1e-9 and _sp0 == 0, "burst spends a £4.98 remainder, still raises a £9.92 budget to the £5 minimum, and does not spend below the floor"
 print(f"v7 thresholds seen during the day: {min(v7['thr'])}..{max(v7['thr'])} | max open bursts {v7['burst_open_max']}")
 # min-move filter: with min_move_cost_x = 20 (crypto round trip 0.6% -> 12% > every target) nothing may be bought
 import copy

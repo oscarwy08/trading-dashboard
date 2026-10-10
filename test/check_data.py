@@ -43,6 +43,18 @@ def main(D):
         if f in S: eq(S[f], sum(Z[k][f] or 0 for k in POTS), f"total {f} = sum of pots")
     if A: eq(S["equity"], sum(a["equity"] for a in A.values()), "total value = sum of accounts")
     eq(S["equity"], S["cash"] + S["invested"], "total value = cash + invested (loans between pots cancel out)")
+    def split_ok(bd, headline, what):
+        n[0] += 1
+        if not isinstance(bd, dict) or "open" not in bd or "closed" not in bd:
+            fails.append(f"{what}: missing open/closed breakdown"); return
+        if "fees" in bd: fails.append(f"{what}: fees are already inside open and closed, not a third component")
+        eq((bd.get("open") or 0) + (bd.get("closed") or 0), headline, what)
+    if S.get("pnl") is not None: split_ok(S.get("pnl_breakdown"), S["pnl"], "total P&L = open positions + closed trades")
+    if S.get("day_pnl") is not None: split_ok(S.get("day_pnl_breakdown"), S["day_pnl"], "today's P&L = open positions + closed trades")
+    for k in POTS:
+        split_ok(Z[k].get("pnl_breakdown"), Z[k]["pnl"], f"{k} P&L = open positions + closed trades")
+        for ac in ACC: split_ok(Z[k]["accts"][ac].get("pnl_breakdown"), Z[k]["accts"][ac]["pnl"], f"{k}/{ac} P&L = open positions + closed trades")
+    for ac, a in A.items(): split_ok(a.get("pnl_breakdown"), a["pnl"], f"account {ac} P&L = open positions + closed trades")
     for ac in ACC:   # v7.3 loans: what pots lent = what pots borrowed inside each account; = the outstanding loans list
         lt_, bw_ = sum(Z[k]["accts"][ac].get("lent", 0) for k in POTS), sum(Z[k]["accts"][ac].get("borrowed", 0) for k in POTS)
         eq(lt_, bw_, f"{ac} loans: lent = borrowed")
@@ -59,6 +71,7 @@ def main(D):
     d = Z.get("day")
     if d:
         if d.get("day_start"): eq(d["day_pnl"], d["equity"] - d["day_start"], "Day today's P&L = value - midnight value")
+        if d.get("day_pnl") is not None: split_ok(d.get("day_pnl_breakdown"), d["day_pnl"], "Day today's P&L = open positions + closed trades")
         L = d.get("ledger") or {}
         if not L: fails.append("sleeves.day.ledger missing")
         subs = [s for s in ("momentum", "burst") if s in (L.get("all") or {})]
@@ -120,7 +133,12 @@ def main(D):
             n[0] += 1
             if not (0 <= x["conf"] <= 1) or any(not (0 <= v <= 1) for v in (x.get("parts") or {}).values()): fails.append(f"{w} confidence/components outside 0-1")
             if Wt and x.get("parts"):
-                eq(x["conf"], sum(Wt[k] * x["parts"][k] for k in Wt) / sum(Wt.values()), f"{w} confidence = weighted components", 0.006)
+                core = {k: v for k, v in Wt.items() if k != "freshness"}
+                if core and all(k in x["parts"] for k in core):
+                    base = sum(core[k] * x["parts"][k] for k in core) / sum(core.values())
+                    wf = float(Wt.get("freshness") or 0); Wsum = sum(core.values()); fr = x["parts"].get("freshness", 1)
+                    expect = base if wf <= 0 else base * (Wsum + wf * fr) / (Wsum + wf)
+                    eq(x["conf"], expect, f"{w} confidence = components, scaled by data freshness", 0.006)
             if x.get("bought"):
                 n[0] += 1
                 if isinstance(thr, (int, float)) and x["conf"] < thr - 1e-9: fails.append(f"{w} bought below the threshold ({x['conf']} < {thr})")

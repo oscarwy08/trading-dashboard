@@ -37,7 +37,7 @@ def iso(dt=None): return (dt or now()).isoformat()
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS prices(ts TEXT, asset TEXT, klass TEXT, price REAL, high24 REAL, low24 REAL,
-  vol24 REAL, mcap REAL, source TEXT);
+  vol24 REAL, mcap REAL, source TEXT, source_ts TEXT);   -- source_ts: the provider's last-updated time (not the fetch time)
 CREATE INDEX IF NOT EXISTS ix_prices ON prices(asset, ts);
 CREATE TABLE IF NOT EXISTS sentiment(ts TEXT, asset TEXT, score REAL, volume INTEGER, confidence REAL,
   summary TEXT, sources TEXT, file TEXT, ingested_at TEXT, UNIQUE(ts, asset));
@@ -197,4 +197,6 @@ def db():
     tcols = {r[1] for r in con.execute("PRAGMA table_info(transfers)")}
     for col in ("from_account", "to_account", "kind"):                             # v6: pot x account transfers
         if col not in tcols: con.execute(f"ALTER TABLE transfers ADD COLUMN {col} TEXT")
+    pcols = {r[1] for r in con.execute("PRAGMA table_info(prices)")}
+    if "source_ts" not in pcols: con.execute("ALTER TABLE prices ADD COLUMN source_ts TEXT")  # provider last-updated time
     return con

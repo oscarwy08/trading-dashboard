@@ -27,7 +27,7 @@ collector, or gas.fallback_gbp) paid from cash on top and recorded in trades.gas
 import json, math
 from datetime import datetime, timedelta, timezone, time as dtime
 from common import ACCOUNTS, KILL, LON, RISK_RESUME, SLEEVES, acct_of, acct_start, cfg, db, funding, iso, loans_open, log, move_cash, now, sync_pot_cash, usd_gbp
-import daypot, markets, riskpot, stockrank
+import daypot, freshness, markets, quotes, riskpot, stockrank
 
 L = log("trader")
 ACCT = {"crypto": "crypto-account", "stocks": "stocks-account"}
@@ -72,14 +72,25 @@ def avg24(pts):
     xs = [p for ts, p in pts if ts >= t - timedelta(hours=24)] if pts else []
     return sum(xs) / len(xs) if xs else None
 
-def latest_prices(con, max_age_min, rate):
-    """Latest prices converted to GBP (price) with the raw USD kept as price_usd."""
-    rows = con.execute("""SELECT asset, klass, price, MAX(ts) ts FROM prices
-                          WHERE klass IN ('crypto','stock') AND source!='backfill' AND ts<=? GROUP BY asset""",
-                       (iso(now() + timedelta(seconds=1)),)).fetchall()
-    cutoff = iso(now() - timedelta(minutes=max_age_min))
-    return {r["asset"]: dict(klass=r["klass"], price=r["price"] * rate, price_usd=r["price"], fresh=r["ts"] >= cutoff,
-                             ts=r["ts"]) for r in rows}
+def latest_prices(con, max_age_min, rate, rk=None):
+    """Latest prices converted to GBP. Age is measured from the provider timestamp (source_ts), falling back to the
+    row time. tradable/fresh: offline uses max_price_age_min (45); live uses price_dead_min (180) after a missed refresh.
+    A missing price is the only hard skip. fr_price is the price half of the freshness score."""
+    rows = con.execute("""SELECT asset, klass, price, ts, source_ts FROM (
+                            SELECT asset, klass, price, ts, source_ts,
+                                   ROW_NUMBER() OVER (PARTITION BY asset ORDER BY ts DESC, rowid DESC) rn
+                            FROM prices WHERE klass IN ('crypto','stock') AND source!='backfill' AND ts<=?)
+                          WHERE rn=1""", (iso(now() + timedelta(seconds=1)),)).fetchall()
+    rk = rk or {}; fulls = rk.get("fresh_full_min") or {}
+    dead = float(max_age_min if not quotes.enabled() else rk.get("price_dead_min", 180))
+    out = {}
+    for r in rows:
+        age = freshness.age_min(r["source_ts"] or r["ts"], now())
+        full = float(fulls.get("stock" if r["klass"] == "stock" else "crypto", 5 if r["klass"] == "stock" else 10))
+        tradable = age is not None and age <= dead
+        out[r["asset"]] = dict(klass=r["klass"], price=r["price"] * rate, price_usd=r["price"], fresh=tradable, tradable=tradable,
+                               ts=r["ts"], source_ts=r["source_ts"] or r["ts"], age_min=age, fr_price=freshness.price_score(age, full, dead))
+    return out
 
 def sentiment(con, asset, max_age_h):
     return con.execute("SELECT score, confidence, ts FROM sentiment WHERE asset=? AND ts>=? AND ts<=? ORDER BY ts DESC LIMIT 1",
@@ -176,9 +187,20 @@ def main():
     for s_ in SLEEVES:
         for a_ in ACCOUNTS: con.execute("INSERT OR IGNORE INTO acct_cash VALUES(?,?,0)", (s_, a_))   # new cells get money only via TRANSFER
     if sget(con, "core_plan") is None: init_core(con, c)
-    px = latest_prices(con, rk["max_price_age_min"], rate)
+    px = latest_prices(con, rk["max_price_age_min"], rate, rk)
+    def restamp():
+        fulls = rk.get("fresh_full_min") or {}
+        dead = float(rk["max_price_age_min"] if not quotes.enabled() else rk.get("price_dead_min", 180))
+        for q in px.values():
+            age = freshness.age_min(q.get("source_ts") or q.get("ts"), now())
+            full = float(fulls.get("stock" if q["klass"] == "stock" else "crypto", 5 if q["klass"] == "stock" else 10))
+            q["age_min"] = age; q["fr_price"] = freshness.price_score(age, full, dead)
+            q["tradable"] = q["fresh"] = bool(age is not None and age <= dead)
+    def refresh(symbols):
+        if quotes.prefetch(con, c, symbols, px): restamp()
     cash = {(r[0], r[1]): r[2] for r in con.execute("SELECT sleeve, account, amount FROM acct_cash")}   # (pot, account) -> £
     pos = {(r["sleeve"], r["asset"]): dict(r) for r in con.execute("SELECT * FROM positions")}
+    refresh([a for (sl, a) in pos])          # a fresh quote before any exit fill (no-op in sim)
 
     def gas_of(klass): return gas if klass == "crypto" else 0.0     # stocks: no network fee (broker trade)
     def fsell(a):
@@ -246,11 +268,36 @@ def main():
         m, info = momentum(hist[a], st["min_history_h"])
         s = sentiment(con, a, st["sentiment_max_age_h"])
         if m is None: scores[a] = (None, None, None, info); continue
-        w = st["sentiment_weight"] * s["confidence"] if s else 0
+        fac = 1.0
+        if s:     # weight decays to 0 by sentiment_max_age_h; the score in the blend stays raw. Hard gates below use the raw score.
+            fac = freshness.sentiment_factor((t - datetime.fromisoformat(s["ts"])).total_seconds() / 3600, st["sentiment_max_age_h"])
+        w = st["sentiment_weight"] * s["confidence"] * fac if s else 0
         comb = round((1 - w) * m + w * (s["score"] if s else 0), 3)
         scores[a] = (m, s["score"] if s else None, comb,
-                     info + (f", sentiment {s['score']:+.2f} (conf {s['confidence']:.2f})" if s else ", no fresh sentiment"))
+                     info + (f", sentiment {s['score']:+.2f} (conf {s['confidence']:.2f}{'' if fac > 0.999 else f', weight x{fac:.2f}'})" if s else ", no fresh sentiment"))
 
+    def exit_ok(q):
+        """Offline/sim: same 45-minute cutoff as before. Live: any stored price can exit (a missed cycle fills at the real price)."""
+        if not q: return False
+        return True if quotes.enabled() else bool(q.get("fresh"))
+    def tag_gap(a, level, cur, reason):
+        pts = hist.get(a) or []
+        if len(pts) < 2 or not level or not reason: return reason
+        t0, p0 = pts[-2]; mins = (pts[-1][0] - t0).total_seconds() / 60.0
+        if freshness.crossed_gap(p0, cur, level, mins, abs(cur - level) / level * 100) and "[gap fill]" not in reason:
+            return reason + " [gap fill]"
+        return reason
+    def sent_in(se):
+        """Sentiment fed to a confidence score: decayed toward 0 (neutral) as it ages. None stays None. Hard gates use se['score']."""
+        if not se: return None
+        fac = freshness.sentiment_factor((t - datetime.fromisoformat(se["ts"])).total_seconds() / 3600, st["sentiment_max_age_h"])
+        return se["score"] * fac
+    def fr_of(a, q, se):
+        gaps = freshness.history_gaps(hist.get(a) or [], t)
+        sfac = None
+        if se:
+            sfac = freshness.sentiment_factor((t - datetime.fromisoformat(se["ts"])).total_seconds() / 3600, st["sentiment_max_age_h"])
+        return freshness.combine(q.get("fr_price", 1), freshness.gap_score(gaps), sfac)
     risk_only = set(sget(con, "risk_only") or []) | set(sget(con, "risk_only_stocks") or [])   # priced only for the RISK pot
     day_x = sget(con, "day_excluded") or {}    # v7.2: base coins outside the DAY universe (exchange tokens, gold/RWA tokens, memes)
     RP = c.get("riskpot") or {}
@@ -261,7 +308,7 @@ def main():
         if sl != "risk": continue
         q = px.get(a)
         if not mopen(a): sig("risk", a, None, None, None, "HOLD", f"{closed_msg(a)} - exits checked when it opens"); continue
-        if not q or not q["fresh"]: sig("risk", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
+        if not exit_ok(q): sig("risk", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
         f = fsell(a)
         pk = peaks[a] = max(float(peaks.get(a) or 0), q["price"])
         chg = q["price"] * (1 - f) / p["entry"] - 1; pk_gain = pk * (1 - f) / p["entry"] - 1
@@ -275,6 +322,10 @@ def main():
                   f"sentiment exit {se['score']:+.2f} (conf {se['confidence']:.2f})"
                   if se and se["score"] <= RP["sentiment_exit"] and se["confidence"] >= 0.6 else None)
         if reason:
+            if "stop-loss" in reason:
+                reason = tag_gap(a, p["entry"] * (1 - RP["stop_loss_pct"] / 100) / (1 - f), q["price"], reason)
+            elif "trailing" in reason:
+                reason = tag_gap(a, pk * (1 - RP["trail_pct"] / 100), q["price"], reason)
             pnl = sell("risk", a, p["qty"], reason); peaks.pop(a, None)
             sset(con, f"risk_exit:{a}", ts); sig("risk", a, None, None, None, "SELL", f"{reason}; P&L £{pnl:+.2f}")
         else:
@@ -310,7 +361,7 @@ def main():
             why = (f"flatten {D['flatten_uk']} UK (flat overnight)" if mins >= flat else
                    f"flatten: overnight/before {D['entry_start_uk']} UK" if mins < e0 else "flatten: carried from previous UK day")
             day_exit(a, p, why + ("" if q["fresh"] else " [last price, stale]"), m, s, comb); continue
-        if not q or not q["fresh"]: sig("day", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
+        if not exit_ok(q): sig("day", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
         md = dmeta.get(a)
         if not md:     # pre-v7 position: becomes a momentum trade with ATR levels computed now
             at_ = atr_of(a); tp_, sl_ = daypot.levels(DM["take_profit"], DM["stop"], at_)
@@ -337,7 +388,14 @@ def main():
             reason = f"max hold {C['max_hold_h']}h reached ({held_h:.1f}h), {chg*100:+.1f}%"
         elif md["sub"] == "momentum" and comb is not None and comb <= st["sell_threshold"]:
             reason = f"signal {comb} <= {st['sell_threshold']} ({info})"
-        if reason: day_exit(a, p, reason, m, s, comb)
+        if reason:
+            if reason.startswith("stop-loss"):
+                reason = tag_gap(a, p["entry"] * (1 - md["sl"] / 100) / (1 - f_), q["price"], reason)
+            elif reason.startswith("trailing"):
+                # trail sells when the gain has given back `gb` of the peak gain, not `gb` of the price
+                lvl_px = p["entry"] * (1 + pkg * (1 - gb)) / (1 - f_)
+                reason = tag_gap(a, lvl_px, q["price"], reason)
+            day_exit(a, p, reason, m, s, comb)
         else:
             sig("day", a, m, s, comb, "HOLD", f"[{md['sub']}] open {chg*100:+.1f}% (target +{md['tp']:.1f}% / stop -{md['sl']:.1f}%"
                 + (f", trailing at {lvl*100:+.1f}%" if trail_on else "") + f"); {info}")
@@ -460,7 +518,7 @@ def main():
         if pl["day_n"] >= int(K["max_tranches_per_day"]): continue
         if not q: why = "no price"
         elif not mopen(a): why = closed_msg(a)
-        elif not q["fresh"]: why = "stale price"
+        elif not q["fresh"]: why = "no current price"
         elif fx_stale: why = "stale FX rate"
         s = sentiment(con, a, st["sentiment_max_age_h"])
         if not why and s and s["score"] <= K["sentiment_delay_score"] and s["confidence"] >= K["sentiment_delay_conf"]:
@@ -562,7 +620,7 @@ def main():
                 f"outside entry window {D['entry_start_uk']}-{D['entry_cutoff_uk']} UK" if not window else
                 closed_msg(a) if not mopen(a) else
                 f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= scl else
-                "stale price" if not q["fresh"] else "stale FX rate" if fx_stale else None)
+                "no current price" if not q["fresh"] else "stale FX rate" if fx_stale else None)
     warm_h = float(c["crypto"].get("warmup_h", st["min_history_h"]))
     def warming(a):          # v7.2: wide-universe coins build history from the 15-min snapshots -> no DAY entries until warm
         if klass_of(a) != "crypto": return None    # stocks: intraday history restarts every session (not a universe coin)
@@ -574,6 +632,7 @@ def main():
 
     # ---- momentum: original score entries, ATR-scaled levels ----
     nmom = sum(1 for (sl, x) in pos if sl == "day" and sub_of(x) == "momentum")
+    refresh([a for a, (m, s, comb, info) in scores.items() if comb is not None and comb >= thr_of(a) and ("day", a) not in pos])
     for a, (m, s, comb, info) in sorted(scores.items(), key=lambda kv: -(kv[1][2] or -9)):
         if ("day", a) in pos or a in risk_only or a in day_x: continue
         q = px[a]; thr = thr_of(a); ac = acc(a)
@@ -601,11 +660,12 @@ def main():
         if not brk["kind"] and "broken" not in (brk.get("info") or ""): continue      # only actual / near breakouts are listed
         ac = acct_of(q["klass"]); d = dict(a=a, acct=ac, brk=brk.get("kind"), info=brk.get("info"))
         vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
-        r_ = daypot.rsi_h(pts); se = sentiment(con, a, st["sentiment_max_age_h"])
+        r_ = daypot.rsi_h(pts);         se = sentiment(con, a, st["sentiment_max_age_h"])
         mok, reg, minfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
         at_ = atr_of(a); tp_, sl_ = daypot.levels(DB["take_profit"], DB["stop"], at_)
         ss = sstats.get(brk["kind"]) or dict(p=0.5, n=0, exp=None)
-        conf, parts = daypot.confidence(DB, brk["strength"], vol, se["score"] if se else None, reg, ss["p"])
+        fr = fr_of(a, q, se)
+        conf, parts = daypot.confidence(DB, brk["strength"], vol, sent_in(se), reg, ss["p"], freshness=fr)
         size0 = max(daypot.conf_size(DB, conf, free("burst", acct_of(q["klass"]))), mint)
         rtc = rt_cost(a, size0); ev = daypot.expected_value(ss, tp_, sl_, rtc, int(DB.get("ev_prior_n", 10)))
         d.update(kind=brk.get("kind"), ev=ev, rt_cost=round(rtc, 3), hit=round(ss["p"], 3), hit_n=ss["n"], vol=round(vol, 2) if vol is not None else None, rsi=round(r_) if r_ is not None else None, sent=se["score"] if se else None,
@@ -620,14 +680,19 @@ def main():
                       f"RSI {r_:.0f} >= {DB['rsi_max']} (overbought)" if r_ is not None and r_ >= float(DB["rsi_max"]) else
                       f"sentiment {se['score']:+.2f} < {DB['sentiment_min']}" if se and se["score"] < float(DB["sentiment_min"]) else
                       f"market falling ({minfo})" if not mok else None)
+        if d["block"] and fr < 0.999 and "freshness" not in (d["block"] or ""):
+            age = q.get("age_min")
+            d["block"] += f"; data freshness {fr:.0%}" + (f" (price {age:.0f} min)" if age is not None else "")
         cands.append(d)
     nb = {ac: sum(1 for (sl, x), p in pos.items() if sl == "day" and sub_of(x) == "burst" and acct_of(p["klass"]) == ac) for ac in ACCOUNTS}
+    refresh([d["a"] for d in cands if not d["block"]])   # quote the breakouts we might actually buy
     for d in sorted(cands, key=lambda d: (d["block"] is not None, -d["conf"])):
         if d["block"]: continue
         a, ac = d["a"], d["acct"]; q = px[a]
+        floor = float(DB.get("cash_floor_gbp", 4))
         raw = daypot.conf_size(DB, d["conf"], free("burst", ac))
-        avail = free("burst", ac) - gas_of(q["klass"]); value = min(max(raw, mint), avail)
-        if (value < mint and d["conf"] >= max(thr_b, float(LN.get("burst_min_conf", 0.75))) and d["ev"] > max(evmin, 0.0) and not gate(a)
+        value, avail = daypot.burst_spend(free("burst", ac), gas_of(q["klass"]), raw, mint, floor)
+        if (value < floor - 1e-9 and d["conf"] >= max(thr_b, float(LN.get("burst_min_conf", 0.75))) and d["ev"] > max(evmin, 0.0) and not gate(a)
                 and nb[ac] < int(DB["max_open_per_account"])):
             # v7.3: exceptional burst setup short of cash -> borrow the shortfall for ONE position: confidence-sized on the burst
             # budget (its equity), at least the min trade, at most max_position_pct of that budget
@@ -640,7 +705,7 @@ def main():
                (f"confidence {d['conf']:.2f} < threshold {thr_b:.2f}" if d["conf"] < thr_b else None) or
                (f"expected value {d['ev']:+.2f}% after costs <= {evmin:g}%" if d["ev"] <= evmin else None) or
                (f"max {DB['max_open_per_account']} open burst positions in the {ac} account" if nb[ac] >= int(DB["max_open_per_account"]) else None) or
-               (f"burst budget: £{avail:.2f} free < min trade £{mint:.0f}" if value < mint else None) or
+               (f"burst budget: £{max(avail, 0):.2f} free < £{floor:.0f} floor (min trade £{mint:.0f})" if value < floor - 1e-9 else None) or
                (f"target {d['tp']:.1f}% < {mcx:.0f} x round-trip costs {rt_cost(a, value):.2f}%" if d["tp"] < mcx * rt_cost(a, value) else None))
         if why: d["block"] = why; continue
         open_day(a, "burst", value, d["tp"], d["sl"], d["atr"],
@@ -679,7 +744,6 @@ def main():
     # threshold rises from conf_threshold (0.55) to conf_threshold_at_stop (0.85) as the drawdown approaches the 30% stop.
     # Size = confidence x conf_size_pct% of the account's remaining RISK cash (min £5, max £8 / 20% of the pot).
     rss = riskpot.setup_stats(con, RP, t); thr_r = riskpot.threshold(RP, dd); evmin_r = float(RP.get("ev_min_pct", 0.0))
-    ev_win, ev_loss = float(RP.get("ev_win_pct", 12)), float(RP.get("ev_loss_pct", 8))
     raw_c = []
     rs = sget(con, "risk_screen") or {}
     for d in rs.get("top") or []:
@@ -695,9 +759,10 @@ def main():
         se = sentiment(con, a, st["sentiment_max_age_h"])
         vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
         mok, reg, mkinfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
-        conf, parts = riskpot.confidence(RP, bscore, vol, se["score"] if se else None, reg, rss["p"])
+        at_ = atr_of(a); fr = fr_of(a, q, se)
+        conf, parts = riskpot.confidence(RP, bscore, vol, sent_in(se), reg, rss["p"], freshness=fr)
         size0, cap0 = riskpot.size(RP, conf, cash_for("risk", a) - gas_of(q["klass"]), req, mint)
-        rtc = rt_cost(a, size0); ev = daypot.expected_value(rss, ev_win, ev_loss, rtc, int(RP.get("ev_prior_n", 10)))
+        rtc = rt_cost(a, size0); ev, ev_w, ev_l, ev_p = riskpot.setup_ev(RP, conf, at_, rtc, rss)
         last_exit = sget(con, f"risk_exit:{a}")
         hard = ("not a breakout (" + why.split("| no: ")[-1] + ")" if not ok else
                 f"trend: {minfo}" if m is None else
@@ -706,11 +771,15 @@ def main():
                 "drawdown cap: entries halted until review" if halt else
                 closed_msg(a) if not mopen(a) else
                 f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= 15 else
-                "stale price" if not q["fresh"] else "stale FX rate" if fx_stale else
+                "no current price" if not q["fresh"] else "stale FX rate" if fx_stale else
                 f"cooldown after exit {last_exit[:16]}" if last_exit and datetime.fromisoformat(last_exit) > t - timedelta(hours=RP["cooldown_h"]) else None)
+        if hard and fr < 0.999 and "freshness" not in hard:
+            age = q.get("age_min"); hard += f"; data freshness {fr:.0%}" + (f" (price {age:.0f} min)" if age is not None else "")
         rstat.append(dict(a=a, kind=kind, acct=acc(a), score=bscore, mom=m, ok=ok, why=why, conf=conf, parts=parts, ev=ev, rt_cost=round(rtc, 3),
+                          ev_win=ev_w, ev_loss=ev_l, ev_p=ev_p, atr=round(at_, 2) if at_ else None,
                           hit=round(rss["p"], 3), hit_n=rss["n"], vol=round(vol, 2) if vol is not None else None, sent=se["score"] if se else None,
                           market=mkinfo, size=round(size0, 2), cap=cap0, block=hard, minfo=minfo))
+    refresh([d["a"] for d in rstat if not d["block"]])
     for d in sorted(rstat, key=lambda d: (d["block"] is not None, -d["conf"])):
         a = d["a"]; q = px[a]; m = d["mom"]
         if not d["block"]:

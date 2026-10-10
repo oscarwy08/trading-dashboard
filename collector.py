@@ -4,6 +4,7 @@ All asset prices are stored in raw USD; the FX rate is stored in table fx and ap
 import json, time, requests
 from datetime import datetime, timedelta, timezone
 from common import cfg, db, iso, log
+import freshness
 
 L = log("collector")
 S = requests.Session(); S.headers["User-Agent"] = "Mozilla/5.0 (paper-trader)"
@@ -214,9 +215,9 @@ def crypto(con, c, ts, status):
         if sym in stock_syms: continue                # a coin with the same symbol as a stock ticker (e.g. ONDO.L / B / PL) - skip
         if sym in seen: continue                  # symbol clash between two coins: keep the first (base/higher ranked)
         seen.add(sym)
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (ts, sym, "crypto",
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts, sym, "crypto",
                     x["current_price"], x.get("high_24h"), x.get("low_24h"), x.get("total_volume"),
-                    x.get("market_cap"), "coingecko"))
+                    x.get("market_cap"), "coingecko", freshness.to_iso(x.get("last_updated")) or ts))
         con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"cgid:{sym}", x["id"]))
     status["coingecko"] = (f"ok ({len(seen)} coins priced, top {len(top)} screened, DAY universe +{len(uni)}, {len(risk_syms)} risk-only)" if rows else "FAILED")
     return rows
@@ -228,8 +229,8 @@ def kyber(con, c, ts, status):
             headers={"x-client-id": "paper-trader"})
     try:
         price = int(d["data"]["routeSummary"]["amountOut"]) / 1e6 / k["amount_mon"]
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)",
-                    (ts, "MON.DEX", "dex", price, None, None, None, None, "kyberswap"))
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (ts, "MON.DEX", "dex", price, None, None, None, None, "kyberswap", ts))
         status["kyberswap"] = f"ok (MON={price:.5f} USDC)"
     except Exception as e:
         L.error("kyberswap parse failed: %s %s", e, str(d)[:200]); status["kyberswap"] = "FAILED"
@@ -380,7 +381,9 @@ def stocks(con, c, ts, status):
         f = usd_factor(con, meta.get("currency"))
         if not f: L.warning("stock %s: unknown currency %s", sym, meta.get("currency")); continue
         stock_meta(con, sym, meta)
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (ts, sym, "stock", price * f, None, None, None, None, "yahoo"))
+        rmt = meta.get("regularMarketTime")
+        src_ts = datetime.fromtimestamp(rmt, timezone.utc).replace(microsecond=0).isoformat() if rmt else ts
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts, sym, "stock", price * f, None, None, None, None, "yahoo", src_ts))
         ok += 1
     st_set(con, "stock_vol", {k: v for k, v in svol.items() if v["ts"] >= (now_ - timedelta(days=2)).isoformat()})
     status["stocks"] = f"{ok}/{len(todo)} quotes ok (Yahoo), {len(syms) - len(todo)} skipped (market closed, closing price stored)"
@@ -461,8 +464,8 @@ def backfill(con, c, crypto_rows, cg_limit=3):
             for t, p in pts:
                 tsx = datetime.fromtimestamp(t, timezone.utc).replace(microsecond=0).isoformat()
                 if first and tsx >= first: continue
-                con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)",
-                            (tsx, asset, klass, p, None, None, None, None, "backfill"))
+                con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)",
+                            (tsx, asset, klass, p, None, None, None, None, "backfill", tsx))
             con.execute("INSERT INTO state VALUES(?,?)", (f"bf:{asset}", iso()))
             done += 1
         except Exception as e:

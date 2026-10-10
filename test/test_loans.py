@@ -37,7 +37,7 @@ def setup(score, risk_cash, core_cash=None, day_cash=None, cap_pct=20):
     con.execute("DELETE FROM prices WHERE asset='TESTX'")
     for i in range(97):          # 24h of 15-min snapshots, +0.1% per step (breakout, momentum > 0), last one fresh
         ts = (t - timedelta(minutes=15 * (96 - i))).isoformat()
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (ts, "TESTX", "crypto", 1.0 * 1.001 ** i, None, None, 5e7, 3e8, "coingecko"))
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts, "TESTX", "crypto", 1.0 * 1.001 ** i, None, None, 5e7, 3e8, "coingecko", ts))
     con.execute("INSERT OR REPLACE INTO state VALUES('risk_screen',?)", (json.dumps(dict(ts=t.isoformat(), top=[dict(a="TESTX", id="testx", score=score, ok=True, why="synthetic breakout")])),))
     con.execute("INSERT OR REPLACE INTO state VALUES('risk_only',?)", (json.dumps(["TESTX"]),))
     con.execute("INSERT OR REPLACE INTO state VALUES('riskpot_base',?)", (json.dumps(None),))
@@ -78,7 +78,7 @@ check("[loan] risk borrows" in out, "loan logged in the cycle output")
 
 print("2. position closes -> principal repaid first, P&L stays with RISK")
 con = common.db(); common._NOW += timedelta(minutes=15)
-con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", (common._NOW.isoformat(), "TESTX", "crypto", 0.7, None, None, 5e7, 3e8, "coingecko")); con.commit(); con.close()
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common._NOW.isoformat(), "TESTX", "crypto", 0.7, None, None, 5e7, 3e8, "coingecko", common._NOW.isoformat())); con.commit(); con.close()
 c1, _, _, _ = snap(); out = run(); cash2, loans2, pos2, ln2 = snap()
 check(("risk", "TESTX") not in pos2, "TESTX sold (stop-loss)")
 check(loans2 and loans2[0]["status"] == "repaid" and abs(loans2[0]["repaid"] - loans2[0]["amount"]) < 1e-6, f"loan repaid in full: {loans2}")
@@ -119,7 +119,8 @@ def burst_case(conf, ev):
     con.execute("DELETE FROM prices WHERE asset='TESTB'"); con.execute("DELETE FROM loans"); con.execute("DELETE FROM positions WHERE asset='TESTB'")
     con.execute("DELETE FROM state WHERE key LIKE 'day_exit:%' OR key LIKE 'day_halt:%'")
     for i in range(97):
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?)", ((t - timedelta(minutes=15 * (96 - i))).isoformat(), "TESTB", "crypto", 2.0 * (1.0005 ** i), None, None, 5e7, 4e8, "coingecko"))
+        _ts = (t - timedelta(minutes=15 * (96 - i))).isoformat()
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (_ts, "TESTB", "crypto", 2.0 * (1.0005 ** i), None, None, 5e7, 4e8, "coingecko", _ts))
     con.commit(); con.close()
     daypot.breakout = lambda con_, a_, pts, DB: dict(kind="24h", strength=0.9, info="synthetic 24h-high break") if a_ == "TESTB" else _orig["breakout"](con_, a_, pts, DB)
     daypot.crypto_vol_ratio = lambda con_, a_, t_: 3.0 if a_ == "TESTB" else _orig["crypto_vol_ratio"](con_, a_, t_)

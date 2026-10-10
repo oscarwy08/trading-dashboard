@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from common import (loans_open, ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
                     transfer_adj, transfer_adj_acct, usd_gbp)
-import daypot, markets, stockrank, trader
+import daypot, freshness, markets, stockrank, trader
 
 def plain(a):   # v5: xStock name -> normal ticker (AMDx -> AMD); historical orders keep the xStock name, alias links them
     m = re.match(r"^([A-Z][A-Z0-9.]*)x$", a or ""); return m.group(1) if m else a
@@ -150,6 +150,12 @@ def sig(x, n=6):  # round to n significant digits (keeps JSON small)
 
 def r2(x): return None if x is None else round(x, 2)
 
+def pnl_parts(headline, closed):
+    """Split a headline P&L into open positions and closed trades so the two sum to the headline exactly (integer pence).
+    Fees are already inside both numbers; they are not a third component."""
+    h = int(round(float(headline or 0) * 100)); c = int(round(float(closed or 0) * 100))
+    return {"open": round((h - c) / 100.0, 2), "closed": round(c / 100.0, 2)}
+
 def build(con):
     c = cfg(); st, rk, K, DY = c["strategy"], c["risk"], c["core"], c["day"]
     base = acct_start(con, c); sc = {s_: sum(base[s_].values()) for s_ in SLEEVES}
@@ -180,8 +186,10 @@ def build(con):
                   core=[p[4] for p in pts], day=[p[5] for p in pts], risk=[p[6] for p in pts], crypto=[p[7] for p in pts], stocks=[p[8] for p in pts])
 
     # ---- latest prices / 24h change ----
-    latest = con.execute("""SELECT asset, klass, price, source, MAX(ts) ts FROM prices
-                            WHERE source!='backfill' GROUP BY asset""").fetchall()
+    latest = con.execute("""SELECT asset, klass, price, source, ts, source_ts FROM (
+                              SELECT asset, klass, price, source, ts, source_ts,
+                                     ROW_NUMBER() OVER (PARTITION BY asset ORDER BY ts DESC, rowid DESC) rn
+                              FROM prices WHERE source!='backfill') WHERE rn=1""").fetchall()
     lp = {r["asset"]: r for r in latest}
     mon = {a: lp[a]["price"] for a in ("MON", "MON.DEX") if a in lp}
 
@@ -383,8 +391,10 @@ def build(con):
         if r["klass"] not in ("crypto", "stock"): continue
         s = last_sig.get(a); se = sent_latest.get(a); usd = r["price"]
         spark_pts = [sig(b[4], 5) for b in prices.get(a, [])[-48:]]
+        age = freshness.age_min(r["source_ts"] or r["ts"], t_now)
+        src_ep = ep(freshness.to_iso(r["source_ts"]) or r["ts"]) if (r["source_ts"] or r["ts"]) else None
         assets.append(dict(a=a, k=r["klass"], acct=acct_of(r["klass"]), focus=a in focus, usd=sig(usd), gbp=sig(usd * rate) if rate else None,
-                           chg=chg24(a), src=r["source"], t=ep(r["ts"]),
+                           chg=chg24(a), src=r["source"], t=ep(r["ts"]), src_t=src_ep, age_min=round(age, 1) if age is not None else None,
                            score=s["combined"] if s else None, mom=s["momentum"] if s else None,
                            sent_used=s["sentiment"] if s else None, action=s["action"] if s else None,
                            reason=s["reason"] if s else None,
@@ -442,6 +452,21 @@ def build(con):
                            invested=tot("invested"), fees=tot("fees"), lent=tot("lent"), borrowed=tot("borrowed"))
         sleeves[sl]["accts"] = cells
     cur_eq = R2(sum(sleeves[s_]["equity"] for s_ in SLEEVES)); tstart_ = R2(sum(sleeves[s_]["start"] for s_ in SLEEVES))
+    
+    # P&L breakdown: closed = realised P&L (already net of fees), open = headline minus closed, in integer pence
+    # so the two lines under a card add up to that card exactly. Fees are not a third added component.
+    for sl in SLEEVES:
+        sleeves[sl]["pnl_breakdown"] = pnl_parts(sleeves[sl]["pnl"], sleeves[sl]["realized"])
+        for ac in ACCOUNTS:
+            cell = sleeves[sl]["accts"][ac]
+            cell["pnl_breakdown"] = pnl_parts(cell["pnl"], cell["realized"])
+    midnight = datetime.combine(lt.date(), datetime.min.time(), LON).astimezone(timezone.utc).isoformat()
+    def realized_since(sleeve=None):
+        q = "SELECT COALESCE(SUM(pnl),0) FROM trades WHERE side='SELL' AND ts>=?"
+        args = [midnight]
+        if sleeve: q += " AND sleeve=?"; args.append(sleeve)
+        return con.execute(q, args).fetchone()[0]
+    
     ceq = sleeves["core"]["equity"] or 0
     caeq = {ac: sleeves["core"]["accts"][ac]["equity"] or 0 for ac in ACCOUNTS}
     cpos = {p["asset"]: p for p in positions if p["sleeve"] == "core"}
@@ -468,7 +493,9 @@ def build(con):
                    rebalance=f"{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][int(K['rebalance_weekday'])]} {K['rebalance_time_uk']} UK"))
     ds = risk.get("day_sleeve") or {}
     dst_ = r2(ds.get("start")); deq_ = sleeves["day"]["equity"]
-    sleeves["day"].update(day_start=dst_, day_pnl=R2(deq_ - dst_) if dst_ else None,
+    day_pnl_ = R2(deq_ - dst_) if dst_ else None
+    sleeves["day"].update(day_start=dst_, day_pnl=day_pnl_,
+                          day_pnl_breakdown=None if day_pnl_ is None else pnl_parts(day_pnl_, realized_since("day")),
                           day_pnl_pct=round((deq_ / dst_ - 1) * 100, 3) if dst_ else None, ledger=day_ledger(con, c, positions, acash, base), halted=bool(ds.get("halted")), entries_open=bool(ds.get("entries_open")),
                           flat_now=bool(ds.get("flat_now")),
                           rules=dict(start=DY["entry_start_uk"], cutoff=DY["entry_cutoff_uk"], flatten=DY["flatten_uk"], cap=DY["daily_loss_cap_pct"],
@@ -512,6 +539,7 @@ def build(con):
                             realized=sm("realized"), unrealized=sm("unrealized"), closed=xs["closed"], trades=xs["trades"],
                             win_rate=round(xs["win_rate"] * 100, 1) if xs["win_rate"] is not None else None, max_dd=round(xs["max_dd"] * 100, 3),
                             fees={k: sig(v, 4) for k, v in ff.items() if v}, fees_total=sm("fees"),
+                            pnl_breakdown=pnl_parts(sm("pnl"), sm("realized")),
                             pots={s_: sleeves[s_]["accts"][ac] for s_ in SLEEVES})
     asplit = json.loads((con.execute("SELECT value FROM state WHERE key='account_split'").fetchone() or ["null"])[0])
     if asplit:
@@ -524,8 +552,16 @@ def build(con):
     gas = dict(gbp=sig(gd.get("gbp"), 3), gwei=gd.get("gwei"), mon=sig(gd.get("mon"), 4), units=gd.get("units", G.get("gas_per_swap")),
                t=ep(gd["ts"]) if gd.get("ts") else None, src=gd.get("src"), fallback=G.get("fallback_gbp"),
                paid=sig(gas_tot[0], 4), fees=r2(gas_tot[1]), n=gas_tot[2])
+    live_px = [a for a in assets if a.get("age_min") is not None and not a.get("chg_d")]
+    full_of = lambda a: float((rk.get("fresh_full_min") or {}).get("stock" if a.get("k") == "stock" else "crypto", 5 if a.get("k") == "stock" else 10))
+    dead_m = float(rk.get("price_dead_min", 180))
+    fresh_status = dict(score=round(sum(freshness.price_score(a["age_min"], full_of(a), dead_m) for a in live_px) / len(live_px), 3) if live_px else None,
+                        n=len(live_px), stale=sum(1 for a in live_px if a["age_min"] > full_of(a)),
+                        oldest_min=round(max((a["age_min"] for a in live_px), default=0), 1) if live_px else None,
+                        full_min=rk.get("fresh_full_min") or {"crypto": 10, "stock": 5})
     return dict(
         v=6, gas=gas, generated=n_ep, updated=updated, currency="GBP", start=start, accounts=accounts, account_split=asplit,
+        freshness=fresh_status,
         sleeves=sleeves, focus=focus, transfers=transfers, markets=markets.status(t_now),
         themes=[dict(key=k, label=v.get("label", k), watch=bool(v.get("watch")), n=len(v.get("tickers", []))) for k, v in (c["stocks"].get("universe") or {}).items()]
                + [dict(key=k, label=l, watch=True, n=sum(1 for x in (CC.get("watch_ids") or {}).values() if x == k)) for k, l in cth.items()]
@@ -551,7 +587,9 @@ def build(con):
                    unrealized=R2(sum(sleeves[s_]["unrealized"] for s_ in SLEEVES)),
                    cash=R2(sum(sleeves[s_]["cash"] for s_ in SLEEVES)), invested=R2(sum(sleeves[s_]["invested"] for s_ in SLEEVES)),
                    pnl=R2(cur_eq - tstart_), day_start=r2(day_start),
-                   day_pnl=R2(cur_eq - r2(day_start)) if day_start else None, day_pnl_pct=round((cur_eq / r2(day_start) - 1) * 100, 3) if day_start else None),
+                   day_pnl=R2(cur_eq - r2(day_start)) if day_start else None, day_pnl_pct=round((cur_eq / r2(day_start) - 1) * 100, 3) if day_start else None,
+                   pnl_breakdown=pnl_parts(R2(cur_eq - tstart_), R2(sum(sleeves[s_]["realized"] for s_ in SLEEVES))),
+                   day_pnl_breakdown=None if not day_start else pnl_parts(R2(cur_eq - r2(day_start)), realized_since())),
         risk=dict(halted=bool(risk.get("halted")), day=risk.get("day"), day_start=day_start, kill=KILL.exists(),
                   fx_stale=bool(fx[3]) if fx else True, open_n=len(positions), last_halt=dict(t=ep(halt["ts"]), reason=halt["reason"]) if halt else None,
                   limits=dict(max_open=DY["momentum"]["max_open"], burst_max_open=DY["burst"]["max_open_per_account"],
