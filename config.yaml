@@ -29,7 +29,8 @@ crypto:
     min_vol_usd: 5000000        # 24h volume >= $5M
     min_vol_mcap: 0.02          # 24h volume >= 2% of market cap (real liquidity)
     max_coins: 150              # safety cap (DB / data.json size), market-cap order
-    exclude_symbols: []         # extra exclusions on top of crypto.exclude_symbols + riskpot.crypto exclusions (stables, wrapped/
+    exclude_symbols: [PAXG, XAUT]   # gold-backed tokens: CORE candidates only (core.crypto_universe), never DAY
+                                #   extra exclusions on top of crypto.exclude_symbols + riskpot.crypto exclusions (stables, wrapped/
                                 #   staked/bridged, exchange tokens BNB/OKB/LEO/CRO/...; name words usd/wrapped/staked/bridged/...)
     meme_category: meme-token   # CoinGecko category -> memecoin exclusion set (ONE call per day, state meme_ids)
     meme_refresh_h: 24
@@ -101,6 +102,10 @@ core:                           # CORE pot: long holds, staggered entry, weekly 
   # matching account's slice of the Core pot - crypto targets live inside the Crypto account, stock picks inside the Stocks
   # account, so a crypto rally never forces a stock trade with crypto money (and vice versa).
   targets_pct: {MON: 26, XRP: 26, WLD: 20, BTC: 16, ETH: 12}   # % of the CORE crypto money (MON/WLD/XRP emphasis = 72%)
+  # Crypto-account candidates. Not in targets_pct: the weekly rebalance ranks them with the same score as the stocks
+  # (momentum / trend quality / sentiment) and buys one only if it qualifies. No fixed share. Kept out of the Day universe.
+  crypto_universe:
+    rwa: {label: "Real-world assets (tokenised)", watch: true, tickers: [PAXG, XAUT], ids: {PAXG: pax-gold, XAUT: tether-gold}}
   stocks_pct: 100               # % of the CORE stocks money for the picks, split equally across them
   stock_picks_min: 1            # picks = stock budget / min_pick_gbp, clamped to min..max (~£50 -> 6 picks of ~£8.33)
   stock_picks_max: 8

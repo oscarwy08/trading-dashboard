@@ -346,10 +346,14 @@ def build(con):
     rblog = json.loads((con.execute("SELECT value FROM state WHERE key='core_rebalance_log'").fetchone() or ["null"])[0])
     last_rb = (con.execute("SELECT value FROM state WHERE key='core_last_rebalance'").fetchone() or [None])[0]
     picks = cst.get("picks", [])
-    core_tg = trader.core_targets(c, picks)                      # {asset: (account, weight within that account's Core money)}
+    ccy = json.loads((con.execute("SELECT value FROM state WHERE key='core_crypto'").fetchone() or ["{}"])[0]) or {}
+    crypto_picks = ccy.get("picks") or []
+    core_tg = trader.core_targets(c, picks, crypto_picks)        # {asset: (account, weight within that account's Core money)}
     core_t = {a: w * 100 for a, (ac, w) in core_tg.items()}
     try: ranked = stockrank.rank(con, c)
     except Exception: ranked = {}
+    try: cranked = stockrank.rank_crypto(con, c)
+    except Exception: cranked = {}
     th = stockrank.themes(c); watch = stockrank.watch_themes(c); rset = set(stockrank.risk_stocks(c))
     smeta = json.loads((con.execute("SELECT value FROM state WHERE key='stock_meta'").fetchone() or ["{}"])[0]) or {}
     CC = c["crypto"]; cth = CC.get("watch_themes") or {}
@@ -480,13 +484,15 @@ def build(con):
         stock_pct=float(K["stocks_pct"]), n_slots=stockrank.n_picks(c, caeq["stocks"]), min_pick=float(K.get("min_pick_gbp", 8)),
         split=stockrank.core_split(c), extra_pos=[p["asset"] for p in positions if p["sleeve"] == "core" and p["asset"] not in core_tg],
         max_per_theme=int(K.get("max_per_theme", 2)), weights=K.get("score_weights"),
-        ranking=[dict(a=a, **{k: v for k, v in r.items() if k not in ("close", "n")}, pick=a in picks)
-                 for a, r in sorted(ranked.items(), key=lambda kv: (not kv[1]["eligible"], -kv[1]["score"]))],
-        universe=[dict(key=k, label=v.get("label", k), tickers=v.get("tickers", []), watch=bool(v.get("watch"))) for k, v in (c["stocks"].get("universe") or {}).items()],
+        ranking=[dict(a=a, **{k: v for k, v in r.items() if k not in ("close", "n")}, pick=a in picks or a in crypto_picks)
+                 for a, r in sorted(list(ranked.items()) + list(cranked.items()), key=lambda kv: (not kv[1]["eligible"], -kv[1]["score"]))],
+        universe=[dict(key=k, label=v.get("label", k), tickers=v.get("tickers", []), watch=bool(v.get("watch"))) for k, v in (c["stocks"].get("universe") or {}).items()]
+                 + [dict(key=k, label=v.get("label", k), tickers=v.get("tickers", []), watch=bool(v.get("watch")), acct="crypto") for k, v in (K.get("crypto_universe") or {}).items()],
+        crypto_picks=crypto_picks, crypto_source=ccy.get("source"),
         queue=json.loads((con.execute("SELECT value FROM state WHERE key='order_queue'").fetchone() or ["[]"])[0]) or [],
         would_pick=stockrank.select(c, ranked, stockrank.n_picks(c, caeq["stocks"])) if ranked else [],
         plans=stockrank.plans(c, ranked, caeq, {a: p["value"] or 0 for a, p in cpos.items()},
-                              {ac: acash.get(("core", ac), 0.0) for ac in ACCOUNTS}) if ranked else [],
+                              {ac: acash.get(("core", ac), 0.0) for ac in ACCOUNTS}, crypto_picks) if ranked else [],
         last_rebalance=ep(last_rb.strip('"')) if last_rb else None, next_rebalance=int(rb_at.timestamp()), rebalance_log=rblog,
         rules=dict(tranches=K["tranches"], per_day=K["max_tranches_per_day"], dip=K["dip_vs_avg24_pct"], fallback_h=K["fallback_hour_uk"],
                    band=K["drift_band_pp"], stop=K["stop_loss_pct"], sent_delay=K["sentiment_delay_score"],

@@ -321,9 +321,11 @@ function renderCore() {
   const T = T0.filter(t => !S.acct || t.acct === S.acct);
   const crypto = T0.filter(t => t.acct === 'crypto'), stocks = T0.filter(t => t.acct === 'stocks'), sp = c0.split || {crypto: .5, stocks: .5};
   $('#core-intro').innerHTML = `Long-term pot that started with <b>${fM0(c0.start)}</b>, split <b>${Math.round((sp.crypto || 0) * 100)}/${Math.round((sp.stocks || 0) * 100)}</b> between the two accounts. ` +
-    `<b>Crypto account</b> (Monad wallet, Core money now ${fM((CA.crypto || {}).equity)}): ${crypto.map(t => `${esc(t.a)} ${t.target.toFixed(0)}%`).join(', ')} of it. ` +
+    `<b>Crypto account</b> (Monad wallet, Core money now ${fM((CA.crypto || {}).equity)}): ${crypto.map(t => `${esc(t.a)} ${t.target.toFixed(0)}%`).join(', ')} of it.` +
+    (() => { const cu = (c0.universe || []).filter(u => u.acct === 'crypto'), names = cu.flatMap(u => u.tickers || []);
+      return names.length ? ` ${names.map(esc).join(', ')} (${[...new Set(cu.map(u => u.label))].map(esc).join(', ')}) are candidates only: the same weekly ranking can add one if it qualifies, with no fixed share, and the Day pot does not trade them.` : ''; })() + ` ` +
     `<b>Stocks account</b> (Trading 212, ${fM((CA.stocks || {}).equity)}): split equally across ${stocks.length || 'the'} stocks picked every ${esc(R.rebalance || 'Monday')} from a watchlist of ` +
-    `${(c0.universe || []).reduce((a, u) => a + u.tickers.length, 0)} growth stocks in ${(c0.universe || []).length} themes (max ${c0.max_per_theme} per theme). Each account's cash only buys that account's assets. ` +
+    `${(c0.universe || []).filter(u => u.acct !== 'crypto').reduce((a, u) => a + u.tickers.length, 0)} growth stocks in ${(c0.universe || []).filter(u => u.acct !== 'crypto').length} themes (max ${c0.max_per_theme} per theme). Each account's cash only buys that account's assets. ` +
     `New money goes in gradually - up to ${R.tranches} pieces per holding, at most ${R.per_day} per holding per day, preferring dips. Each holding has a ${R.stop}% stop-loss; there is no profit-taking, the weekly rebalance trims winners that grow more than ${R.band} points above target.`;
   $('#core-intro').insertAdjacentHTML('beforeend', loanNote('core'));   // v7.3 open loans of this pot
   const built = T.filter(t => t.status === 'built').length, inv = c.invested || 0;   // v7.1: same invested figure as every other card
@@ -375,7 +377,7 @@ function renderCore() {
   const pc = v => isNum(v) ? `<span class="${cls(v)}">${fPct(v * 100, 0)}</span>` : '<span class="muted">n/a</span>';
   const cols = [
     {k: 'rk', l: '#', num: 1, sv: r => { const i = order.indexOf(r.a); return i < 0 ? 999 : i; }, asc: 1, f: r => { const i = order.indexOf(r.a); return i < 0 ? '<span class="muted">-</span>' : String(i + 1); }},
-    {k: 'a', l: 'Stock', asc: 1, f: r => assetCell(r.a, r.theme_label)},
+    {k: 'a', l: 'Asset', asc: 1, f: r => assetCell(r.a, r.theme_label)},
     {k: 'score', l: 'Score', f: r => scoreBar(r.score)},
     {k: 'r6', l: '6 months', num: 1, f: r => pc(r.r6)}, {k: 'r3', l: '3 months', num: 1, f: r => pc(r.r3)}, {k: 'r1', l: '1 month', num: 1, f: r => pc(r.r1)},
     {k: 'quality', l: 'Trend quality', num: 1, f: r => `<span class="${cls(r.quality)}">${r.quality >= 0 ? '+' : ''}${r.quality.toFixed(1)}</span>`},
@@ -389,7 +391,7 @@ function renderCore() {
   const w = c0.weights || {};
   $('#rank-sub').innerHTML = `Score from -1 to +1 = ${Math.round((w.momentum || 0) * 100)}% medium-term momentum (6, 3 and 1-month returns adjusted for how much the stock swings) + ` +
     `${Math.round((w.quality || 0) * 100)}% trend quality (above its 50-day average, average rising, near its 6-month high) + ${Math.round((w.sentiment || 0) * 100)}% news sentiment when available. ` +
-    `To be eligible a stock must be up over 3 months and above its 50-day average. ${order.length} of ${(c0.ranking || []).length} are eligible today.`;
+    `To be eligible a name must be up over 3 months and above its 50-day average. ${order.length} of ${(c0.ranking || []).length} are eligible today.`;
   const L = c0.rebalance_log || {};
   $('#core-rb').innerHTML = [['When', c0.last_rebalance ? esc(fT(c0.last_rebalance)) + ' UK' : '-'], ['Stocks picked', esc((L.picks || c0.picks || []).join(', ') || '-')],
     ['Actions', esc((L.actions || []).join(' · ') || 'none')], ['Note', L.forced ? esc('Off-schedule re-pick: ' + L.forced) : 'Weekly ' + esc(R.rebalance)]].map(([k, v]) => `<div>${k}</div><div>${v}</div>`).join('');

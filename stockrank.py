@@ -73,23 +73,53 @@ def why(f, s):
     if s is not None: parts.append(f"sentiment {s:+.2f}")
     return ", ".join(parts)
 
+def _score(con, s, tk, tl, W, excluded):
+    """One name on the shared CORE score. None if there is not enough daily history."""
+    f = features(closes(con, s))
+    if not f: return None
+    sent, sn = sentiment(con, s)
+    if sent is None: comp = (W["momentum"] * f["mom"] + W["quality"] * f["quality"]) / (W["momentum"] + W["quality"])
+    else: comp = W["momentum"] * f["mom"] + W["quality"] * f["quality"] + W["sentiment"] * clip(sent)
+    lead = f["r3"] if f["r3"] is not None else f["r6"]
+    bad = ("excluded" if excluded else "3m return <= 0" if lead is None or lead <= 0 else
+           "below 50-day avg" if not f["above50"] else "momentum <= 0" if f["mom"] <= 0 else None)
+    return dict(theme=tk, theme_label=tl, score=round(comp, 3), mom=round(f["mom"], 3), quality=f["quality"],
+                sent=None if sent is None else round(sent, 3), sent_n=sn, r1=_r(f["r1"]), r3=_r(f["r3"]), r6=_r(f["r6"]),
+                vol=round(f["vol"], 4), dd=round(f["dd"], 4), above50=f["above50"], rising50=f["rising50"],
+                close=f["close"], n=f["n"], eligible=bad is None, why=why(f, sent), not_eligible=bad)
+
 def rank(con, c):
-    """Score every universe ticker that has daily data. Returns {ticker: dict(...)} incl. eligibility + reason."""
+    """Score every stock-universe ticker that has daily data. Returns {ticker: dict(...)} incl. eligibility + reason."""
     K = c["core"]; W = K.get("score_weights") or dict(momentum=0.55, quality=0.30, sentiment=0.15)
-    ex = set(K.get("stock_exclude") or []); th = themes(c); out = {}
-    for s, (tk, tl) in th.items():
-        f = features(closes(con, s))
-        if not f: continue
-        sent, sn = sentiment(con, s)
-        if sent is None: comp = (W["momentum"] * f["mom"] + W["quality"] * f["quality"]) / (W["momentum"] + W["quality"])
-        else: comp = W["momentum"] * f["mom"] + W["quality"] * f["quality"] + W["sentiment"] * clip(sent)
-        lead = f["r3"] if f["r3"] is not None else f["r6"]
-        bad = ("excluded" if s in ex else "3m return <= 0" if lead is None or lead <= 0 else
-               "below 50-day avg" if not f["above50"] else "momentum <= 0" if f["mom"] <= 0 else None)
-        out[s] = dict(theme=tk, theme_label=tl, score=round(comp, 3), mom=round(f["mom"], 3), quality=f["quality"],
-                      sent=None if sent is None else round(sent, 3), sent_n=sn, r1=_r(f["r1"]), r3=_r(f["r3"]), r6=_r(f["r6"]),
-                      vol=round(f["vol"], 4), dd=round(f["dd"], 4), above50=f["above50"], rising50=f["rising50"],
-                      close=f["close"], n=f["n"], eligible=bad is None, why=why(f, sent), not_eligible=bad)
+    ex = set(K.get("stock_exclude") or []); out = {}
+    for s, (tk, tl) in themes(c).items():
+        row = _score(con, s, tk, tl, W, s in ex)
+        if row: out[s] = row
+    return out
+
+def crypto_themes(c):
+    """{ticker: (theme_key, label)} for CORE crypto candidates (core.crypto_universe). Not the fixed targets_pct coins."""
+    out = {}
+    for k, v in (c["core"].get("crypto_universe") or {}).items():
+        for s in v.get("tickers", []): out.setdefault(s, (k, v.get("label", k)))
+    return out
+
+def crypto_ids(c):
+    """{ticker: coingecko id} for the crypto candidate universe."""
+    out = {}
+    for v in (c["core"].get("crypto_universe") or {}).values():
+        ids = v.get("ids") or {}
+        for s in v.get("tickers", []):
+            if ids.get(s): out[s] = ids[s]
+    return out
+
+def rank_crypto(con, c):
+    """Same score as rank(), for the crypto-account candidate universe only. Stocks are not included."""
+    K = c["core"]; W = K.get("score_weights") or dict(momentum=0.55, quality=0.30, sentiment=0.15)
+    out = {}
+    for s, (tk, tl) in crypto_themes(c).items():
+        row = _score(con, s, tk, tl, W, False)
+        if row: out[s] = dict(row, acct="crypto")
     return out
 
 def _r(x): return None if x is None else round(x, 4)
@@ -110,10 +140,28 @@ def select(c, ranked, n, max_per_theme=None):
         per[t] = per.get(t, 0) + 1; picks.append(s)
     return picks
 
-def crypto_weights(c):
-    """v6: CORE crypto targets as fractions of the CORE crypto-account money (targets_pct normalised to sum 1)."""
+def crypto_slot_weight(c):
+    """Share of Core crypto money for one ranked candidate: one slot of the same size the stock picker uses
+    for this account's starting Core money (1 / n_picks), never more than max_pick_pct. Not a config percentage."""
+    from common import funding
+    slots = n_picks(c, float(funding(c)["core"]["crypto"])) or 1
+    cap = float(c["core"].get("max_pick_pct", 100)) / 100
+    return min(cap, 1.0 / slots)
+
+def crypto_weights(c, crypto_picks=None):
+    """CORE crypto targets as fractions of the Core crypto-account money.
+    The fixed targets_pct coins keep their ratios. A candidate from the weekly ranking (crypto_picks) is not in
+    targets_pct: it takes one normal slot, and the fixed coins share what is left. No picks -> targets_pct only."""
     t = {a: float(v) for a, v in c["core"]["targets_pct"].items()}; tot = sum(t.values()) or 1
-    return {a: v / tot for a, v in t.items()}
+    base = {a: v / tot for a, v in t.items()}
+    picks = [a for a in (crypto_picks or []) if a not in base]
+    if not picks: return base
+    per = crypto_slot_weight(c)
+    if per * len(picks) > 1: per = 1.0 / len(picks)
+    scale = 1.0 - per * len(picks)
+    out = {a: w * scale for a, w in base.items()}
+    out.update({a: per for a in picks})
+    return out
 
 def pick_weights(c, picks):
     """Target weight per pick as a fraction of the CORE *stocks-account* money: stocks_pct split equally, capped at max_pick_pct."""
@@ -128,7 +176,7 @@ def core_split(c):
     f = funding(c)["core"]; tot = sum(f.values()) or 1
     return {a: v / tot for a, v in f.items()}
 
-def plans(c, ranked, acct_eq, holdings, acct_cash):
+def plans(c, ranked, acct_eq, holdings, acct_cash, crypto_picks=None):
     """Display-only top-up plans (v6: per account). acct_eq / acct_cash = CORE equity / cash per account
     {'crypto': .., 'stocks': ..}; holdings = {asset: current CORE value £}. Each top-up is deposited into the two accounts
     by the CORE funding ratio (50/50); the crypto deposit (+ Crypto-account Core cash) fills the crypto target gaps, the
@@ -138,12 +186,14 @@ def plans(c, ranked, acct_eq, holdings, acct_cash):
         add = float(tier["topup"]); dep = {a: round(add * sh[a], 2) for a in sh}
         E = {a: acct_eq.get(a, 0.0) + dep[a] for a in sh}
         n = n_picks(c, E["stocks"], tier.get("max_picks")); picks = select(c, ranked, n, tier.get("max_per_theme"))
-        tg = {a: ("crypto", w) for a, w in crypto_weights(c).items()}
+        cth = crypto_themes(c)
+        tg = {a: ("crypto", w) for a, w in crypto_weights(c, crypto_picks).items()}
         tg.update({s: ("stocks", w) for s, w in pick_weights(c, picks).items()})
         rows = []
         for a, (ac, w) in tg.items():
             have = holdings.get(a, 0.0); gap = max(0.0, w * E[ac] - have)
-            rows.append(dict(a=a, acct=ac, kind="stock" if ac == "stocks" else "crypto", theme=(ranked.get(a) or {}).get("theme_label"),
+            theme = (ranked.get(a) or {}).get("theme_label") or (cth.get(a) or (None, None))[1]
+            rows.append(dict(a=a, acct=ac, kind="stock" if ac == "stocks" else "crypto", theme=theme,
                              score=(ranked.get(a) or {}).get("score"), target_pct=round(w * 100, 2), target=round(w * E[ac], 2),
                              have=round(have, 2), gap=gap))
         acc = {}
