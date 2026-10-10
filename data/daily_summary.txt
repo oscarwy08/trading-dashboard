@@ -1,10 +1,10 @@
-PAPER scorecard Sat 10 Oct 14:01 UK
-TOTAL Equity £200.07 (+0.04% since £200 start) | Day P&L £+0.12
-vs BTC buy&hold (£) +0.47% | Max DD -0.41% | Win rate 0.00% over 3 closed
-CRYPTO acct (Monad wallet) £100.38 (+0.38% vs £100) | P&L £+0.38 | day £+0.27 | cash £14.00 | invested £86.38 | realised £+0.00 | fees £0.26 (fee £0.257, gas £0.002) | by pot: CORE £40.66 (cash £10.00), DAY £39.92 (cash £0.00), RISK £19.80 (cash £4.00)
+PAPER scorecard Sat 10 Oct 14:15 UK
+TOTAL Equity £199.86 (-0.07% since £200 start) | Day P&L £-0.09
+vs BTC buy&hold (£) +0.49% | Max DD -0.41% | Win rate 0.00% over 3 closed
+CRYPTO acct (Monad wallet) £100.17 (+0.17% vs £100) | P&L £+0.17 | day £+0.06 | cash £14.00 | invested £86.17 | realised £+0.00 | fees £0.26 (fee £0.257, gas £0.002) | by pot: CORE £40.64 (cash £10.00), DAY £39.74 (cash £0.00), RISK £19.79 (cash £4.00)
 STOCKS acct (Trading 212) £99.69 (-0.31% vs £100) | P&L £-0.31 | day £-0.15 | cash £51.87 | invested £47.82 | realised £-0.19 | fees £0.34 (xStock fee+gas £0.339) | by pot: CORE £59.81 (cash £11.99), DAY £19.88 (cash £19.88), RISK £20.00 (cash £20.00)
 Account split: pending settlement inside each account (when the cash is free): crypto DAY->CORE £10.00; stocks CORE->DAY £10.00
-CORE £100.47 (+0.47% vs £100) | day £+0.53 | realised £-0.07 | win 0.00% of 2 | today 7 trades (1 buys, 0 sells) | built 10/11 | open: AMD, ANET, BTC, ETH, MON, MSFT, PLTR, TEAM, WLD, XRP, ZS | crypto £40.66 (cash £10.00) / stocks £59.81 (cash £11.99)
-DAY  £59.79 (-0.34% vs £60) | day £-0.21 | realised £-0.12 | win 0.00% of 1 | today 4 trades (3 buys, 1 sells), best CRCLx £-0.12, worst CRCLx £-0.12 | entries open | open: ADA, WLD | crypto £39.92 (cash £0.00) / stocks £19.88 (cash £19.88)
-RISK £39.80 (-0.49% vs £40) | day £-0.20 | realised £+0.00 | win n/a of 0 | today 2 trades (2 buys, 0 sells) | active, dd -0.5%, 2 new today | open: DRV, PLUME | crypto £19.80 (cash £4.00) / stocks £20.00 (cash £20.00)
+CORE £100.45 (+0.45% vs £100) | day £+0.50 | realised £-0.07 | win 0.00% of 2 | today 7 trades (1 buys, 0 sells) | built 10/11 | open: AMD, ANET, BTC, ETH, MON, MSFT, PLTR, TEAM, WLD, XRP, ZS | crypto £40.64 (cash £10.00) / stocks £59.81 (cash £11.99)
+DAY  £59.62 (-0.63% vs £60) | day £-0.38 | realised £-0.12 | win 0.00% of 1 | today 4 trades (3 buys, 1 sells), best CRCLx £-0.12, worst CRCLx £-0.12 | entries open | open: ADA, WLD | crypto £39.74 (cash £0.00) / stocks £19.88 (cash £19.88)
+RISK £39.79 (-0.52% vs £40) | day £-0.21 | realised £+0.00 | win n/a of 0 | today 2 trades (2 buys, 0 sells) | active, dd -0.5%, 2 new today | open: DRV, PLUME | crypto £19.79 (cash £4.00) / stocks £20.00 (cash £20.00)
 GBP/USD 1.3241 (coingecko, 2026-10-10T12:30 UTC)
