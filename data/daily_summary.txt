@@ -1,13 +1,13 @@
-PAPER scorecard Sun 11 Oct 00:07 UK
-TOTAL Equity £200.05 (+0.03% since £200 start) | Day P&L £-0.05
-vs BTC buy&hold (£) +0.36% | Max DD -0.41% | Win rate 20.00% over 5 closed
-CRYPTO acct (Monad wallet) £100.06 (+0.06% vs £100) | P&L £+0.06 | day £-0.05 | cash £33.94 | invested £66.13 | realised £-0.11 | fees £0.38 (fee £0.377, gas £0.007) | by pot: CORE £49.98 (cash £4.04, lent £3.97), DAY £29.89 (cash £29.89), RISK £20.19 (cash £0.00, owes £3.97)
+PAPER scorecard Sun 11 Oct 00:25 UK
+TOTAL Equity £199.84 (-0.08% since £200 start) | Day P&L £-0.26
+vs BTC buy&hold (£) +0.30% | Max DD -0.41% | Win rate 20.00% over 5 closed
+CRYPTO acct (Monad wallet) £99.84 (-0.16% vs £100) | P&L £-0.16 | day £-0.26 | cash £33.94 | invested £65.91 | realised £-0.11 | fees £0.38 (fee £0.377, gas £0.007) | by pot: CORE £49.87 (cash £4.04, lent £3.97), DAY £29.89 (cash £29.89), RISK £20.08 (cash £0.00, owes £3.97)
 STOCKS acct (Trading 212) £100.00 (+0.00% vs £100) | P&L £+0.00 | day £+0.00 | cash £100.00 | invested £0.00 | realised £+0.00 | fees £0.00 () | by pot: CORE £50.00 (cash £50.00), DAY £30.00 (cash £30.00), RISK £20.00 (cash £20.00)
-CORE £99.97 (-0.03% vs £100) | day £+0.02 | realised £+0.00 | win n/a of 0 | today 1 trades (1 buys, 0 sells) | built 4/11 | open: BTC, ETH, MON, WLD, XRP | crypto £46.01 (cash £4.04) / stocks £50.00 (cash £50.00)
+CORE £99.87 (-0.13% vs £100) | day £-0.08 | realised £+0.00 | win n/a of 0 | today 1 trades (1 buys, 0 sells) | built 4/11 | open: BTC, ETH, MON, WLD, XRP | crypto £45.90 (cash £4.04) / stocks £50.00 (cash £50.00)
 DAY  £59.89 (-0.18% vs £60) | day £+0.00 | realised £-0.11 | win 20.00% of 5 | today 0 trades (0 buys, 0 sells) | entries closed | open: none | crypto £29.89 (cash £29.89) / stocks £30.00 (cash £30.00)
-RISK £40.19 (+0.48% vs £40) | day £-0.07 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | active, dd +0.5%, 0 new today | open: CAP, DRV, STRK | crypto £24.16 (cash £0.00) / stocks £20.00 (cash £20.00)
+RISK £40.08 (+0.20% vs £40) | day £-0.18 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | active, dd +0.2%, 0 new today | open: CAP, DRV, STRK | crypto £24.05 (cash £0.00) / stocks £20.00 (cash £20.00)
   DAY momentum all: 2 closed trades, win 50.0%, avg win +2.45%, avg loss -1.19%, PF 2.07, closed P&L £+0.10 (after its fees £0.09; + £0.00 buy fees on open positions), expectancy +0.63%/trade | today: 0 trades, P&L £+0.00
   DAY burst    all: 3 closed trades, win 0.0%, avg win n/a, avg loss -1.33%, PF 0.0, closed P&L £-0.20 (after its fees £0.09; + £0.00 buy fees on open positions), expectancy -1.33%/trade | today: 0 trades, P&L £+0.00
-  DAY burst threshold 0.55 (Day pot today +0.00%), 0/10 setups taken last cycle
+  DAY burst threshold 0.55 (Day pot today +0.00%), 0/3 setups taken last cycle
 LOANS outstanding: RISK owes CORE £3.97 (crypto) for STRK
-GBP/USD 1.3242 (coingecko, 2026-10-10T22:20 UTC)
+GBP/USD 1.3241 (coingecko, 2026-10-10T23:25 UTC)
