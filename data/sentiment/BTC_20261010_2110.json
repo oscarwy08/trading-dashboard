@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-10T21:10:00Z",
+ "asset": "BTC",
+ "score": 0.1,
+ "volume": 10,
+ "confidence": 0.45,
+ "summary": "Neutral-positive: BTC holding low-$80Ks after pullback; spot ETF flows mixed (outflow Oct 8), altcoin rotation narrative building.",
+ "sources": [
+  "https://x.com/i/trending/2108485217480540523"
+ ]
+}

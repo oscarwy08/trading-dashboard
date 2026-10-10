@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-10T21:10:00Z",
+ "asset": "MON",
+ "score": -0.1,
+ "volume": 6,
+ "confidence": 0.35,
+ "summary": "Muted/slightly negative: complaints the 'Burning MON' event implied a burn that didn't happen and price dumped; ecosystem AI panel news is minor.",
+ "sources": [
+  "https://x.com/erdincsekerim/status/2109024912920703085"
+ ]
+}

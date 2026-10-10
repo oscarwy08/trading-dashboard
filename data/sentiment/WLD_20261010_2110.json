@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-10T21:10:00Z",
+ "asset": "WLD",
+ "score": 0.1,
+ "volume": 6,
+ "confidence": 0.3,
+ "summary": "Neutral-positive: WLD rallied to ~$0.56 and is testing resistance; X chatter is mostly paid signal accounts, so low weight.",
+ "sources": [
+  "https://x.com/Astute_Trading/status/2109026122633523411"
+ ]
+}
