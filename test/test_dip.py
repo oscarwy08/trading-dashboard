@@ -11,7 +11,7 @@ TMP = Path(tempfile.mkdtemp()); DBF = TMP / "dip.db"
 os.environ["TRADING_DB"] = str(DBF); os.environ["TRADING_LOG"] = str(TMP / "dip.log")
 sys.path.insert(0, str(HERE))
 src = sqlite3.connect(HERE / "data" / "trading.db"); dst = sqlite3.connect(DBF); src.backup(dst); dst.close(); src.close()
-import common, trader, riskpot
+import common, trader, riskpot, daypot
 fails = []
 def check(cond, what):
     print(("  ok   " if cond else "  FAIL ") + what)
@@ -53,6 +53,13 @@ check(not s["show"], "a steady rise is not a dip")
 c1, _ = riskpot.dip_confidence(R, 0.8, 0.8, 0.8, 0.2, 0.6, 0.5, freshness=1)
 c0, p0 = riskpot.dip_confidence(R, 0.8, 0.8, 0.8, 0.2, 0.6, 0.5, freshness=0)
 check(c0 < c1 and p0["freshness"] == 0, "a dead quote scales dip confidence down; a fresh one does not")
+mid = daypot.ev_now(0.6, 1.0, 1.10, 0.90, 0.5)
+check(mid == round(0.6 * 10 - 0.4 * 10 - 0.5, 3), f"EV now halfway between stop and target is {mid}")
+above = daypot.ev_now(0.6, 1.2, 1.10, 0.90, 0.5)
+check(above == round(0 - 0.4 * (1 - 0.90 / 1.2) * 100 - 0.5, 3), f"EV now has no upside once price is through the target ({above})")
+below = daypot.ev_now(0.6, 0.8, 1.10, 0.90, 0.5)
+check(below == round(0.6 * (1.10 / 0.8 - 1) * 100 - 0.5, 3), f"EV now has no downside once price is through the stop ({below})")
+check(daypot.ev_now(None, 1, 1.1, 0.9, 0) is None, "EV now needs a probability")
 
 print("trader cycle: bounce bought, knife skipped")
 common._NOW = END
@@ -82,12 +89,18 @@ buy = con.execute("SELECT sub, conf, reason, value FROM trades WHERE asset='DIPX
 knife_buy = con.execute("SELECT COUNT(*) FROM trades WHERE asset='KNIFEX' AND side='BUY'").fetchone()[0]
 meta = json.loads(con.execute("SELECT value FROM state WHERE key='risk_meta'").fetchone()[0])
 pos = con.execute("SELECT 1 FROM positions WHERE sleeve='risk' AND asset='DIPX'").fetchone()
+raw = con.execute("SELECT snap FROM trades WHERE asset='DIPX' AND side='BUY'").fetchone()
+snap = json.loads(raw[0]) if raw and raw[0] else {}
 con.close()
 dx, kx = by.get("DIPX") or {}, by.get("KNIFEX") or {}
 check(dx.get("setup") == "dip" and dx.get("bought") and not dx.get("block"), f"DIPX row is a taken dip ({dx.get('setup')}, bought {dx.get('bought')}, block {dx.get('block')})")
 check(dx.get("plain") and "turned up" in dx["plain"], f"DIPX why: {dx.get('plain')}")
 check(buy is not None and buy[0] == "dip" and buy[1] is not None and buy[1] >= rst["threshold"] - 1e-9 and "EV +" in (buy[2] or "") and "RISK dip" in (buy[2] or ""), f"DIPX order tagged dip, confidence >= threshold, EV positive: {buy}")
 check(pos and (meta.get("DIPX") or {}).get("setup") == "dip" and "turned up" in ((meta.get("DIPX") or {}).get("why") or ""), "open position remembers Dip and the reason")
+check(all(snap.get(k) is not None for k in ("conf", "parts", "p", "target", "loss", "costs", "ev", "entry")), f"DIPX buy stores confidence, components, p, target, loss, costs, EV and the fill: {sorted(snap)}")
+check(isinstance(snap.get("parts"), dict) and "pullback" in (snap.get("parts") or {}), "the stored components include the dip bars")
+meta_snap = (meta.get("DIPX") or {}).get("snap") or {}
+check(meta_snap.get("entry") == snap.get("entry") and meta_snap.get("ev") == snap.get("ev"), "the open position keeps the same snapshot the buy stored")
 check(kx.get("setup") == "dip" and not kx.get("bought") and kx.get("block") and "still falling" in kx["block"].lower(), f"KNIFEX rejected: {kx.get('block')}")
 check(knife_buy == 0, "falling knife was not bought")
 import dashboard
@@ -99,6 +112,36 @@ drow = next(x for x in D["sleeves"]["risk"]["cands"] if x["a"] == "DIPX")
 check(pos.get("setup") == "dip" and "turned up" in (pos.get("why") or ""), "dashboard position row is a Dip with the reason")
 check(order.get("sub") == "dip" and "RISK dip" in (order.get("reason") or ""), "dashboard order is tagged dip")
 check(drow.get("setup") == "dip" and krow.get("setup") == "dip" and D["sleeves"]["risk"]["rules"].get("dip_weights"), "dashboard candidates carry the setup, and dip weights are exported")
+need = ("conf", "parts", "p", "target", "loss", "costs", "ev")
+check(pos.get("snap") and all(pos["snap"].get(k) is not None for k in need), f"dashboard position carries the entry snapshot: {pos.get('snap')}")
+check(isinstance(pos.get("ev_now"), (int, float)), f"open dip has a live EV now ({pos.get('ev_now')})")
+check(abs(pos["ev_now"] - daypot.ev_now(pos["ev_p"], pos["now"], pos["ev_tgt"], pos["ev_stop"], pos["ev_cost"])) < 1e-6, "position EV now matches p x upside - (1-p) x downside - sell cost")
+check(order.get("snap") and order.get("ev_now") == pos.get("ev_now") and order.get("ev_tgt") == pos.get("ev_tgt"), "the open buy row shows the same entry snapshot and the same EV now as the position")
+# A position with no snapshot (bought before scoring) still gets EV now. A stop-out copies the snapshot onto the sell.
+con = common.db()
+rate = con.execute("SELECT rate FROM fx WHERE pair='USDGBP' AND rate>0 ORDER BY ts DESC LIMIT 1").fetchone()[0]
+px0 = con.execute("SELECT price FROM prices WHERE asset='DIPX' ORDER BY ts DESC LIMIT 1").fetchone()[0]
+later = END + timedelta(minutes=20)
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (later.isoformat(), "DIPX", "crypto", px0 * 0.7, None, None, 2e7, 1e8, "sim", later.isoformat()))
+con.commit(); con.close()
+common._NOW = later
+buf2 = io.StringIO()
+with contextlib.redirect_stdout(buf2): trader.main()
+print(buf2.getvalue().strip()[:800])
+con = common.db()
+sell = con.execute("SELECT snap FROM trades WHERE asset='DIPX' AND side='SELL' ORDER BY id DESC LIMIT 1").fetchone()
+ss = json.loads(sell[0]) if sell and sell[0] else {}
+check(ss.get("conf") == snap.get("conf") and ss.get("ev") == snap.get("ev") and ss.get("parts"), f"the closing sell copies the entry snapshot (conf {ss.get('conf')}, EV {ss.get('ev')})")
+con.execute("INSERT INTO positions VALUES('risk','LEGX','crypto',10,?,?,?,1)", (1.2 * rate, 10 * 1.2 * rate, later.isoformat()))
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (later.isoformat(), "LEGX", "crypto", 1.2, None, None, 2e7, 1e8, "sim", later.isoformat()))
+con.commit(); con.close()
+D = dashboard.build(common.db())
+leg = next(p for p in D["positions"] if p.get("asset") == "LEGX" and p.get("sleeve") == "risk")
+check(leg.get("snap") is None and isinstance(leg.get("ev_now"), (int, float)), f"legacy position has no entry snapshot and still has EV now ({leg.get('ev_now')})")
+check(abs(leg["ev_now"] - daypot.ev_now(leg["ev_p"], leg["now"], leg["ev_tgt"], leg["ev_stop"], leg["ev_cost"])) < 1e-6, "legacy EV now uses p 0.5 and the pot's target and stop")
+closed = next(t for t in D["trades"] if t.get("asset") == "DIPX" and t.get("side") == "SELL")
+check(closed.get("snap") and isinstance(closed.get("ev_now"), (int, float)), "a closed order keeps the entry snapshot and a live EV now")
+check(abs(closed["ev_now"] - daypot.ev_now(closed["ev_p"], closed["ev_px"], closed["ev_tgt"], closed["ev_stop"], closed["ev_cost"])) < 1e-6, "closed-order EV now matches the formula from the current price")
 site = Path("/tmp/dipui")
 import shutil
 if site.exists(): shutil.rmtree(site)

@@ -150,6 +150,27 @@ def sig(x, n=6):  # round to n significant digits (keeps JSON small)
 
 def r2(x): return None if x is None else round(x, 2)
 
+def parse_snap(raw):
+    """Entry snapshot stored on a buy and copied onto its sell: confidence or score, components, p, target %, loss %, costs, EV.
+    None when that trade was bought before this was stored."""
+    if not raw: return None
+    if isinstance(raw, dict): d = raw
+    else:
+        try: d = json.loads(raw)
+        except Exception: return None
+    if not isinstance(d, dict) or d.get("target") is None or d.get("ev") is None: return None
+    return d
+
+def live_ev(p, now, entry, target_pct, loss_pct, trail_px, exit_cost):
+    """(EV now, target price, stop-or-trail price). Remaining upside is entry to the stored target %; remaining downside
+    is to the live trail once it is armed, otherwise to the stored loss %. The sell cost still to pay is subtracted once."""
+    if p is None or not now or not entry or target_pct is None or loss_pct is None: return None, None, None
+    tgt = sig(float(entry) * (1 + float(target_pct) / 100.0))
+    stop = sig(float(trail_px) if trail_px else float(entry) * (1 - float(loss_pct) / 100.0))
+    cost = round(float(exit_cost or 0), 4)
+    if not tgt or not stop: return None, None, None
+    return daypot.ev_now(p, now, tgt, stop, cost), tgt, stop
+
 def pnl_parts(headline, closed):
     """Split a headline P&L into open positions and closed trades so the two sum to the headline exactly (integer pence).
     Fees are already inside both numbers; they are not a third component."""
@@ -268,6 +289,35 @@ def build(con):
     dmeta = json.loads((con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone() or ["{}"])[0]) or {}
     peaks = json.loads((con.execute("SELECT value FROM state WHERE key='risk_peaks'").fetchone() or ["{}"])[0]) or {}
     rmeta = json.loads((con.execute("SELECT value FROM state WHERE key='risk_meta'").fetchone() or ["{}"])[0]) or {}   # v7.4 conf/EV at entry
+    buy_hist, latest_buy = {}, {}
+    if "snap" in {x[1] for x in con.execute("PRAGMA table_info(trades)")}:
+        for br in con.execute("SELECT id, sleeve, asset, snap FROM trades WHERE side='BUY' AND sleeve IN ('day','risk') ORDER BY id"):
+            buy_hist.setdefault((br["sleeve"], br["asset"]), []).append((br["id"], parse_snap(br["snap"])))
+        latest_buy = {k: v[-1][1] for k, v in buy_hist.items()}
+    def attach_entry(row, prec):
+        """Entry snapshot plus EV now. A day/risk position with no snapshot still gets EV now (p = 0.5, the pot's target and stop)."""
+        if prec["sleeve"] not in ("day", "risk"): return
+        meta = (dmeta if prec["sleeve"] == "day" else rmeta).get(prec["asset"]) or {}
+        snap = parse_snap(meta.get("snap")) or latest_buy.get((prec["sleeve"], prec["asset"]))
+        exit_cost = trader.cost_pct(c, prec["asset"], prec["klass"], "SELL") * 100
+        trail_px = row.get("trail") if row.get("trail_on") else None
+        if snap:
+            p_, tgt_pct, loss_pct = snap.get("p", 0.5), snap.get("target"), snap.get("loss")
+        elif prec["sleeve"] == "risk":
+            snap = None
+            p_ = 0.5
+            tgt_pct = float(RP.get("trail_after_pct", 15)) * (1 - float(RP.get("trail_pct", 10)) / 100.0)
+            loss_pct = float(RP.get("stop_loss_pct", 12))
+        else:
+            md_ = dmeta.get(prec["asset"]) or {}
+            snap = None
+            if md_.get("tp") is not None and md_.get("sl") is not None:
+                p_, tgt_pct, loss_pct = 0.5, md_.get("tp"), md_.get("sl")
+            else:
+                p_, tgt_pct, loss_pct = None, None, None
+        evn, tgt, stop = live_ev(p_, row.get("now"), prec["entry"], tgt_pct, loss_pct, trail_px, exit_cost)
+        row.update(snap=snap, ev_now=evn, ev_tgt=tgt, ev_stop=stop,
+                   ev_p=None if p_ is None else round(float(p_), 4), ev_cost=round(exit_cost, 4) if evn is not None else None)
     for r in con.execute("SELECT * FROM positions ORDER BY opened"):
         sl_pct, tp_pct = stops.get(r["sleeve"], (None, None))
         usd = lp[r["asset"]]["price"] if r["asset"] in lp else None
@@ -296,6 +346,7 @@ def build(con):
                                  expires=ep(r["opened"]) + int(RP["max_hold_days"] * 86400),
                                  conf=(rmeta.get(r["asset"]) or {}).get("conf"), ev=(rmeta.get(r["asset"]) or {}).get("ev"),
                                  setup=(rmeta.get(r["asset"]) or {}).get("setup"), why=(rmeta.get(r["asset"]) or {}).get("why"))
+        attach_entry(positions[-1], r)
     pos_by = {}
     for p in positions: pos_by.setdefault(p["asset"], []).append(p["sleeve"])
 
@@ -317,8 +368,39 @@ def build(con):
                    value=r2(r["value"]), fee=round(r["cost"], 4) if r["cost"] is not None else None, pnl=r2(r["pnl"]),
                    gas=sig(r["gas"], 3) if r["gas"] is not None else None,
                    reason=r["reason"] or "", sub=(r["sub"] or ("momentum" if r["sleeve"] == "day" else None)), conf=r["conf"], alias=plain(r["asset"]) if plain(r["asset"]) != r["asset"] else None,
+                   snap=parse_snap(r["snap"]) if "snap" in r.keys() else None,
                    fees={k: sig(v, 3) for k, v in tparts.get(r["id"], {}).items() if v})
               for r in con.execute("SELECT * FROM trades ORDER BY id DESC LIMIT ?", (MAX_TRADES,))]
+    open_by = {(p["sleeve"], p["asset"]): p for p in positions}
+    def gbp_of(asset):
+        usd = lp[asset]["price"] if asset in lp else None
+        return sig(usd * rate) if usd is not None and rate else None
+    for trow in trades:
+        if trow.get("sleeve") not in ("day", "risk") or trow.get("side") not in ("BUY", "SELL"): continue
+        snap = trow.get("snap")
+        if not snap and trow["side"] == "SELL":
+            prev = [(i, s) for i, s in buy_hist.get((trow["sleeve"], trow["asset"]), []) if i < trow["id"]]
+            snap = prev[-1][1] if prev else None
+            trow["snap"] = snap
+        held = open_by.get((trow["sleeve"], trow["asset"]))
+        if held and trow["side"] == "BUY" and held.get("ev_tgt"):
+            trow.update(ev_now=held.get("ev_now"), ev_tgt=held.get("ev_tgt"), ev_stop=held.get("ev_stop"),
+                        ev_p=held.get("ev_p"), ev_cost=held.get("ev_cost"), ev_px=held.get("now"))
+            continue
+        exit_cost = trader.cost_pct(c, trow["asset"], trow.get("klass") or "crypto", "SELL") * 100
+        if snap:
+            p_, tgt_pct, loss_pct = snap.get("p", 0.5), snap.get("target"), snap.get("loss")
+            entry_px = snap.get("entry") or trow.get("fill")
+        elif trow["sleeve"] == "risk" and trow.get("fill"):
+            p_ = 0.5
+            tgt_pct = float(RP.get("trail_after_pct", 15)) * (1 - float(RP.get("trail_pct", 10)) / 100.0)
+            loss_pct = float(RP.get("stop_loss_pct", 12))
+            entry_px = trow.get("fill")
+        else:
+            continue
+        evn, tgt, stop = live_ev(p_, gbp_of(trow["asset"]), entry_px, tgt_pct, loss_pct, None, exit_cost)
+        trow.update(ev_now=evn, ev_tgt=tgt, ev_stop=stop, ev_p=None if p_ is None else round(float(p_), 4),
+                    ev_cost=round(exit_cost, 4) if evn is not None else None, ev_px=gbp_of(trow["asset"]))
     POTN = dict(core="Core pot", day="Day pot", risk="Risk pot"); ACN = dict(crypto="Crypto account", stocks="Stocks account")
     for i, r in enumerate(con.execute("SELECT rowid, * FROM transfers ORDER BY ts")):   # cash moves (no fees): pots / accounts
         fa, ta = r["from_account"], r["to_account"]

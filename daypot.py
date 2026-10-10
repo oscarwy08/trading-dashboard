@@ -142,6 +142,17 @@ def expected_value(ss, tp, sl, rt_cost, prior_n=10):
     if not ss["n"] or ss["exp"] is None: return round(model, 3)
     return round((ss["n"] * ss["exp"] + prior_n * model) / (ss["n"] + prior_n), 3)
 
+def ev_now(p, now, target_px, stop_px, exit_cost_pct):
+    """Live expected value in % from the current price. Same shape as expected_value: p times the percent still left up to
+    the target, minus (1 - p) times the percent down to the stop or the live trail, minus the sell cost still to pay.
+    Upside is 0 once price is at or through the target; downside is 0 once price is at or through the stop. p is the
+    probability stored at entry (0.5 when the trade was bought before that was stored)."""
+    if p is None or not now or not target_px or not stop_px or float(now) <= 0: return None
+    p = max(0.0, min(1.0, float(p)))
+    up = max(0.0, (float(target_px) / float(now) - 1) * 100)
+    dn = max(0.0, (1 - float(stop_px) / float(now)) * 100)
+    return round(p * up - (1 - p) * dn - float(exit_cost_pct or 0), 3)
+
 def confidence(B, brk, vol, sent, regime, hr, freshness=None):  # hr = setup-type hit rate (0-1)
     """Weighted 0-1 confidence of a burst setup (a heuristic ranking score, not a probability).
     The freshness weight does not join the average: fr=1 leaves the score identical to the other components alone,

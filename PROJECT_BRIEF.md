@@ -43,6 +43,7 @@ Each account divides its funds across three pots with distinct strategies:
 - Speculative small/mid-cap crypto and niche stocks
 - Two entries, each with its own confidence: a breakout, or a dip that has bounced in an uptrend (a coin still falling is skipped)
 - Same sizing, 12% stop-loss, trailing take-profit (10% from peak after +15%), 7-day maximum hold, 30% drawdown cap, borrowing rules
+- The buy stores confidence, components and expected value after costs; open and closed rows show those entry figures plus a live EV now (a dash if the buy predates scoring)
 - Max 5 open positions
 
 ## Inter-Pot Lending

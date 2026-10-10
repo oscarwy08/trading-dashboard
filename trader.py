@@ -230,18 +230,22 @@ def main():
         no = markets.next_open(a, t)
         return f"market closed ({markets.EXCH[markets.exchange(a)]['label']}; opens {no.astimezone(LON):%a %H:%M} UK)" if no else "market closed"
 
-    def trade(sleeve, asset, klass, side, qty, price, reason, pnl=None, sub=None, conf=None):
+    def trade(sleeve, asset, klass, side, qty, price, reason, pnl=None, sub=None, conf=None, snap=None):
         fp = cost_pct(c, asset, klass, side)
         fill = price * (1 + fp if side == "BUY" else 1 - fp)
-        con.execute("INSERT INTO trades(ts,sleeve,asset,klass,side,qty,price,fill,value,cost,pnl,reason,price_usd,usd_gbp,gas,sub,conf) "
-                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (ts, sleeve, asset, klass, side, qty, price, fill, qty * fill, qty * price * fp, pnl, reason, price / rate, rate, gas_of(klass), sub, conf))
+        blob = None
+        if snap:
+            if side == "BUY": snap["entry"] = round(fill, 8)   # the fill the plan was priced from; the caller's dict keeps it for the sell
+            blob = json.dumps(snap, separators=(",", ":"))
+        con.execute("INSERT INTO trades(ts,sleeve,asset,klass,side,qty,price,fill,value,cost,pnl,reason,price_usd,usd_gbp,gas,sub,conf,snap) "
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (ts, sleeve, asset, klass, side, qty, price, fill, qty * fill, qty * price * fp, pnl, reason, price / rate, rate, gas_of(klass), sub, conf, blob))
         return fill
 
-    def buy(sleeve, a, value, reason, sub=None, conf=None):
+    def buy(sleeve, a, value, reason, sub=None, conf=None, snap=None):
         """Spends value on the asset (fill incl. fees/slippage/FX/stamp duty) + gas on top (crypto only); all go into the cost basis."""
         q = px[a]; fp = cost_pct(c, a, q["klass"], "BUY")
-        fill = trade(sleeve, a, q["klass"], "BUY", value / (q["price"] * (1 + fp)), q["price"], reason, sub=sub, conf=conf)
+        fill = trade(sleeve, a, q["klass"], "BUY", value / (q["price"] * (1 + fp)), q["price"], reason, sub=sub, conf=conf, snap=snap)
         qty = value / fill; p = pos.get((sleeve, a)); spent = value + gas_of(q["klass"]); ck = (sleeve, acct_of(q["klass"]))
         if spent > cash[ck] + 1e-9: raise RuntimeError(f"{sleeve} {a}: £{spent:.4f} > {ck[1]} cash £{cash[ck]:.4f} (cash never crosses accounts)")
         if p:
@@ -253,10 +257,10 @@ def main():
             con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)", (sleeve, a, q["klass"], qty, spent / qty, spent, ts, 1))
         cash[ck] -= spent
 
-    def sell(sleeve, a, qty, reason, price=None, sub=None, conf=None):
+    def sell(sleeve, a, qty, reason, price=None, sub=None, conf=None, snap=None):
         p = pos[(sleeve, a)]; price = price or px[a]["price"]; qty = min(qty, p["qty"])
         proceeds = qty * price * (1 - cost_pct(c, a, p["klass"], "SELL")) - gas_of(p["klass"]); part = p["cost"] * qty / p["qty"]; pnl = proceeds - part
-        trade(sleeve, a, p["klass"], "SELL", qty, price, f"{reason}; P&L £{pnl:+.2f}", pnl, sub=sub, conf=conf)
+        trade(sleeve, a, p["klass"], "SELL", qty, price, f"{reason}; P&L £{pnl:+.2f}", pnl, sub=sub, conf=conf, snap=snap)
         cash[(sleeve, acct_of(p["klass"]))] += proceeds
         if qty >= p["qty"] * (1 - 1e-9):
             con.execute("DELETE FROM positions WHERE sleeve=? AND asset=?", (sleeve, a)); del pos[(sleeve, a)]
@@ -338,7 +342,7 @@ def main():
             elif "trailing" in reason:
                 reason = tag_gap(a, pk * (1 - RP["trail_pct"] / 100), q["price"], reason)
             meta = rmeta.get(a) or {}
-            pnl = sell("risk", a, p["qty"], reason, sub=meta.get("setup") or "breakout", conf=meta.get("conf")); peaks.pop(a, None)
+            pnl = sell("risk", a, p["qty"], reason, sub=meta.get("setup") or "breakout", conf=meta.get("conf"), snap=meta.get("snap")); peaks.pop(a, None)
             sset(con, f"risk_exit:{a}", ts); sig("risk", a, None, None, None, "SELL", f"{reason}; P&L £{pnl:+.2f}")
         else:
             sig("risk", a, None, None, None, "HOLD", f"open {chg*100:+.1f}%, peak +{pk_gain*100:.1f}%, {held_d:.1f} d"
@@ -356,7 +360,7 @@ def main():
     def thr_of(a): return st["focus_buy_threshold"] if a in st["focus_assets"] else st["buy_threshold"]
     def day_exit(a, p, why, m, s, comb):
         md_ = dmeta.get(a) or {}; sub = md_.get("sub", "momentum"); tag = sub + (f" {md_['kind']}" if md_.get("kind") else "")
-        pnl = sell("day", a, p["qty"], f"[{tag}] {why}", sub=sub, conf=md_.get("conf", md_.get("score")))
+        pnl = sell("day", a, p["qty"], f"[{tag}] {why}", sub=sub, conf=md_.get("conf", md_.get("score")), snap=md_.get("snap"))
         dmeta.pop(a, None); sset(con, f"day_exit:{a}", ts)
         sig("day", a, m, s, comb, "SELL", f"[{tag}] {why}; P&L £{pnl:+.2f}")
     for (sl, a), p in list(pos.items()):
@@ -646,8 +650,9 @@ def main():
         pts = hist.get(a) or []; h = (pts[-1][0] - pts[0][0]).total_seconds() / 3600 if len(pts) > 1 else 0.0
         return f"warming up: {h:.1f}h of {warm_h:g}h price history" if h < warm_h else None
     def open_day(a, sub, value, tp_, sl_, at_, reason, extra=None):
-        buy("day", a, value, reason, sub=sub, conf=(extra or {}).get("conf", (extra or {}).get("score")))
-        dmeta[a] = dict(sub=sub, tp=round(tp_, 3), sl=round(sl_, 3), atr=round(at_, 3) if at_ else None, peak=px[a]["price"], opened=ts, **(extra or {}))
+        extra = dict(extra or {})
+        buy("day", a, value, reason, sub=sub, conf=extra.get("conf", extra.get("score")), snap=extra.get("snap"))
+        dmeta[a] = dict(sub=sub, tp=round(tp_, 3), sl=round(sl_, 3), atr=round(at_, 3) if at_ else None, peak=px[a]["price"], opened=ts, **extra)
 
     # ---- momentum: original score entries, ATR-scaled levels ----
     nmom = sum(1 for (sl, x) in pos if sl == "day" and sub_of(x) == "momentum")
@@ -664,7 +669,10 @@ def main():
             why = f"momentum budget: £{value:.2f} free < min trade £{mint:.0f} (budget £{budget('momentum', ac):.2f}, {acash('day', a)})"
         if not why and tp_ < mcx * rt_cost(a, value): why = f"target {tp_:.1f}% < {mcx:.0f} x round-trip costs {rt_cost(a, value):.2f}%"
         if why: sig("day", a, m, s, comb, "SKIP", f"[momentum] score {comb} >= {thr} but {why}"); continue
-        open_day(a, "momentum", value, tp_, sl_, at_, f"[momentum] DAY score {comb} >= {thr}; target +{tp_:.1f}% / stop -{sl_:.1f}% (ATR {at_ or 0:.2f}%); {info}", extra=dict(score=comb))
+        p_m = max(0.05, min(0.95, float(comb))); rtc_m = rt_cost(a, value)
+        ev_m = round(p_m * tp_ - (1 - p_m) * sl_ - rtc_m, 3)   # momentum has a score, not component bars; p is the score clipped to 0.05-0.95
+        open_day(a, "momentum", value, tp_, sl_, at_, f"[momentum] DAY score {comb} >= {thr}; target +{tp_:.1f}% / stop -{sl_:.1f}% (ATR {at_ or 0:.2f}%); {info}",
+                 extra=dict(score=comb, snap=dict(score=comb, p=round(p_m, 3), target=round(tp_, 3), loss=round(sl_, 3), costs=round(rtc_m, 3), ev=ev_m)))
         nmom += 1
         sig("day", a, m, s, comb, "BUY", f"[momentum] £{value:.2f}; target +{tp_:.1f}% / stop -{sl_:.1f}%; {info}")
 
@@ -729,7 +737,9 @@ def main():
         if why: d["block"] = why; continue
         open_day(a, "burst", value, d["tp"], d["sl"], d["atr"],
                  f"[burst {d['kind']}] {d['info']}; vol {'n/a' if d['vol'] is None else 'x%.1f' % d['vol']}, RSI {d['rsi']}, {d['market']}; confidence {d['conf']:.2f} >= {thr_b:.2f}, EV {d['ev']:+.2f}% after costs; "
-                 f"target +{d['tp']:.1f}% / stop -{d['sl']:.1f}% / max {DB['max_hold_h']}h", extra=dict(conf=d["conf"], ev=d["ev"], kind=d["kind"]))
+                 f"target +{d['tp']:.1f}% / stop -{d['sl']:.1f}% / max {DB['max_hold_h']}h",
+                 extra=dict(conf=d["conf"], ev=d["ev"], kind=d["kind"],
+                            snap=dict(conf=d["conf"], parts=dict(d["parts"]), p=d["hit"], target=d["tp"], loss=d["sl"], costs=d["rt_cost"], ev=d["ev"])))
         nb[ac] += 1; d["block"] = None; d["bought"] = round(value, 2)
         sig("day", a, None, d["sent"], None, "BUY", f"[burst] £{value:.2f} confidence {d['conf']:.2f}, EV {d['ev']:+.2f}%; {d['info']}; target +{d['tp']:.1f}% / stop -{d['sl']:.1f}%")
     if cands:
@@ -845,10 +855,12 @@ def main():
             if d["setup"] == "dip" or d["ok"]: sig("risk", a, m, d["sent"], d["conf"], "SKIP", f"{d['block']}; {d['plain']}")
             continue
         label = "dip" if d["setup"] == "dip" else "breakout"
+        snap = dict(conf=d["conf"], parts=dict(d["parts"]), p=d["ev_p"], target=d["ev_win"], loss=d["ev_loss"],
+                    costs=d["rt_cost"], ev=d["ev"], setup=d["setup"])
         buy("risk", a, value, f"RISK {label} ({d['kind']}): {d['plain']} Confidence {d['conf']:.2f} >= {thr_r:.2f}, EV {d['ev']:+.2f}% after costs; {d['minfo']}; {d['market']}",
-            sub=d["setup"], conf=d["conf"])
+            sub=d["setup"], conf=d["conf"], snap=snap)
         peaks[a] = q["price"]; nrisk += 1; new_today += 1; d["bought"] = round(value, 2)
-        rmeta[a] = dict(conf=d["conf"], ev=d["ev"], opened=ts, setup=d["setup"], why=d["plain"])
+        rmeta[a] = dict(conf=d["conf"], ev=d["ev"], opened=ts, setup=d["setup"], why=d["plain"], snap=snap)
         sig("risk", a, m, d["sent"], d["conf"], "BUY", f"£{value:.2f} {label} confidence {d['conf']:.2f}, EV {d['ev']:+.2f}%; {d['plain']}")
     sset(con, "risk_peaks", {a: v for a, v in peaks.items() if ("risk", a) in pos})
     sset(con, "risk_meta", {a: v for a, v in rmeta.items() if ("risk", a) in pos})
