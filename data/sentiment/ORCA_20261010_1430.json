@@ -1,0 +1,13 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "ORCA",
+ "score": 0.3,
+ "volume": 12,
+ "confidence": 0.45,
+ "summary": "Positive structural news: Orca and Loopscale merging into Formation (trading + lending, tokenized securities plans), +43% on the week; Orca DEX volume down ~48% w/w tempers it.",
+ "sources": [
+  "https://x.com/aut3z/status/2108591904912777695",
+  "https://x.com/TheLiqCartel/status/2108632315521831287",
+  "https://x.com/BagsAixbt/status/2108755205890400504"
+ ]
+}

@@ -1,0 +1,14 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "BAT",
+ "score": 0.1,
+ "volume": 15,
+ "confidence": 0.4,
+ "summary": "Mixed: BAT was the most-talked coin (+34% 24h, +43% 7d) on Brave Rewards Card waitlist (>200k signups) and whale buying, but it is now fading (-8% in 1h, >15% off the 24h high) and airdrop spam is common.",
+ "sources": [
+  "https://x.com/popmemecoin/status/2108746375450259459",
+  "https://x.com/ChoTradingFX/status/2108619904928641312",
+  "https://x.com/blockvia_/status/2108739790220726658",
+  "https://x.com/cexscan/status/2108896647832883661"
+ ]
+}
