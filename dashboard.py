@@ -313,6 +313,24 @@ def build(con):
     cg_sym = {json.loads(v) if v.startswith('"') else v: k[5:] for k, v in con.execute("SELECT key, value FROM state WHERE key LIKE 'cgid:%'")}
     ctheme = {cg_sym[i]: tk for i, tk in (CC.get("watch_ids") or {}).items() if i in cg_sym}     # e.g. PAXG -> rwa
     t_mk = now()
+    # v7.2: DAY crypto universe tiers for the Markets tab + warm-up (hours of stored price history vs crypto.warmup_h)
+    DU = json.loads((con.execute("SELECT value FROM state WHERE key='day_universe'").fetchone() or ["{}"])[0]) or {}
+    dx_ = json.loads((con.execute("SELECT value FROM state WHERE key='day_excluded'").fetchone() or ["{}"])[0]) or {}
+    du = DU.get("coins") or {}; risk_only = set(json.loads((con.execute("SELECT value FROM state WHERE key='risk_only'").fetchone() or ["[]"])[0]) or [])
+    warm_h = float(CC.get("warmup_h", st["min_history_h"])); since72 = (t_mk - timedelta(hours=72)).isoformat()
+    first_ts = {r[0]: r[1] for r in con.execute("SELECT asset, MIN(ts) FROM prices WHERE ts>=? AND source!='kyberswap' AND klass='crypto' GROUP BY asset", (since72,))}
+    def warm(a):
+        f = first_ts.get(a)
+        if not f or a in dx_ or (a in risk_only and a not in du): return None    # warm-up only matters for coins the DAY pot trades
+        h = (t_mk - datetime.fromisoformat(f)).total_seconds() / 3600
+        return round(h, 1) if h < warm_h else None
+    cg_core = {cg_sym[i] for i in CC["core_ids"] if i in cg_sym}
+    def ctier(a):
+        if a in ctheme: return ctheme[a]
+        if a in risk_only: return "crypto_risk"
+        r = (du.get(a) or [None, None])[1]
+        return "crypto_mid" if r and r > 40 and a not in cg_core else "crypto_large"
+    CTL = dict(crypto_large="Crypto - top tokens & core coins", crypto_mid="Crypto - liquid mid & small caps (DAY universe)", crypto_risk="Crypto - Risk pot screen only")
     def tinfo(a, k):
         if k == "stock":
             tk, tl = th.get(a, (None, None))
@@ -321,8 +339,9 @@ def build(con):
             m = smeta.get(a) or {}
             return dict(tk=tk, theme=tl, watch=tk in watch, ex=markets.exchange(a), open=markets.is_open(a, t_mk), cur=m.get("cur"),
                         name=m.get("name"), risk_u=a in rset)
-        tk = ctheme.get(a)
-        return dict(tk=tk or "crypto", theme=cth.get(tk) if tk else "Crypto", watch=bool(tk), ex="crypto", open=True)
+        tk = ctier(a); u = du.get(a)
+        return dict(tk=tk, theme=cth.get(tk) or CTL.get(tk, "Crypto"), watch=tk in cth, ex="crypto", open=True, day_u=(bool(u) or a not in risk_only) and a not in dx_, day_x=dx_.get(a),
+                    cg_rank=u[1] if u else None, mcap=u[2] if u else None, warm=warm(a), warm_h=warm_h)
     # ---- asset table ----
     assets = []
     for a, r in sorted(lp.items()):
@@ -468,7 +487,12 @@ def build(con):
         v=6, gas=gas, generated=n_ep, updated=updated, currency="GBP", start=start, accounts=accounts, account_split=asplit,
         sleeves=sleeves, focus=focus, transfers=transfers, markets=markets.status(t_now),
         themes=[dict(key=k, label=v.get("label", k), watch=bool(v.get("watch")), n=len(v.get("tickers", []))) for k, v in (c["stocks"].get("universe") or {}).items()]
-               + [dict(key=k, label=l, watch=True, n=sum(1 for x in (CC.get("watch_ids") or {}).values() if x == k)) for k, l in cth.items()],
+               + [dict(key=k, label=l, watch=True, n=sum(1 for x in (CC.get("watch_ids") or {}).values() if x == k)) for k, l in cth.items()]
+               + [dict(key=k, label=l, watch=False, n=sum(1 for x in assets if x.get("tk") == k), crypto=True) for k, l in CTL.items()],
+        day_universe=dict(t=ep(DU["ts"]) if DU.get("ts") else None, n=DU.get("n"), screened=DU.get("screened"), excluded=DU.get("excluded") or {}, base_excluded=dx_,
+                          memes_known=DU.get("memes_known"), meme_allow=DU.get("meme_allow") or [], warm_h=warm_h, top_n=CC.get("top_n"),
+                          warming=sorted(x["a"] for x in assets if x.get("warm") is not None), rules={k: v for k, v in (CC.get("day_universe") or {}).items() if k != "meme_blocklist"},
+                          blocklist_n=len((CC.get("day_universe") or {}).get("meme_blocklist") or [])),
         costs=c["stocks"].get("costs"), migrated=json.loads((con.execute("SELECT value FROM state WHERE key='migrated_v5'").fetchone() or ["null"])[0]),
         fx=dict(rate=sig(rate, 6), gbpusd=round(1 / rate, 4) if rate else None, t=ep(fx[1]) if fx else None,
                 source=fx[2] if fx else None, stale=bool(fx[3]) if fx else True,

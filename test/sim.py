@@ -289,7 +289,10 @@ assert all(abs(cash[s] - recon[s]) < 1e-6 for s in cash), "cash reconciliation"
 assert all(abs(acash[k] - arecon[k]) < 1e-6 for k in arecon), "v6 cash reconciliation per pot x account (cash crossed accounts)"
 assert n_cross == 0 and acc_eq_ok and all(stock_buys_acct.values()), "v6: no automatic cross-account move; equity = crypto + stocks; both accounts traded"
 assert GAS_LIVE in gas_vals and float(c["gas"]["fallback_gbp"]) in gas_vals, "gas live + fallback"
-if DROP: assert DROP not in cs["picks"] and drop_sells and new_picks and all(new_buys.values()), "Monday re-pick"
+# every replacement pick gets bought - unless the pick count grew (n_picks rises with Core equity) and Core's stocks cash
+# is already below one min trade (it is then built from the next rebalance trims; not a bug)
+if DROP: assert DROP not in cs["picks"] and drop_sells and new_picks and any(new_buys.values()) and (
+    all(new_buys.values()) or (len(cs["picks"]) > len(PICKS0) and acash[("core", "stocks")] < float(c["risk"]["min_trade_size"]))), "Monday re-pick"
 assert len(cs["picks"]) == stockrank.n_picks(c, eqc) or len(cs["picks"]) == len([1 for r in RANK0.values() if r["eligible"]]), "pick count"
 print(f"v7.1 reconciliation (check_data on dashboard.build every 3h + trader ledger = Day tab): {RECON['runs']} exports x {RECON['checks']} checks, failures: {RECON['fails'][:10]}")
 assert not RECON["fails"], "dashboard figures must reconcile"
@@ -400,14 +403,17 @@ MOVES = [("BRK_TP", U(9, 30), U(9, 45), B1), ("BRK_TP", U(9, 45), U(10, 30), 1.0
          ("BRK_NEG", U(13, 30), U(13, 45), B1),                                                                                   # break, negative sentiment
          ("BTC", U(15), U(16), 0.985), ("BRK_MKT", U(15, 30), U(15, 45), B1),                                                     # break while BTC falls
          ("MOMO", U(8) - timedelta(hours=24), U(8, 30), 1.10), ("MOMO", U(8, 30), U(12), 1.09), ("MOMO", U(12), U(13), 0.95),    # momentum: run then fade
-         ("SIMSTK", U(15, 30), U(15, 45), B1), ("SIMSTK", U(15, 45), U(16, 30), 1.01)]                                            # US stock breakout (flattened before close)
+         ("SIMSTK", U(15, 30), U(15, 45), B1), ("SIMSTK", U(15, 45), U(16, 30), 1.01),
+         ("NEWC", U(12), U(12, 15), B1), ("NEWC", U(14, 15), U(14, 30), B1)]                                                       # v7.2: new universe coin listed 09:45
+NEWC0 = U(9, 45)                                                                                                                  #   -> warming up until 13:45 (4h)                                            # US stock breakout (flattened before close)
 VOLJ = {"BRK_TP": [U(9, 30)], "BRK_TRAIL": [U(10)], "BRK_STOP": [U(11)], "BRK_HOLD": [U(12)], "BRK_RSI": [U(13)], "BRK_NEG": [U(13, 30)], "BRK_MKT": [U(15, 30)],
-        "BRK_CD": [U(14), U(14, 45)], "BRK_HOT": [U(19)]}
-P7 = {a: 1.0 for a in CRY}; P7["BTC"] = 80000.0; P7["SIMSTK"] = 50.0; V24 = {a: 1e8 for a in CRY}
+        "BRK_CD": [U(14), U(14, 45)], "BRK_HOT": [U(19)], "NEWC": [U(12), U(14, 15)]}
+P7 = {a: 1.0 for a in CRY + ["NEWC"]}; P7["BTC"] = 80000.0; P7["SIMSTK"] = 50.0; V24 = {a: 1e8 for a in CRY + ["NEWC"]}
 rng7 = random.Random(7)
 def step_prices(t):
     for a in list(P7):
         if a == "SIMSTK" and not markets.is_open(a, t): continue
+        if a == "NEWC" and t < NEWC0: continue          # v7.2: not in the universe before 09:45 -> history builds from snapshots
         r = 0.0
         for ea, f0, f1, mult in MOVES:
             if ea == a and f0 <= t < f1: r += mult ** (1 / max(1, int((f1 - f0).total_seconds() // 900))) - 1
@@ -499,7 +505,20 @@ trader.cfg = _cfg
 ds = json.loads(con.execute("SELECT value FROM state WHERE key='day_subs'").fetchone()[0])
 print("min-move filter (x20):", [(d["a"], d["block"]) for d in ds["cands"]][:4])
 assert con.execute("SELECT COUNT(*) FROM trades WHERE side='BUY'").fetchone()[0] == n0, "min expected move filter"
+# v7.2: a coin that just joined the DAY universe is 'warming up' (no momentum/burst entry) until warmup_h of history exist
+wh = float(c["crypto"].get("warmup_h", 4))
+newc_sig = con.execute("SELECT ts, action, reason FROM signals WHERE sleeve='day' AND asset='NEWC' ORDER BY ts").fetchall()
+warm_sig = [r for r in newc_sig if "warming up" in (r[2] or "")]
+early_buy = [x for x in tr7 if x["asset"] == "NEWC" and x["side"] == "BUY" and datetime.fromisoformat(x["ts"]) < NEWC0 + timedelta(hours=wh)]
+print(f"v7.2 NEWC (listed {lt(NEWC0):%H:%M} UK): {len(warm_sig)} 'warming up' signals until {lt(datetime.fromisoformat(warm_sig[-1][0])):%H:%M} UK, "
+      f"burst decisions {sorted(v7['cands_seen'].get('NEWC', []))}, buys before warm: {len(early_buy)}")
+assert warm_sig and not early_buy, "new universe coin warms up before any DAY entry"
+assert datetime.fromisoformat(warm_sig[-1][0]) < NEWC0 + timedelta(hours=wh, minutes=1), "warm-up ends after warmup_h"
+assert any("warming up" in x for x in v7["cands_seen"].get("NEWC", [])), "burst setup on a warming coin is skipped with 'warming up'"
 con.close(); V7.unlink(); common.DB = SIM
+import subprocess
+r_ = subprocess.run([sys.executable, str(HERE / "test" / "test_universe.py")], capture_output=True, text=True); print(r_.stdout.strip())
+assert r_.returncode == 0, "test_universe.py (DAY universe filter + sentiment mapping)"
 print("v7 DAY checks passed")
 
 print("ALL CHECKS PASSED")

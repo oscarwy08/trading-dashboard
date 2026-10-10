@@ -3,6 +3,25 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7.2 (2026-10-10): wider DAY crypto universe (paper only)
+- **Universe** (`crypto.day_universe` in config.yaml, built by collector.py from the top-300 CoinGecko snapshot it already
+  fetches - no extra price calls): the unchanged top-N base coins **plus** every coin with market cap >= $50M, 24h volume
+  >= $5M and 24h volume >= 2% of market cap (max 150 extras). Excluded: stablecoins, wrapped / staked / bridged / liquid-staking
+  coins, exchange tokens, `exclude_symbols`, and memecoins (CoinGecko `meme-token` category fetched once a day and cached in
+  state `meme_ids`, plus the config `meme_blocklist`). `meme_allow` (DOGE, PEPE) overrides the meme filter. The same
+  exclusions apply to the base set for DAY trading: base coins such as BNB / LEO / WBT (exchange tokens) or PAXG / XAUT (gold
+  tokens) stay priced (Markets, CORE, RISK) but the DAY pot does not open trades in them (state `day_excluded`; CORE coins
+  `core_ids` are never excluded). Saved in state
+  `day_universe` (coins, counts) and exported as `data.json.day_universe`.
+- **Rules unchanged**: momentum + burst signals, the burst volume rule (last hour >= 2x the average hour), sizing and stops
+  are exactly as in v7. New coins are only a bigger pool.
+- **Warming up**: intraday history for a new coin is built from the 15-min snapshots (no backfill). Until it has
+  `crypto.warmup_h` (4h) of history the DAY pot skips it with "warming up: Xh of 4h price history" (momentum and burst);
+  the Markets tab shows a "warming up x/4h" tag, CoinGecko rank + market cap, and groups crypto into top tokens / mid caps.
+- **Sentiment**: ingest_sentiment.py accepts any universe symbol (and CoinGecko ids / common names mapped to it).
+- **Tests**: `python3 test/test_universe.py` (filter rules, meme allowlist, sentiment mapping); test/sim.py lists a coin
+  mid-run and asserts it warms up (no DAY entry, burst setup skipped with "warming up") for 4h.
+
 ## v7.1 (2026-10-10): dashboard figures reconcile + one sub-strategy money definition
 - **Sub-strategy ledger** (`daypot.sub_ledger`, used by BOTH the trader for sizing and dashboard.py for display): per account,
   a sub-strategy's **cash** = its share (50%) of the Day start money + its realised P&L (closed trades, after all fees) - the
@@ -244,6 +263,7 @@ migrate_v5_xstocks.py one-off xStocks -> normal tickers migration (idempotent; r
 ingest_sentiment.py   loads data/sentiment/*.json into SQLite
 reset_sleeves.py      DISABLED (superseded by great_reset.py)
 great_reset.py        one-off great reset 2026-10-10: archive to data/archive/ + fresh £200 v7 start (refuses to run twice)
+test/test_universe.py v7.2 DAY crypto universe filter + sentiment symbol mapping
 test/check_data.py    v7.1 reconciliation of docs/data.json (every total = sum of its parts; run by ci_cycle.sh + check.js)
 test/sim.py           backtest-style dry run on a throwaway DB copy (simulated clock + synthetic prices); deletes the copy.
                       v4 adds RISK: breakout entries via the real screen, 12% stop, trailing take-profit, 7-day max hold,

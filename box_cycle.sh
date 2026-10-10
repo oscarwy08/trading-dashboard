@@ -33,7 +33,7 @@ try:
     r=json.load(sys.stdin)["workflow_runs"][0]; t=D.datetime.fromisoformat(r["updated_at"].replace("Z","+00:00"))
     print(1 if D.datetime.now(D.timezone.utc)-t < D.timedelta(hours=3) else 0)
 except Exception: print(0)')
-  if [ "$ok" = 1 ]; then
+  if [ "$ok" = 1 ] && [ -z "$FORCE_BOX" ]; then
     log "GitHub Actions cycle is live - removing the box_cycle.sh cron entry (box no longer trades)"
     crontab -l 2>/dev/null | sed -E 's@^([^#].*box_cycle\.sh.*)$@#REMOVED-v4 (GitHub Actions live) \1@' | crontab -
     exit 0

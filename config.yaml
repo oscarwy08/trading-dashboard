@@ -22,7 +22,22 @@ crypto:
   core_ids: [bitcoin, ethereum, ripple, worldcoin-wld, monad, solana]   # CoinGecko ids
   watch_ids: {pax-gold: rwa, tether-gold: rwa, ondo-finance: rwa}   # always priced (Markets 'watch closely'); verified liquid 2026-10-10 (vol > $95M/day)
   watch_themes: {rwa: "Real-world assets (tokenised)"}
-  top_n: 15                     # plus top N by market cap (stables/wrapped excluded)
+  top_n: 15                     # base set: top N by market cap (stables/wrapped excluded) - unchanged, the DAY universe adds to it
+  day_universe:                 # v7.2 (2026-10-10): wider DAY crypto universe from the SAME top-300 markets snapshot the RISK pot uses
+    enabled: true               #   (no extra price calls; intraday price + volume history builds from the 15-min snapshots)
+    min_mcap_usd: 50000000      # market cap >= $50M
+    min_vol_usd: 5000000        # 24h volume >= $5M
+    min_vol_mcap: 0.02          # 24h volume >= 2% of market cap (real liquidity)
+    max_coins: 150              # safety cap (DB / data.json size), market-cap order
+    exclude_symbols: []         # extra exclusions on top of crypto.exclude_symbols + riskpot.crypto exclusions (stables, wrapped/
+                                #   staked/bridged, exchange tokens BNB/OKB/LEO/CRO/...; name words usd/wrapped/staked/bridged/...)
+    meme_category: meme-token   # CoinGecko category -> memecoin exclusion set (ONE call per day, state meme_ids)
+    meme_refresh_h: 24
+    meme_blocklist: [DOGE, SHIB, PEPE, BONK, WIF, FLOKI, TRUMP, FARTCOIN, PENGU, SPX, MOG, POPCAT, BRETT, PNUT, TURBO, NEIRO,
+                     BOME, MEW, GOAT, BABYDOGE, MOODENG, CHILLGUY, DOGS, NOT, PEOPLE, MEME, ACT, BAN, AI16Z, GIGA, MELANIA,
+                     WOJAK, LADYS, SATS, MYRO, SLERF, SUNDOG, DEGEN, TOSHI, KEYCAT, SNEK, PONKE, MICHI, APU, HIPPO, USELESS]
+    meme_allow: [DOGE, PEPE]    # allowlist (user 2026-10-10): overrides the meme category + blocklist
+  warmup_h: 4                   # DAY: a coin needs this much stored price history before momentum/burst entries ('warming up')
   exclude_symbols: [USDT, USDC, USDE, DAI, FDUSD, USDS, PYUSD, USD1, TUSD, BUSD, USDD, USDTB, BSC-USD,
                     STETH, WSTETH, WBTC, WETH, WEETH, CBBTC, WBETH, SUSDE, SUSDS, BUIDL, RSETH, LBTC, FIGR_HELOC, JITOSOL]
   kyberswap:                    # MON/USDC cross-check on Monad

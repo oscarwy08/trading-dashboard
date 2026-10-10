@@ -88,6 +88,66 @@ def monad_tokens(con, c, status):
     status["monad"] = f"{len(rows)} liquid eco tokens, {sum(1 for x in out if x['_dex_ok'])} pass KyberSwap check"
     return out
 
+def meme_ids(con, U):
+    """CoinGecko 'meme-token' category (ids + symbols), refreshed once a day with ONE markets call (top 250 memes by market cap -
+    every memecoin big enough for the DAY floors). Cached in state meme_ids; on failure the cached set is kept and the config
+    blocklist still applies."""
+    cache = st_get(con, "meme_ids") or {}
+    if not cache.get("ts") or datetime.fromisoformat(cache["ts"]) < datetime.now(timezone.utc) - timedelta(hours=float(U.get("meme_refresh_h", 24))):
+        time.sleep(2)
+        rows = get(f"{CG}/coins/markets", {"vs_currency": "usd", "category": U.get("meme_category", "meme-token"), "order": "market_cap_desc",
+                                           "per_page": 250, "page": 1}, tries=1)
+        if rows:
+            cache = dict(ts=iso(), ids=sorted({x["id"] for x in rows}), syms=sorted({(x.get("symbol") or "").upper() for x in rows}))
+            st_set(con, "meme_ids", cache)
+        else:
+            L.warning("meme-token category fetch failed - %s", "using the cached set" if cache else "only the meme blocklist applies")
+            if cache: cache["ts"] = iso(); st_set(con, "meme_ids", cache)    # retry tomorrow, not every cycle (rate limits)
+            else: st_set(con, "meme_ids", dict(ts=iso(), ids=[], syms=[], failed=True))
+    return set(cache.get("ids") or [])
+
+def day_excluded(x, c, memes):
+    """v7.2 DAY universe exclusion reason for one CoinGecko markets row (None = allowed): stablecoins, wrapped/staked/bridged,
+    exchange tokens (crypto.exclude_symbols + day_universe.exclude_symbols + the riskpot.crypto rules), memecoins (CoinGecko
+    meme category ids + meme_blocklist) unless in meme_allow."""
+    import riskpot
+    cc = c["crypto"]; U = cc.get("day_universe") or {}; R = (c.get("riskpot") or {}).get("crypto") or {}
+    R2 = dict(R, exclude_symbols=list(R.get("exclude_symbols", [])) + list(U.get("exclude_symbols", [])))
+    sym = (x.get("symbol") or "").upper()
+    why = riskpot.excluded(x, R2, {s.upper() for s in cc["exclude_symbols"]})
+    if not why and (sym in {s.upper() for s in U.get("meme_blocklist", [])} or x["id"] in memes) and sym not in {s.upper() for s in U.get("meme_allow", [])}:
+        why = "memecoin"
+    return why
+
+def day_universe(con, c, top, ts):
+    """v7.2 wider DAY crypto universe from the SAME top-300 markets snapshot (no extra price calls): the unchanged base set
+    (top_n by market cap + core ids) PLUS every coin with market cap >= min_mcap_usd, 24h volume >= min_vol_usd and 24h volume
+    >= min_vol_mcap x market cap, excluding stablecoins, wrapped/staked/bridged and exchange tokens (crypto.exclude_symbols +
+    the riskpot.crypto exclusion rules) and memecoins (CoinGecko 'meme-token' category + meme_blocklist); meme_allow (DOGE,
+    PEPE) overrides the meme exclusion. Returns the extra markets rows (market-cap order) and stores a summary in state
+    'day_universe' (Markets tab, sentiment ingest)."""
+    import riskpot
+    cc = c["crypto"]; U = cc.get("day_universe") or {}
+    if not U or not U.get("enabled", True) or not top: return []
+    R = (c.get("riskpot") or {}).get("crypto") or {}; base_ex = {s.upper() for s in cc["exclude_symbols"]}
+    R2 = dict(R, exclude_symbols=list(R.get("exclude_symbols", [])) + list(U.get("exclude_symbols", [])))
+    memes = meme_ids(con, U)
+    allow = {s.upper() for s in U.get("meme_allow", [])}; block = {s.upper() for s in U.get("meme_blocklist", [])}
+    keep, why_n, seen = [], {}, set()
+    for i, x in enumerate(top):
+        sym = (x.get("symbol") or "").upper(); mc, v = x.get("market_cap") or 0, x.get("total_volume") or 0
+        why = day_excluded(x, c, memes)
+        if not why and mc < float(U.get("min_mcap_usd", 5e7)): why = "market cap < floor"
+        if not why and v < float(U.get("min_vol_usd", 5e6)): why = "24h volume < floor"
+        if not why and (not mc or v / mc < float(U.get("min_vol_mcap", 0.02))): why = "volume/market cap < floor"
+        if not why and sym in seen: why = "duplicate symbol"
+        if why: k = why.split(" (")[0]; why_n[k] = why_n.get(k, 0) + 1; continue
+        seen.add(sym); keep.append(dict(x, _rank=i + 1))
+    keep = keep[:int(U.get("max_coins", 150))]
+    st_set(con, "day_universe", dict(ts=ts, n=len(keep), screened=len(top), excluded=why_n, memes_known=len(memes), meme_allow=sorted(allow),
+                                     coins={x["symbol"].upper(): [x["id"], x["_rank"], round(x.get("market_cap") or 0), round(x.get("total_volume") or 0)] for x in keep}))
+    return keep
+
 def crypto(con, c, ts, status):
     """ONE top-300 markets snapshot (2 calls) feeds: the base set (top_n + core ids, priced as before), and the RISK pot
     breakout screen (riskpot.screen). Only the best riskpot.crypto.watch_n candidates (+ recently screened, + held) are
@@ -105,11 +165,24 @@ def crypto(con, c, ts, status):
     if need:
         time.sleep(2); extra = get(f"{CG}/coins/markets", {"vs_currency": "usd", "ids": ",".join(dict.fromkeys(need)), "price_change_percentage": PCT}) or []
     base = [x for x in top if x["symbol"].upper() not in ex and "USD" not in x["symbol"].upper()][:cc["top_n"]]
+    uni = day_universe(con, c, top, ts)                       # v7.2: + liquid mid/small caps (same snapshot, no extra calls)
+    bids = {x["id"] for x in base}; base += [x for x in uni if x["id"] not in bids]
     by_id = {x["id"]: x for x in top + extra}
     rows = {x["id"]: x for x in base}
     for i in list(cc["core_ids"]) + wids:
         if i in by_id: rows[i] = by_id[i]
     base_syms = {x["symbol"].upper() for x in rows.values()}
+    # v7.2: the same exclusions apply to the unchanged base set for DAY trading (exchange tokens like BNB/LEO, gold/RWA watch
+    # tokens, memecoins outside meme_allow) - they stay priced (Markets, CORE, RISK) but the DAY pot does not trade them.
+    # CORE coins (core_ids) are never excluded; the 'pegged' price heuristic is not applied to the base set.
+    U = cc.get("day_universe") or {}
+    if U and U.get("enabled", True) and top:
+        memes = meme_ids(con, U); dx = {}
+        for x in rows.values():
+            if x["id"] in cc["core_ids"]: continue
+            why = day_excluded(x, c, memes)
+            if why and why != "pegged / stable-like": dx[x["symbol"].upper()] = why
+        st_set(con, "day_excluded", dx)
     # ---- RISK screen ----
     mon = []
     if R:
@@ -145,7 +218,7 @@ def crypto(con, c, ts, status):
                     x["current_price"], x.get("high_24h"), x.get("low_24h"), x.get("total_volume"),
                     x.get("market_cap"), "coingecko"))
         con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"cgid:{sym}", x["id"]))
-    status["coingecko"] = (f"ok ({len(seen)} coins priced, top {len(top)} screened, {len(risk_syms)} risk-only)" if rows else "FAILED")
+    status["coingecko"] = (f"ok ({len(seen)} coins priced, top {len(top)} screened, DAY universe +{len(uni)}, {len(risk_syms)} risk-only)" if rows else "FAILED")
     return rows
 
 def kyber(con, c, ts, status):
@@ -408,7 +481,8 @@ def main():
         con.commit()
     try: daily(con, c, status)
     except Exception as e: L.exception("daily closes failed"); status["daily"] = f"FAILED: {e}"
-    n = backfill(con, c, rows); con.commit()
+    uni_only = {i for i, x in rows.items() if x.get("_rank")} - set(c["crypto"]["core_ids"]) - set((c["crypto"].get("watch_ids") or {}).keys())
+    n = backfill(con, c, {i: x for i, x in rows.items() if i not in uni_only}); con.commit()   # v7.2: universe coins warm up from snapshots (no extra calls)
     con.execute("INSERT OR REPLACE INTO state VALUES('collector_status',?)", (f"{ts} " + "; ".join(f"{k}: {v}" for k, v in status.items()),))
     con.commit()
     print(f"[collector {ts}]", status, f"backfilled={n}")

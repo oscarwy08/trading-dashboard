@@ -1,12 +1,12 @@
-PAPER scorecard Sat 10 Oct 17:53 UK
-TOTAL Equity £199.93 (-0.03% since £200 start) | Day P&L £-0.07
-vs BTC buy&hold (£) +0.30% | Max DD -0.13% | Win rate 0.00% over 1 closed
-CRYPTO acct (Monad wallet) £99.93 (-0.07% vs £100) | P&L £-0.07 | day £-0.07 | cash £63.93 | invested £36.00 | realised £-0.08 | fees £0.14 (fee £0.137, gas £0.003) | by pot: CORE £50.00 (cash £50.00), DAY £30.10 (cash £9.93), RISK £19.84 (cash £4.00)
+PAPER scorecard Sat 10 Oct 17:58 UK
+TOTAL Equity £199.84 (-0.08% since £200 start) | Day P&L £-0.16
+vs BTC buy&hold (£) +0.29% | Max DD -0.13% | Win rate 0.00% over 1 closed
+CRYPTO acct (Monad wallet) £99.84 (-0.16% vs £100) | P&L £-0.16 | day £-0.16 | cash £63.93 | invested £35.91 | realised £-0.08 | fees £0.14 (fee £0.137, gas £0.003) | by pot: CORE £50.00 (cash £50.00), DAY £30.02 (cash £9.93), RISK £19.82 (cash £4.00)
 STOCKS acct (Trading 212) £100.00 (+0.00% vs £100) | P&L £+0.00 | day £+0.00 | cash £100.00 | invested £0.00 | realised £+0.00 | fees £0.00 () | by pot: CORE £50.00 (cash £50.00), DAY £30.00 (cash £30.00), RISK £20.00 (cash £20.00)
 CORE £100.00 (+0.00% vs £100) | day £+0.00 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | built 0/11 | open: none | crypto £50.00 (cash £50.00) / stocks £50.00 (cash £50.00)
-DAY  £60.10 (+0.16% vs £60) | day £+0.10 | realised £-0.08 | win 0.00% of 1 | today 5 trades (4 buys, 1 sells), best HYPE £-0.08, worst HYPE £-0.08 | entries open | open: ADA, WLD, XRP | crypto £30.10 (cash £9.93) / stocks £30.00 (cash £30.00)
-RISK £39.84 (-0.41% vs £40) | day £-0.16 | realised £+0.00 | win n/a of 0 | today 2 trades (2 buys, 0 sells) | active, dd -0.4%, 2 new today | open: CAP, DRV | crypto £19.84 (cash £4.00) / stocks £20.00 (cash £20.00)
+DAY  £60.02 (+0.04% vs £60) | day £+0.02 | realised £-0.08 | win 0.00% of 1 | today 5 trades (4 buys, 1 sells), best HYPE £-0.08, worst HYPE £-0.08 | entries open | open: ADA, WLD, XRP | crypto £30.02 (cash £9.93) / stocks £30.00 (cash £30.00)
+RISK £39.82 (-0.46% vs £40) | day £-0.18 | realised £+0.00 | win n/a of 0 | today 2 trades (2 buys, 0 sells) | active, dd -0.5%, 2 new today | open: CAP, DRV | crypto £19.82 (cash £4.00) / stocks £20.00 (cash £20.00)
   DAY momentum all: 0 closed trades, win n/a%, avg win n/a, avg loss n/a, PF n/a, closed P&L £+0.00 (after its fees £0.00; + £0.05 buy fees on open positions), expectancy n/a/trade | today: 0 trades, P&L £+0.00
   DAY burst    all: 1 closed trades, win 0.0%, avg win n/a, avg loss -1.67%, PF 0.0, closed P&L £-0.08 (after its fees £0.03; + £0.02 buy fees on open positions), expectancy -1.67%/trade | today: 1 trades, P&L £-0.08
-  DAY burst threshold 0.55 (Day pot today +0.16%), 0/0 setups taken last cycle
+  DAY burst threshold 0.55 (Day pot today +0.04%), 0/3 setups taken last cycle
 GBP/USD 1.3241 (coingecko, 2026-10-10T16:52 UTC)

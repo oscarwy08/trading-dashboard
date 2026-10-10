@@ -534,16 +534,16 @@ function renderMarkets() {
     (!S.mTheme || (S.mTheme === '*watch' ? a.watch : a.tk === S.mTheme)) &&
     (!q || a.a.toLowerCase().includes(q) || (a.theme || '').toLowerCase().includes(q) || (a.name || '').toLowerCase().includes(q)));
   const cols = [
-    {k: 'a', l: 'Asset', asc: 1, f: r => assetCell(r.a, r.k === 'stock' ? [r.name, r.ex === 'LSE' ? 'London' : r.ex === 'ASX' ? 'ASX' : 'US'].filter(Boolean).join(' · ') : 'Crypto')},
+    {k: 'a', l: 'Asset', asc: 1, f: r => assetCell(r.a, r.k === 'stock' ? [r.name, r.ex === 'LSE' ? 'London' : r.ex === 'ASX' ? 'ASX' : 'US'].filter(Boolean).join(' · ') : r.cg_rank ? `Crypto · #${r.cg_rank}${r.mcap ? ' · $' + (r.mcap >= 1e9 ? (r.mcap / 1e9).toFixed(1) + 'B' : (r.mcap / 1e6).toFixed(0) + 'M') : ''}` : 'Crypto')},
     {k: 'gbp', l: 'Price', num: 1, f: r => `${fP(r.gbp)}<div class="muted small">${r.cur && r.cur !== 'USD' ? esc(r.cur === 'GBp' ? 'quoted in pence' : r.cur) : fP(r.usd, '$')}</div>`},
     {k: 'chg', l: '24h', num: 1, f: r => `<span class="${cls(r.chg)}">${fPct(r.chg)}</span>${r.chg_d ? '<div class="muted small">last day</div>' : ''}`},
     {k: 'spark', l: 'Trend', nosort: 1, f: r => spark(r.spark)},
-    {k: 'score', l: 'Signal', f: r => scoreBar(r.score, r.action === 'BUY' || r.action === 'SELL' ? sideTag(r.action) : '')},
+    {k: 'score', l: 'Signal', f: r => isNum(r.warm) ? `<span class="tag" title="New in the Day pot universe: its price and volume history is built from the 15-minute snapshots. Day trades start once ${r.warm_h}h of history exist.">warming up ${r.warm.toFixed(1)}h / ${r.warm_h}h</span>` : scoreBar(r.score, r.action === 'BUY' || r.action === 'SELL' ? sideTag(r.action) : '')},
     {k: 'rank', l: 'Core score', num: 1, f: r => isNum(r.rank) ? r.rank.toFixed(2) : '<span class="muted">-</span>'},
     {k: 'open', l: 'Market', sv: r => r.open ? 1 : 0, f: r => r.k === 'crypto' ? '<span class="muted">24/7</span>' : r.open ? '<span class="up">open</span>' : '<span class="muted">closed</span>'},
     {k: 'pos', l: 'Held', sv: r => posVal(r.a), f: r => (r.pos ? (r.held || []).map(potTag).join(' ') : '') + (r.risk_u ? ' <span class="tag" title="in the Risk pot stock universe">risk</span>' : '') || '<span class="muted">-</span>'},
   ];
-  const order = TH.map(t => t.key).concat(['watchlist', 'risk_extra', 'crypto']);
+  const order = TH.filter(t => !t.crypto).map(t => t.key).concat(['watchlist', 'risk_extra', 'crypto_large', 'crypto_mid', 'crypto', 'crypto_risk']);
   const grp = {}; rows.forEach(r => (grp[r.tk || 'crypto'] = grp[r.tk || 'crypto'] || []).push(r));
   const keys = Object.keys(grp).sort((x, y) => {
     const wx = (TH.find(t => t.key === x) || {}).watch ? 0 : 1, wy = (TH.find(t => t.key === y) || {}).watch ? 0 : 1;
@@ -556,8 +556,9 @@ function renderMarkets() {
     box.appendChild(d);
     table($('table', d), cols, grp[k], S.aSort, renderMarkets, {key: r => r.a, onRow: openAsset, empty: 'No assets'});
   });
-  const l = D.risk.limits;
-  $('#mk-note').innerHTML = `${marketLine()}<br>${S.acct ? `Showing ${esc(ACC[S.acct])} assets only (${esc(ACCW[S.acct])}). ` : ''}Crypto trades settle in the Crypto account (Monad wallet), shares in the Stocks account (Trading 212). Stocks are normal exchange shares (US tickers, London .L incl. AIM, Australia .AX), priced from Yahoo Finance; London quotes in pence are converted to £. Stock trades only happen while that exchange is open (US 14:30-21:00 UK, London 08:00-16:30 UK; no weekends/holidays) - orders decided while closed are queued for the open. ` +
+  const l = D.risk.limits, DU = D.day_universe || {}, UR = DU.rules || {}, ex = DU.excluded || {};
+  const uLine = isNum(DU.n) ? `<b>Day pot crypto universe:</b> the top ${DU.top_n || 15} coins by market cap plus <b>${DU.n} liquid coins</b> picked every 15 minutes from the CoinGecko top ${DU.screened || 300} (the same snapshot the Risk pot uses, no extra data calls): market cap at least $${((UR.min_mcap_usd || 0) / 1e6).toFixed(0)}M, daily trading volume at least $${((UR.min_vol_usd || 0) / 1e6).toFixed(0)}M and at least ${((UR.min_vol_mcap || 0) * 100).toFixed(0)}% of the market cap. Never: stablecoins, wrapped/staked/bridged coins, exchange tokens or memecoins (CoinGecko meme category + a blocklist of ${DU.blocklist_n || 0})${(DU.meme_allow || []).length ? ' - except ' + DU.meme_allow.map(esc).join(', ') : ''}. Left out this cycle: ${Object.entries(ex).map(([k, v]) => `${esc(k)} ${v}`).join(' · ') || '-'}. ${Object.keys(DU.base_excluded || {}).length ? `Priced but not traded by the Day pot: ${Object.entries(DU.base_excluded).map(([k, v]) => `${esc(k)} (${esc(String(v).replace(/^excluded \((.*)\)$/, '$1'))})`).join(', ')}. ` : ''}${(DU.warming || []).length ? `${DU.warming.length} new coin${DU.warming.length === 1 ? ' is' : 's are'} still <b>warming up</b> (no Day trades until ${DU.warm_h}h of 15-minute price history exist).` : ''}<br>` : '';
+  $('#mk-note').innerHTML = `${marketLine()}<br>${uLine}${S.acct ? `Showing ${esc(ACC[S.acct])} assets only (${esc(ACCW[S.acct])}). ` : ''}Crypto trades settle in the Crypto account (Monad wallet), shares in the Stocks account (Trading 212). Stocks are normal exchange shares (US tickers, London .L incl. AIM, Australia .AX), priced from Yahoo Finance; London quotes in pence are converted to £. Stock trades only happen while that exchange is open (US 14:30-21:00 UK, London 08:00-16:30 UK; no weekends/holidays) - orders decided while closed are queued for the open. ` +
     `Signal = the Day pot's momentum + sentiment score (-1 to +1): it buys at ≥ ${l.buy} (≥ ${l.focus_buy} for MON, WLD, XRP) and sells at ≤ ${l.sell}. Names without a live price show the last daily close. Core score = the weekly stock ranking (Core pot tab).`;
 }
 

@@ -249,6 +249,7 @@ def main():
                      info + (f", sentiment {s['score']:+.2f} (conf {s['confidence']:.2f})" if s else ", no fresh sentiment"))
 
     risk_only = set(sget(con, "risk_only") or []) | set(sget(con, "risk_only_stocks") or [])   # priced only for the RISK pot
+    day_x = sget(con, "day_excluded") or {}    # v7.2: base coins outside the DAY universe (exchange tokens, gold/RWA tokens, memes)
     RP = c.get("riskpot") or {}
 
     # ================= RISK exits: stop / trailing take-profit / max hold / sentiment =================
@@ -516,6 +517,11 @@ def main():
                 closed_msg(a) if not mopen(a) else
                 f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= scl else
                 "stale price" if not q["fresh"] else "stale FX rate" if fx_stale else None)
+    warm_h = float(c["crypto"].get("warmup_h", st["min_history_h"]))
+    def warming(a):          # v7.2: wide-universe coins build history from the 15-min snapshots -> no DAY entries until warm
+        if klass_of(a) != "crypto": return None    # stocks: intraday history restarts every session (not a universe coin)
+        pts = hist.get(a) or []; h = (pts[-1][0] - pts[0][0]).total_seconds() / 3600 if len(pts) > 1 else 0.0
+        return f"warming up: {h:.1f}h of {warm_h:g}h price history" if h < warm_h else None
     def open_day(a, sub, value, tp_, sl_, at_, reason, extra=None):
         buy("day", a, value, reason, sub=sub, conf=(extra or {}).get("conf", (extra or {}).get("score")))
         dmeta[a] = dict(sub=sub, tp=round(tp_, 3), sl=round(sl_, 3), atr=round(at_, 3) if at_ else None, peak=px[a]["price"], opened=ts, **(extra or {}))
@@ -523,9 +529,9 @@ def main():
     # ---- momentum: original score entries, ATR-scaled levels ----
     nmom = sum(1 for (sl, x) in pos if sl == "day" and sub_of(x) == "momentum")
     for a, (m, s, comb, info) in sorted(scores.items(), key=lambda kv: -(kv[1][2] or -9)):
-        if ("day", a) in pos or a in risk_only: continue
+        if ("day", a) in pos or a in risk_only or a in day_x: continue
         q = px[a]; thr = thr_of(a); ac = acc(a)
-        if comb is None: sig("day", a, m, s, comb, "SKIP", info); continue
+        if comb is None or warming(a): sig("day", a, m, s, comb, "SKIP", warming(a) or info); continue
         if comb < thr: sig("day", a, m, s, comb, "HOLD", f"score {comb} < {thr}; {info}"); continue
         at_ = atr_of(a); tp_, sl_ = daypot.levels(DM["take_profit"], DM["stop"], at_)
         value = min(max(budget("momentum", ac) * float(DM["position_pct"]) / 100, mint), free("momentum", ac) - gas_of(q["klass"]))
@@ -543,7 +549,7 @@ def main():
     thr_b, evmin = daypot.threshold(DB, day_pnl, D["daily_loss_cap_pct"]), float(DB.get("ev_min_pct", 0))
     cands = []
     for a, q in px.items():
-        if ("day", a) in pos or a in risk_only or q["klass"] not in ("crypto", "stock"): continue
+        if ("day", a) in pos or a in risk_only or a in day_x or q["klass"] not in ("crypto", "stock"): continue
         pts = hist.get(a) or []
         brk = daypot.breakout(con, a, pts, DB)
         if not brk["kind"] and "broken" not in (brk.get("info") or ""): continue      # only actual / near breakouts are listed
@@ -561,6 +567,7 @@ def main():
         vx = float(DB["volume_x"])
         lx = sget(con, f"day_exit:{a}")
         d["block"] = (brk["info"] if not brk["kind"] else
+                      warming(a) if warming(a) else
                       f"cooldown {DB['cooldown_h']}h after exit {lx[11:16]}Z" if lx and datetime.fromisoformat(lx) > t - timedelta(hours=float(DB["cooldown_h"])) else
                       f"volume x{vol:.1f} < {vx:g}x average" if vol is not None and vol < vx else
                       "no volume data (only a 24h-high break may trade without it)" if vol is None and (DB.get("require_volume") or brk["kind"] != "24h") else
