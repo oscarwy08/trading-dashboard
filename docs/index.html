@@ -8,9 +8,9 @@
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%274%27 fill=%27%231D9BF0%27/%3E%3C/svg%3E">
 <title>Paper Trader - £200 paper account</title>
-<link rel="stylesheet" href="styles.css?v=d1f7528316">
+<link rel="stylesheet" href="styles.css?v=8422fbdeeb">
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js" crossorigin="anonymous"></script>
-<script src="app.js?v=440a421c59" defer></script>
+<script src="app.js?v=8f5d13e834" defer></script>
 </head>
 <body>
 <header class="top">
@@ -101,8 +101,13 @@
   <section class="tab" id="tab-day" data-tab="day">
     <div class="card intro"><h2>Day pot <span class="muted">intraday trading</span></h2><p class="explain" id="day-intro"></p></div>
     <div class="stat-row" id="day-stats"></div>
+    <div class="card"><div class="gauges" id="day-gauges"></div></div>
+    <div class="card"><div class="card-h"><h2>Sub-strategies</h2><span class="muted" id="day-subs-sub"></span></div>
+      <div class="tw"><table id="day-subs" class="tbl"></table></div></div>
     <div class="card"><div class="card-h"><h2>Open day positions</h2><span class="muted" id="day-open-sub"></span></div>
       <div class="tw"><table id="day-pos" class="tbl clickable"></table></div></div>
+    <div class="card"><div class="card-h"><h2>Burst setups</h2><span class="muted" id="day-cands-sub"></span></div>
+      <div class="tw"><table id="day-cands" class="tbl clickable"></table></div></div>
     <div class="card"><div class="card-h"><h2>Today's day trades</h2><span class="muted" id="day-tr-sub"></span></div>
       <div class="tw"><table id="day-trades" class="tbl"></table></div></div>
   </section>
