@@ -230,7 +230,7 @@ Each account divides its funds across three pots with distinct strategies:
 
 ## Current Status (October 2026)
 
-- **Version**: v7.7 (Risk pot also buys a confirmed dip; breakouts unchanged)
+- **Version**: v7.8 (rules frozen 2026-10-10: honest EV and a 0.3% hurdle, liquidity-based crypto costs, no chase on a flat range / RSI 80 / a 7-day run, scorecard on the dashboard)
 - **Start Date**: 2026-10-10 (great reset after initial development)
 - **Balance**: £200 GBP (£100 crypto, £100 stocks)
 - **Cycle Frequency**: Every 15 minutes (when GitHub Actions cooperates)

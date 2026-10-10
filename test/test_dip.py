@@ -73,7 +73,8 @@ con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (END.isoformat(), "USDGBP", 0.
 for name, spec in (("DIPX", bounce), ("KNIFEX", knife)):
     con.execute("DELETE FROM prices WHERE asset=?", (name,))
     for ts, px in spec:
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts.isoformat(), name, "crypto", px, None, None, 2e7, 1e8, "sim", ts.isoformat()))
+        # Deep book (mcap $200bn). A $100m cap is a thin name under the liquidity cost and fails the EV hurdle on purpose.
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts.isoformat(), name, "crypto", px, None, None, 5e10, 2e11, "sim", ts.isoformat()))
 con.execute("INSERT OR REPLACE INTO state VALUES('risk_screen',?)", (json.dumps(dict(ts=END.isoformat(), top=[
     dict(a="DIPX", id="dipx", score=0.1, ok=False, why="faded from the high | no: 24h < +4%, faded > 8% from 24h high"),
     dict(a="KNIFEX", id="knifex", score=-0.4, ok=False, why="still falling | no: 24h < +4%, dropping (1h < -2%)")])),))
@@ -122,7 +123,7 @@ con = common.db()
 rate = con.execute("SELECT rate FROM fx WHERE pair='USDGBP' AND rate>0 ORDER BY ts DESC LIMIT 1").fetchone()[0]
 px0 = con.execute("SELECT price FROM prices WHERE asset='DIPX' ORDER BY ts DESC LIMIT 1").fetchone()[0]
 later = END + timedelta(minutes=20)
-con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (later.isoformat(), "DIPX", "crypto", px0 * 0.7, None, None, 2e7, 1e8, "sim", later.isoformat()))
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (later.isoformat(), "DIPX", "crypto", px0 * 0.7, None, None, 5e10, 2e11, "sim", later.isoformat()))
 con.commit(); con.close()
 common._NOW = later
 buf2 = io.StringIO()
@@ -133,7 +134,7 @@ sell = con.execute("SELECT snap FROM trades WHERE asset='DIPX' AND side='SELL' O
 ss = json.loads(sell[0]) if sell and sell[0] else {}
 check(ss.get("conf") == snap.get("conf") and ss.get("ev") == snap.get("ev") and ss.get("parts"), f"the closing sell copies the entry snapshot (conf {ss.get('conf')}, EV {ss.get('ev')})")
 con.execute("INSERT INTO positions VALUES('risk','LEGX','crypto',10,?,?,?,1)", (1.2 * rate, 10 * 1.2 * rate, later.isoformat()))
-con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (later.isoformat(), "LEGX", "crypto", 1.2, None, None, 2e7, 1e8, "sim", later.isoformat()))
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (later.isoformat(), "LEGX", "crypto", 1.2, None, None, 5e10, 2e11, "sim", later.isoformat()))
 con.commit(); con.close()
 D = dashboard.build(common.db())
 leg = next(p for p in D["positions"] if p.get("asset") == "LEGX" and p.get("sleeve") == "risk")

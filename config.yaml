@@ -88,6 +88,10 @@ stocks:
     uk_early:      {label: "British early-stage (LSE/AIM)", watch: true, tickers: [RPI.L, CWR.L, ITM.L, SEE.L, FTC.L, OXIG.L, ONT.L, SSIT.L, AVCT.L, OXB.L]}
     global_small:  {label: "Global early-stage small caps", watch: true, tickers: [SOUN, BBAI, RCAT, ACHR, JOBY, SIDU, NVTS, PL, BKSY]}
 
+rules:                          # v7.8: the rule set under test. The dashboard banner reads this. Do not bump the date to chase one day.
+  version: v7.8
+  frozen_since: "2026-10-10"
+
 strategy:                       # shared signal model (used by the DAY sleeve for entries/exits, shown on dashboard)
   focus_assets: [MON, WLD, XRP]
   buy_threshold: 0.35           # combined score needed to open a DAY position
@@ -166,9 +170,13 @@ riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mi
   record_days: 30
   ev_win_pct: 12                # fallback win% when this setup has no ATR yet. Otherwise the estimate uses the trail distance
   ev_loss_pct: 8                #   (arm +15%, give back 10% -> ~13.5% locked) and this average loss, scaled by the setup's own
-  ev_atr_ref_pct: 4             #   1h ATR vs this reference, with hit probability = its confidence (blended with measured results)
+  ev_atr_ref_pct: 4             #   1h ATR vs this reference. P(win) shrinks confidence toward 0.5 until ev_conf_full_n closes
   ev_prior_n: 10                # the 12% stop and the trail RULES are unchanged; only the EV estimate is per setup
-  ev_min_pct: 0.0
+  ev_conf_full_n: 30
+  ev_min_pct: 0.3               # hurdle: a modelled edge of a few tenths of a percent is not a trade
+  max_runup_7d_pct: 80          # breakout refused at or above this 7-day run, and Core will not lend into the name
+  runup_7d_penalty_from_pct: 40 # from here to the cap, the breakout score is scaled down and Core will not lend
+  sentiment_missing: 0.25       # a missing sentiment print is below neutral, not 0.5
   conf_size_pct: 50             # size = confidence x 50% of the account's remaining RISK cash, min £5 (risk.min_trade_size),
   max_position_pct: 20          #   max 20% of the RISK pot and max_position_gbp
   confirm_momentum: 0.0         # BREAKOUTS only: intraday momentum (4h/24h/EMA, same model as DAY) must be >= this (needs >= 2h history)
@@ -213,6 +221,8 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
   entry_start_uk: "08:00"       # no new entries before this UK time (keeps the book flat overnight)
   entry_cutoff_uk: "21:00"      # no new entries at/after this UK time
   flatten_uk: "22:00"           # force-close ALL day positions at/after this UK time (crypto); stocks 15 min before their close
+  ev_flatten_floor: 0.40        # even with hours left, this share of a Day EV is a clock exit (pays costs, keeps no target)
+  ev_flatten_full_h: 6          # hours left at which that floor applies; less time raises the clock weight toward 1
   stock_flatten_before_close_min: 15
   stock_entry_stop_before_close_min: 30
   daily_loss_cap_pct: 15        # of DAY pot UK-day start equity; halts ALL new DAY entries (both sub-strategies) for the day
@@ -225,6 +235,8 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
     share_pct: 50
     position_pct: 50            # of the momentum budget of that account per position (>= risk.min_trade_size)
     max_open: 3                 # whole pot
+    rsi_max: 80                 # no momentum entry at or above this hourly RSI (burst already had this gate)
+    ev_min_pct: 0.3             # same hurdle as burst: honest EV after costs, including the 22:00 flatten
     take_profit: {min_pct: 4, atr_x: 2.5, max_pct: 12}   # target = max(4%, 2.5 x 1h ATR%), capped 12%
     stop: {min_pct: 2, atr_x: 1.2, max_pct: 5}           # stop = max(2%, 1.2 x 1h ATR%), capped 5%
     trail_after_pct: 3          # trailing stop arms once the position has been >= +3% (net of the sell cost) ...
@@ -243,6 +255,7 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
     breakout_lookback_h: 24     # price breaks the prior 24h high (crypto: also CoinGecko's high_24h) ...
     range_lookback_h: 4         # ... or the high of a tight 4h range
     range_max_pct: 4
+    range_min_pct: 0.3          # a 4h "range" tighter than this is stuck prints, not a coil
     min_break_pct: 0.1
     max_extension_pct: 3        # never chase: at most 3% above the broken high
     volume_x: 2.0               # last-hour volume >= 2x the average hour (crypto: CoinGecko 24h-volume deltas; stocks: Yahoo 15m bars)
@@ -262,10 +275,12 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
                                 #   capital-based caution rising gradually over the whole cap range (+0.02 per 1% lost with a
                                 #   15% cap -> 0.85 at the cap, where all DAY entries stop). Gains never lower it below the base.
                                 #   No loss-streak cooldown, no trade-count cap.
-    ev_min_pct: 0.0             # ... AND expected value after costs (% per trade) > this:
+    ev_min_pct: 0.3             # ... AND expected value after costs (% per trade) > this (burst stays rare because of this hurdle, not a switch):
                                 #   EV = p x target - (1-p) x stop - round-trip costs (p = setup hit rate), blended with the
                                 #   setup's measured expectancy as trades accumulate (weight n vs ev_prior_n)
     ev_prior_n: 10
+    ev_conf_full_n: 30          # P(win) shrinks the confidence score toward 0.5 until this many closes of that setup
+    sentiment_missing: 0.25     # missing sentiment is below neutral, not 0.5
     hit_prior: 0.5              # setup hit rate prior (Beta: hit_prior x hit_prior_n pseudo-trades) ...
     hit_prior_n: 20
     record_days: 14             # ... measured over the last 14 days per setup type (old results age out)
@@ -276,7 +291,15 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
                                 #   >= loans.burst_min_conf and EV > 0) can still borrow under the inter-pot rules
 
 risk:
-  fee_slippage_pct: 0.3         # applied per side to fill price
+  fee_slippage_pct: 0.3         # per side when market cap is unknown. A known cap uses liquidity_cost instead.
+  liquidity_cost:               # crypto per-side cost from liquidity. Stocks keep spread + FX 0.15% + stamp (below).
+    major_pct: 0.05             # deep book (large mcap): pool-fee floor
+    thin_pct: 1.0               # small-cap ceiling
+    thin_mcap_usd: 20000000
+    deep_mcap_usd: 10000000000
+    turn_thin: 0.05             # volume/mcap at or below this lifts the cost
+    turn_deep: 0.30             # volume/mcap at or above this trims it
+    impact_check_usd: 200       # a stored Kyber loss_pct is on this notional; scaled by sqrt(trade / check)
   max_price_age_min: 45         # offline / sim: a price older than this is unusable (same gate as before)
   price_dead_min: 180           # live: after a failed refresh, ignore a price older than this; younger prices are usable
                                 #   and the freshness score penalises them (full credit inside fresh_full_min)

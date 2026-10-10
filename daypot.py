@@ -70,6 +70,9 @@ def breakout(con, a, pts, B):
         h4, l4 = max(prior4), min(prior4); rng = h4 / l4 - 1 if l4 else 9
         if p >= h4 * (1 + mb):
             ext = p / h4 - 1
+            min_rng = float(B.get("range_min_pct", 0.3)) / 100
+            if rng < min_rng or len({round(x, 8) for x in prior4}) < 2:
+                out["info"] = f"4h range {rng*100:.1f}% is too tight to be a breakout (stuck prints)"; return out
             if rng <= float(B.get("range_max_pct", 4)) / 100 and ext <= mx:
                 return dict(out, kind="4h", ext_pct=ext * 100, strength=clip(0.45 + 0.25 * (1 - rng / (float(B.get('range_max_pct', 4)) / 100)) + 0.2 * ext / mx),
                             info=f"4h-range break +{ext*100:.2f}% (range {rng*100:.1f}%)")
@@ -134,6 +137,61 @@ def setup_stats(con, kind, B=None, t=None):
     w = sum(1 for x in pcts if x > 0)
     return dict(p=(w + p0 * n0) / (len(pcts) + n0), n=len(pcts), wins=w, exp=sum(pcts) / len(pcts) if pcts else None)
 
+def hit_p(conf, ss, prior_n=10, full_n=30):
+    """Win probability for an EV, not the confidence score itself. Confidence is a ranking.
+    With no closes, p is 0.5. It moves from 0.5 toward the score only as closes accumulate
+    (fully at full_n), and it is blended with the measured hit rate (weight n vs prior_n)."""
+    n = int((ss or {}).get("n") or 0)
+    c = 0.5 if conf is None else max(0.0, min(1.0, float(conf)))
+    shrink = min(1.0, n / float(full_n)) if full_n else 1.0
+    p_rank = 0.5 + (c - 0.5) * shrink
+    wins = (ss or {}).get("wins")
+    if n and wins is not None:
+        p = (n * (wins / n) + float(prior_n) * p_rank) / (n + float(prior_n))
+    else:
+        p = p_rank
+    return max(0.05, min(0.95, p))
+
+def flatten_p(hours_left, floor=0.40, full_h=6.0):
+    """Share of a Day trade that exits on the clock (22:00 UK, or the burst max hold) rather than at the target or stop.
+    At or beyond full_h the floor applies. With no time left it is 1."""
+    floor, full_h = float(floor), float(full_h)
+    if hours_left is None: return floor
+    h = float(hours_left)
+    if h <= 0 or full_h <= 0: return 1.0
+    if h >= full_h: return floor
+    return floor + (1.0 - floor) * (1.0 - h / full_h)
+
+def day_ev(p, tp, sl, rt_cost, flatten_wt):
+    """Day EV in % after costs. A clock exit pays the round trip and keeps none of the target or the stop.
+    EV = (1 - flatten) * (p * target - (1 - p) * stop) - round-trip cost."""
+    edge = float(p) * float(tp) - (1.0 - float(p)) * float(sl)
+    return round((1.0 - float(flatten_wt)) * edge - float(rt_cost), 3)
+
+def sent_part(sent, missing=0.25):
+    """Sentiment component 0-1. A real score of 0 is neutral (0.5). A missing print is lower than neutral:
+    it is not evidence. `missing` is that stand-in (default 0.25)."""
+    if sent is None: return max(0.0, min(1.0, float(missing)))
+    return clip((float(sent) + 1) / 2)
+
+def sell_record(con, sleeve, sub, t=None, days=14):
+    """Closed sells for one sleeve/sub over the last `days`: n, wins, expectancy % (net of fees). sub None = any."""
+    since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(days))).isoformat()
+    if sub == "momentum":
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=? AND (sub IS NULL OR sub='momentum')",
+                           (sleeve, since)).fetchall()
+    elif sub:
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND sub=? AND side='SELL' AND ts>=?",
+                           (sleeve, sub, since)).fetchall()
+    else:
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=?", (sleeve, since)).fetchall()
+    pcts = []
+    for v, g, pnl in rows:
+        basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)
+    w = sum(1 for x in pcts if x > 0)
+    n = len(pcts)
+    return dict(n=n, wins=w, exp=sum(pcts) / n if n else None)
+
 def expected_value(ss, tp, sl, rt_cost, prior_n=10):
     """Expected value in % per trade AFTER costs. Model: p x target - (1 - p) x stop - round-trip costs, with p = the setup
     type's smoothed hit rate; blended with the measured expectancy of that setup (weight n vs prior_n) as data builds up.
@@ -162,7 +220,7 @@ def confidence(B, brk, vol, sent, regime, hr, freshness=None):  # hr = setup-typ
     wf = float(W.pop("freshness", 0) or 0)
     vx = float(B.get("volume_x", 2))
     parts = dict(breakout=brk, volume=0.4 if vol is None else clip((vol - 1) / (2 * vx - 1)),
-                 sentiment=0.5 if sent is None else clip((sent + 1) / 2), market=regime, hit_rate=hr)
+                 sentiment=sent_part(sent, B.get("sentiment_missing", 0.25)), market=regime, hit_rate=hr)
     base = sum(W[k] * parts[k] for k in W) / sum(W.values())
     conf, fr = frsh.adjust_confidence(base, 1.0 if freshness is None else freshness, wf, sum(W.values()))
     out = {k: round(v, 2) for k, v in parts.items()}; out["freshness"] = fr

@@ -164,7 +164,16 @@ function renderHeader() {
   else if (D && age > 3600) msg = `Data is ${ago(D.updated).replace(' ago', '')} old - the 15-minute update may have stalled.`;
   else if (loadErr) msg = 'Last refresh failed (' + loadErr + '); showing the previous data.';
   else if (D && D.risk.kill) msg = 'Kill switch is ON - all trading is paused.';
+  else if (D && (D.day_overdue || []).length) msg = 'Day position still open after 22:00 UK: ' + D.day_overdue.join(', ') + '. It is force-closed at the last price on the next cycle.';
   al.textContent = msg; al.classList.toggle('hidden', !msg);
+  const ban = $('#rules-banner');
+  if (ban) {
+    const R = D && D.rules;
+    if (R && R.frozen_since) {
+      ban.textContent = 'Rules frozen since ' + R.frozen_since + (R.version ? ' (' + R.version + ')' : '') + '. The scorecard is the test. Thresholds are not retuned from one day.';
+      ban.classList.remove('hidden');
+    } else ban.classList.add('hidden');
+  }
 }
 
 /* ---------- overview ---------- */
@@ -176,7 +185,22 @@ function statusWords() {
   if (r.fx_stale) return {txt: 'New buys paused (exchange rate is stale)', c: 'warnc'};
   return {txt: 'All normal', c: 'pos'};
 }
+function renderScorecard() {
+  const rows = (D && D.scorecard) || [];
+  const exits = r => { const e = r.exits || {}; const bits = Object.keys(e).map(k => k + ' ' + e[k]); return bits.length ? bits.join(', ') : '–'; };
+  const cols = [
+    {k: 'setup', l: 'Setup', asc: 1, f: r => esc(r.setup)},
+    {k: 'closed', l: 'Closed', f: r => String(r.closed)},
+    {k: 'net', l: 'Net after fees', f: r => `<span class="${cls(r.net)}">${fM(r.net, true)}</span>`},
+    {k: 'fee_gross', l: 'Fee / gross', f: r => r.fee_gross == null ? '<span class="muted">–</span>' : (r.fee_gross * 100).toFixed(0) + '%'},
+    {k: 'win_rate', l: 'Win rate', f: r => r.win_rate == null ? '<span class="muted">–</span>' : r.win_rate + '%'},
+    {k: 'exits', l: 'Exits', f: r => esc(exits(r))},
+  ];
+  const el = $('#ov-score');
+  if (el) table(el, cols, rows, null, renderScorecard, {empty: 'No closed trades yet'});
+}
 function renderOverview() {
+  renderScorecard();
   const s = D.stats, Z = D.sleeves, start = isNum(D.stats.start) ? D.stats.start : D.start;
   $$('.js-start').forEach(e => e.textContent = start.toFixed(0));
   const pnl = s.equity - start;

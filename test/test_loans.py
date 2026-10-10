@@ -115,12 +115,13 @@ setup(0.60, risk_cash=3.0, core_cash=60.0)
 run(); _, loans5, pos5, _ = snap()
 check(not loans5 and ("risk", "TESTX") not in pos5, "no loan, no trade")
 
-print("6. DAY burst setup (confidence >= 0.75, EV > 0) short of burst cash -> borrows for ONE position, tagged 'burst'")
+print("6. DAY burst setup (confidence >= 0.75, EV above the hurdle) short of burst cash -> borrows for ONE position, tagged 'burst'")
 import daypot
-_orig = {k: getattr(daypot, k) for k in ("breakout", "crypto_vol_ratio", "rsi_h", "market_regime", "confidence", "expected_value")}
+_orig = {k: getattr(daypot, k) for k in ("breakout", "crypto_vol_ratio", "rsi_h", "market_regime", "confidence", "expected_value", "day_ev")}
 def burst_case(conf, ev):
     """TESTB = a clean 24h-high breakout with 3x volume (the scoring functions are stubbed for TESTB only, so the test is
-    about the loan rules, not about building a perfect chart)."""
+    about the loan rules, not about building a perfect chart). The book is deep so the 4x-cost gate does not reject the
+    minimum target; day_ev is stubbed because the trader no longer reads expected_value for the hurdle."""
     c = setup(0.10, risk_cash=40.0, core_cash=60.0, day_cash=3.0)        # RISK not interested (score 0.10); DAY crypto cash £3
     c["day"].update(entry_start_uk="00:00", entry_cutoff_uk="23:59", flatten_uk="23:59")
     con = common.db(); t = common._NOW
@@ -128,7 +129,7 @@ def burst_case(conf, ev):
     con.execute("DELETE FROM state WHERE key LIKE 'day_exit:%' OR key LIKE 'day_halt:%'")
     for i in range(97):
         _ts = (t - timedelta(minutes=15 * (96 - i))).isoformat()
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (_ts, "TESTB", "crypto", 2.0 * (1.0005 ** i), None, None, 5e7, 4e8, "coingecko", _ts))
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (_ts, "TESTB", "crypto", 2.0 * (1.0005 ** i), None, None, 5e10, 2e11, "coingecko", _ts))
     # Earlier cases can cross 22:00 UK and flatten Day. This case then sets Day crypto cash to £3, which
     # against today's stored day-start looks like a loss past the 15% cap, so the burst is halted before
     # the loan. Rebase that start (and clear the halt); this case is about the loan rules.
@@ -141,6 +142,7 @@ def burst_case(conf, ev):
     daypot.market_regime = lambda con_, k_, a_, *r: (True, 1.0, "market ok (stub)") if a_ == "TESTB" else _orig["market_regime"](con_, k_, a_, *r)
     daypot.confidence = lambda DB, strength, *r, **k: (conf, dict(stub=conf)) if strength == 0.9 else _orig["confidence"](DB, strength, *r, **k)
     daypot.expected_value = lambda ss, tp, sl, rtc, n: ev
+    daypot.day_ev = lambda *a, **k: ev
     try:
         out = run()
     finally:
@@ -154,8 +156,8 @@ B = common.cfg()["day"]["burst"]
 if bl: check(bl[0]["amount"] <= 0.33 * 60 + 1e-6, f"loan £{bl[0]['amount']:.2f} sized for one position")
 out7, (cash7, loans7, pos7, _) = burst_case(0.70, 1.0)
 check(not loans7 and ("day", "TESTB") not in pos7, f"confidence 0.70 < 0.75 -> no loan, no trade ({loans7})")
-out8, (cash8, loans8, pos8, _) = burst_case(0.85, -0.2)
-check(not loans8 and ("day", "TESTB") not in pos8, f"EV < 0 -> no loan, no trade ({loans8})")
+out8, (cash8, loans8, pos8, _) = burst_case(0.85, 0.2)
+check(not loans8 and ("day", "TESTB") not in pos8, f"EV +0.20% is under the 0.3% hurdle -> no loan, no trade ({loans8})")
 
 print("[test_loans] " + ("OK" if not fails else f"{len(fails)} FAILED: " + "; ".join(fails)))
 sys.exit(1 if fails else 0)

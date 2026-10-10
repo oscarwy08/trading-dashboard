@@ -62,6 +62,51 @@ def risk_stats(con, lt):
             st_["fees_closed"] = round(st_["fees"] - fo, 4); out[f"{per}:{sc}"] = st_
     return out
 
+def _setup_name(r):
+    sl, sub, reason = r["sleeve"], r["sub"] or "", r["reason"] or ""
+    if sl == "day": return "burst" if sub == "burst" or reason.startswith("[burst") else "momentum"
+    if sl != "risk": return None
+    if sub == "dip" or reason.lower().startswith("risk dip"): return "risk dip"
+    return "risk breakout"
+
+def _exit_bucket(reason):
+    s = (reason or "").lower()
+    if "flatten" in s: return "flatten"
+    if "stop-loss" in s or "stop loss" in s: return "stop"
+    if "trail" in s: return "trail"
+    if "take-profit" in s: return "target"
+    if "max hold" in s: return "time"
+    if "signal " in s: return "signal"
+    return "other"
+
+def setup_scorecard(con):
+    """Closed trades by setup: count, net after fees, fees/gross, win rate, exit mix.
+    Gross is net plus the round-trip fees. Fee/gross is omitted when the gross is not positive."""
+    rows = [dict(r) for r in con.execute(
+        "SELECT id, sleeve, asset, sub, side, reason, pnl, cost, gas FROM trades WHERE side IN ('BUY','SELL') ORDER BY id")]
+    order = ("momentum", "burst", "risk breakout", "risk dip")
+    buys, groups = {}, {k: dict(closed=0, net=0.0, fees=0.0, wins=0, exits={}) for k in order}
+    for r in rows:
+        k = _setup_name(r)
+        if not k: continue
+        fee = (r["cost"] or 0) + (r["gas"] or 0)
+        key = (k, r["asset"])
+        if r["side"] == "BUY":
+            buys.setdefault(key, []).append(fee)
+        else:
+            g = groups[k]
+            bf = buys.get(key, []).pop(0) if buys.get(key) else 0.0
+            g["closed"] += 1; g["net"] += r["pnl"] or 0; g["fees"] += fee + bf
+            if (r["pnl"] or 0) > 0: g["wins"] += 1
+            ex = _exit_bucket(r["reason"]); g["exits"][ex] = g["exits"].get(ex, 0) + 1
+    out = []
+    for k in order:
+        g = groups[k]; n = g["closed"]; gross = g["net"] + g["fees"]
+        out.append(dict(setup=k, closed=n, net=round(g["net"], 4), fees=round(g["fees"], 4), gross=round(gross, 4),
+                        fee_gross=round(g["fees"] / gross, 3) if gross > 0.005 else None,
+                        win_rate=round(100.0 * g["wins"] / n, 1) if n else None, exits=g["exits"]))
+    return out
+
 def day_ledger(con, c, positions, acash, base):
     """v7.1 DAY sub-strategy money per account (daypot.sub_ledger - the SAME definition the trader sizes with), rounded so
     every figure reconciles to the penny with the Day pot cards:
@@ -651,6 +696,9 @@ def build(con):
                         full_min=rk.get("fresh_full_min") or {"crypto": 10, "stock": 5})
     return dict(
         v=6, gas=gas, generated=n_ep, updated=updated, currency="GBP", start=start, accounts=accounts, account_split=asplit,
+        rules=dict(version=(c.get("rules") or {}).get("version"), frozen_since=(c.get("rules") or {}).get("frozen_since")),
+        scorecard=setup_scorecard(con),
+        day_overdue=[p["asset"] for p in positions if p["sleeve"] == "day"] if (lt.hour * 60 + lt.minute >= int(str(DY["flatten_uk"]).split(":")[0]) * 60 + int(str(DY["flatten_uk"]).split(":")[1]) or lt.hour * 60 + lt.minute < int(str(DY["entry_start_uk"]).split(":")[0]) * 60 + int(str(DY["entry_start_uk"]).split(":")[1])) else [],
         freshness=fresh_status,
         sleeves=sleeves, focus=focus, transfers=transfers, markets=markets.status(t_now),
         themes=[dict(key=k, label=v.get("label", k), watch=bool(v.get("watch")), n=len(v.get("tickers", []))) for k, v in (c["stocks"].get("universe") or {}).items()]

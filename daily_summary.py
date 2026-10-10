@@ -84,6 +84,16 @@ try:
     if _st: print(f"  DAY burst threshold {_st.get('threshold')} (Day pot today {_st.get('day_pnl_pct', 0):+.2f}%), "
                   f"{sum(1 for d in _st.get('cands', []) if d.get('bought'))}/{len(_st.get('cands', []))} setups taken last cycle")
 except Exception as e: print(f"  DAY sub-strategy stats n/a ({e})")
+try:
+    from dashboard import setup_scorecard
+    _ru = _c.get("rules") or {}
+    print(f"RULES frozen since {_ru.get('frozen_since', '?')} ({_ru.get('version', '')}). Do not retune from one day.")
+    for row in setup_scorecard(con):
+        wr = "n/a" if row["win_rate"] is None else f"{row['win_rate']:.0f}%"
+        fg = "n/a" if row["fee_gross"] is None else f"{row['fee_gross']*100:.0f}%"
+        ex = ", ".join(f"{k} {v}" for k, v in row["exits"].items()) or "none"
+        print(f"  SETUP {row['setup']:16} closed {row['closed']:3}  net £{row['net']:+.2f}  fees £{row['fees']:.2f}  fee/gross {fg}  win {wr}  exits: {ex}")
+except Exception as e: print(f"  SETUP scorecard n/a ({e})")
 fx = usd_gbp(con)
 try:   # v7.3 inter-pot loans (same account only)
     from common import loans_open

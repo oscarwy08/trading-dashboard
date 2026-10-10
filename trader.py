@@ -50,9 +50,9 @@ def history(con, asset, hours=72):
         (asset, since, until))]
 
 def momentum(pts, min_h):
-    """Returns (score, info) or (None, reason)."""
+    """Returns (score, info, rsi) or (None, reason, None)."""
     if not pts or (pts[-1][0] - pts[0][0]).total_seconds() < min_h * 3600:
-        return None, "insufficient history"
+        return None, "insufficient history", None
     t, p = pts[-1]
     def ret(h):
         old = [x for ts, x in pts if ts <= t - timedelta(hours=h)]
@@ -65,7 +65,7 @@ def momentum(pts, min_h):
     score = 0.35 * clip((r4 or 0) / 0.03) + 0.35 * clip((r24 if r24 is not None else r4 or 0) / 0.08) \
         + 0.2 * cross + 0.1 * rsi_term
     fmt = lambda r: "n/a" if r is None else f"{r*100:+.1f}%"
-    return round(score, 3), f"4h {fmt(r4)}, 24h {fmt(r24)}, EMA6/24 {'up' if cross > 0 else 'down'}, RSI {rs:.0f}"
+    return round(score, 3), f"4h {fmt(r4)}, 24h {fmt(r24)}, EMA6/24 {'up' if cross > 0 else 'down'}, RSI {rs:.0f}", rs
 
 def avg24(pts):
     t = pts[-1][0] if pts else None
@@ -76,8 +76,8 @@ def latest_prices(con, max_age_min, rate, rk=None):
     """Latest prices converted to GBP. Age is measured from the provider timestamp (source_ts), falling back to the
     row time. tradable/fresh: offline uses max_price_age_min (45); live uses price_dead_min (180) after a missed refresh.
     A missing price is the only hard skip. fr_price is the price half of the freshness score."""
-    rows = con.execute("""SELECT asset, klass, price, ts, source_ts FROM (
-                            SELECT asset, klass, price, ts, source_ts,
+    rows = con.execute("""SELECT asset, klass, price, ts, source_ts, vol24, mcap FROM (
+                            SELECT asset, klass, price, ts, source_ts, vol24, mcap,
                                    ROW_NUMBER() OVER (PARTITION BY asset ORDER BY ts DESC, rowid DESC) rn
                             FROM prices WHERE klass IN ('crypto','stock') AND source!='backfill' AND ts<=?)
                           WHERE rn=1""", (iso(now() + timedelta(seconds=1)),)).fetchall()
@@ -89,7 +89,8 @@ def latest_prices(con, max_age_min, rate, rk=None):
         full = float(fulls.get("stock" if r["klass"] == "stock" else "crypto", 5 if r["klass"] == "stock" else 10))
         tradable = age is not None and age <= dead
         out[r["asset"]] = dict(klass=r["klass"], price=r["price"] * rate, price_usd=r["price"], fresh=tradable, tradable=tradable,
-                               ts=r["ts"], source_ts=r["source_ts"] or r["ts"], age_min=age, fr_price=freshness.price_score(age, full, dead))
+                               ts=r["ts"], source_ts=r["source_ts"] or r["ts"], age_min=age, fr_price=freshness.price_score(age, full, dead),
+                               vol24=r["vol24"], mcap=r["mcap"])
     return out
 
 def sentiment(con, asset, max_age_h):
@@ -133,20 +134,55 @@ def core_targets(c, picks, crypto_picks=None):
     t.update({s: ("stocks", w) for s, w in stockrank.pick_weights(c, picks).items()})
     return t
 
+def crypto_fee_pct(c, q=None, notional_gbp=None):
+    """Per-side crypto fee from liquidity, as a fraction of price. Gas stays separate.
+    A large market cap pays about the pool-fee floor. A small cap pays more, and thin turnover (volume/mcap) lifts it.
+    Unknown market cap keeps risk.fee_slippage_pct. A stored Kyber loss (impact_pct, on impact_check_usd) is scaled by
+    sqrt(this trade / that check) and used when it is larger. Result stays between the floor and the thin cap."""
+    rk = c["risk"]; K = rk.get("liquidity_cost") or {}; q = q or {}
+    floor = float(K.get("major_pct", 0.05)) / 100
+    thin = float(K.get("thin_pct", 1.0)) / 100
+    unknown = float(rk["fee_slippage_pct"]) / 100
+    mcap = q.get("mcap")
+    if not mcap or float(mcap) <= 0:
+        base = unknown
+    else:
+        lo, hi = math.log(float(K.get("thin_mcap_usd", 2e7))), math.log(float(K.get("deep_mcap_usd", 1e10)))
+        t = 1.0 if hi <= lo else max(0.0, min(1.0, (math.log(float(mcap)) - lo) / (hi - lo)))
+        base = thin + (floor - thin) * t
+        turn = float(q.get("vol24") or 0) / float(mcap)
+        turn_thin, turn_deep = float(K.get("turn_thin", 0.05)), float(K.get("turn_deep", 0.30))
+        if turn_thin and turn < turn_thin:
+            base *= 1 + 0.5 * min(1.0, (turn_thin - turn) / turn_thin)
+        elif turn >= turn_deep:
+            base *= 0.7
+    impact = None
+    if q.get("impact_pct") is not None:
+        check = float(K.get("impact_check_usd", 200)) or 200.0
+        if notional_gbp and q.get("price") and q.get("price_usd"):
+            usd = float(notional_gbp) * float(q["price_usd"]) / float(q["price"])
+        elif notional_gbp:
+            usd = float(notional_gbp) / 0.75
+        else:
+            usd = check
+        impact = (float(q["impact_pct"]) / 100.0) * math.sqrt(max(usd, 1.0) / check)
+    return min(thin, max(floor, max(base, impact or 0.0)))
+
 def cost_parts(c, asset, klass, side):
-    """Per-side cost components as fractions of the price. crypto: {'fee'} (fee + slippage; gas is separate);
-    stocks: {'spread', 'fx', 'stamp'} (Trading 212-like)."""
+    """Per-side cost components as fractions of the price. crypto: {'fee'} is the flat fallback (the fill uses
+    crypto_fee_pct, which can be lower or higher); stocks: {'spread', 'fx', 'stamp'} (Trading 212-like, FX 0.15%/side)."""
     if klass != "stock": return {"fee": float(c["risk"]["fee_slippage_pct"]) / 100}
     C = c["stocks"].get("costs") or {}; ex = markets.exchange(asset)
     return {"spread": float(C.get("spread_pct", 0.1)) / 100,
             "fx": float(C.get("fx_fee_pct", 0.15)) / 100 if ex != "LSE" else 0.0,
             "stamp": float(C.get("uk_stamp_duty_pct", 0.5)) / 100 if side == "BUY" and ex == "LSE" and asset not in set(C.get("stamp_exempt") or []) else 0.0}
 
-def cost_pct(c, asset, klass, side):
+def cost_pct(c, asset, klass, side, q=None, notional_gbp=None):
     """Per-side trading cost as a fraction of the price (applied in the fill price).
-    crypto: risk.fee_slippage_pct (+ simulated Monad gas on top, see gas_gbp).
-    stocks (v5, broker-like, Trading 212-style): stocks.costs.spread_pct (no commission) + fx_fee_pct for non-GBP listings
-    (GBP account buying USD/AUD shares; both sides) + UK stamp duty (SDRT) on London BUYS unless AIM/ETF (stamp_exempt)."""
+    crypto: liquidity (mcap, volume/mcap, optional Kyber route impact). Unknown mcap keeps fee_slippage_pct.
+    Gas is on top (gas_gbp). stocks: spread + FX 0.15% per side on non-GBP listings + UK stamp on London buys
+    unless AIM/ETF (stamp_exempt). No commission."""
+    if klass != "stock": return crypto_fee_pct(c, q, notional_gbp)
     return sum(cost_parts(c, asset, klass, side).values())
 
 def gas_gbp(con, c):
@@ -199,6 +235,21 @@ def main():
         for a_ in ACCOUNTS: con.execute("INSERT OR IGNORE INTO acct_cash VALUES(?,?,0)", (s_, a_))   # new cells get money only via TRANSFER
     if sget(con, "core_plan") is None: init_core(con, c)
     px = latest_prices(con, rk["max_price_age_min"], rate, rk)
+    _screen = sget(con, "risk_screen") or {}
+    for _d in (_screen.get("top") or []):
+        _q = px.get(_d.get("a"))
+        if not _q: continue
+        if _d.get("mcap") and not _q.get("mcap"): _q["mcap"] = _d.get("mcap")
+        if _d.get("vol") and not _q.get("vol24"): _q["vol24"] = _d.get("vol")
+        if _d.get("dex") is not None: _q["impact_pct"] = _d.get("dex")
+    _eco = sget(con, "monad_eco") or {}
+    _dex = _eco.get("dex") if isinstance(_eco, dict) else None
+    if _dex:
+        _id = {_d.get("id"): _d.get("a") for _d in (_screen.get("top") or []) if _d.get("id")}
+        for _cid, _dx in _dex.items():
+            _a = _id.get(_cid)
+            if _a in px and isinstance(_dx, dict) and _dx.get("loss_pct") is not None:
+                px[_a]["impact_pct"] = _dx["loss_pct"]
     def restamp():
         fulls = rk.get("fresh_full_min") or {}
         dead = float(rk["max_price_age_min"] if not quotes.enabled() else rk.get("price_dead_min", 180))
@@ -215,8 +266,11 @@ def main():
 
     def gas_of(klass): return gas if klass == "crypto" else 0.0     # stocks: no network fee (broker trade)
     def fsell(a):
-        k = (px.get(a) or {}).get("klass") or next((p["klass"] for (sl, x), p in pos.items() if x == a), "crypto")
-        return cost_pct(c, a, k, "SELL")
+        q = px.get(a) or {}
+        k = q.get("klass") or next((p["klass"] for (sl, x), p in pos.items() if x == a), "crypto")
+        held = next((p for (sl, x), p in pos.items() if x == a), None)
+        notion = held["qty"] * q["price"] if held and q.get("price") else None
+        return cost_pct(c, a, k, "SELL", q, notion)
     def klass_of(a):
         return (px.get(a) or {}).get("klass") or next((p["klass"] for (sl, x), p in pos.items() if x == a), "crypto")
     def mopen(a):          # crypto trades 24/7; stocks only during their exchange's regular session (markets.py)
@@ -230,8 +284,8 @@ def main():
         no = markets.next_open(a, t)
         return f"market closed ({markets.EXCH[markets.exchange(a)]['label']}; opens {no.astimezone(LON):%a %H:%M} UK)" if no else "market closed"
 
-    def trade(sleeve, asset, klass, side, qty, price, reason, pnl=None, sub=None, conf=None, snap=None):
-        fp = cost_pct(c, asset, klass, side)
+    def trade(sleeve, asset, klass, side, qty, price, reason, pnl=None, sub=None, conf=None, snap=None, notional=None):
+        fp = cost_pct(c, asset, klass, side, px.get(asset), notional if notional is not None else qty * price)
         fill = price * (1 + fp if side == "BUY" else 1 - fp)
         blob = None
         if snap:
@@ -244,8 +298,8 @@ def main():
 
     def buy(sleeve, a, value, reason, sub=None, conf=None, snap=None):
         """Spends value on the asset (fill incl. fees/slippage/FX/stamp duty) + gas on top (crypto only); all go into the cost basis."""
-        q = px[a]; fp = cost_pct(c, a, q["klass"], "BUY")
-        fill = trade(sleeve, a, q["klass"], "BUY", value / (q["price"] * (1 + fp)), q["price"], reason, sub=sub, conf=conf, snap=snap)
+        q = px[a]; fp = cost_pct(c, a, q["klass"], "BUY", q, value)
+        fill = trade(sleeve, a, q["klass"], "BUY", value / (q["price"] * (1 + fp)), q["price"], reason, sub=sub, conf=conf, snap=snap, notional=value)
         qty = value / fill; p = pos.get((sleeve, a)); spent = value + gas_of(q["klass"]); ck = (sleeve, acct_of(q["klass"]))
         if spent > cash[ck] + 1e-9: raise RuntimeError(f"{sleeve} {a}: £{spent:.4f} > {ck[1]} cash £{cash[ck]:.4f} (cash never crosses accounts)")
         if p:
@@ -259,8 +313,8 @@ def main():
 
     def sell(sleeve, a, qty, reason, price=None, sub=None, conf=None, snap=None):
         p = pos[(sleeve, a)]; price = price or px[a]["price"]; qty = min(qty, p["qty"])
-        proceeds = qty * price * (1 - cost_pct(c, a, p["klass"], "SELL")) - gas_of(p["klass"]); part = p["cost"] * qty / p["qty"]; pnl = proceeds - part
-        trade(sleeve, a, p["klass"], "SELL", qty, price, f"{reason}; P&L £{pnl:+.2f}", pnl, sub=sub, conf=conf, snap=snap)
+        proceeds = qty * price * (1 - cost_pct(c, a, p["klass"], "SELL", px.get(a), qty * price)) - gas_of(p["klass"]); part = p["cost"] * qty / p["qty"]; pnl = proceeds - part
+        trade(sleeve, a, p["klass"], "SELL", qty, price, f"{reason}; P&L £{pnl:+.2f}", pnl, sub=sub, conf=conf, snap=snap, notional=qty * price)
         cash[(sleeve, acct_of(p["klass"]))] += proceeds
         if qty >= p["qty"] * (1 - 1e-9):
             con.execute("DELETE FROM positions WHERE sleeve=? AND asset=?", (sleeve, a)); del pos[(sleeve, a)]
@@ -277,12 +331,13 @@ def main():
     def sleeve_eq(s): return sum(acct_eq(s, ac) for ac in ACCOUNTS)
 
     # ---- score every asset (DAY signal; sentiment also used by CORE tranche timing) ----
-    scores, hist = {}, {}
+    scores, hist, rsi_at = {}, {}, {}
     for a, p in px.items():
         hist[a] = history(con, a)
-        m, info = momentum(hist[a], st["min_history_h"])
+        m, info, rs_ = momentum(hist[a], st["min_history_h"])
+        rsi_at[a] = rs_
         s = sentiment(con, a, st["sentiment_max_age_h"])
-        if m is None: scores[a] = (None, None, None, info); continue
+        if m is None: scores[a] = (None, None, None, info); rsi_at[a] = None; continue
         fac = 1.0
         if s:     # weight decays to 0 by sentiment_max_age_h; the score in the blend stays raw. Hard gates below use the raw score.
             fac = freshness.sentiment_factor((t - datetime.fromisoformat(s["ts"])).total_seconds() / 3600, st["sentiment_max_age_h"])
@@ -353,6 +408,7 @@ def main():
     # momentum signal exit. Per-position levels live in state 'day_meta' {asset: {sub, tp, sl, atr, peak, opened, runner}}.
     e0, e1, flat = hm(D["entry_start_uk"]), hm(D["entry_cutoff_uk"]), hm(D["flatten_uk"])
     flat_now = mins >= flat or mins < e0
+    day_late = []          # still open after the flatten because there was no price at all
     DM, DB = D["momentum"], D["burst"]; SUBC = {"momentum": DM, "burst": DB}
     ATRC = D.get("atr") or {}
     dmeta = {a: v for a, v in (sget(con, "day_meta") or {}).items() if ("day", a) in pos}
@@ -368,15 +424,30 @@ def main():
         q = px.get(a); m, s, comb, info = scores.get(a, (None, None, None, ""))
         opened_day = datetime.fromisoformat(p["opened"]).astimezone(LON).date().isoformat()
         if p["klass"] == "stock" and (mclose_in(a) is None or mclose_in(a) <= int(D.get("stock_flatten_before_close_min", 15))):
-            if not q: sig("day", a, m, s, comb, "HOLD", "flatten due but no price at all"); continue
+            if not q:
+                last = con.execute("SELECT price FROM prices WHERE asset=? AND source!='backfill' AND ts<=? ORDER BY ts DESC LIMIT 1",
+                                   (a, ts)).fetchone()
+                if last:
+                    q = px[a] = dict(klass=p["klass"], price=last[0] * rate, price_usd=last[0], fresh=False, tradable=True,
+                                     ts=ts, source_ts=ts, age_min=None, fr_price=0, vol24=None, mcap=None)
+                else:
+                    day_late.append(a); sig("day", a, m, s, comb, "HOLD", "flatten due but no price at all"); continue
             cl = mclose_in(a)
             day_exit(a, p, f"flatten {int(cl)} min before the {markets.exchange(a)} close (flat overnight)" if cl is not None else
                      "flatten: market already closed - at the last (closing) price", m, s, comb); continue
         if flat_now or opened_day != day:
-            if not q: sig("day", a, m, s, comb, "HOLD", "flatten due but no price at all"); continue
+            if not q:
+                last = con.execute("SELECT price FROM prices WHERE asset=? AND source!='backfill' AND ts<=? ORDER BY ts DESC LIMIT 1",
+                                   (a, ts)).fetchone()
+                if last:
+                    q = px[a] = dict(klass=p["klass"], price=last[0] * rate, price_usd=last[0], fresh=False, tradable=True,
+                                     ts=ts, source_ts=ts, age_min=None, fr_price=0, vol24=None, mcap=None)
+                else:
+                    day_late.append(a)
+                    sig("day", a, m, s, comb, "HOLD", f"flatten {D['flatten_uk']} UK due but no price at all"); continue
             why = (f"flatten {D['flatten_uk']} UK (flat overnight)" if mins >= flat else
                    f"flatten: overnight/before {D['entry_start_uk']} UK" if mins < e0 else "flatten: carried from previous UK day")
-            day_exit(a, p, why + ("" if q["fresh"] else " [last price, stale]"), m, s, comb); continue
+            day_exit(a, p, why + ("" if q.get("fresh") else " [last price, after 22:00]"), m, s, comb); continue
         if not exit_ok(q): sig("day", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
         md = dmeta.get(a)
         if not md:     # pre-v7 position: becomes a momentum trade with ATR levels computed now
@@ -583,7 +654,7 @@ def main():
     def loan_room(ac):       # total outstanding per account <= max_outstanding_pct of the account's starting value
         startv = sum(acct_start(con, c)[s_][ac] for s_ in SLEEVES)
         return float(LN.get("max_outstanding_pct", 20)) / 100 * startv - sum(l["out"] for l in loans if l["account"] == ac)
-    def borrow(borrower, a, need, sub=None, why="", min_need=0.0):
+    def borrow(borrower, a, need, sub=None, why="", min_need=0.0, skip=()):
         """Borrow `need` (the shortfall for ONE position of asset a) from CORE's uninvested cash (minus what today's
         tranches / queued CORE buys need), then the other short-term pot's cash - same account only, total outstanding per
         account <= max_outstanding_pct of its start value. A loan that cannot cover min_need (the trade would still be
@@ -595,9 +666,10 @@ def main():
         def avail_of(lender):
             if lender == borrower or owed(lender, ac) > 1e-9: return 0.0      # a pot that owes money does not lend
             return max(0.0, cash[(lender, ac)] - (core_reserve(ac) if lender == "core" else 0.0))
-        if amt < max(min_need, 0.01) - 1e-9 or min(amt, sum(avail_of(x) for x in ("core", other))) < max(min_need, 0.01) - 1e-9: return 0.0
+        lenders = [x for x in ("core", other) if x not in skip]
+        if amt < max(min_need, 0.01) - 1e-9 or min(amt, sum(avail_of(x) for x in lenders)) < max(min_need, 0.01) - 1e-9: return 0.0
         got = 0.0
-        for lender in ("core", other):
+        for lender in lenders:
             av_ = avail_of(lender); take = min(math.ceil((amt - got) * 100 - 1e-6) / 100, av_)   # whole pence, rounded up (no 4.9999 < £5)
             take = round(take, 4)
             if take < 0.01: continue
@@ -635,7 +707,18 @@ def main():
     def in_use(sub, ac): return ledger()[ac][sub]["value"]
     def free(sub, ac): return ledger()[ac][sub]["free"]
     def rt_cost(a, value):   # round-trip cost in % of the position (both sides + gas both sides)
-        k = klass_of(a); return (cost_pct(c, a, k, "BUY") + cost_pct(c, a, k, "SELL")) * 100 + 2 * gas_of(k) / max(value, 1e-9) * 100
+        q = px.get(a) or {}; k = q.get("klass") or klass_of(a)
+        return (cost_pct(c, a, k, "BUY", q, value) + cost_pct(c, a, k, "SELL", q, value)) * 100 + 2 * gas_of(k) / max(value, 1e-9) * 100
+    def hours_to_flat(a):
+        if klass_of(a) == "stock":
+            mleft = mclose_in(a)
+            if mleft is None: return 0.0
+            return max(0.0, (mleft - int(D.get("stock_flatten_before_close_min", 15))) / 60.0)
+        return max(0.0, (flat - mins) / 60.0)
+    def clock_p(a, max_hold_h=None):
+        h = hours_to_flat(a)
+        if max_hold_h is not None: h = min(h, float(max_hold_h))
+        return daypot.flatten_p(h, float(D.get("ev_flatten_floor", 0.40)), float(D.get("ev_flatten_full_h", 6)))
     mcx = float(D.get("min_move_cost_x", 4)); scl = int(D.get("stock_entry_stop_before_close_min", 30))
     def gate(a):             # shared entry gates (None = ok)
         q = px[a]
@@ -656,6 +739,7 @@ def main():
 
     # ---- momentum: original score entries, ATR-scaled levels ----
     nmom = sum(1 for (sl, x) in pos if sl == "day" and sub_of(x) == "momentum")
+    ss_mom = daypot.sell_record(con, "day", "momentum", t, float(DM.get("record_days", 14)))
     refresh([a for a, (m, s, comb, info) in scores.items() if comb is not None and comb >= thr_of(a) and ("day", a) not in pos])
     for a, (m, s, comb, info) in sorted(scores.items(), key=lambda kv: -(kv[1][2] or -9)):
         if ("day", a) in pos or a in risk_only or a in day_x: continue
@@ -668,10 +752,15 @@ def main():
         if not why and value < mint:
             why = f"momentum budget: £{value:.2f} free < min trade £{mint:.0f} (budget £{budget('momentum', ac):.2f}, {acash('day', a)})"
         if not why and tp_ < mcx * rt_cost(a, value): why = f"target {tp_:.1f}% < {mcx:.0f} x round-trip costs {rt_cost(a, value):.2f}%"
+        rs_m = rsi_at.get(a)
+        if not why and rs_m is not None and rs_m >= float(DM.get("rsi_max", 80)):
+            why = f"RSI {rs_m:.0f} >= {float(DM.get('rsi_max', 80)):g} (overbought)"
+        p_m = daypot.hit_p(comb, ss_mom, int(DM.get("ev_prior_n", 10)), int(DM.get("ev_conf_full_n", 30)))
+        rtc_m = rt_cost(a, max(value, mint)); ev_m = daypot.day_ev(p_m, tp_, sl_, rtc_m, clock_p(a))
+        evmin_m = float(DM.get("ev_min_pct", 0.3))
+        if not why and ev_m <= evmin_m: why = f"expected value {ev_m:+.2f}% after costs <= {evmin_m:g}%"
         if why: sig("day", a, m, s, comb, "SKIP", f"[momentum] score {comb} >= {thr} but {why}"); continue
-        p_m = max(0.05, min(0.95, float(comb))); rtc_m = rt_cost(a, value)
-        ev_m = round(p_m * tp_ - (1 - p_m) * sl_ - rtc_m, 3)   # momentum has a score, not component bars; p is the score clipped to 0.05-0.95
-        open_day(a, "momentum", value, tp_, sl_, at_, f"[momentum] DAY score {comb} >= {thr}; target +{tp_:.1f}% / stop -{sl_:.1f}% (ATR {at_ or 0:.2f}%); {info}",
+        open_day(a, "momentum", value, tp_, sl_, at_, f"[momentum] DAY score {comb} >= {thr}; target +{tp_:.1f}% / stop -{sl_:.1f}% (ATR {at_ or 0:.2f}%); EV {ev_m:+.2f}%; {info}",
                  extra=dict(score=comb, snap=dict(score=comb, p=round(p_m, 3), target=round(tp_, 3), loss=round(sl_, 3), costs=round(rtc_m, 3), ev=ev_m)))
         nmom += 1
         sig("day", a, m, s, comb, "BUY", f"[momentum] £{value:.2f}; target +{tp_:.1f}% / stop -{sl_:.1f}%; {info}")
@@ -690,12 +779,14 @@ def main():
         r_ = daypot.rsi_h(pts);         se = sentiment(con, a, st["sentiment_max_age_h"])
         mok, reg, minfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
         at_ = atr_of(a); tp_, sl_ = daypot.levels(DB["take_profit"], DB["stop"], at_)
-        ss = sstats.get(brk["kind"]) or dict(p=0.5, n=0, exp=None)
+        ss = sstats.get(brk["kind"]) or dict(p=0.5, n=0, wins=0, exp=None)
         fr = fr_of(a, q, se)
         conf, parts = daypot.confidence(DB, brk["strength"], vol, sent_in(se), reg, ss["p"], freshness=fr)
         size0 = max(daypot.conf_size(DB, conf, free("burst", acct_of(q["klass"]))), mint)
-        rtc = rt_cost(a, size0); ev = daypot.expected_value(ss, tp_, sl_, rtc, int(DB.get("ev_prior_n", 10)))
-        d.update(kind=brk.get("kind"), ev=ev, rt_cost=round(rtc, 3), hit=round(ss["p"], 3), hit_n=ss["n"], vol=round(vol, 2) if vol is not None else None, rsi=round(r_) if r_ is not None else None, sent=se["score"] if se else None,
+        rtc = rt_cost(a, size0)
+        p_ev = daypot.hit_p(conf, ss, int(DB.get("ev_prior_n", 10)), int(DB.get("ev_conf_full_n", 30)))
+        ev = daypot.day_ev(p_ev, tp_, sl_, rtc, clock_p(a, DB.get("max_hold_h")))
+        d.update(kind=brk.get("kind"), ev=ev, rt_cost=round(rtc, 3), hit=round(p_ev, 3), hit_n=ss["n"], vol=round(vol, 2) if vol is not None else None, rsi=round(r_) if r_ is not None else None, sent=se["score"] if se else None,
                  market=minfo, atr=round(at_, 2) if at_ else None, tp=round(tp_, 2), sl=round(sl_, 2), conf=conf, parts=parts)
         vx = float(DB["volume_x"])
         lx = sget(con, f"day_exit:{a}")
@@ -778,11 +869,11 @@ def main():
     raw_c = []
     rs = sget(con, "risk_screen") or {}
     for d in rs.get("top") or []:
-        if d["a"] in px and px[d["a"]]["klass"] == "crypto": raw_c.append((d["a"], d["score"], d["ok"], d["why"], "crypto"))
+        if d["a"] in px and px[d["a"]]["klass"] == "crypto": raw_c.append((d["a"], d["score"], d["ok"], d["why"], "crypto", d.get("c7")))
     for sym in stockrank.risk_stocks(c):
         if sym not in px: continue
         sc_, ok_, why_ = riskpot.stock_score(con, sym, px[sym]["price_usd"])
-        if sc_ is not None: raw_c.append((sym, sc_, ok_, why_, "stock"))
+        if sc_ is not None: raw_c.append((sym, sc_, ok_, why_, "stock", None))
     def pack(a, kind, setup, plain, bscore, ok, why, m, minfo, conf, parts, ss, vol, se, mkinfo, at_, block, trend_ok=False):
         q = px[a]
         size0, cap0 = riskpot.size(RP, conf, cash_for("risk", a) - gas_of(q["klass"]), req, mint)
@@ -793,9 +884,9 @@ def main():
                     vol=round(vol, 2) if vol is not None else None, sent=se["score"] if se else None,
                     market=mkinfo, size=round(size0, 2), cap=cap0, block=block, minfo=minfo, trend_ok=bool(trend_ok))
     rstat = []
-    for a, bscore, ok, why, kind in raw_c:
+    for a, bscore, ok, why, kind, c7 in raw_c:
         if ("risk", a) in pos or any(x["a"] == a for x in rstat): continue
-        q = px[a]; pts = hist.get(a) or history(con, a); m, minfo = momentum(pts, RP.get("min_history_h", 2))
+        q = px[a]; pts = hist.get(a) or history(con, a); m, minfo, _rs7 = momentum(pts, RP.get("min_history_h", 2))
         se = sentiment(con, a, st["sentiment_max_age_h"])
         vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
         mok, reg, mkinfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
@@ -817,9 +908,14 @@ def main():
         elif m is None: brk_spec = f"trend: {minfo}"
         elif m < RP["confirm_momentum"]: brk_spec = f"short-term trend {m} < {RP['confirm_momentum']} ({minfo})"
         else: brk_spec = shared
+        run_why, run_scale, no_loan = riskpot.runup_adjust(c7 if kind == "crypto" else None, RP)
+        if run_why: brk_spec = run_why
+        elif run_scale < 0.999 and ok:
+            brk_plain += f" 7d +{float(c7):.0f}% scales the breakout score (Core will not lend)."
         brk_hard = note(brk_spec)
-        conf, parts = riskpot.confidence(RP, bscore, vol, sin, reg, rss["p"], freshness=fr)
+        conf, parts = riskpot.confidence(RP, (bscore or 0) * run_scale, vol, sin, reg, rss["p"], freshness=fr)
         brk = pack(a, kind, "breakout", brk_plain, bscore, ok, why, m, minfo, conf, parts, rss, vol, se, mkinfo, at_, brk_hard)
+        brk["no_core_loan"] = bool(no_loan)
         dip_r = riskpot.dip(pts, RP, sent=sin, regime=reg, hr=dss["p"], freshness=fr, vol=vol, atr=at_) if (RP.get("dip") or {}).get("enabled", True) else None
         chosen = brk
         if dip_r and dip_r.get("show"):
@@ -845,7 +941,7 @@ def main():
                     and trend_agrees and nrisk < RP["max_open"]):
                 tgt = max(mint, min(cap_, riskpot.size(RP, d["conf"], max(avail, 0.0), req, mint)[0]))
                 if borrow("risk", a, tgt - max(avail, 0.0), None, f"{d['setup']} confidence {d['conf']:.2f} >= {float(LN.get('risk_min_score', 0.65)):g}, {trend_txt}, EV {d['ev']:+.2f}%",
-                          min_need=mint - max(avail, 0.0)):
+                          min_need=mint - max(avail, 0.0), skip=("core",) if d.get("no_core_loan") else ()):
                     avail = cash_for("risk", a) - gas_of(q["klass"]); value = min(tgt, avail); d["loan"] = True
             d["block"] = ((f"confidence {d['conf']:.2f} < threshold {thr_r:.2f}" if d["conf"] < thr_r else None) or
                           (f"expected value {d['ev']:+.2f}% after costs <= {evmin_r:g}%" if d["ev"] <= evmin_r else None) or
@@ -895,7 +991,7 @@ def main():
     con.execute("INSERT OR REPLACE INTO state VALUES('risk',?)", (json.dumps(dict(
         ts=ts, day=day, day_start=tstart, equity=equity, day_pnl_pct=(equity / tstart - 1) * 100 if tstart else 0,
         halted=halted, day_sleeve=dict(start=dstart, equity=eqs["day"], pnl_pct=day_pnl * 100, halted=halted,
-                                       entries_open=window, flat_now=flat_now, open_n=nday))),))
+                                       entries_open=window, flat_now=flat_now, open_n=nday, overdue=day_late))),))
     con.execute("INSERT INTO equity(ts,equity,cash,pos_value,btc,open_n,usd_gbp,core,day,core_cash,day_cash,risk,risk_cash,"
                 "crypto,stocks,crypto_cash,stocks_cash,accts) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (ts, equity, sum(cash.values()), pv, px.get("BTC", {}).get("price"), len(pos), rate,

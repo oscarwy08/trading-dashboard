@@ -94,14 +94,15 @@ def setup_stats(con, R, t=None, sub=None):
 def confidence(R, brk, vol, sent, regime, hr, freshness=None):
     """Weighted 0-1 confidence of a RISK setup (a ranking heuristic, not a probability of profit). Components 0-1:
     breakout = the screen's breakout score (-1..1, negative = 0); volume = last hour vs the average hour (2x = half way,
-    4x+ = full; unknown = 0.4); sentiment = (score + 1) / 2 (none = 0.5); market = the DAY burst market-regime score;
+    4x+ = full; unknown = 0.4); sentiment = (score + 1) / 2 (a missing print is below neutral, not 0.5); market = the DAY burst market-regime score;
     hit_rate = the RISK pot's measured hit rate (Beta prior). Freshness scales the result (1 = unchanged)."""
     import freshness as frsh
     W = dict(R.get("confidence_weights") or dict(breakout=0.30, volume=0.20, sentiment=0.15, market=0.15, hit_rate=0.20))
     wf = float(W.pop("freshness", 0) or 0)
     vx = float(R.get("volume_x", 2))
+    import daypot
     parts = dict(breakout=clip01(brk or 0), volume=0.4 if vol is None else clip01((vol - 1) / (2 * vx - 1)),
-                 sentiment=0.5 if sent is None else clip01((sent + 1) / 2), market=clip01(regime if regime is not None else 0.5), hit_rate=clip01(hr))
+                 sentiment=daypot.sent_part(sent, R.get("sentiment_missing", 0.25)), market=clip01(regime if regime is not None else 0.5), hit_rate=clip01(hr))
     base = sum(W[k] * parts[k] for k in W) / sum(W.values())
     conf, fr = frsh.adjust_confidence(base, 1.0 if freshness is None else freshness, wf, sum(W.values()))
     out = {k: round(v, 2) for k, v in parts.items()}; out["freshness"] = fr
@@ -111,9 +112,9 @@ def setup_ev(R, conf, atr, rt_cost, ss):
     """Expected value in % per trade AFTER costs, for THIS setup. The stop (12%) and the trail (arm at +15%, sell 10%
     off the peak) are unchanged; only the estimate moves. Win distance is the gain locked when the trail first arms,
     loss distance is the prior average loss (usually cut before the full stop), both scaled by this setup's volatility
-    (1h ATR vs ev_atr_ref_pct; unknown ATR keeps the fixed priors). Hit probability comes from the setup's confidence,
-    blended with the measured hit rate as trades close, then with the measured expectancy (daypot.expected_value).
-    Returns (ev, win%, loss%, p)."""
+    (1h ATR vs ev_atr_ref_pct; unknown ATR keeps the fixed priors). Hit probability is the confidence shrunk toward
+    0.5 until ev_conf_full_n closes, blended with the measured hit rate (daypot.hit_p), then with the measured
+    expectancy. Returns (ev, win%, loss%, p)."""
     import daypot
     stop = float(R.get("stop_loss_pct", 12))
     target = float(R.get("trail_after_pct", 15)) * (1 - float(R.get("trail_pct", 10)) / 100)
@@ -124,14 +125,8 @@ def setup_ev(R, conf, atr, rt_cost, ss):
         win, loss = target * scale, min(stop, loss_prior * scale)
     else:
         win, loss = win_prior, loss_prior
-    p_conf = max(0.05, min(0.95, float(0.5 if conf is None else conf)))
     n = int((ss or {}).get("n") or 0)
-    if n and (ss or {}).get("wins") is not None:
-        pn = float(R.get("ev_prior_n", 10))
-        p = (n * (ss["wins"] / n) + pn * p_conf) / (n + pn)
-    else:
-        p = p_conf
-    p = max(0.05, min(0.95, p))
+    p = daypot.hit_p(conf, ss, float(R.get("ev_prior_n", 10)), float(R.get("ev_conf_full_n", 30)))
     ev = daypot.expected_value(dict(p=p, n=n, exp=(ss or {}).get("exp")), win, loss, rt_cost, int(R.get("ev_prior_n", 10)))
     return ev, round(win, 3), round(loss, 3), round(p, 3)
 
@@ -150,17 +145,32 @@ def size(R, conf, cash_free, pot_equity, mint):
     raw = clip01(conf) * float(R.get("conf_size_pct", 50)) / 100 * max(0.0, cash_free)
     return round(max(mint, min(raw, cap)), 4), round(cap, 4)      # the min trade wins if 20% of a shrunken pot is below it
 
+def runup_adjust(c7, RP):
+    """(block reason or None, breakout-score scale, refuse a Core loan).
+    A 7-day run at or above max_runup_7d_pct is not a breakout. From runup_7d_penalty_from_pct up to that cap the
+    breakout score is scaled from 1 down to 0.5, and Core cash is not lent into the name."""
+    if c7 is None: return None, 1.0, False
+    max7 = float(RP.get("max_runup_7d_pct", 80))
+    pen7 = float(RP.get("runup_7d_penalty_from_pct", 40))
+    c7 = float(c7)
+    if c7 >= max7:
+        return f"7d run-up +{c7:.0f}% >= {max7:.0f}% (not chased)", 1.0, True
+    if c7 >= pen7 and max7 > pen7:
+        return None, 1.0 - 0.5 * (c7 - pen7) / (max7 - pen7), True
+    return None, 1.0, False
+
 # ---------------- v7.7: dip / pullback buy (second RISK setup; breakouts are unchanged) ----------------
 def dip_confidence(R, pullback, support, bounce, sent, regime, hr, freshness=None):
     """Weighted 0-1 confidence of a DIP setup. Components 0-1: pullback depth vs typical volatility, proximity to
-    support, bounce confirmation, sentiment ((score+1)/2, none = 0.5), market regime, this setup's own measured hit
+    support, bounce confirmation, sentiment ((score+1)/2; a missing print is below neutral), market regime, this setup's own measured hit
     rate (Beta prior while no dip has closed). Freshness scales the result (1 = unchanged) and is its own mini-bar."""
     import freshness as frsh
+    import daypot
     D = R.get("dip") or {}
     W = dict(D.get("weights") or dict(pullback=0.20, support=0.15, bounce=0.20, sentiment=0.15, market=0.10, hit_rate=0.20))
     wf = float(W.pop("freshness", 0) or 0)
     parts = dict(pullback=clip01(pullback), support=clip01(support), bounce=clip01(bounce),
-                 sentiment=0.5 if sent is None else clip01((float(sent) + 1) / 2),
+                 sentiment=daypot.sent_part(sent, D.get("sentiment_missing", 0.25)),
                  market=clip01(0.5 if regime is None else regime), hit_rate=clip01(0.5 if hr is None else hr))
     base = sum(W[k] * parts[k] for k in W) / (sum(W.values()) or 1)
     conf, fr = frsh.adjust_confidence(base, 1.0 if freshness is None else freshness, wf, sum(W.values()))

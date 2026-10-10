@@ -19,7 +19,7 @@ trailing stop, ATR stop, 6h max hold, skips (no volume / RSI / negative sentimen
 winner beyond the old 5% cap, stock burst flattened before the close, max open per account, sub tags + stats, the
 threshold scaling across the 15% daily stop, sizing, EV and the min expected move (4x costs) filter.
 Usage: python3 test/sim.py [--keep]   (writes only to data/sim.db, deleted at the end unless --keep; logs/sim_cycles.log)."""
-import io, json, os, random, re, sqlite3, sys, contextlib
+import io, json, math, os, random, re, sqlite3, sys, contextlib
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 HERE = Path(__file__).resolve().parent.parent
@@ -319,7 +319,12 @@ assert GAS_LIVE in gas_vals and float(c["gas"]["fallback_gbp"]) in gas_vals, "ga
 # is already below one min trade (it is then built from the next rebalance trims; not a bug)
 if DROP: assert DROP not in cs["picks"] and drop_sells and new_picks and any(new_buys.values()) and (
     all(new_buys.values()) or (len(cs["picks"]) > len(PICKS0) and acash[("core", "stocks")] < float(c["risk"]["min_trade_size"]))), "Monday re-pick"
-assert len(cs["picks"]) == stockrank.n_picks(c, eqc) or len(cs["picks"]) == len([1 for r in RANK0.values() if r["eligible"]]), "pick count"
+# Picks are fixed at the Monday rebalance. A later mark can cross one slot (£7.50) before the next Monday.
+_pts = cs.get("ts"); _eqp = eqc
+if _pts:
+    _row = con.execute("SELECT accts FROM equity WHERE ts<=? AND accts IS NOT NULL ORDER BY ts DESC LIMIT 1", (_pts,)).fetchone()
+    if _row and _row[0]: _eqp = json.loads(_row[0])["core"]["stocks"][0]
+assert len(cs["picks"]) == stockrank.n_picks(c, _eqp) or len(cs["picks"]) == len([1 for r in RANK0.values() if r["eligible"]]), "pick count"
 print(f"v7.1 reconciliation (check_data on dashboard.build every 3h + trader ledger = Day tab): {RECON['runs']} exports x {RECON['checks']} checks, failures: {RECON['fails'][:10]}")
 assert not RECON["fails"], "dashboard figures must reconcile"
 print("checks:", {k: (v if isinstance(v, int) or v is None else len(v)) for k, v in checks.items()})
@@ -404,9 +409,11 @@ for leg in st["pending"]:
     if short > 1e-9:
         con.execute("UPDATE acct_cash SET amount=? WHERE sleeve=? AND account=?", (leg["amount"], leg["from"], leg["account"]))
 con.commit()
-# DAY flatten at 22:05 UK on the live DB day frees the crypto cash -> trader settles all legs at once
+# Flatten frees Day cash so the pending legs can settle. 22:05 UK is that window, but the live book may already
+# be later the same evening: the settlement transfer has to be timestamped after the split or it does not count.
 d_uk = datetime.fromisoformat(lt_).astimezone(LON).date()
-common._NOW = datetime(d_uk.year, d_uk.month, d_uk.day, 22, 5, tzinfo=LON).astimezone(timezone.utc)
+_flat = datetime(d_uk.year, d_uk.month, d_uk.day, 22, 5, tzinfo=LON).astimezone(timezone.utc)
+common._NOW = max(_flat, datetime.fromisoformat(lt_) + timedelta(minutes=2))
 buf = io.StringIO()
 with contextlib.redirect_stdout(buf): trader.main()
 print("trader at 22:05 UK:", buf.getvalue().strip().replace("\n", " / ")[:900])
@@ -444,12 +451,12 @@ START, STOP = U(8) - timedelta(hours=30), U(22, 15)
 # scripted paths: piecewise multiplicative moves (asset, from, to, total multiplier); vol24 jumps (asset, at, x)
 CRY = ["BTC", "BRK_TP", "BRK_TRAIL", "BRK_STOP", "BRK_HOLD", "BRK_NOVOL", "BRK_RSI", "BRK_NEG", "BRK_MKT", "BRK_CD", "BRK_HOT", "MOMO"]
 B1 = 1.01      # breakout candle: +1% above a quiet 30h range (stored prices = scripted path x (1 + iid noise 0.1%))
-MOVES = [("BRK_TP", U(9, 30), U(9, 45), B1), ("BRK_TP", U(9, 45), U(10, 30), 1.06), ("BRK_TP", U(10, 30), U(11, 30), 1.004),     # break -> +6% -> TP
+MOVES = [("BRK_TP", U(9, 30), U(9, 45), B1), ("BRK_TP", U(9, 45), U(10, 30), 1.09), ("BRK_TP", U(10, 30), U(11, 30), 1.004),     # break -> +9% -> TP (clears an ATR target)
          ("BRK_TRAIL", U(10), U(10, 15), B1), ("BRK_TRAIL", U(10, 15), U(11), 1.032), ("BRK_TRAIL", U(11), U(12), 0.97),         # +3.2% then fades -> trailing
          ("BRK_STOP", U(11), U(11, 15), B1), ("BRK_STOP", U(11, 15), U(12), 0.965),                                               # break then -3.5% -> stop
          ("BRK_HOLD", U(12), U(12, 15), B1),                                                                                      # break then flat -> 6h max hold
          ("BRK_NOVOL", U(12, 30), U(12, 45), B1),                                                                                 # break, no volume spike
-         ("BRK_RSI", U(0), U(13), 1.12), ("BRK_RSI", U(13), U(13, 15), B1),                                                       # relentless climb (momentum buys it)
+         ("BRK_RSI", U(0), U(13), 1.12), ("BRK_RSI", U(13), U(13, 15), B1),                                                       # relentless climb: RSI >= 80, neither sub buys it
          ("BRK_CD", U(14), U(14, 15), B1), ("BRK_CD", U(14, 15), U(14, 45), 0.97), ("BRK_CD", U(14, 45), U(15), 1.04),               # stopped out, re-breaks < 1h later
          ("BRK_HOT", U(16), U(19), 1.04), ("BRK_HOT", U(19), U(19, 15), B1),                                                      # overbought breakout (RSI > 80)
          ("BRK_NEG", U(13, 30), U(13, 45), B1),                                                                                   # break, negative sentiment
@@ -462,6 +469,16 @@ VOLJ = {"BRK_TP": [U(9, 30)], "BRK_TRAIL": [U(10)], "BRK_STOP": [U(11)], "BRK_HO
         "BRK_CD": [U(14), U(14, 45)], "BRK_HOT": [U(19)], "NEWC": [U(12), U(14, 15)]}
 P7 = {a: 1.0 for a in CRY + ["NEWC"]}; P7["BTC"] = 80000.0; P7["SIMSTK"] = 50.0; V24 = {a: 1e8 for a in CRY + ["NEWC"]}
 rng7 = random.Random(7)
+# A flat 30h range has almost no ATR, so the minimum target fails the 0.3% hurdle. Before a coin's first
+# scripted move, a two-hour swing gives each hour a real range (ATR lifts the target over the hurdle) and
+# alternating hourly closes (RSI stays under 80). It stops at the first move so the exit path is the script.
+QUIET = {"BRK_TP", "BRK_TRAIL", "BRK_STOP", "BRK_HOLD", "BRK_CD"}
+def _swing(t, amp):
+    x = (t.timestamp() / 3600 % 2) / 2
+    return 1 - amp * (0.5 - 0.5 * math.cos(2 * math.pi * x))
+def _before_move(a, t):
+    starts = [f0 for ea, f0, *_r in MOVES if ea == a]
+    return not starts or t < min(starts)
 def step_prices(t):
     for a in list(P7):
         if a == "SIMSTK" and not markets.is_open(a, t): continue
@@ -471,16 +488,28 @@ def step_prices(t):
             if ea == a and f0 <= t < f1: r += mult ** (1 / max(1, int((f1 - f0).total_seconds() // 900))) - 1
         P7[a] *= 1 + r
         if any(v <= t < v + timedelta(minutes=15) for v in VOLJ.get(a, [])): V24[a] *= 1.15     # last hour ~4.6x the average hour
+        amp = 0.035 if a == "MOMO" and t < U(8) else (0.025 if a in QUIET and _before_move(a, t) else 0)
         k = "stock" if a == "SIMSTK" else "crypto"
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, P7[a] * (1 + rng7.gauss(0, 0.001)), None, None, V24.get(a), None, "sim", common.iso(t)))
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common.iso(t), a, k, P7[a] * (_swing(t, amp) if amp else 1) * (1 + rng7.gauss(0, 0.001)), None, None, V24.get(a), None, "sim", common.iso(t)))
     con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (common.iso(t), "USDGBP", rate, "sim", None, None))
     if markets.is_open("US", t):
         con.execute("INSERT OR REPLACE INTO state VALUES('market_proxy',?)", (json.dumps({"US": dict(sym="^GSPC", ts=common.iso(t), price=1, chg1h=0.1, chg_day=0.3)}),))
-        con.execute("INSERT OR REPLACE INTO state VALUES('stock_vol',?)", (json.dumps({"SIMSTK": dict(ts=common.iso(t), ratio=3.0 if t >= U(15, 45) else 1.0)}),))
+        con.execute("INSERT OR REPLACE INTO state VALUES('stock_vol',?)", (json.dumps({"SIMSTK": dict(ts=common.iso(t), ratio=3.0 if t >= U(15, 30) else 1.0)}),))
+# SIMSTK only prints in the US session, so the ATR window is seeded just before the open. The swing lifts ATR
+# enough that the burst target clears the 0.3% hurdle. The last 5 hours sit on the high, so the scripted +1%
+# is a new 24h high. Volume spikes on that same bar. A fresh neutral sentiment print (score 0) pulls the blended
+# momentum score under the buy line; burst's hard gate still allows it (floor is -0.1).
+_flat = U(14, 30) - timedelta(hours=5)
+_tt = U(14, 30) - timedelta(hours=18)
+while _tt < U(14, 30):
+    _px = 50.0 if _tt >= _flat else 50.0 * _swing(_tt, 0.045)
+    con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common.iso(_tt), "SIMSTK", "stock", _px, None, None, None, None, "sim", common.iso(_tt)))
+    _tt += timedelta(minutes=15)
 t = START
 while t < U(7, 45): common._NOW = t; step_prices(t); t += timedelta(minutes=15)       # 30h of history, no trading
 con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(8)), "BRK_NEG", -0.6, 10, 0.8, "sim bearish", "[]", "sim", common.iso(U(8))))
 con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(15)), "BRK_HOT", -1.0, 10, 1.0, "sim: keeps momentum out", "[]", "sim", common.iso(U(15))))
+con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(15)), "SIMSTK", 0.0, 10, 0.95, "sim: neutral, keeps the momentum blend under the buy line", "[]", "sim", common.iso(U(15))))
 con.commit()
 v7 = dict(burst_open_max={a: 0 for a in common.ACCOUNTS}, flat_after=[], cands_seen={}, thr=[], neg=[])
 while t <= STOP:
@@ -520,6 +549,7 @@ assert "BRK_HOT" not in buys and "RSI" in why("BRK_HOT"), "RSI >= 80 -> skipped"
 assert "BRK_NEG" not in buys and "sentiment" in why("BRK_NEG"), "negative sentiment -> skipped"
 assert "BRK_MKT" not in buys and "market falling" in why("BRK_MKT"), "BTC falling -> skipped"
 assert buys.get("MOMO", {}).get("sub") == "momentum" and sells.get("MOMO") and sells["MOMO"]["pnl"] > 0 and ("trailing stop" in sells["MOMO"]["reason"] or "take-profit" in sells["MOMO"]["reason"]), "momentum winner exits via trailing / target"
+assert "BRK_RSI" not in buys and ("RSI" in why("BRK_RSI") or con.execute("SELECT COUNT(*) FROM signals WHERE asset='BRK_RSI' AND reason LIKE '%RSI%'").fetchone()[0]), "RSI >= 80 is refused for momentum as well as burst"
 mo_gain = sells["MOMO"]["pnl"] / (sells["MOMO"]["value"] - sells["MOMO"]["gas"] - sells["MOMO"]["pnl"]) * 100
 print(f"MOMO momentum round trip {mo_gain:+.2f}% (old fixed cap was +5%)")
 assert buys.get("SIMSTK", {}).get("sub") == "burst" and ("flatten" in sells["SIMSTK"]["reason"] or "take-profit" in sells["SIMSTK"]["reason"] or "trailing" in sells["SIMSTK"]["reason"]), "stock burst (index proxy + Yahoo volume), flat before the close"
@@ -546,6 +576,37 @@ assert daypot.threshold(B7, 0.05, cap) == B7["conf_threshold"], "gains never low
 assert abs(daypot.conf_size(B7, 0.8, 15) - 0.8 * 0.33 * 15) < 1e-6 and daypot.conf_size(B7, 0.8, 7.5) < daypot.conf_size(B7, 0.8, 15), "size = confidence x 33% of the remaining cash"
 assert daypot.expected_value(dict(p=0.5, n=0, exp=None), 3, 1.5, 0.6) == round(0.5 * 3 - 0.5 * 1.5 - 0.6, 3), "EV model"
 assert daypot.expected_value(dict(p=0.3, n=0, exp=None), 3, 2.5, 0.6) < 0, "negative EV setup"
+assert abs(daypot.hit_p(0.9, dict(n=0, wins=0), 10, 30) - 0.5) < 1e-9, "with no closes P(win) is 0.5, not the confidence"
+_p30 = daypot.hit_p(0.9, dict(n=30, wins=18), 10, 30)
+assert _p30 > 0.5 and _p30 < 0.9, "after enough closes P(win) blends the score with the measured hit rate"
+_flat = daypot.day_ev(0.5, 3, 1.5, 0.6, daypot.flatten_p(6, 0.4, 6))
+assert _flat < 0.3 and _flat < daypot.expected_value(dict(p=0.5, n=0, exp=None), 3, 1.5, 0.6), "a 3%/1.5% burst with the flatten does not clear the 0.3% hurdle"
+assert daypot.day_ev(0.5, 8, 2.5, 0.6, 0.4) > 0.3, "a wide target still clears the hurdle"
+_none_s, _none_p = daypot.confidence(B7, 0.8, 2.0, None, 0.6, 0.5)
+_zero_s, _zero_p = daypot.confidence(B7, 0.8, 2.0, 0.0, 0.6, 0.5)
+assert _none_p["sentiment"] < 0.5 and abs(_zero_p["sentiment"] - 0.5) < 1e-9 and _none_s < _zero_s, "missing sentiment is below a real neutral"
+_tflat = datetime(2026, 10, 10, 12, tzinfo=timezone.utc)
+_pts_flat = [( _tflat + timedelta(minutes=15 * i), 1.0) for i in range(20)] + [(_tflat + timedelta(hours=5), 1.008)]
+_brf = daypot.breakout(con, "FLAT", _pts_flat, c["day"]["burst"])
+assert _brf["kind"] is None and "too tight" in (_brf.get("info") or ""), "a zero-width 4h range is not a breakout"
+_blk, _scl, _nl = riskpot.runup_adjust(112, c["riskpot"])
+_mid, _scl2, _nl2 = riskpot.runup_adjust(60, c["riskpot"])
+_ok7, _scl3, _nl3 = riskpot.runup_adjust(10, c["riskpot"])
+assert _blk and _nl and not _mid and _nl2 and _scl2 < 1 and not _nl3 and _scl3 == 1, "7d run-up blocks at the cap, scales before it, and refuses a Core loan"
+_deep = trader.crypto_fee_pct(c, dict(mcap=5e11, vol24=2e11, price=1, price_usd=1.3), 8)
+_thin = trader.crypto_fee_pct(c, dict(mcap=2e7, vol24=6e5, price=1, price_usd=1.3), 8)
+_unk = trader.crypto_fee_pct(c, {}, 8)
+assert _deep < _unk < _thin and abs(_unk - c["risk"]["fee_slippage_pct"] / 100) < 1e-9, "deep books cost less than the flat 0.30%, thin books cost more, unknown stays 0.30%"
+_sc = dashboard.setup_scorecard(con)
+assert {r["setup"] for r in _sc} == {"momentum", "burst", "risk breakout", "risk dip"}, "scorecard has one row per setup"
+assert all(r["closed"] == 0 or r["win_rate"] is not None for r in _sc), "win rate only when something has closed"
+common._NOW = U(22, 30)
+con.execute("INSERT INTO positions VALUES('day','LATE','crypto',1,1,1,?,1)", (common.iso(U(18)),))
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common.iso(U(16)), "LATE", "crypto", 1.0, None, None, None, None, "sim", common.iso(U(16))))
+con.commit()
+with contextlib.redirect_stdout(io.StringIO()): trader.main()
+_late = con.execute("SELECT reason FROM trades WHERE asset='LATE' AND side='SELL'").fetchone()
+assert _late and "flatten" in _late[0] and not con.execute("SELECT 1 FROM positions WHERE asset='LATE'").fetchone(), "a Day position still open after 22:00 is force-closed at the last price"
 import freshness as _fr
 _Bplain = dict(B7); _Bplain["confidence_weights"] = {k: v for k, v in B7["confidence_weights"].items() if k != "freshness"}
 _cf, _ = daypot.confidence(B7, 0.8, 2.0, 0.2, 0.6, 0.5, freshness=1)
@@ -556,7 +617,9 @@ assert _fr.sentiment_factor(0, 12) == 1 and _fr.sentiment_factor(12, 12) == 0 an
 assert dashboard.pnl_parts(-0.03, -0.08) == {"open": 0.05, "closed": -0.08}, "P&L parts sum to the headline in pence"
 _e_hi = riskpot.setup_ev(c["riskpot"], 0.8, 3.0, 0.6, dict(p=0.5, n=0, wins=0, exp=None))
 _e_lo = riskpot.setup_ev(c["riskpot"], 0.55, 8.0, 0.6, dict(p=0.5, n=0, wins=0, exp=None))
-assert _e_hi[0] != _e_lo[0] and _e_hi[0] > 0 and _e_lo[0] > 0, "risk EV differs by confidence and volatility, and stays positive at the threshold"
+assert _e_hi[0] != _e_lo[0] and abs(_e_hi[3] - 0.5) < 1e-9 and abs(_e_lo[3] - 0.5) < 1e-9, "with no closes risk P(win) is 0.5; volatility still changes the EV"
+_e_n = riskpot.setup_ev(c["riskpot"], 0.9, 4.0, 0.6, dict(p=0.6, n=30, wins=20, exp=1.0))
+assert _e_n[3] > 0.5, "after 30 closes the measured hit rate pulls P(win) off 0.5"
 _sp, _ = daypot.burst_spend(4.98, 0, 1.5, 5, 4); _sp5, _ = daypot.burst_spend(9.92, 0, 1.5, 5, 4); _sp0, _ = daypot.burst_spend(3.2, 0, 1.0, 5, 4)
 assert abs(_sp - 4.98) < 1e-9 and abs(_sp5 - 5) < 1e-9 and _sp0 == 0, "burst spends a £4.98 remainder, still raises a £9.92 budget to the £5 minimum, and does not spend below the floor"
 print(f"v7 thresholds seen during the day: {min(v7['thr'])}..{max(v7['thr'])} | max open bursts {v7['burst_open_max']}")
