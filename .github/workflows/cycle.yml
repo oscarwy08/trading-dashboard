@@ -5,7 +5,7 @@
 name: trading-cycle
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 permissions:
   contents: write        # commit state + site with the built-in GITHUB_TOKEN
