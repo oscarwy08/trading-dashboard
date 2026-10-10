@@ -37,7 +37,7 @@ T0 = datetime.now(timezone.utc).replace(second=0, microsecond=0)
 T0 = T0 + timedelta(minutes=15 - T0.minute % 15)
 common._NOW = T0
 con = sqlite3.connect(SIM)
-for t in ("trades", "positions", "cash", "acct_cash", "equity", "signals", "transfers"): con.execute(f"DROP TABLE IF EXISTS {t}")
+for t in ("trades", "positions", "cash", "acct_cash", "equity", "signals", "transfers", "loans"): con.execute(f"DROP TABLE IF EXISTS {t}")
 con.execute("DELETE FROM state WHERE key='risk' OR key LIKE 'day_start:%' OR key LIKE 'day_halt:%' OR key LIKE 'core_%' "
             "OR key LIKE 'risk%' OR key LIKE 'riskpot%' OR key='account_split' OR key='order_queue'")
 if trend: con.execute("INSERT OR REPLACE INTO state VALUES('stock_trends',?)", (trend,))
@@ -419,7 +419,7 @@ if V7.exists(): V7.unlink()
 s_ = sqlite3.connect(HERE / "data" / "trading.db"); d_ = sqlite3.connect(V7); s_.backup(d_); d_.close(); s_.close()
 common.DB = V7; common._NOW = None
 con = common.db()
-for t_ in ("trades", "positions", "cash", "acct_cash", "equity", "signals", "transfers", "prices", "sentiment"): con.execute(f"DELETE FROM {t_}")
+for t_ in ("trades", "positions", "cash", "acct_cash", "equity", "signals", "transfers", "prices", "sentiment", "loans"): con.execute(f"DELETE FROM {t_}")
 con.execute("DELETE FROM state WHERE key NOT IN ('stock_meta')")
 con.executemany("INSERT INTO acct_cash VALUES(?,?,?)", [(k, a, v) for k, d in FUND.items() for a, v in d.items()]); common.sync_pot_cash(con)
 for k_ in ("core_plan", "core_stocks", "order_queue"): con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (k_, json.dumps({} if k_ == "core_plan" else [] if k_ == "order_queue" else {"picks": []})))
