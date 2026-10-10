@@ -1,7 +1,7 @@
-PAPER scorecard Sat 10 Oct 11:45 UK
-TOTAL Equity £200.09 (+0.05% since £200 start) | Day P&L £+0.15
-vs BTC buy&hold (£) +0.47% | Max DD -0.19% | Win rate 0.00% over 2 closed
-CORE £100.41 (+0.41% vs £100) | day £+0.46 | realised £-0.07 | win 0.00% of 2 | today 1 trades (1 buys, 0 sells) | built 8/11 | open: AMDx, ANETx, BTC, ETH, MON, MSFTx, PLTRx, TEAMx, WLD, XRP, ZSx
-DAY  £59.67 (-0.55% vs £60) | day £-0.33 | realised £+0.00 | win n/a of 0 | today 3 trades (3 buys, 0 sells) | entries open | open: ADA, CRCLx, WLD
-RISK £40.02 (+0.05% vs £40) | day £+0.02 | realised £+0.00 | win n/a of 0 | today 2 trades (2 buys, 0 sells) | active, dd +0.1%, 2 new today | open: DRV, PLUME
-GBP/USD 1.3241 (coingecko, 2026-10-10T10:18 UTC)
+PAPER scorecard Sat 10 Oct 12:19 UK
+TOTAL Equity £199.79 (-0.11% since £200 start) | Day P&L £-0.16
+vs BTC buy&hold (£) +0.46% | Max DD -0.32% | Win rate 0.00% over 2 closed
+CORE £100.38 (+0.38% vs £100) | day £+0.44 | realised £-0.07 | win 0.00% of 2 | today 1 trades (1 buys, 0 sells) | built 8/11 | open: AMDx, ANETx, BTC, ETH, MON, MSFTx, PLTRx, TEAMx, WLD, XRP, ZSx
+DAY  £59.53 (-0.78% vs £60) | day £-0.47 | realised £+0.00 | win n/a of 0 | today 3 trades (3 buys, 0 sells) | entries open | open: ADA, CRCLx, WLD
+RISK £39.87 (-0.33% vs £40) | day £-0.13 | realised £+0.00 | win n/a of 0 | today 2 trades (2 buys, 0 sells) | active, dd -0.3%, 2 new today | open: DRV, PLUME
+GBP/USD 1.3241 (coingecko, 2026-10-10T11:19 UTC)
