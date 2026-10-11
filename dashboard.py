@@ -1,6 +1,7 @@
 """Export dashboard data (dashboard/data.json) and install the static single-page app
 (dashboard/index.html + app.js + styles.css, templates in web/). No AI, no network: pure SQLite -> JSON.
-The page loads data.json client-side and re-fetches it every 60 s (works on GitHub Pages)."""
+The page loads data.json client-side and re-fetches it every 60 s (works on GitHub Pages).
+Each variant database that exists is also written to data_<name>.json, read-only, for the Book menu."""
 import hashlib, json, os, re, sqlite3
 from bisect import bisect_right
 from datetime import datetime, timedelta, timezone
