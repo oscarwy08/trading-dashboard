@@ -993,7 +993,7 @@ function renderSentTimeline(a) {
 }
 
 /* ---------- variant books ---------- */
-const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff'};
+const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880'};
 function renderVariants() {
   const V = (D && D.variants) || {}, books = V.books || [];
   const el = $('#var-explain');

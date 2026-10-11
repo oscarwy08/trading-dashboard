@@ -1,4 +1,5 @@
-# ev_exit and review_leftovers together.
+# ev_exit and review_leftovers together. The burst runner is its own book
+# (config/variants/burst_runner.yaml), not switched on here.
 variant_rules:
   ev_exit: true
   burst_stop_widen: true

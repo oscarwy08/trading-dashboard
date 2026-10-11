@@ -16,11 +16,13 @@ LABELS = {
     "ev_exit": "EV exit",
     "review_leftovers": "Review leftovers",
     "all_combined": "Both together",
+    "burst_runner": "Burst runner",
 }
 BLURB = {
     "ev_exit": "Sells a Day or Risk position when live expected value is below -0.4% and at least 0.8 points worse than the value stored at entry. While live value is negative but still above -0.4%, the stop is three quarters of the stored stop.",
     "review_leftovers": "Burst stop is 1.5x wider unless live EV is already below -0.4%. Core's 18:00 fallback tranche is half size when the coin is up more than 15% over 7 days or RSI is above 75. New Day, Risk and Core entries need the coin's own 3-day trend up. After 12:00 UK, Day and Core will not each buy the same coin.",
-    "all_combined": "EV exit and the review leftovers, on one book.",
+    "all_combined": "EV exit and the review leftovers, on one book. The burst runner is a separate book, not part of this one.",
+    "burst_runner": "Same rules as the main book, except a Burst position that hits its target keeps running when the entry signal is still intact. The trail then gives back 20% of the peak gain. Each sell says sold at target or ran, with the extra gain and the giveback.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
@@ -31,7 +33,7 @@ def rules_of(c):
     d = dict(ev_exit=False, ev_exit_now_pct=-0.4, ev_exit_below_entry_pp=0.8, ev_exit_stop_mult=0.75,
              burst_stop_widen=False, burst_stop_mult=1.5, core_fallback_half=False, core_ext_7d_pct=15.0,
              core_ext_rsi=75.0, entry_own_trend=False, entry_trend_days=3, no_day_core_same_afternoon=False,
-             afternoon_hour_uk=12)
+             afternoon_hour_uk=12, burst_runner=False, burst_runner_giveback_pct=20)
     for k, v in ((c or {}).get("variant_rules") or {}).items():
         if k in d and v is not None:
             d[k] = v
@@ -40,7 +42,7 @@ def rules_of(c):
 
 def active(R):
     return bool(R.get("ev_exit") or R.get("burst_stop_widen") or R.get("core_fallback_half")
-                or R.get("entry_own_trend") or R.get("no_day_core_same_afternoon"))
+                or R.get("entry_own_trend") or R.get("no_day_core_same_afternoon") or R.get("burst_runner"))
 
 
 def ev_action(ev_now, entry_ev, R):
@@ -147,6 +149,44 @@ def entry_block(con, others, asset, pts, lt, R):
             if bought_this_afternoon(con, oth, asset, lt, int(R["afternoon_hour_uk"])):
                 return f"{oth} already bought {asset} this afternoon"
     return None
+
+
+def burst_target_action(breakout, volume_ok, rsi, rsi_max, sentiment_ok, market_ok, conf, threshold):
+    """At a burst take-profit: keep the position only when the entry signal is still a buy.
+
+    The same gates as a new burst entry: the breakout is still there, volume has not faded,
+    RSI is under the entry cap, sentiment and the market are still acceptable, and confidence
+    is still at least the entry threshold. Returns (keep, why).
+    """
+    fails = []
+    if not breakout:
+        fails.append("breakout no longer intact")
+    if not volume_ok:
+        fails.append("volume faded")
+    if rsi is not None and float(rsi) >= float(rsi_max):
+        fails.append(f"RSI {float(rsi):.0f} >= {float(rsi_max):g}")
+    if not sentiment_ok:
+        fails.append("sentiment below the entry line")
+    if not market_ok:
+        fails.append("market no longer supports it")
+    shown = 0.0 if conf is None else float(conf)
+    if conf is None or shown < float(threshold):
+        fails.append(f"confidence {shown:.2f} < {float(threshold):.2f}")
+    if fails:
+        return False, "; ".join(fails)
+    return True, f"confidence {shown:.2f} >= {float(threshold):.2f}"
+
+
+def sold_at_target_note(why):
+    return f"burst runner: sold at target ({why})"
+
+
+def ran_note(chg, peak_gain, target_pct, giveback_pct):
+    """Extra gain is the exit versus the target. Giveback is how far the exit is under the peak."""
+    extra = float(chg) * 100 - float(target_pct)
+    gave = (float(peak_gain) - float(chg)) * 100
+    return (f"burst runner: ran, extra {extra:+.1f}pp vs target +{float(target_pct):.1f}%, "
+            f"giveback {gave:.1f}pp ({float(giveback_pct):.0f}% of peak +{float(peak_gain)*100:.1f}%)")
 
 
 def fallback_fraction(ret_7d, rsi, R):

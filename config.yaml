@@ -340,7 +340,7 @@ plans:                          # display-only 'investment plans' for bigger top
 # merging config/variants/<name>.yaml. The books start from one snapshot and then trade on the same prices.
 variants:
   enabled: true
-  run: [ev_exit, review_leftovers, all_combined]
+  run: [ev_exit, review_leftovers, all_combined, burst_runner]
 variant_rules:
   ev_exit: false
   ev_exit_now_pct: -0.4         # sell when EV now is below this (percent) ...
@@ -355,3 +355,5 @@ variant_rules:
   entry_trend_days: 3           # a new entry needs the coin's own price above where it was this many days ago
   no_day_core_same_afternoon: false
   afternoon_hour_uk: 12         # after this UK hour, Day and Core will not each buy the same coin
+  burst_runner: false           # burst at its target keeps running only on the burst_runner book
+  burst_runner_giveback_pct: 20 # then the trail gives back this share of the peak gain (same 20 as momentum's runner)
