@@ -1,11 +1,11 @@
-PAPER scorecard Sun 11 Oct 01:00 UK
-TOTAL Equity £200.04 (+0.02% since £200 start) | Day P&L £-0.06
+PAPER scorecard Sun 11 Oct 01:04 UK
+TOTAL Equity £200.16 (+0.08% since £200 start) | Day P&L £+0.05
 vs BTC buy&hold (£) +0.23% | Max DD -0.41% | Win rate 20.00% over 5 closed
-CRYPTO acct (Monad wallet) £100.04 (+0.04% vs £100) | P&L £+0.04 | day £-0.06 | cash £33.94 | invested £66.11 | realised £-0.11 | fees £0.38 (fee £0.377, gas £0.007) | by pot: CORE £49.82 (cash £4.04, lent £3.97), DAY £29.89 (cash £29.89), RISK £20.32 (cash £0.00, owes £3.97)
+CRYPTO acct (Monad wallet) £100.16 (+0.16% vs £100) | P&L £+0.16 | day £+0.05 | cash £33.94 | invested £66.22 | realised £-0.11 | fees £0.38 (fee £0.377, gas £0.007) | by pot: CORE £49.83 (cash £4.04, lent £3.97), DAY £29.89 (cash £29.89), RISK £20.43 (cash £0.00, owes £3.97)
 STOCKS acct (Trading 212) £100.00 (+0.00% vs £100) | P&L £+0.00 | day £+0.00 | cash £100.00 | invested £0.00 | realised £+0.00 | fees £0.00 () | by pot: CORE £50.00 (cash £50.00), DAY £30.00 (cash £30.00), RISK £20.00 (cash £20.00)
-CORE £99.83 (-0.17% vs £100) | day £-0.12 | realised £+0.00 | win n/a of 0 | today 1 trades (1 buys, 0 sells) | built 4/11 | open: BTC, ETH, MON, WLD, XRP | crypto £45.85 (cash £4.04) / stocks £50.00 (cash £50.00)
+CORE £99.83 (-0.17% vs £100) | day £-0.12 | realised £+0.00 | win n/a of 0 | today 1 trades (1 buys, 0 sells) | built 4/11 | open: BTC, ETH, MON, WLD, XRP | crypto £45.86 (cash £4.04) / stocks £50.00 (cash £50.00)
 DAY  £59.89 (-0.18% vs £60) | day £+0.00 | realised £-0.11 | win 20.00% of 5 | today 0 trades (0 buys, 0 sells) | entries closed | open: none | crypto £29.89 (cash £29.89) / stocks £30.00 (cash £30.00)
-RISK £40.32 (+0.81% vs £40) | day £+0.06 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | active, dd +0.8%, 0 new today | open: CAP, DRV, STRK | crypto £24.29 (cash £0.00) / stocks £20.00 (cash £20.00)
+RISK £40.43 (+1.08% vs £40) | day £+0.17 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | active, dd +1.1%, 0 new today | open: CAP, DRV, STRK | crypto £24.40 (cash £0.00) / stocks £20.00 (cash £20.00)
   DAY momentum all: 2 closed trades, win 50.0%, avg win +2.45%, avg loss -1.19%, PF 2.07, closed P&L £+0.10 (after its fees £0.09; + £0.00 buy fees on open positions), expectancy +0.63%/trade | today: 0 trades, P&L £+0.00
   DAY burst    all: 3 closed trades, win 0.0%, avg win n/a, avg loss -1.33%, PF 0.0, closed P&L £-0.20 (after its fees £0.09; + £0.00 buy fees on open positions), expectancy -1.33%/trade | today: 0 trades, P&L £+0.00
   DAY burst threshold 0.55 (Day pot today +0.00%), 0/5 setups taken last cycle
