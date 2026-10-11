@@ -3,13 +3,13 @@ Monad wallet, Stocks = Trading 212) + one line per pot (with its crypto / stocks
 import json
 from datetime import datetime, timedelta, timezone
 from common import ACCOUNTS, KILL, LON, SLEEVES, acct_start, db, rebase, transfer_adj, transfer_adj_acct, usd_gbp
-from dashboard import stats
+from dashboard import peak_pct_of, sell_basis_pct, sell_text, stats
 
 con = db(); s = stats(con)
 day = datetime.now(LON).replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc).isoformat()
 eq0 = con.execute("SELECT ts, equity, core, day, risk, crypto, stocks FROM equity WHERE ts<? ORDER BY ts DESC LIMIT 1", (day,)).fetchone() \
       or con.execute("SELECT ts, equity, core, day, risk, crypto, stocks FROM equity ORDER BY ts LIMIT 1").fetchone()
-today = con.execute("SELECT sleeve, side, asset, pnl FROM trades WHERE ts>=?", (day,)).fetchall()
+today = con.execute("SELECT sleeve, side, asset, pnl, value, gas, reason FROM trades WHERE ts>=? ORDER BY ts", (day,)).fetchall()
 pct = lambda v: "n/a" if v is None else f"{v*100:+.2f}%"
 dp = s["equity"] - eq0["equity"] if eq0 else 0
 print(f"PAPER scorecard {datetime.now(LON):%a %d %b %H:%M} UK")
@@ -67,9 +67,15 @@ for sl in SLEEVES:
              ("HALTED (loss cap)" if risk.get("halted") else "entries open" if risk.get("entries_open") else "entries closed"))
     print(f"{sl.upper():4} £{x['equity']:.2f} ({pct(x['ret'])} vs £{x['start']:.0f}) | day £{d0:+.2f} | realised £{x['realized']:+.2f} | "
           f"win {pct(x['win_rate']).lstrip('+')} of {x['closed']} | today {len(t)} trades ({sum(r['side']=='BUY' for r in t)} buys, {len(closed)} sells)"
-          + (f", best {best['asset']} £{best['pnl']:+.2f}, worst {worst['asset']} £{worst['pnl']:+.2f}" if closed else "")
+          + (f", best {sell_text(best['pnl'], sell_basis_pct(best['value'], best['gas'], best['pnl']), peak_pct_of(best['reason']), best['asset'])}, "
+             f"worst {sell_text(worst['pnl'], sell_basis_pct(worst['value'], worst['gas'], worst['pnl']), peak_pct_of(worst['reason']), worst['asset'])}" if closed else "")
           + f" | {extra} | open: {', '.join(opn) or 'none'}"
           + " | " + " / ".join(f"{a} £{acash.get((sl, a), 0) + pv.get((sl, a), 0):.2f} (cash £{acash.get((sl, a), 0):.2f})" for a in ACCOUNTS))
+sells_today = [r for r in today if r["side"] == "SELL" and r["pnl"] is not None]
+if sells_today:
+    print("SELLS " + "; ".join(
+        f"{r['sleeve'].upper()} {sell_text(r['pnl'], sell_basis_pct(r['value'], r['gas'], r['pnl']), peak_pct_of(r['reason']), r['asset'])}"
+        for r in sells_today))
 # ---- v7: DAY sub-strategies (momentum | burst) ----
 try:
     from dashboard import day_sub_stats

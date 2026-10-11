@@ -195,6 +195,35 @@ def sig(x, n=6):  # round to n significant digits (keeps JSON small)
 
 def r2(x): return None if x is None else round(x, 2)
 
+_PEAK_RE = re.compile(r"peak \+([+-]?\d+(?:\.\d+)?)%")
+
+def sell_basis_pct(value, gas, pnl):
+    """Realised P&L as a percent of what the sold slice cost, including buy fees.
+    A sell stores the fill value, the sell gas and the P&L. Cost basis is value minus gas minus P&L."""
+    if pnl is None or value is None:
+        return None
+    basis = float(value) - float(gas or 0) - float(pnl)
+    if basis <= 0.005:
+        return None
+    return round(float(pnl) / basis * 100, 2)
+
+def peak_pct_of(reason):
+    """Best gain during the hold, when a trailing exit wrote 'peak +6.1%' into the reason. Otherwise None."""
+    m = _PEAK_RE.search(reason or "")
+    return float(m.group(1)) if m else None
+
+def sell_text(pnl, pct, peak=None, asset=None):
+    """'+£0.12 (+2.4%), peak +6.1%'. asset prefixes the coin when given."""
+    if pnl is None:
+        return None
+    sign = "+" if pnl > 0.0049 else ("-" if pnl < -0.0049 else "")
+    s = f"{sign}£{abs(float(pnl)):.2f}"
+    if pct is not None:
+        s += f" ({pct:+.1f}%)"
+    if peak is not None:
+        s += f", peak {peak:+.1f}%"
+    return f"{asset} {s}" if asset else s
+
 def parse_snap(raw):
     """Entry snapshot stored on a buy and copied onto its sell: confidence or score, components, p, target %, loss %, costs, EV.
     None when that trade was bought before this was stored."""
@@ -411,6 +440,8 @@ def build(con):
     trades = [dict(id=r["id"], t=ep(r["ts"]), sleeve=r["sleeve"], acct=acct_of(r["klass"]), side=r["side"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]),
                    price=sig(r["price"]), fill=sig(r["fill"]), usd=sig(r["price_usd"]), fx=sig(r["usd_gbp"], 5),
                    value=r2(r["value"]), fee=round(r["cost"], 4) if r["cost"] is not None else None, pnl=r2(r["pnl"]),
+                   pnl_pct=sell_basis_pct(r["value"], r["gas"], r["pnl"]) if r["side"] == "SELL" else None,
+                   peak_pct=peak_pct_of(r["reason"]) if r["side"] == "SELL" else None,
                    gas=sig(r["gas"], 3) if r["gas"] is not None else None,
                    reason=r["reason"] or "", sub=(r["sub"] or ("momentum" if r["sleeve"] == "day" else None)), conf=r["conf"], alias=plain(r["asset"]) if plain(r["asset"]) != r["asset"] else None,
                    snap=parse_snap(r["snap"]) if "snap" in r.keys() else None,
