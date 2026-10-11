@@ -340,7 +340,7 @@ plans:                          # display-only 'investment plans' for bigger top
 # merging config/variants/<name>.yaml. The books start from one snapshot and then trade on the same prices.
 variants:
   enabled: true
-  run: [ev_exit, review_leftovers, all_combined, burst_runner, everything]
+  run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto]
 variant_rules:
   ev_exit: false
   ev_exit_now_pct: -0.4         # sell when EV now is below this (percent) ...
@@ -357,3 +357,7 @@ variant_rules:
   afternoon_hour_uk: 12         # after this UK hour, Day and Core will not each buy the same coin
   burst_runner: false           # burst at its target keeps running only on the burst_runner and everything books
   burst_runner_giveback_pct: 20 # then the trail gives back this share of the peak gain (same 20 as momentum's runner)
+  midnight_crypto: false       # Day crypto only. Stocks keep entry_start_uk / entry_cutoff_uk / flatten_uk above.
+  midnight_entry_start_uk: "00:00"   # new Day crypto entries from midnight UK, including the cycle that just flattened
+  midnight_entry_cutoff_uk: "23:45"  # no new Day crypto entries at/after this; open crypto stays until midnight
+  midnight_flatten_uk: "00:00"       # flatten Day crypto opened on the previous UK day (not a clock that is true all day)

@@ -34,7 +34,7 @@ def day_flat_reason(mins, flat, e0, flatten_uk, entry_start_uk, fresh):
     why = (f"flatten {flatten_uk} UK (flat overnight)" if mins >= flat else
            f"flatten: overnight/before {entry_start_uk} UK" if mins < e0 else
            "flatten: carried from previous UK day")
-    return why + ("" if fresh else " [last price, after 22:00]")
+    return why + ("" if fresh else f" [last price, after {flatten_uk}]")
 
 
 def day_reason(entry, price, opened, md, sub_cfg, st, comb, info, now, fee_frac, buy_thr, asset, stop_pct=None,

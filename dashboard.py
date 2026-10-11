@@ -24,6 +24,37 @@ MAX_TRADES = 500
 MAX_SENTIMENT = 300
 MAX_REASONS = 12         # per asset: latest signal + recent non-HOLD signals with full reasons
 
+def _hm(s):
+    h, m = str(s).split(":")
+    return int(h) * 60 + int(m)
+
+def day_rule_clocks(day_cfg, day_sleeve):
+    """Start, cutoff, flatten shown on the Day page. The main book uses the frozen clocks.
+    A midnight crypto book stores its own clocks on day_sleeve.session after it has traded."""
+    start, cut, flat = day_cfg["entry_start_uk"], day_cfg["entry_cutoff_uk"], day_cfg["flatten_uk"]
+    sess = (day_sleeve or {}).get("session") if isinstance(day_sleeve, dict) else None
+    if isinstance(sess, dict) and sess.get("midnight_crypto"):
+        return sess.get("start") or start, sess.get("cutoff") or cut, sess.get("flatten") or flat, True
+    return start, cut, flat, False
+
+def day_overdue_assets(positions, lt, entry_start_uk, flatten_uk, midnight_crypto=False):
+    """Day names that should already be flat. The main book uses 22:00 and 08:00 for every name.
+    Midnight crypto uses that clock for stocks only. A crypto name is overdue when it was opened
+    on an earlier UK day."""
+    mins = lt.hour * 60 + lt.minute
+    clock = mins >= _hm(flatten_uk) or mins < _hm(entry_start_uk)
+    out = []
+    for p in positions:
+        if p.get("sleeve") != "day":
+            continue
+        if midnight_crypto and p.get("klass") != "stock":
+            opened = p.get("opened")
+            if opened and datetime.fromtimestamp(opened, LON).date().isoformat() < lt.date().isoformat():
+                out.append(p["asset"])
+        elif clock:
+            out.append(p["asset"])
+    return out
+
 def day_sub_stats(con, lt):
     """v7: per DAY sub-strategy (momentum | burst; pre-v7 day trades count as momentum) closed-trade stats - all time and
     today (UK), for the whole pot and per account: trades, win rate, avg win/loss %, profit factor, P&L after all fees,
@@ -662,13 +693,14 @@ def build(con):
                    band=K["drift_band_pp"], stop=K["stop_loss_pct"], sent_delay=K["sentiment_delay_score"],
                    rebalance=f"{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][int(K['rebalance_weekday'])]} {K['rebalance_time_uk']} UK"))
     ds = risk.get("day_sleeve") or {}
+    d_start_uk, d_cut_uk, d_flat_uk, midnight_book = day_rule_clocks(DY, ds)
     dst_ = r2(ds.get("start")); deq_ = sleeves["day"]["equity"]
     day_pnl_ = R2(deq_ - dst_) if dst_ else None
     sleeves["day"].update(day_start=dst_, day_pnl=day_pnl_,
                           day_pnl_breakdown=None if day_pnl_ is None else pnl_parts(day_pnl_, realized_since("day")),
                           day_pnl_pct=round((deq_ / dst_ - 1) * 100, 3) if dst_ else None, ledger=day_ledger(con, c, positions, acash, base), halted=bool(ds.get("halted")), entries_open=bool(ds.get("entries_open")),
                           flat_now=bool(ds.get("flat_now")),
-                          rules=dict(start=DY["entry_start_uk"], cutoff=DY["entry_cutoff_uk"], flatten=DY["flatten_uk"], cap=DY["daily_loss_cap_pct"],
+                          rules=dict(start=d_start_uk, cutoff=d_cut_uk, flatten=d_flat_uk, cap=DY["daily_loss_cap_pct"],
                                      cost_x=DY.get("min_move_cost_x"), momentum=DY["momentum"], burst=DY["burst"],
                                      max_open=DY["momentum"]["max_open"] + 2 * DY["burst"]["max_open_per_account"]),
                           subs=day_sub_stats(con, lt), status=json.loads((con.execute("SELECT value FROM state WHERE key='day_subs'").fetchone() or ["{}"])[0]) or {})
@@ -734,7 +766,7 @@ def build(con):
         v=6, gas=gas, generated=n_ep, updated=updated, currency="GBP", start=start, accounts=accounts, account_split=asplit,
         rules=dict(version=(c.get("rules") or {}).get("version"), frozen_since=(c.get("rules") or {}).get("frozen_since")),
         scorecard=setup_scorecard(con),
-        day_overdue=[p["asset"] for p in positions if p["sleeve"] == "day"] if (lt.hour * 60 + lt.minute >= int(str(DY["flatten_uk"]).split(":")[0]) * 60 + int(str(DY["flatten_uk"]).split(":")[1]) or lt.hour * 60 + lt.minute < int(str(DY["entry_start_uk"]).split(":")[0]) * 60 + int(str(DY["entry_start_uk"]).split(":")[1])) else [],
+        day_overdue=day_overdue_assets(positions, lt, DY["entry_start_uk"], DY["flatten_uk"], midnight_book),
         freshness=fresh_status,
         sleeves=sleeves, focus=focus, transfers=transfers, markets=markets.status(t_now),
         themes=[dict(key=k, label=v.get("label", k), watch=bool(v.get("watch")), n=len(v.get("tickers", []))) for k, v in (c["stocks"].get("universe") or {}).items()]
@@ -793,6 +825,7 @@ BOOK_MENU = {
     "all_combined": "Both",
     "burst_runner": "Burst runner",
     "everything": "Everything combined",
+    "midnight_crypto": "Midnight crypto",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 
