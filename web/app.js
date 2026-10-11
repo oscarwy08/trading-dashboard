@@ -1,5 +1,6 @@
 /* Paper Trader dashboard - static single-page app with hash tabs. Loads data.json (written by dashboard.py) and
-   re-fetches it every 60 s. Tabs: #overview #portfolio #core #day #risk #markets #sentiment #orders #variants; #asset=XRP opens an asset. */
+   re-fetches it every 60 s. A variant book loads data_<name>.json. Hash: #day, #book=ev_exit, #book=ev_exit&day,
+   #book=ev_exit&asset=BAT. Tabs: #overview #portfolio #core #day #risk #markets #sentiment #orders #variants. */
 (() => {
 'use strict';
 const LC = window.LightweightCharts;
@@ -8,7 +9,7 @@ const TZ = 'Europe/London', REFRESH_MS = 60000;
 const TABS = ['overview', 'portfolio', 'core', 'day', 'risk', 'markets', 'sentiment', 'orders', 'variants'];
 const C = {green: '#00ba7c', red: '#f4212e', blue: '#1d9bf0', mut: '#71767b', txt: '#e7e9ea', grid: '#16181c', line: '#2f3336', grey: '#536471'};
 let D = null, lastGen = null, loadErr = null;
-const S = {tab: 'overview', aSort: {k: 'a', d: 1}, tSort: {k: 't', d: -1}, pSort: {k: 'value', d: -1}, rSort: {k: 'score', d: -1},
+const S = {tab: 'overview', book: 'main', aSort: {k: 'a', d: 1}, tSort: {k: 't', d: -1}, pSort: {k: 'value', d: -1}, rSort: {k: 'score', d: -1},
   rcSort: {k: 'conf', d: -1}, rsSort: {k: 'score', d: -1},
   filter: 'all', q: '', eqRange: 'ALL', ccy: 'gbp', ptype: 'candle', dRange: 'ALL', open: null,
   tAsset: '', tSide: '', tSleeve: '', tFrom: '', tTo: '', tLimit: 50, sLimit: 15, sAsset: '', pPot: '', rTheme: '', mTheme: '',
@@ -104,7 +105,7 @@ const themeOf = a => { const r = ((D.sleeves.core || {}).ranking || []).find(x =
 const kindOf = a => { const x = assetBy(a); return x ? x.k : /x$|\.[A-Z]+$/.test(a) ? 'stock' : 'crypto'; };
 const watchMark = r => r && r.watch ? '<span class="tag watch" title="Watch closely">★ watch</span>' : '';
 const assetCell = (a, sub) => `<div class="asset"><span class="ic">${esc(a.replace(/x$/, '').slice(0, 4))}</span><div><div class="nm">${esc(a)}</div><div class="sb">${esc(sub ?? (kindOf(a) === 'stock' ? (themeOf(a) || 'Stock') : 'Crypto'))}</div></div></div>`;
-const assetLink = a => `<a href="#asset=${encodeURIComponent(a)}" class="nm" style="color:var(--hi);font-weight:700">${esc(a)}</a>`;
+const assetLink = a => `<a href="#${hashString(S.book || 'main', null, a)}" class="nm" style="color:var(--hi);font-weight:700">${esc(a)}</a>`;
 function fxAt(t) {
   const h = D.fx_hist || []; if (!h.length) return D.fx.rate;
   let lo = 0, hi = h.length - 1, r = h[0][1];
@@ -171,7 +172,8 @@ function renderHeader() {
   $('#updated-ago').textContent = D ? `Updated ${ago(D.updated)}` : (loadErr ? 'Data unavailable' : 'Loading…');
   $('#live-dot').className = 'dot ' + (!D ? 'bad' : age > 3600 ? 'bad' : age > 1500 ? 'warn' : 'ok');
   const al = $('#alert'); let msg = '';
-  if (loadErr && !D) msg = 'Could not load data.json: ' + loadErr;
+  const file = bookFile(S.book || 'main') || (S.book || 'data.json');
+  if (loadErr && !D) msg = 'Could not load ' + file + ': ' + loadErr;
   else if (D && age > 3600) msg = `Data is ${ago(D.updated).replace(' ago', '')} old - the 15-minute update may have stalled.`;
   else if (loadErr) msg = 'Last refresh failed (' + loadErr + '); showing the previous data.';
   else if (D && D.risk.kill) msg = 'Kill switch is ON - all trading is paused.';
@@ -185,6 +187,8 @@ function renderHeader() {
       ban.classList.remove('hidden');
     } else ban.classList.add('hidden');
   }
+  document.body.classList.toggle('book-missing', !D && !!loadErr && !document.body.classList.contains('book-loading'));
+  renderBookChrome();
 }
 
 /* ---------- overview ---------- */
@@ -240,7 +244,7 @@ function renderOverview() {
     `<div class="card"><div class="lbl">Status</div><p class="plain" style="margin-top:10px"><b class="${st.c}">${esc(st.txt)}.</b> ${dayLine} Next Core rebalance: <b>${esc(dlong.format((core.next_rebalance || 0) * 1000))}</b> UK.` +
     `${D.freshness && isNum(D.freshness.score) ? ` Data freshness <b>${Math.round(D.freshness.score * 100)}%</b>${D.freshness.stale ? ` · ${D.freshness.stale} price${D.freshness.stale === 1 ? '' : 's'} older than the full-credit window` : ''}${isNum(D.freshness.oldest_min) ? ` · oldest ${ageTxt(D.freshness.oldest_min)}` : ''}.` : ''}</p></div>`;
   // pots
-  const pot = (k, x, desc) => `<a class="pot" href="#${k}"><div><div class="pot-n">${POT[k]}</div><div class="pot-d">${desc}</div></div>` +
+  const pot = (k, x, desc) => `<a class="pot" href="#${hashString(S.book || 'main', k, null)}"><div><div class="pot-n">${POT[k]}</div><div class="pot-d">${desc}</div></div>` +
     `<div class="pot-v"><b>${fM(x.equity)}</b><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span>${pnlBreakdown(x.pnl_breakdown)}</div></a>`;
   const split = k => { const z = (Z[k] || {}).accts; return z ? `<br>Crypto ${fM(z.crypto.equity)} (${fM(z.crypto.cash)} cash) · Stocks ${fM(z.stocks.equity)} (${fM(z.stocks.cash)} cash)` : ''; };
   $('#ov-pots').innerHTML = pot('core', core, `Long-term holdings · started ${fM0(core.start)} · ${core.open_n} holdings${split('core')}`) +
@@ -263,7 +267,7 @@ function renderAccountCards() {
       `<div class="acct-kv">${stat('Cash', fM(x.cash), '', '', 'Money in this account not in a position (all three pots).')}${stat('Invested', fM(x.invested), '', `${x.open_n} holding${x.open_n === 1 ? '' : 's'}`, 'Current value of this account\'s open positions. Cash + invested = account value.')}${stat('Fees paid', fM(x.fees_total), '', esc(fl), 'All fees paid in this account (open and closed trades); already included in value and P&L.')}</div>` +
       `<div class="acct-pots">${POTS.map(k => { const c = (x.pots || {})[k] || {}; return `<b>${esc(POT[k])}</b><span>${fM(c.cash)} cash</span><span class="num">${fM(c.equity)}</span><span class="num ${cls(c.pnl)}">${fM(c.pnl, true)}</span>`; }).join('')}</div></div>`; }).join('') +
     (pend.length ? `<div class="note" style="grid-column:1/-1;margin-top:0">Account split ${esc(fTs(sp.t))}: Crypto ${fM0(A.crypto.start)} / Stocks ${fM0(A.stocks.start)}. Still to settle inside each account (pot to pot, never between accounts) as soon as the cash is free: ${pend.map(l => `${esc(l.account === 'crypto' ? 'Crypto' : 'Stocks')} ${esc(POT[l.from])} → ${esc(POT[l.to])} ${fM(l.amount)}`).join(' · ')}.</div>` : '');
-  $$('.acct', el).forEach(c => { const go = () => { setAcct(c.dataset.acct); location.hash = 'portfolio'; }; c.onclick = go; c.onkeydown = e => { if (e.key === 'Enter') go(); }; });
+  $$('.acct', el).forEach(c => { const go = () => { setAcct(c.dataset.acct); goHash({tab: 'portfolio', asset: null}); }; c.onclick = go; c.onkeydown = e => { if (e.key === 'Enter') go(); }; });
 }
 let eqSeries = null, startLine = null;
 const eqStart = () => S.eqAcct && D.accounts ? D.accounts[S.eqAcct].start : D.start;
@@ -845,8 +849,8 @@ function renderRisk() {
 /* ---------- asset detail drawer ---------- */
 // row clicks pass the row's data-id (asset symbol); a row object ({asset} / {a}) is accepted too so a caller can never produce
 // #asset=[object Object] (bug fixed in v7.1: the Day tab's Burst setups table passed {asset: undefined})
-function openAsset(a) { const sym = a && typeof a === 'object' ? (a.asset || a.a) : a; if (!sym || typeof sym !== 'string') return; location.hash = 'asset=' + encodeURIComponent(sym); }
-function closeAsset() { location.hash = S.tab; }
+function openAsset(a) { const sym = a && typeof a === 'object' ? (a.asset || a.a) : a; if (!sym || typeof sym !== 'string') return; goHash({asset: sym}); }
+function closeAsset() { goHash({tab: S.tab, asset: null}); }
 function hideDrawer() { if (!S.open && $('#drawer').classList.contains('hidden')) return;
   S.open = null; $('#drawer').classList.add('hidden'); $('#drawer').setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
   ['d', 'dsig', 'dsent'].forEach(dropChart); }
@@ -1030,6 +1034,95 @@ function renderVariants() {
   if (times.length) charts.var.timeScale().fitContent();
 }
 
+/* ---------- book switch ---------- */
+const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner'};
+const bookLabel = (name, fallback) => BOOK_LABEL[name] || fallback || name;
+const bookFile = name => (!name || name === 'main') ? 'data.json' : (/^[a-z0-9_]+$/.test(name) ? 'data_' + name + '.json' : null);
+let menu = [{name: 'main', label: 'Main (frozen)', file: 'data.json', variant: false}];
+let loadSeq = 0, drawnBook = null, routed = false;
+function hashString(book, tab, asset) {
+  const bits = [];
+  if (book && book !== 'main') bits.push('book=' + encodeURIComponent(book));
+  if (asset) bits.push('asset=' + encodeURIComponent(asset));
+  else if (tab && tab !== 'overview') bits.push(tab);
+  return bits.join('&');
+}
+function parseHash(raw) {
+  const h = decodeURIComponent(String(raw == null ? location.hash : raw).replace(/^#/, ''));
+  const out = {book: 'main', tab: null, asset: null};
+  if (!h) return out;
+  if (TABS.includes(h)) { out.tab = h; return out; }
+  if (h.startsWith('asset=') && !h.includes('&')) { out.asset = h.slice(6); return out; }
+  h.split('&').forEach(part => {
+    if (!part) return;
+    if (TABS.includes(part)) { out.tab = part; return; }
+    const i = part.indexOf('=');
+    if (i < 0) return;
+    const k = part.slice(0, i), v = part.slice(i + 1);
+    if (k === 'book') out.book = v || 'main';
+    else if (k === 'asset') out.asset = v;
+  });
+  if (!out.book) out.book = 'main';
+  return out;
+}
+function goHash(patch) {
+  const book = patch.book !== undefined ? (patch.book || 'main') : (S.book || 'main');
+  const tab = patch.tab !== undefined ? patch.tab : S.tab;
+  const asset = patch.asset !== undefined ? patch.asset : null;
+  const next = hashString(book, asset ? null : tab, asset);
+  const cur = decodeURIComponent(location.hash.replace(/^#/, ''));
+  if (cur === next) return;
+  location.hash = next;
+}
+function rememberMenu(d) {
+  const cat = [];
+  const push = (name, label) => {
+    if (!name || cat.some(c => c.name === name)) return;
+    const file = bookFile(name);
+    if (!file) return;
+    cat.push({name, label: bookLabel(name, label), file, variant: name !== 'main'});
+  };
+  push('main', 'Main (frozen)');
+  ((d && d.books) || []).forEach(c => c && push(c.name, c.label));
+  (((d && d.variants) || {}).books || []).forEach(b => { if (b && !b.error) push(b.name, b.label); });
+  menu = cat;
+}
+function paintLinks() {
+  const book = S.book || 'main';
+  $$('#tabs a[data-tab]').forEach(a => { a.href = '#' + hashString(book, a.dataset.tab, null); });
+  const see = $('#tab-overview a.link');
+  if (see) see.href = '#' + hashString(book, 'orders', null);
+}
+function renderBookChrome() {
+  const sel = $('#book-select');
+  const cur = S.book || 'main';
+  if (sel) {
+    const rows = menu.slice();
+    if (!rows.some(c => c.name === cur) && bookFile(cur)) rows.push({name: cur, label: bookLabel(cur), file: bookFile(cur), variant: cur !== 'main'});
+    const sig = rows.map(c => c.name + '=' + c.label).join('|');
+    if (sel.dataset.sig !== sig) {
+      sel.innerHTML = rows.map(c => `<option value="${esc(c.name)}">${esc(c.label)}</option>`).join('');
+      sel.dataset.sig = sig;
+    }
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  }
+  const ban = $('#book-banner');
+  if (ban) {
+    if (cur === 'main') { ban.textContent = ''; ban.classList.add('hidden'); }
+    else {
+      const row = menu.find(c => c.name === cur);
+      ban.textContent = 'Viewing variant: ' + bookLabel(cur, row && row.label) + ' — paper test, not the main book';
+      ban.classList.remove('hidden');
+    }
+  }
+  paintLinks();
+}
+function dropBookCharts() {
+  dropChart('eq'); eqSeries = null; startLine = null;
+  if (charts.var) { try { charts.var.remove(); } catch (e) {} charts.var = null; charts.varLines = null; }
+  ['d', 'dsig', 'dsent'].forEach(dropChart);
+}
+
 /* ---------- tabs / routing ---------- */
 const RENDER = {overview: () => { renderOverview(); renderEquity(); }, portfolio: renderPortfolio, core: renderCore, day: renderDay, risk: renderRiskPot,
   markets: renderMarkets, sentiment: renderSentiment, orders: renderOrders, variants: renderVariants};
@@ -1051,14 +1144,39 @@ function showTab(t) {
   if (D) safe(t, RENDER[t]);
 }
 function route() {
-  const h = decodeURIComponent(location.hash.replace(/^#/, ''));
-  const m = h.match(/^asset=(.+)$/);
-  if (m) { if (!$('.tab.on')) showTab(TABS.includes(S.tab) && S.tab !== 'overview' ? S.tab : 'markets'); if (D) showDrawer(m[1]); return; }
+  const p = parseHash();
+  const prev = S.book || 'main';
+  const book = p.book || 'main';
+  const changed = routed && book !== prev;
+  S.book = book;
+  if (changed) {
+    D = null; loadErr = null; lastGen = null;
+    document.body.classList.remove('book-missing');
+    document.body.classList.add('book-loading');
+    hideDrawer();
+    if (p.tab && TABS.includes(p.tab)) S.tab = p.tab;
+    else if (!p.asset) S.tab = 'overview';
+    renderBookChrome();
+    const agoEl = $('#updated-ago'); if (agoEl) agoEl.textContent = 'Loading…';
+    load(true);
+    return;
+  }
+  if (p.asset) {
+    if (p.tab && TABS.includes(p.tab)) S.tab = p.tab;
+    if (!$('.tab.on')) showTab(TABS.includes(S.tab) && S.tab !== 'overview' ? S.tab : 'markets');
+    if (D) showDrawer(p.asset);
+    renderBookChrome();
+    return;
+  }
   hideDrawer();
-  const t = TABS.includes(h) ? h : 'overview';
-  if (t !== S.tab || !$('.tab.on')) { showTab(t); if (t !== 'overview' || h) window.scrollTo(0, 0); }
+  const t = p.tab && TABS.includes(p.tab) ? p.tab : 'overview';
+  if (t !== S.tab || !$('.tab.on')) { showTab(t); if (t !== 'overview' || location.hash) window.scrollTo(0, 0); }
+  renderBookChrome();
 }
 function renderAll() {
+  const name = (D && D.book && D.book.name) || S.book || 'main';
+  if (drawnBook !== name) { dropBookCharts(); drawnBook = name; }
+  document.body.classList.remove('book-loading', 'book-missing');
   safe('header', renderHeader); setAcct(S.acct, false);
   TABS.forEach(t => safe(t, t === 'overview' ? renderOverview : RENDER[t]));   // tables/text for every tab
   if (S.tab === 'overview') safe('equity', renderEquity);                        // chart only when visible
@@ -1066,15 +1184,60 @@ function renderAll() {
   document.body.dataset.ready = '1';
 }
 async function load(force) {
+  const book = S.book || 'main';
+  const file = bookFile(book);
+  const seq = ++loadSeq;
+  if (!file) {
+    loadErr = 'unknown book'; D = null; lastGen = null;
+    document.body.classList.remove('book-loading');
+    renderHeader();
+    return;
+  }
   try {
-    const r = await fetch('data.json?_=' + Date.now(), {cache: 'no-store'});
+    const r = await fetch(file + '?_=' + Date.now(), {cache: 'no-store'});
+    if (seq !== loadSeq || book !== (S.book || 'main')) return;
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json(); loadErr = null;
-    if (force || !D || d.generated !== lastGen) { D = d; lastGen = d.generated; renderAll(); } else renderHeader();
-  } catch (e) { loadErr = e.message || String(e); console.warn('data.json load failed:', loadErr); renderHeader(); }
+    const d = await r.json();
+    if (seq !== loadSeq || book !== (S.book || 'main')) return;
+    if (d.book && d.book.name && d.book.name !== book) throw new Error('file is for ' + d.book.name);
+    if (!d.book && book !== 'main') throw new Error('file has no book name');
+    loadErr = null;
+    if (force || !D || d.generated !== lastGen || ((D.book && D.book.name) || 'main') !== book) {
+      D = d; lastGen = d.generated; rememberMenu(d); renderAll();
+    } else renderHeader();
+  } catch (e) {
+    if (seq !== loadSeq || book !== (S.book || 'main')) return;
+    loadErr = e.message || String(e); D = null; lastGen = null;
+    document.body.classList.remove('book-loading');
+    console.warn(file + ' load failed:', loadErr);
+    renderHeader();
+  }
 }
 function wire() {
   $('#btn-refresh').onclick = () => load(true);
+  $('#book-select').onchange = () => {
+    const name = $('#book-select').value;
+    if (!name || name === (S.book || 'main')) return;
+    goHash({book: name, tab: S.tab || 'overview', asset: null});
+  };
+  document.addEventListener('click', e => {
+    if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const href = decodeURIComponent(a.getAttribute('href').replace(/^#/, ''));
+    if (!href) return;
+    const named = /(?:^|&)book=/.test(href);
+    const parsed = parseHash('#' + href);
+    if (parsed.asset) {
+      e.preventDefault();
+      goHash({book: named ? parsed.book : (S.book || 'main'), asset: parsed.asset});
+      return;
+    }
+    const tab = (parsed.tab && TABS.includes(parsed.tab)) ? parsed.tab : (TABS.includes(href) ? href : null);
+    if (!tab) return;
+    e.preventDefault();
+    goHash({book: named ? parsed.book : (S.book || 'main'), tab, asset: null});
+  });
   $$('#acct-switch button').forEach(b => b.onclick = () => setAcct(b.dataset.a));
   $$('#eq-acct button').forEach(b => b.onclick = () => { S.eqAcct = b.dataset.a; seg('eq-acct', 'a', S.eqAcct); if (D) safe('equity', renderEquity); });
   $$('#eq-range button').forEach(b => b.onclick = () => { S.eqRange = b.dataset.r; seg('eq-range', 'r', S.eqRange); if (D && charts.eq) setRange(charts.eq, D.equity.t, S.eqRange); });
@@ -1105,5 +1268,5 @@ function wire() {
 }
 
 if (!LC) { const al = document.getElementById('alert'); al.textContent = 'Charting library failed to load (CDN blocked?). Tables still work.'; al.classList.remove('hidden'); }
-wire(); route(); load(true);
+wire(); route(); routed = true; load(true);
 })();
