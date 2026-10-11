@@ -5,6 +5,16 @@
 set -u
 mkdir -p logs data/sentiment/processed data/sentiment/rejected
 export TZ=Europe/London
+# Optional secrets for the VPS (not in git). Example line: COINGECKO_API_KEY=...
+# TRADING_ENV overrides the path. The file is sourced, never printed.
+_env="${TRADING_ENV:-$HOME/.trading_env}"
+if [ -f "$_env" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$_env"
+  set +a
+fi
+unset _env
 fail=0
 echo "=== cycle $(date '+%F %T %Z') ==="
 # one-off migrations (migrate_v5_xstocks.py, migrate_v6_accounts.py) are NOT run any more: both are done and the great reset

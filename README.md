@@ -274,6 +274,11 @@ Cadence: every 5 min the fast cycle (collector `COLLECT_MODE=fast`: crypto re-pr
 stocks/KyberSwap/gas/market proxy, then sentiment ingest, trader incl. exits, maintenance, dashboard, push); every ~15 min
 the full collector (top-300 screen, meme/Monad categories, daily closes, backfills). FX stays hourly. Pushes only when
 state changed (at most one per 5-min cycle). Health: `/home/bot/health.sh`.
+CoinGecko Demo key (optional): the free demo tier is 30 calls/min and 10,000 calls/month, so that 5-min fast / ~15-min full
+split stays. On the VPS put `COINGECKO_API_KEY=...` in `$HOME/.trading_env` (mode 600, not in git; `TRADING_ENV` overrides
+the path). `scripts/ci_cycle.sh` sources that file when it is present. When the variable is set, every CoinGecko request
+(collector and the live quote) sends header `x-cg-demo-api-key`. The base URL stays `https://api.coingecko.com/api/v3`.
+When it is unset, those requests are unchanged. The key is never written to the log.
 The GitHub Actions workflow (.github/workflows/cycle.yml) is manual-only (workflow_dispatch) - no two scheduled writers.
 Box fallback: `/workspace/tools/vps_watchdog.sh` (box cron */10) runs `FORCE_BOX=1 box_cycle.sh` if the newest
 `cycle` commit on main is older than 20 min.

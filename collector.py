@@ -10,7 +10,19 @@ L = log("collector")
 S = requests.Session(); S.headers["User-Agent"] = "Mozilla/5.0 (paper-trader)"
 CG = "https://api.coingecko.com/api/v3"
 
+def cg_headers(extra=None):
+    """Headers for api.coingecko.com. When COINGECKO_API_KEY is set, send it as x-cg-demo-api-key.
+    The public base URL stays the same. Unset or blank: no extra header (the free unauthenticated call).
+    The key is never logged and is not attached to any other host."""
+    h = dict(extra or {})
+    key = (os.environ.get("COINGECKO_API_KEY") or "").strip()
+    if key:
+        h["x-cg-demo-api-key"] = key
+    return h
+
 def get(url, params=None, headers=None, tries=3):
+    if str(url).startswith(CG):
+        headers = cg_headers(headers)
     for i in range(tries):
         try:
             r = S.get(url, params=params, headers=headers, timeout=20)
