@@ -79,11 +79,12 @@ def _exit_bucket(reason):
     if "signal " in s: return "signal"
     return "other"
 
-def setup_scorecard(con):
+def setup_scorecard(con, since=None):
     """Closed trades by setup: count, net after fees, fees/gross, win rate, exit mix.
-    Gross is net plus the round-trip fees. Fee/gross is omitted when the gross is not positive."""
+    Gross is net plus the round-trip fees. Fee/gross is omitted when the gross is not positive.
+    since (variant comparison): only sells after that timestamp count. Earlier buys stay so their fee still pairs."""
     rows = [dict(r) for r in con.execute(
-        "SELECT id, sleeve, asset, sub, side, reason, pnl, cost, gas FROM trades WHERE side IN ('BUY','SELL') ORDER BY id")]
+        "SELECT id, ts, sleeve, asset, sub, side, reason, pnl, cost, gas FROM trades WHERE side IN ('BUY','SELL') ORDER BY id")]
     order = ("momentum", "burst", "risk breakout", "risk dip")
     buys, groups = {}, {k: dict(closed=0, net=0.0, fees=0.0, wins=0, exits={}) for k in order}
     for r in rows:
@@ -93,6 +94,8 @@ def setup_scorecard(con):
         key = (k, r["asset"])
         if r["side"] == "BUY":
             buys.setdefault(key, []).append(fee)
+        elif since and (r["ts"] or "") <= since:
+            continue
         else:
             g = groups[k]
             bf = buys.get(key, []).pop(0) if buys.get(key) else 0.0
@@ -740,7 +743,14 @@ def build(con):
         mon_check=dict(cg=sig(mon["MON"]), dex=sig(mon["MON.DEX"]), diff=round((mon["MON.DEX"] / mon["MON"] - 1) * 100, 2))
                   if len(mon) == 2 else None,
         equity=equity, positions=positions, trades=trades, assets=assets, prices=prices, fx_hist=fx_hourly,
-        signals=sig_hist, reasons=reasons, sentiment=sentiment)
+        signals=sig_hist, reasons=reasons, sentiment=sentiment, variants=_variant_report())
+
+def _variant_report():
+    try:
+        import variants
+        return variants.report()
+    except Exception as e:
+        return dict(enabled=False, books=[], error=str(e))
 
 def write_atomic(path, data):
     tmp = path.with_suffix(path.suffix + ".tmp"); tmp.write_bytes(data); os.replace(tmp, path)

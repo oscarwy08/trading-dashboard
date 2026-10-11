@@ -103,4 +103,9 @@ try:   # v7.3 inter-pot loans (same account only)
     if _rp: print("LOANS repaid (24h): " + "; ".join(f"{r[0].upper()} -> {r[1].upper()} £{r[4]:.2f} ({r[2]}) {r[3]}" for r in _rp))
 except Exception as e: print(f"LOANS n/a ({e})")
 print(f"GBP/USD {1/fx[0]:.4f} ({fx[2]}, {fx[1][:16]} UTC)" if fx else "GBP/USD n/a")
+try:
+    import variants
+    print(variants.summary_line())
+except Exception as e:
+    print(f"VARIANTS n/a ({e})")
 if KILL.exists(): print("KILL SWITCH ON")

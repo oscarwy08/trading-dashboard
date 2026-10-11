@@ -31,7 +31,25 @@ logging.basicConfig(filename=os.environ.get("TRADING_LOG") or ROOT / "logs" / "t
 _NOW = None   # simulations set common._NOW to a UTC datetime to fake the clock
 
 def log(name): return logging.getLogger(name)
-def cfg(): return yaml.safe_load((ROOT / "config.yaml").read_text())
+def _merge(base, over):
+    """Deep-merge a variant overlay onto config. Nested dicts combine; everything else is replaced."""
+    out = dict(base or {})
+    for k, v in (over or {}).items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = _merge(out[k], v)
+        else:
+            out[k] = v
+    return out
+
+def cfg():
+    """config.yaml, plus config/variants/<name>.yaml when TRADING_VARIANT is set (variant books only)."""
+    base = yaml.safe_load((ROOT / "config.yaml").read_text())
+    name = os.environ.get("TRADING_VARIANT")
+    if not name:
+        return base
+    path = ROOT / "config" / "variants" / f"{name}.yaml"
+    over = yaml.safe_load(path.read_text()) if path.exists() else {}
+    return _merge(base, over or {})
 def now(): return _NOW or datetime.now(timezone.utc).replace(microsecond=0)
 def iso(dt=None): return (dt or now()).isoformat()
 
