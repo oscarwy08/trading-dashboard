@@ -1,0 +1,136 @@
+"""Exit decisions shared by the 5-minute cycle and the always-on watcher.
+
+The numbers (stop, trail, target, max hold, giveback) come from the config the
+cycle already uses. This module does not change them. A reason string here is
+the same string the cycle writes on a sell.
+"""
+import hashlib, time
+from contextlib import contextmanager
+from datetime import datetime
+from pathlib import Path
+
+import freshness
+
+
+def gap_tag(pts, level, cur, reason):
+    """Same gap note the cycle appends when the fill jumps through a level."""
+    if not pts or len(pts) < 2 or not level or not reason:
+        return reason
+    t0, p0 = pts[-2]
+    mins = (pts[-1][0] - t0).total_seconds() / 60.0
+    over = abs(cur - level) / level * 100 if level else 0
+    if freshness.crossed_gap(p0, cur, level, mins, over) and "[gap fill]" not in reason:
+        return reason + " [gap fill]"
+    return reason
+
+
+def stock_flatten_reason(mins_to_close, exchange):
+    if mins_to_close is None:
+        return "flatten: market already closed - at the last (closing) price"
+    return f"flatten {int(mins_to_close)} min before the {exchange} close (flat overnight)"
+
+
+def day_flat_reason(mins, flat, e0, flatten_uk, entry_start_uk, fresh):
+    why = (f"flatten {flatten_uk} UK (flat overnight)" if mins >= flat else
+           f"flatten: overnight/before {entry_start_uk} UK" if mins < e0 else
+           "flatten: carried from previous UK day")
+    return why + ("" if fresh else " [last price, after 22:00]")
+
+
+def day_reason(entry, price, opened, md, sub_cfg, st, comb, info, now, fee_frac, buy_thr, asset, stop_pct=None,
+               giveback_pct=None, defer_burst_target=False):
+    """Day stop / trail / target / max-hold / signal. Mutates md['peak'] and maybe md['runner'].
+
+    Returns reason (or None), the runner note, and the gain figures the hold line uses.
+    `price` and `entry` are GBP. The gain is net of the sell-side cost, same as the cycle.
+    `stop_pct` overrides the stored stop distance when a variant book tightens or widens it.
+    `giveback_pct` overrides the trail giveback once a burst is already a runner.
+    `defer_burst_target` leaves a burst that has just hit its target for the caller (the
+    burst-runner book). The watcher does not pass it, so a burst still sells at the target.
+    """
+    md["peak"] = max(float(md.get("peak") or 0), price)
+    chg = price * (1 - fee_frac) / entry - 1
+    pkg = md["peak"] * (1 - fee_frac) / entry - 1
+    if giveback_pct is not None and md.get("runner"):
+        gb = float(giveback_pct) / 100
+    else:
+        gb = float(sub_cfg.get("runner_giveback_pct", 20) if md.get("runner") else sub_cfg["trail_giveback_pct"]) / 100
+    trail_on = pkg >= float(sub_cfg["trail_after_pct"]) / 100
+    lvl = pkg * (1 - gb)
+    held_h = (now - datetime.fromisoformat(opened)).total_seconds() / 3600
+    sl = float(md["sl"] if stop_pct is None else stop_pct)
+    reason = None
+    note = None
+    at_target = False
+    if chg <= -sl / 100:
+        reason = f"stop-loss {chg*100:.1f}% <= -{sl:.1f}% (ATR-scaled)"
+        if abs(sl - float(md["sl"])) > 1e-9:
+            reason += f" [stored -{float(md['sl']):.1f}%]"
+    elif trail_on and chg <= lvl:
+        reason = f"trailing stop {chg*100:+.1f}% (peak +{pkg*100:.1f}%, gives back {gb*100:.0f}% of the gain)"
+    elif chg >= md["tp"] / 100 and not md.get("runner"):
+        if md.get("sub") == "momentum" and sub_cfg.get("runner") and comb is not None and comb >= buy_thr:
+            md["runner"] = True
+            note = (f"[day] RUNNER {asset}: target +{md['tp']:.1f}% reached at {chg*100:+.1f}% with signal {comb} still a buy"
+                    f" - trailing {float(sub_cfg.get('runner_giveback_pct', 20)):.0f}% of the gain")
+        elif defer_burst_target and md.get("sub") == "burst":
+            at_target = True
+        else:
+            reason = f"take-profit {chg*100:.1f}% >= {md['tp']:.1f}% (ATR-scaled)"
+    elif md.get("sub") == "burst" and held_h >= float(sub_cfg["max_hold_h"]):
+        reason = f"max hold {sub_cfg['max_hold_h']}h reached ({held_h:.1f}h), {chg*100:+.1f}%"
+    elif md.get("sub") == "momentum" and comb is not None and comb <= st["sell_threshold"]:
+        reason = f"signal {comb} <= {st['sell_threshold']} ({info})"
+    return dict(reason=reason, runner=note, chg=chg, pkg=pkg, trail_on=trail_on, lvl=lvl, gb=gb,
+                held_h=held_h, at_target=at_target)
+
+
+def risk_reason(entry, price, peak, opened, rp, sent, now, fee_frac, stop_pct=None):
+    """Risk stop / trail / max-hold / sentiment. `peak` is the stored peak price (GBP).
+    `stop_pct` overrides the config stop when a variant book has tightened it."""
+    pk = max(float(peak or 0), price)
+    chg = price * (1 - fee_frac) / entry - 1
+    pk_gain = pk * (1 - fee_frac) / entry - 1
+    held_d = (now - datetime.fromisoformat(opened)).total_seconds() / 86400
+    trail_on = pk_gain >= rp["trail_after_pct"] / 100
+    stop = float(rp["stop_loss_pct"] if stop_pct is None else stop_pct)
+    if chg <= -stop / 100:
+        reason = (f"risk stop-loss {chg*100:.1f}% <= -{rp['stop_loss_pct']}%" if abs(stop - float(rp["stop_loss_pct"])) < 1e-9
+                  else f"risk stop-loss {chg*100:.1f}% <= -{stop:.1f}% (tightened from -{rp['stop_loss_pct']}%)")
+    elif trail_on and pk and price <= pk * (1 - rp["trail_pct"] / 100):
+        reason = f"trailing take-profit: {(price / pk - 1) * 100:.1f}% from peak (peak +{pk_gain*100:.1f}%), now {chg*100:+.1f}%"
+    elif held_d >= rp["max_hold_days"]:
+        reason = f"max hold {rp['max_hold_days']} days reached ({held_d:.1f} d), {chg*100:+.1f}%"
+    elif sent and sent["score"] <= rp["sentiment_exit"] and sent["confidence"] >= 0.6:
+        reason = f"sentiment exit {sent['score']:+.2f} (conf {sent['confidence']:.2f})"
+    else:
+        reason = None
+    hold = (f"open {chg*100:+.1f}%, peak +{pk_gain*100:.1f}%, {held_d:.1f} d"
+            + (f", trailing stop £{pk * (1 - rp['trail_pct'] / 100):.5g}" if trail_on else ""))
+    return dict(reason=reason, peak=pk, chg=chg, pk_gain=pk_gain, trail_on=trail_on, hold=hold)
+
+
+@contextmanager
+def book_lock(timeout=120):
+    """Exclusive lock for the paper book. The cycle holds it for the whole run.
+    The watcher holds it only while it decides and writes one tick. A second
+    seller waits, then sees the position already gone."""
+    import fcntl
+    from common import DB
+    path = Path("/tmp") / ("trading-book-" + hashlib.sha1(str(Path(DB).resolve()).encode()).hexdigest()[:16] + ".lock")
+    fh = open(path, "a+")
+    deadline = time.time() + timeout
+    while True:
+        try:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except BlockingIOError:
+            if time.time() >= deadline:
+                fh.close()
+                raise TimeoutError(f"paper book lock busy ({path})")
+            time.sleep(0.05)
+    try:
+        yield
+    finally:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        fh.close()
