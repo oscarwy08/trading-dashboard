@@ -792,6 +792,7 @@ BOOK_MENU = {
     "review_leftovers": "Review leftovers",
     "all_combined": "Both",
     "burst_runner": "Burst runner",
+    "everything": "Everything combined",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 

@@ -17,12 +17,14 @@ LABELS = {
     "review_leftovers": "Review leftovers",
     "all_combined": "Both together",
     "burst_runner": "Burst runner",
+    "everything": "Everything combined",
 }
 BLURB = {
     "ev_exit": "Sells a Day or Risk position when live expected value is below -0.4% and at least 0.8 points worse than the value stored at entry. While live value is negative but still above -0.4%, the stop is three quarters of the stored stop.",
     "review_leftovers": "Burst stop is 1.5x wider unless live EV is already below -0.4%. Core's 18:00 fallback tranche is half size when the coin is up more than 15% over 7 days or RSI is above 75. New Day, Risk and Core entries need the coin's own 3-day trend up. After 12:00 UK, Day and Core will not each buy the same coin.",
     "all_combined": "EV exit and the review leftovers, on one book. The burst runner is a separate book, not part of this one.",
     "burst_runner": "Same rules as the main book, except a Burst position that hits its target keeps running when the entry signal is still intact. The trail then gives back 20% of the peak gain. Each sell says sold at target or ran, with the extra gain and the giveback.",
+    "everything": "EV exit, the review leftovers, and the burst runner, on one book. It is copied from the same snapshot as the other books.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
