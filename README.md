@@ -284,7 +284,11 @@ exits if the watcher or a stream is down. Both take the same book lock so a posi
 
 First deploy is shadow mode. `EXIT_WATCH_SHADOW` defaults to on (the unit sets `1`). The process
 tracks open positions and appends `WOULD EXIT` lines (trigger, price, time) to its log and to
-`data/exit_shadow.db`. It does not write trades, cash, or positions, and it does not move the
+`~/exit_shadow/exit_shadow.db` (`EXIT_SHADOW_DB` overrides the path). That directory is outside
+the clone, so `git reset --hard` in `run_cycle.sh` does not delete it. A copy left under
+`data/exit_shadow.db` (plus `-wal`, `-shm`, `-journal`) is gitignored, so `git add -A` in
+`scripts/ci_push.sh` will not commit it, and an ignored untracked file also survives
+`git reset --hard`. It does not write trades, cash, or positions, and it does not move the
 cycle's peaks. Install only after this is on main (user `bot`; point the unit at the clone
 `run_cycle.sh` uses):
 
@@ -303,8 +307,10 @@ python3 exit_shadow_report.py
 
 The report pairs each shadow exit with the sell the 5-minute cycle actually made for that same
 position, and prints the time difference and the price difference. When that looks right, turn
-the watcher live: add `EXIT_WATCH_SHADOW=0` to `/home/bot/.trading_env` (the unit loads that
-file after its own default of `1`) and `sudo systemctl restart trading-exit-watch`. The log
+the watcher live: add `EXIT_WATCH_SHADOW=0` to `/home/bot/.trading_env` and
+`sudo systemctl restart trading-exit-watch`. The unit sources that file (`set -a; . ~/.trading_env`)
+instead of `EnvironmentFile`, which rejects lines that start with `export`. The unit's own
+default is `EXIT_WATCH_SHADOW=1`; a value in the file replaces it. The log
 line changes from `WOULD EXIT` to `EXIT`, and sells are written to the book.
 CoinGecko Demo key (optional): the demo tier is 100 calls/min but only 10,000 calls/month. Prices therefore come from
 public Kraken (one Ticker call for every listed coin) and Coinbase, with KyberSwap for Monad tokens. CoinGecko is the

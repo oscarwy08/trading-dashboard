@@ -5,6 +5,9 @@ Run from the clone, after the watcher has been up in shadow mode:
 
     python3 exit_shadow_report.py
 
+The shadow database is ~/exit_shadow/exit_shadow.db unless EXIT_SHADOW_DB is set.
+The same default is used by exit_watch.py.
+
 Each shadow row is paired with the cycle's sell of that same position
 (same sleeve and asset, sell time at or after the position opened).
 The line under the pair is how much later the cycle was, and how far
