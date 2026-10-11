@@ -8,9 +8,9 @@
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%274%27 fill=%27%231D9BF0%27/%3E%3C/svg%3E">
 <title>Paper Trader - £200 paper account</title>
-<link rel="stylesheet" href="styles.css?v=d57df9bc6f">
+<link rel="stylesheet" href="styles.css?v=768a92302e">
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js" crossorigin="anonymous"></script>
-<script src="app.js?v=cccf4bf9a7" defer></script>
+<script src="app.js?v=e9ac5912dd" defer></script>
 </head>
 <body>
 <header class="top">
@@ -20,8 +20,11 @@
       <div class="brand-t"><h1>Paper Trader</h1><span class="paper-badge" title="All trades are simulated. No wallets, no keys, no real orders.">Paper trading</span></div>
     </div>
     <div class="top-right"><span id="live-dot" class="dot"></span><span id="updated-ago">loading&hellip;</span>
+      <label class="book-pick" for="book-select"><span class="book-lbl">Book</span>
+        <select id="book-select" aria-label="Book"><option value="main">Main (frozen)</option></select></label>
       <button id="btn-refresh" class="icon-btn" title="Reload data now" aria-label="Reload data">&#8635;</button></div>
   </div>
+  <div id="book-banner" class="book-banner hidden" role="status"></div>
   <nav class="tabs" id="tabs" role="tablist">
     <a href="#overview" data-tab="overview" role="tab">Overview</a>
     <a href="#portfolio" data-tab="portfolio" role="tab">Portfolio</a>
