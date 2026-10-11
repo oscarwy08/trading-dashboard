@@ -1,0 +1,14 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "MON",
+ "score": 0.05,
+ "volume": 25,
+ "confidence": 0.45,
+ "summary": "Neutral: ecosystem news is positive (Plume RWA vaults live on Monad, TVL holding ~$1B) but MON is ~25% down on the week near its ICO price and sentiment is split with loud 'dead chain/team selling' posts.",
+ "sources": [
+  "https://x.com/BSCNews/status/2108894816704585906",
+  "https://x.com/coinasiacn/status/2108901575112507587",
+  "https://x.com/MdParvej1486/status/2108759990064533715",
+  "https://x.com/CryptoTesteer/status/2108638988948971967"
+ ]
+}

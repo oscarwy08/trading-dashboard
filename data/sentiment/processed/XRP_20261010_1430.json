@@ -1,0 +1,14 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "XRP",
+ "score": 0.35,
+ "volume": 30,
+ "confidence": 0.65,
+ "summary": "Positive: XRP ETFs taking inflows while BTC/ETH bleed, Evernorth (473M XRP treasury) starts trading on Nasdaq Oct 12, XRPL permission delegation live; price rebounded $1.32->$1.40 but well off the $1.69 spike and much buzz is community TA.",
+ "sources": [
+  "https://x.com/i/trending/2108672564742463749",
+  "https://x.com/i/trending/2108447068834635928",
+  "https://x.com/i/trending/2108659963706929562",
+  "https://x.com/i/trending/2108173721588699240"
+ ]
+}

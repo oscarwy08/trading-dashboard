@@ -1,0 +1,20 @@
+# secrets / box-only (never commit)
+.github_token
+.dashboard_auth
+.publish/
+dashboard_server.py
+tunnel_watchdog.sh
+# local artefacts
+logs/
+__pycache__/
+*.pyc
+*.tmp
+*.pull.*
+.bak*/
+data/*.bak*
+data/sim.db
+data/sim_mig.db
+data/sentiment/pushed/
+dashboard/
+docs/snapshot.png
+docs/.snapshot.tmp.png

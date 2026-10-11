@@ -1,0 +1,39 @@
+# Paper-trading cycle - MANUAL ONLY (workflow_dispatch) since 2026-10-11: the cycle now runs on the Hetzner VPS
+# (systemd trading-cycle.timer, every 5 min; see README 'Operations'). Kept as a manual fallback.
+# Originally every 15 minutes (GitHub may start scheduled runs late or skip some under load; the trader is
+# delay-tolerant: e.g. the DAY pot is flattened by the first cycle at/after 22:00 UK, or by any cycle before 08:00).
+# State (data/trading.db) and the published site (docs/) live on main; GitHub Pages serves main:/docs.
+# KILL file in the repo root = halt all trading. RISK_RESUME = resume the RISK pot after a drawdown review.
+name: trading-cycle
+on:
+  workflow_dispatch:
+permissions:
+  contents: write        # commit state + site with the built-in GITHUB_TOKEN
+  pages: write           # request a Pages build if a push did not trigger one
+concurrency:
+  group: trading-cycle   # never two cycles at once (a queued run waits for the running one)
+  cancel-in-progress: false
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0   # full (squashed, short) history: needed for rebase + the squash counter
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Trading cycle
+        id: cycle
+        continue-on-error: true
+        run: bash scripts/ci_cycle.sh
+      - name: Commit and push state + site
+        run: bash scripts/ci_push.sh
+      - name: Mark run failed if the cycle failed
+        if: steps.cycle.outcome == 'failure'
+        run: exit 1

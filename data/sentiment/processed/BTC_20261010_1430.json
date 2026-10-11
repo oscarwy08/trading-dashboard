@@ -1,0 +1,14 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "BTC",
+ "score": -0.1,
+ "volume": 25,
+ "confidence": 0.6,
+ "summary": "Mixed-bearish: BTC ~$82-83k at 3-week lows off $87k; ETF flows flipped to a small +$21M inflow after ~$0.7B weekly outflows, Thailand spot ETF approval positive, but quantum-security FUD and macro (yields/oil) weigh.",
+ "sources": [
+  "https://x.com/i/trending/2108842941917573613",
+  "https://x.com/i/trending/2108524427302391916",
+  "https://x.com/i/trending/2108420359754330486",
+  "https://x.com/gajewskey/status/2108717339432636559"
+ ]
+}
