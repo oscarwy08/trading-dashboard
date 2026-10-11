@@ -248,7 +248,7 @@ function renderOverview() {
     (Z.risk ? pot('risk', Z.risk, `Speculative small caps & niche stocks · started ${fM0(Z.risk.start)} · ${Z.risk.open_n} of ${(Z.risk.rules || {}).max_open} open${Z.risk.halted ? ' · <b class="neg">paused</b>' : ''}${split('risk')}`) : '') +
     `<div class="note">Each pot has separate cash in both accounts; a crypto trade only uses the pot's Crypto-account cash and a stock trade only its Stocks-account cash. Cash moves (pots / accounts) are on the Orders tab under "Cash transfers" and are never counted as profit or loss.</div>` + loanNote(null);
   const cols = [{k: 't', l: 'Time', f: r => esc(fTs(r.t))}, {k: 'side', l: 'Side', f: r => sideTag(r.side)}, {k: 'asset', l: 'Asset', f: r => assetLink(r.asset)}, {k: 'acct', l: 'Account', f: r => acctTag(r.acct)},
-    {k: 'value', l: 'Value', num: 1, f: r => fM(r.value)}, {k: 'pnl', l: 'P&L', num: 1, f: r => r.side === 'SELL' ? sellPnl(r) : pnlCell(r.pnl)}];
+    {k: 'value', l: 'Value', num: 1, f: r => fM(r.value)}, {k: 'pnl', l: 'P&L', num: 1, f: r => r.side === 'SELL' ? sellPnl(r, true) : pnlCell(r.pnl)}];
   table($('#ov-orders'), cols, (D.trades || []).filter(t => !CASHROW(t)).slice(0, 6), null, null, {empty: 'No orders yet', key: r => r.asset, onRow: openAsset});
   renderRisk();
 }
