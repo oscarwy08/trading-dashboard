@@ -18,6 +18,7 @@ LABELS = {
     "all_combined": "Both together",
     "burst_runner": "Burst runner",
     "everything": "Everything combined",
+    "midnight_crypto": "Midnight crypto",
 }
 BLURB = {
     "ev_exit": "Sells a Day or Risk position when live expected value is below -0.4% and at least 0.8 points worse than the value stored at entry. While live value is negative but still above -0.4%, the stop is three quarters of the stored stop.",
@@ -25,6 +26,7 @@ BLURB = {
     "all_combined": "EV exit and the review leftovers, on one book. The burst runner is a separate book, not part of this one.",
     "burst_runner": "Same rules as the main book, except a Burst position that hits its target keeps running when the entry signal is still intact. The trail then gives back 20% of the peak gain. Each sell says sold at target or ran, with the extra gain and the giveback.",
     "everything": "EV exit, the review leftovers, and the burst runner, on one book. It is copied from the same snapshot as the other books.",
+    "midnight_crypto": "Same as the main book, except Day crypto entries run until 23:45 UK and those positions flatten at 00:00 UK. New crypto entries are allowed again from 00:00, and the daily loss budget still resets then. Stocks still flatten 15 minutes before their market closes. Copied from the same snapshot as the other books.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
@@ -35,7 +37,9 @@ def rules_of(c):
     d = dict(ev_exit=False, ev_exit_now_pct=-0.4, ev_exit_below_entry_pp=0.8, ev_exit_stop_mult=0.75,
              burst_stop_widen=False, burst_stop_mult=1.5, core_fallback_half=False, core_ext_7d_pct=15.0,
              core_ext_rsi=75.0, entry_own_trend=False, entry_trend_days=3, no_day_core_same_afternoon=False,
-             afternoon_hour_uk=12, burst_runner=False, burst_runner_giveback_pct=20)
+             afternoon_hour_uk=12, burst_runner=False, burst_runner_giveback_pct=20,
+             midnight_crypto=False, midnight_entry_start_uk="00:00", midnight_entry_cutoff_uk="23:45",
+             midnight_flatten_uk="00:00")
     for k, v in ((c or {}).get("variant_rules") or {}).items():
         if k in d and v is not None:
             d[k] = v
@@ -44,7 +48,38 @@ def rules_of(c):
 
 def active(R):
     return bool(R.get("ev_exit") or R.get("burst_stop_widen") or R.get("core_fallback_half")
-                or R.get("entry_own_trend") or R.get("no_day_core_same_afternoon") or R.get("burst_runner"))
+                or R.get("entry_own_trend") or R.get("no_day_core_same_afternoon") or R.get("burst_runner")
+                or R.get("midnight_crypto"))
+
+
+def crypto_hours_to_flat(mins, flat_mins, midnight):
+    """Hours until Day crypto is flattened.
+
+    The main book uses flatten_uk (22:00). At or after that clock the hours are 0.
+    Midnight crypto uses the next 00:00 UK. At exactly 00:00 a new entry has 24 hours,
+    because yesterday's positions are flattened before the entry loop runs.
+    """
+    mins = int(mins)
+    if midnight:
+        left = (24 * 60 - mins) % (24 * 60)
+        if left == 0:
+            left = 24 * 60
+        return left / 60.0
+    return max(0.0, (int(flat_mins) - mins) / 60.0)
+
+
+def crypto_entry_open(mins, start_mins, cutoff_mins):
+    """True from start_mins inclusive until cutoff_mins exclusive. 00:00 is open; 23:45 is closed."""
+    return int(start_mins) <= int(mins) < int(cutoff_mins)
+
+
+def crypto_flatten_due(opened_day, today, flat_now, midnight):
+    """Main book: the 22:00 / before-08:00 window, or a position opened on an earlier UK day.
+    Midnight crypto: only a position opened on an earlier UK day (the 00:00 flatten).
+    A position opened today stays open through 22:00 and through 23:45."""
+    if midnight:
+        return str(opened_day) != str(today)
+    return bool(flat_now) or str(opened_day) != str(today)
 
 
 def ev_action(ev_now, entry_ev, R):

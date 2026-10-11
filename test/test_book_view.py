@@ -22,6 +22,7 @@ def check(cond, msg):
 check(dashboard.book_menu_label("all_combined") == "Both", "the menu calls all_combined Both")
 check(dashboard.book_menu_label("burst_runner") == "Burst runner", "the menu names the burst runner")
 check(dashboard.book_menu_label("everything") == "Everything combined", "the menu names Everything combined")
+check(dashboard.book_menu_label("midnight_crypto") == "Midnight crypto", "the menu names Midnight crypto")
 check(dashboard.book_menu_label("ev_exit") == "EV exit", "the menu names EV exit")
 check(dashboard.book_menu_label("review_leftovers") == "Review leftovers", "the menu names review leftovers")
 check(dashboard.book_menu_label("main") == "Main (frozen)", "the menu names the frozen main book")
@@ -36,7 +37,7 @@ for bad in ("../evil", "EV", "data.json", "a/b", ""):
 
 root = Path(os.environ["VARIANTS_DIR"])
 root.mkdir()
-names = ["ev_exit", "review_leftovers", "all_combined", "burst_runner", "everything"]
+names = ["ev_exit", "review_leftovers", "all_combined", "burst_runner", "everything", "midnight_crypto"]
 before = {}
 for name in names:
     p = root / f"{name}.db"
@@ -77,14 +78,14 @@ check(seen and seen[0][1] is True and all(w is False for _, w in seen[1:]),
       "only the main connection is writable")
 check(not any(n == "review_leftovers.db" for n, _ in seen), "a failed export is not stamped")
 
-published = ["data.json", "data_ev_exit.json", "data_all_combined.json", "data_burst_runner.json", "data_everything.json"]
+published = ["data.json", "data_ev_exit.json", "data_all_combined.json", "data_burst_runner.json", "data_everything.json", "data_midnight_crypto.json"]
 check(not (site / "data_review_leftovers.json").exists(), "a failed book is not published")
 check(not (site / "data_retired.json").exists(), "a retired data_*.json is deleted")
 check((site / "notes.txt").read_text() == "keep", "unrelated files in the site dir stay")
 
 payloads = {fn: json.loads((site / fn).read_text()) for fn in published}
 catalog = payloads["data.json"]["books"]
-check([c["name"] for c in catalog] == ["main", "ev_exit", "all_combined", "burst_runner", "everything"],
+check([c["name"] for c in catalog] == ["main", "ev_exit", "all_combined", "burst_runner", "everything", "midnight_crypto"],
       "the catalog is main plus the books that exported")
 check(catalog[0]["label"] == "Main (frozen)" and catalog[0]["variant"] is False and catalog[0]["file"] == "data.json",
       "main is marked as the frozen book")
@@ -92,6 +93,8 @@ check(next(c for c in catalog if c["name"] == "all_combined")["label"] == "Both"
 check(next(c for c in catalog if c["name"] == "burst_runner")["label"] == "Burst runner", "catalog label names Burst runner")
 check(next(c for c in catalog if c["name"] == "everything")["label"] == "Everything combined",
       "catalog label names Everything combined")
+check(next(c for c in catalog if c["name"] == "midnight_crypto")["label"] == "Midnight crypto",
+      "catalog label names Midnight crypto")
 check(all(p["books"] == catalog for p in payloads.values()), "every file carries the same catalog")
 for fn, name in (("data.json", "main"), ("data_ev_exit.json", "ev_exit"), ("data_burst_runner.json", "burst_runner")):
     b = payloads[fn]["book"]

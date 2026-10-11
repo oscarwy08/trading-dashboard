@@ -24,7 +24,8 @@ def check(cond, msg):
 # --- overlays leave the frozen rules alone and turn one flag on ---
 base = common.cfg()
 check(all(not base["variant_rules"][k] for k in
-          ("ev_exit", "burst_stop_widen", "core_fallback_half", "entry_own_trend", "no_day_core_same_afternoon", "burst_runner")),
+          ("ev_exit", "burst_stop_widen", "core_fallback_half", "entry_own_trend", "no_day_core_same_afternoon",
+           "burst_runner", "midnight_crypto")),
       "main config flags are off")
 os.environ["TRADING_VARIANT"] = "ev_exit"
 over = common.cfg()
@@ -47,6 +48,22 @@ check(every["variant_rules"]["ev_exit"] and every["variant_rules"]["burst_stop_w
       and every["rules"]["frozen_since"] == base["rules"]["frozen_since"]
       and not both["variant_rules"]["burst_runner"],
       "everything turns on all_combined and the burst runner, and all_combined stays unchanged")
+os.environ["TRADING_VARIANT"] = "midnight_crypto"
+mid = common.cfg()
+os.environ.pop("TRADING_VARIANT", None)
+check(mid["variant_rules"]["midnight_crypto"] is True
+      and not base["variant_rules"]["midnight_crypto"]
+      and not every["variant_rules"]["midnight_crypto"]
+      and not both["variant_rules"]["midnight_crypto"]
+      and mid["day"]["entry_start_uk"] == base["day"]["entry_start_uk"] == "08:00"
+      and mid["day"]["entry_cutoff_uk"] == base["day"]["entry_cutoff_uk"] == "21:00"
+      and mid["day"]["flatten_uk"] == base["day"]["flatten_uk"] == "22:00"
+      and mid["day"]["stock_flatten_before_close_min"] == base["day"]["stock_flatten_before_close_min"] == 15
+      and mid["rules"]["frozen_since"] == base["rules"]["frozen_since"]
+      and variants.rules_of(mid)["midnight_entry_cutoff_uk"] == "23:45"
+      and variants.rules_of(mid)["midnight_flatten_uk"] == "00:00"
+      and variants.active(variants.rules_of(mid)) and not variants.active(variants.rules_of(base)),
+      "midnight_crypto turns on only its flag and leaves the frozen day clocks in place")
 check(not Path("config/variants/missing.yaml").exists() or True, "placeholder")
 
 R = variants.rules_of(base)
@@ -226,7 +243,7 @@ check(main_path.read_bytes() == blob, "variant runner leaves the main database b
 # a child that cannot trade still must not be required for the main hash; the books exist beside it
 check((TMP / "variants" / "_snapshot.db").exists(), "snapshot is taken at the first run")
 check((TMP / "variants" / "ev_exit.db").exists() and (TMP / "variants" / "all_combined.db").exists()
-      and (TMP / "variants" / "everything.db").exists(),
+      and (TMP / "variants" / "everything.db").exists() and (TMP / "variants" / "midnight_crypto.db").exists(),
       "each variant has its own database")
 # a book added after the snapshot exists is copied from that snapshot, not from the main book as it is now
 (TMP / "variants" / "everything.db").unlink()
@@ -250,6 +267,23 @@ try:
           "everything is labelled and measured from the original snapshot time")
 finally:
     evcon.close(); snapcon.close()
+(TMP / "variants" / "midnight_crypto.db").unlink()
+variants.prepare("midnight_crypto")
+mdcon = sqlite3.connect(f"file:{TMP / 'variants' / 'midnight_crypto.db'}?mode=ro", uri=True)
+snapcon = sqlite3.connect(f"file:{TMP / 'variants' / '_snapshot.db'}?mode=ro", uri=True)
+try:
+    check(mdcon.execute("SELECT COUNT(*) FROM trades WHERE asset='LATER'").fetchone()[0] == 0,
+          "midnight crypto does not pick up a trade added to main after the snapshot")
+    check(mdcon.execute("SELECT COUNT(*) FROM trades").fetchone()[0]
+          == snapcon.execute("SELECT COUNT(*) FROM trades").fetchone()[0],
+          "midnight crypto starts with the snapshot's trades")
+    man = json.loads((TMP / "variants" / "manifest.json").read_text())
+    rep = variants.report()
+    mb = next(b for b in rep["books"] if b["name"] == "midnight_crypto")
+    check(mb["label"] == "Midnight crypto" and rep["since"] == (man.get("equity_ts") or man.get("created")),
+          "midnight crypto is labelled and measured from the original snapshot time")
+finally:
+    mdcon.close(); snapcon.close()
 
 # comparison P&L is the change since the snapshot, not since the original £200
 cmp = TMP / "cmp.db"

@@ -6,6 +6,7 @@ stored USD->GBP rate (table fx).
         a drift band, wide stop-loss from average cost, no take-profit.
   DAY  (intraday): momentum + sentiment signal, tight stop / take-profit, max 3 positions, entry window, force-flat at
         22:00 UK (first cycle at/after 22:00, or any cycle before 08:00 / on a later UK day), daily loss cap on the sleeve.
+        The midnight_crypto book keeps stocks on these clocks. Its Day crypto stays open until 00:00 UK.
         RISK (speculative, v4): small/mid-cap crypto (CoinGecko top-300 breakout screen, liquidity/market-cap floors, Monad
         ecosystem tokens with a KyberSwap liquidity check) + speculative stocks (v5: quantum, British early-stage, rare
         earths, global small caps, photonics/robotics small caps). Two entries: a breakout, or a dip that has bounced
@@ -517,7 +518,14 @@ def _cycle():
                     day_late.append(a); sig("day", a, m, s, comb, "HOLD", "flatten due but no price at all"); continue
             cl = mclose_in(a)
             day_exit(a, p, stock_flatten_reason(cl, markets.exchange(a)), m, s, comb); continue
-        if flat_now or opened_day != day:
+        crypto_midnight = bool(R["midnight_crypto"]) and p["klass"] != "stock"
+        if crypto_midnight:
+            session_flat = variants.crypto_flatten_due(opened_day, day, flat_now, True)
+            flat_label = str(R["midnight_flatten_uk"])
+        else:
+            session_flat = flat_now or opened_day != day
+            flat_label = D["flatten_uk"]
+        if session_flat:
             if not q:
                 last = con.execute("SELECT price FROM prices WHERE asset=? AND source!='backfill' AND ts<=? ORDER BY ts DESC LIMIT 1",
                                    (a, ts)).fetchone()
@@ -526,8 +534,11 @@ def _cycle():
                                      ts=ts, source_ts=ts, age_min=None, fr_price=0, vol24=None, mcap=None)
                 else:
                     day_late.append(a)
-                    sig("day", a, m, s, comb, "HOLD", f"flatten {D['flatten_uk']} UK due but no price at all"); continue
-            why = day_flat_reason(mins, flat, e0, D["flatten_uk"], D["entry_start_uk"], q.get("fresh"))
+                    sig("day", a, m, s, comb, "HOLD", f"flatten {flat_label} UK due but no price at all"); continue
+            if crypto_midnight:
+                why = day_flat_reason(mins, 0, 0, flat_label, flat_label, q.get("fresh"))
+            else:
+                why = day_flat_reason(mins, flat, e0, D["flatten_uk"], D["entry_start_uk"], q.get("fresh"))
             day_exit(a, p, why, m, s, comb); continue
         if not exit_ok(q): sig("day", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
         md = dmeta.get(a)
@@ -804,6 +815,9 @@ def _cycle():
     if halted: sset(con, f"day_halt:{day}", ts)
     halted = halted or sget(con, f"day_halt:{day}") is not None          # stays halted for the rest of the UK day
     window = e0 <= mins < e1 and not flat_now
+    mc0, mc1 = hm(R["midnight_entry_start_uk"]), hm(R["midnight_entry_cutoff_uk"])
+    def crypto_session(a):
+        return bool(R["midnight_crypto"]) and klass_of(a) != "stock"
     def sub_of(a): return (dmeta.get(a) or {}).get("sub", "momentum")
     # v7.1 sub-strategy ledger (daypot.sub_ledger, same definition as the dashboard): budget = the sub-strategy's own equity
     # (its share of the DAY start money + its realised P&L, incl. its open positions at market); free = its cash not tied up
@@ -824,16 +838,26 @@ def _cycle():
             mleft = mclose_in(a)
             if mleft is None: return 0.0
             return max(0.0, (mleft - int(D.get("stock_flatten_before_close_min", 15))) / 60.0)
+        if crypto_session(a):
+            return variants.crypto_hours_to_flat(mins, flat, True)
         return max(0.0, (flat - mins) / 60.0)
     def clock_p(a, max_hold_h=None):
         h = hours_to_flat(a)
         if max_hold_h is not None: h = min(h, float(max_hold_h))
         return daypot.flatten_p(h, float(D.get("ev_flatten_floor", 0.40)), float(D.get("ev_flatten_full_h", 6)))
     mcx = float(D.get("min_move_cost_x", 4)); scl = int(D.get("stock_entry_stop_before_close_min", 30))
+    def entry_open(a):
+        if crypto_session(a):
+            return variants.crypto_entry_open(mins, mc0, mc1)
+        return window
+    def window_msg(a):
+        if crypto_session(a):
+            return f"outside entry window {R['midnight_entry_start_uk']}-{R['midnight_entry_cutoff_uk']} UK"
+        return f"outside entry window {D['entry_start_uk']}-{D['entry_cutoff_uk']} UK"
     def gate(a):             # shared entry gates (None = ok)
         q = px[a]
         g = ("day-pot daily loss cap hit" if halted else
-             f"outside entry window {D['entry_start_uk']}-{D['entry_cutoff_uk']} UK" if not window else
+             window_msg(a) if not entry_open(a) else
              closed_msg(a) if not mopen(a) else
              f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= scl else
              "no current price" if not q["fresh"] else "stale FX rate" if fx_stale else None)
@@ -1106,7 +1130,11 @@ def _cycle():
     con.execute("INSERT OR REPLACE INTO state VALUES('risk',?)", (json.dumps(dict(
         ts=ts, day=day, day_start=tstart, equity=equity, day_pnl_pct=(equity / tstart - 1) * 100 if tstart else 0,
         halted=halted, day_sleeve=dict(start=dstart, equity=eqs["day"], pnl_pct=day_pnl * 100, halted=halted,
-                                       entries_open=window, flat_now=flat_now, open_n=nday, overdue=day_late))),))
+                                       entries_open=variants.crypto_entry_open(mins, mc0, mc1) if R["midnight_crypto"] else window,
+                                       flat_now=False if R["midnight_crypto"] else flat_now, open_n=nday, overdue=day_late,
+                                       **({"session": dict(midnight_crypto=True, start=R["midnight_entry_start_uk"],
+                                                           cutoff=R["midnight_entry_cutoff_uk"], flatten=R["midnight_flatten_uk"])}
+                                          if R["midnight_crypto"] else {})))),))
     con.execute("INSERT INTO equity(ts,equity,cash,pos_value,btc,open_n,usd_gbp,core,day,core_cash,day_cash,risk,risk_cash,"
                 "crypto,stocks,crypto_cash,stocks_cash,accts) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (ts, equity, sum(cash.values()), pv, px.get("BTC", {}).get("price"), len(pos), rate,
@@ -1117,7 +1145,7 @@ def _cycle():
     print(f"[trader {ts} / {lt:%a %H:%M} UK] equity £{equity:.2f} = Crypto acct £{at['crypto']:.2f} (cash £{atc['crypto']:.2f}) "
           f"+ Stocks acct £{at['stocks']:.2f} (cash £{atc['stocks']:.2f}) | CORE £{eqs['core']:.2f} (cash £{pc['core']:.2f}, "
           f"{sum(1 for k in pos if k[0]=='core')} pos, {built}/{len(tg)} built) | DAY £{eqs['day']:.2f} (cash £{pc['day']:.2f}, "
-          f"{nday} pos, day {day_pnl*100:+.2f}%{' HALTED' if halted else ''}, entries {'open' if window else 'closed'}) "
+          f"{nday} pos, day {day_pnl*100:+.2f}%{' HALTED' if halted else ''}, entries {'open' if (variants.crypto_entry_open(mins, mc0, mc1) if R['midnight_crypto'] else window) else 'closed'}) "
           f"| RISK £{eqs['risk']:.2f} (cash £{pc['risk']:.2f}, {nrisk} pos{', HALTED' if halt else ''}) "
           f"| GBP/USD {1/rate:.4f} ({fx[2]}{', STALE' if fx_stale else ''})")
     for line in out: print("  " + line)
