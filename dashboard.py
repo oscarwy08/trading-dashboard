@@ -1,9 +1,10 @@
 """Export dashboard data (dashboard/data.json) and install the static single-page app
 (dashboard/index.html + app.js + styles.css, templates in web/). No AI, no network: pure SQLite -> JSON.
 The page loads data.json client-side and re-fetches it every 60 s (works on GitHub Pages)."""
-import hashlib, json, os, re
+import hashlib, json, os, re, sqlite3
 from bisect import bisect_right
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from zoneinfo import ZoneInfo
 from common import (loans_open, ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
                     transfer_adj, transfer_adj_acct, usd_gbp)
@@ -783,14 +784,91 @@ def _variant_report():
     except Exception as e:
         return dict(enabled=False, books=[], error=str(e))
 
+# Header menu. The comparison tab keeps its own labels (all_combined stays "Both together" there).
+BOOK_MENU = {
+    "main": "Main (frozen)",
+    "ev_exit": "EV exit",
+    "review_leftovers": "Review leftovers",
+    "all_combined": "Both",
+    "burst_runner": "Burst runner",
+}
+_BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
+
+def book_menu_label(name, fallback=None):
+    return BOOK_MENU.get(name) or fallback or name
+
+def book_file(name):
+    """Published JSON name. main is data.json; a variant is data_<name>.json."""
+    if name == "main":
+        return "data.json"
+    if not _BOOK_NAME.fullmatch(name or ""):
+        raise ValueError(f"bad book name {name!r}")
+    return f"data_{name}.json"
+
+def open_ro(path):
+    """Read-only connection. A variant export must not migrate or write that file."""
+    con = sqlite3.connect(f"file:{Path(path).resolve().as_posix()}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    return con
+
+def stamp_books(payloads):
+    """Mark each payload with its own identity and the catalog of files actually written.
+    payloads is an insertion-ordered mapping, main first, then variants.run."""
+    catalog = []
+    for name in payloads:
+        catalog.append(dict(name=name, label=book_menu_label(name), file=book_file(name), variant=name != "main"))
+    for name, data in payloads.items():
+        row = next(c for c in catalog if c["name"] == name)
+        data["book"] = dict(name=name, label=row["label"], variant=row["variant"])
+        data["books"] = catalog
+    return catalog
+
+def write_book_files(out, payloads):
+    """Write one JSON per book and delete data_<name>.json files that are no longer published."""
+    out = Path(out)
+    catalog = stamp_books(payloads)
+    for row in catalog:
+        body = json.dumps(payloads[row["name"]], separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode()
+        write_atomic(out / row["file"], body)
+    keep = {row["file"] for row in catalog}
+    for p in out.glob("data_*.json"):
+        if p.name not in keep:
+            p.unlink()
+    return catalog
+
+def _variant_payloads(payloads):
+    """Fill payloads with one build() per existing variant database. A failure skips that book."""
+    import variants
+    root = variants.dir_path()
+    for name in list((cfg().get("variants") or {}).get("run") or []):
+        path = root / f"{name}.db"
+        if not path.exists():
+            continue
+        try:
+            book_file(name)
+        except ValueError as e:
+            print(f"[dashboard] {e}, skipped")
+            continue
+        con = None
+        try:
+            con = open_ro(path)
+            payloads[name] = build(con)
+        except Exception as e:
+            print(f"[dashboard] {name} export skipped: {e}")
+            payloads.pop(name, None)
+        finally:
+            if con is not None:
+                con.close()
+
 def write_atomic(path, data):
     tmp = path.with_suffix(path.suffix + ".tmp"); tmp.write_bytes(data); os.replace(tmp, path)
 
 def main():
     OUT.mkdir(exist_ok=True)
-    data = build(db())
+    payloads = {"main": build(db())}
+    _variant_payloads(payloads)
+    catalog = write_book_files(OUT, payloads)
     (OUT / ".nojekyll").touch()
-    write_atomic(OUT / "data.json", json.dumps(data, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode())
     # static assets: copy templates, cache-bust js/css by content hash in index.html
     ver = {}
     for name in ("app.js", "styles.css"):
@@ -800,7 +878,8 @@ def main():
     page = page.replace("__APPJS_V__", ver["app.js"]).replace("__CSS_V__", ver["styles.css"])
     if not (OUT / "index.html").exists() or (OUT / "index.html").read_text(encoding="utf-8") != page:
         write_atomic(OUT / "index.html", page.encode())
-    print(f"[dashboard] wrote {OUT}/data.json ({(OUT / 'data.json').stat().st_size // 1024} KB) + index.html/app.js/styles.css")
+    bits = ", ".join(f"{r['file']} ({(OUT / r['file']).stat().st_size // 1024} KB)" for r in catalog)
+    print(f"[dashboard] wrote {bits} + index.html/app.js/styles.css")
 
 if __name__ == "__main__":
     main()

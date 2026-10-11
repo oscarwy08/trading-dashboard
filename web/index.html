@@ -20,8 +20,11 @@
       <div class="brand-t"><h1>Paper Trader</h1><span class="paper-badge" title="All trades are simulated. No wallets, no keys, no real orders.">Paper trading</span></div>
     </div>
     <div class="top-right"><span id="live-dot" class="dot"></span><span id="updated-ago">loading&hellip;</span>
+      <label class="book-pick" for="book-select"><span class="book-lbl">Book</span>
+        <select id="book-select" aria-label="Book"><option value="main">Main (frozen)</option></select></label>
       <button id="btn-refresh" class="icon-btn" title="Reload data now" aria-label="Reload data">&#8635;</button></div>
   </div>
+  <div id="book-banner" class="book-banner hidden" role="status"></div>
   <nav class="tabs" id="tabs" role="tablist">
     <a href="#overview" data-tab="overview" role="tab">Overview</a>
     <a href="#portfolio" data-tab="portfolio" role="tab">Portfolio</a>
