@@ -443,9 +443,36 @@ def main():
     def thr_of(a): return st["focus_buy_threshold"] if a in st["focus_assets"] else st["buy_threshold"]
     def day_exit(a, p, why, m, s, comb):
         md_ = dmeta.get(a) or {}; sub = md_.get("sub", "momentum"); tag = sub + (f" {md_['kind']}" if md_.get("kind") else "")
+        if R["burst_runner"] and sub == "burst" and md_.get("runner") and "burst runner:" not in why:
+            q_ = px.get(a)
+            if q_ and p.get("entry"):
+                ff = fsell(a)
+                chg_ = q_["price"] * (1 - ff) / p["entry"] - 1
+                pk_ = max(float(md_.get("peak") or 0), q_["price"])
+                pkg_ = pk_ * (1 - ff) / p["entry"] - 1
+                why += "; " + variants.ran_note(chg_, pkg_, md_.get("tp") or 0, float(R.get("burst_runner_giveback_pct", 20)))
         pnl = sell("day", a, p["qty"], f"[{tag}] {why}", sub=sub, conf=md_.get("conf", md_.get("score")), snap=md_.get("snap"))
         dmeta.pop(a, None); sset(con, f"day_exit:{a}", ts)
         sig("day", a, m, s, comb, "SELL", f"[{tag}] {why}; P&L £{pnl:+.2f}")
+    def burst_keep(a, q_):
+        """Re-score the burst entry signal for an open position that has just hit its target."""
+        pts = hist.get(a) or []
+        brk = daypot.breakout(con, a, pts, DB)
+        vol = daypot.crypto_vol_ratio(con, a, t) if (q_.get("klass") or "crypto") != "stock" else daypot.stock_vol_ratio(con, a, t, sget)
+        r_ = daypot.rsi_h(pts)
+        se = sentiment(con, a, st["sentiment_max_age_h"])
+        mok, reg, _minfo = daypot.market_regime(con, q_.get("klass") or "crypto", a, hist, t, DB, sget, markets.exchange)
+        kind = brk.get("kind")
+        ss = daypot.setup_stats(con, kind or "24h", DB, t)
+        conf, _parts = daypot.confidence(DB, brk.get("strength") or 0, vol, sent_in(se), reg, ss["p"], freshness=fr_of(a, q_, se))
+        row = con.execute("SELECT value FROM state WHERE key=?", (f"day_start:day:{day}",)).fetchone()
+        base_ = float(row[0]) if row else sleeve_eq("day")
+        pnl_ = sleeve_eq("day") / base_ - 1 if base_ else 0.0
+        thr = daypot.threshold(DB, pnl_, D["daily_loss_cap_pct"])
+        vx = float(DB["volume_x"])
+        vol_ok = not ((vol is not None and vol < vx) or (vol is None and (DB.get("require_volume") or kind != "24h")))
+        sent_ok = not (se and se["score"] < float(DB["sentiment_min"]))
+        return variants.burst_target_action(bool(kind), vol_ok, r_, DB["rsi_max"], sent_ok, bool(mok), conf, thr)
     for (sl, a), p in list(pos.items()):
         if sl != "day": continue
         q = px.get(a); m, s, comb, info = scores.get(a, (None, None, None, ""))
@@ -484,7 +511,12 @@ def main():
         C = SUBC[md["sub"]]; f_ = fsell(a)
         md["peak"] = max(float(md.get("peak") or 0), q["price"])
         chg = q["price"] * (1 - f_) / p["entry"] - 1; pkg = md["peak"] * (1 - f_) / p["entry"] - 1
-        gb = float(C.get("runner_giveback_pct", 20) if md.get("runner") else C["trail_giveback_pct"]) / 100
+        if md.get("runner") and md.get("sub") == "burst" and R["burst_runner"]:
+            gb = float(R.get("burst_runner_giveback_pct", 20)) / 100
+        elif md.get("runner"):
+            gb = float(C.get("runner_giveback_pct", 20)) / 100
+        else:
+            gb = float(C["trail_giveback_pct"]) / 100
         trail_on = pkg >= float(C["trail_after_pct"]) / 100; lvl = pkg * (1 - gb)
         held_h = (t - datetime.fromisoformat(p["opened"])).total_seconds() / 3600
         reason = None
@@ -505,6 +537,14 @@ def main():
             if md["sub"] == "momentum" and C.get("runner") and comb is not None and comb >= thr_of(a):
                 md["runner"] = True
                 out.append(f"[day] RUNNER {a}: target +{md['tp']:.1f}% reached at {chg*100:+.1f}% with signal {comb} still a buy - trailing {float(C.get('runner_giveback_pct', 20)):.0f}% of the gain")
+            elif md.get("sub") == "burst" and R["burst_runner"] and q:
+                keep, why_b = burst_keep(a, q)
+                gb_b = float(R.get("burst_runner_giveback_pct", C.get("runner_giveback_pct", 20)))
+                if keep:
+                    md["runner"] = True
+                    out.append(f"[day] BURST RUNNER {a}: target +{md['tp']:.1f}% reached at {chg*100:+.1f}% ({why_b}) - trailing {gb_b:.0f}% of the gain")
+                else:
+                    reason = f"take-profit {chg*100:.1f}% >= {md['tp']:.1f}% (ATR-scaled); {variants.sold_at_target_note(why_b)}"
             else:
                 reason = f"take-profit {chg*100:.1f}% >= {md['tp']:.1f}% (ATR-scaled)"
         elif md["sub"] == "burst" and held_h >= float(C["max_hold_h"]):
@@ -521,7 +561,8 @@ def main():
             day_exit(a, p, reason, m, s, comb)
         else:
             sig("day", a, m, s, comb, "HOLD", f"[{md['sub']}] open {chg*100:+.1f}% (target +{md['tp']:.1f}% / stop -{md['sl']:.1f}%"
-                + (f", trailing at {lvl*100:+.1f}%" if trail_on else "") + f"); {info}")
+                + (f", trailing at {lvl*100:+.1f}%" if trail_on else "")
+                + ("; burst runner" if md.get("runner") and md.get("sub") == "burst" else "") + f"); {info}")
 
     # ================= v6 one-off pot settlement inside each account (completes the account split) =================
     # migrate_v6_accounts.py could not reach every pot x account target at once (e.g. DAY held £40 of crypto); the pending

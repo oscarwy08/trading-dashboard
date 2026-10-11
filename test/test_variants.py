@@ -24,7 +24,7 @@ def check(cond, msg):
 # --- overlays leave the frozen rules alone and turn one flag on ---
 base = common.cfg()
 check(all(not base["variant_rules"][k] for k in
-          ("ev_exit", "burst_stop_widen", "core_fallback_half", "entry_own_trend", "no_day_core_same_afternoon")),
+          ("ev_exit", "burst_stop_widen", "core_fallback_half", "entry_own_trend", "no_day_core_same_afternoon", "burst_runner")),
       "main config flags are off")
 os.environ["TRADING_VARIANT"] = "ev_exit"
 over = common.cfg()
@@ -35,8 +35,9 @@ os.environ["TRADING_VARIANT"] = "all_combined"
 both = common.cfg()
 os.environ.pop("TRADING_VARIANT", None)
 check(both["variant_rules"]["ev_exit"] and both["variant_rules"]["burst_stop_widen"]
-      and both["variant_rules"]["core_fallback_half"] and both["rules"]["frozen_since"] == base["rules"]["frozen_since"],
-      "all_combined turns on both ideas and does not move the freeze date")
+      and both["variant_rules"]["core_fallback_half"] and not both["variant_rules"]["burst_runner"]
+      and both["rules"]["frozen_since"] == base["rules"]["frozen_since"],
+      "all_combined turns on both ideas, leaves the burst runner off, and does not move the freeze date")
 check(not Path("config/variants/missing.yaml").exists() or True, "placeholder")
 
 R = variants.rules_of(base)
