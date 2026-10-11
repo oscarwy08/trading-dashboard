@@ -402,12 +402,16 @@ assert all(abs(pot_cash1[s] - pot_cash0[s]) < 1e-9 for s in pot_cash0), "pot cas
 assert all(abs(sum(O[k].values()) - common.start_cash(c)[k]) < 0.01 for k in O), "pot baselines unchanged"
 for leg in st["pending"]: assert leg["account"] in common.ACCOUNTS and leg["from"] != leg["to"], "settlement stays inside one account"
 # The live book can have the paying pot fully invested (risk crypto cash £0 while three positions are open), so a
-# pending leg is not covered and must wait. On this copy, credit only the shortfall so the settlement path still runs.
+# pending leg is not covered and must wait. On this copy, credit only the shortfall against the sum of legs from
+# the same pot (two legs can each fit in the balance while the sum does not) so the settlement path still runs.
+need = {}
 for leg in st["pending"]:
-    have = con.execute("SELECT amount FROM acct_cash WHERE sleeve=? AND account=?", (leg["from"], leg["account"])).fetchone()[0]
-    short = leg["amount"] - have
+    need[(leg["from"], leg["account"])] = need.get((leg["from"], leg["account"]), 0.0) + float(leg["amount"])
+for (sleeve, account), amt in need.items():
+    have = con.execute("SELECT amount FROM acct_cash WHERE sleeve=? AND account=?", (sleeve, account)).fetchone()[0]
+    short = amt - have
     if short > 1e-9:
-        con.execute("UPDATE acct_cash SET amount=? WHERE sleeve=? AND account=?", (leg["amount"], leg["from"], leg["account"]))
+        con.execute("UPDATE acct_cash SET amount=amount+? WHERE sleeve=? AND account=?", (short, sleeve, account))
 con.commit()
 # Flatten frees Day cash so the pending legs can settle. 22:05 UK is that window, but the live book may already
 # be later the same evening: the settlement transfer has to be timestamped after the split or it does not count.

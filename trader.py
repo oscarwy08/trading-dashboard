@@ -136,7 +136,8 @@ def core_targets(c, picks, crypto_picks=None):
 
 def crypto_fee_pct(c, q=None, notional_gbp=None):
     """Per-side crypto fee from liquidity, as a fraction of price. Gas stays separate.
-    A large market cap pays about the pool-fee floor. A small cap pays more, and thin turnover (volume/mcap) lifts it.
+    A large market cap pays about the pool-fee floor. A small cap pays more. Thin turnover (volume/mcap below turn_thin)
+    lifts it when turn_thin is set; turn_thin 0 leaves the market-cap curve alone.
     Unknown market cap keeps risk.fee_slippage_pct. A stored Kyber loss (impact_pct, on impact_check_usd) is scaled by
     sqrt(this trade / that check) and used when it is larger. Result stays between the floor and the thin cap."""
     rk = c["risk"]; K = rk.get("liquidity_cost") or {}; q = q or {}
