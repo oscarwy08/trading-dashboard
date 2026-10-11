@@ -38,6 +38,15 @@ check(both["variant_rules"]["ev_exit"] and both["variant_rules"]["burst_stop_wid
       and both["variant_rules"]["core_fallback_half"] and not both["variant_rules"]["burst_runner"]
       and both["rules"]["frozen_since"] == base["rules"]["frozen_since"],
       "all_combined turns on both ideas, leaves the burst runner off, and does not move the freeze date")
+os.environ["TRADING_VARIANT"] = "everything"
+every = common.cfg()
+os.environ.pop("TRADING_VARIANT", None)
+check(every["variant_rules"]["ev_exit"] and every["variant_rules"]["burst_stop_widen"]
+      and every["variant_rules"]["core_fallback_half"] and every["variant_rules"]["entry_own_trend"]
+      and every["variant_rules"]["no_day_core_same_afternoon"] and every["variant_rules"]["burst_runner"]
+      and every["rules"]["frozen_since"] == base["rules"]["frozen_since"]
+      and not both["variant_rules"]["burst_runner"],
+      "everything turns on all_combined and the burst runner, and all_combined stays unchanged")
 check(not Path("config/variants/missing.yaml").exists() or True, "placeholder")
 
 R = variants.rules_of(base)
@@ -216,8 +225,31 @@ variants.run_all()
 check(main_path.read_bytes() == blob, "variant runner leaves the main database byte for byte")
 # a child that cannot trade still must not be required for the main hash; the books exist beside it
 check((TMP / "variants" / "_snapshot.db").exists(), "snapshot is taken at the first run")
-check((TMP / "variants" / "ev_exit.db").exists() and (TMP / "variants" / "all_combined.db").exists(),
+check((TMP / "variants" / "ev_exit.db").exists() and (TMP / "variants" / "all_combined.db").exists()
+      and (TMP / "variants" / "everything.db").exists(),
       "each variant has its own database")
+# a book added after the snapshot exists is copied from that snapshot, not from the main book as it is now
+(TMP / "variants" / "everything.db").unlink()
+late = sqlite3.connect(os.environ["TRADING_DB"])
+late.execute("INSERT INTO trades(ts,sleeve,asset,klass,side,qty,price,fill,value,cost,pnl,reason) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+             ("2026-10-11T19:00:00+00:00", "day", "LATER", "crypto", "SELL", 1, 1, 1, 1, 0, 9, "after the snapshot"))
+late.commit(); late.close()
+variants.prepare("everything")
+evcon = sqlite3.connect(f"file:{TMP / 'variants' / 'everything.db'}?mode=ro", uri=True)
+snapcon = sqlite3.connect(f"file:{TMP / 'variants' / '_snapshot.db'}?mode=ro", uri=True)
+try:
+    check(evcon.execute("SELECT COUNT(*) FROM trades WHERE asset='LATER'").fetchone()[0] == 0,
+          "everything does not pick up a trade added to main after the snapshot")
+    check(evcon.execute("SELECT COUNT(*) FROM trades").fetchone()[0]
+          == snapcon.execute("SELECT COUNT(*) FROM trades").fetchone()[0],
+          "everything starts with the snapshot's trades")
+    man = json.loads((TMP / "variants" / "manifest.json").read_text())
+    rep = variants.report()
+    eb = next(b for b in rep["books"] if b["name"] == "everything")
+    check(eb["label"] == "Everything combined" and rep["since"] == (man.get("equity_ts") or man.get("created")),
+          "everything is labelled and measured from the original snapshot time")
+finally:
+    evcon.close(); snapcon.close()
 
 # comparison P&L is the change since the snapshot, not since the original £200
 cmp = TMP / "cmp.db"
