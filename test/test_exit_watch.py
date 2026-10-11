@@ -1,13 +1,15 @@
 """Exit watcher: the same Day trail as the 5-minute cycle, without a second sell.
 Usage: python3 test/test_exit_watch.py
 """
-import os, sys, tempfile, threading, time
+import os, subprocess, sys, tempfile, threading, time
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-os.environ["TRADING_DB"] = str(Path(tempfile.mkdtemp()) / "watch.db")
+_watch_tmp = Path(tempfile.mkdtemp())
+os.environ["TRADING_DB"] = str(_watch_tmp / "watch.db")
+os.environ["EXIT_SHADOW_DB"] = str(_watch_tmp / "exit_shadow.db")
 os.environ["TRADING_OFFLINE"] = "1"
 os.environ["EXIT_WATCH_SHADOW"] = "0"   # these checks sell for real; shadow is the deploy default
 
@@ -131,6 +133,19 @@ release.set(); th.join(timeout=2)
 check(busy and time.time() - t0 < 1.5, "a second seller waits, then gives up rather than double-selling")
 
 # --- shadow mode: same trail, but the book is not written ---
+saved_shadow = os.environ.pop("EXIT_SHADOW_DB")
+default_shadow = exit_watch.shadow_db_path()
+check(default_shadow == Path.home() / "exit_shadow" / "exit_shadow.db",
+      "shadow db defaults to ~/exit_shadow/exit_shadow.db")
+check(ROOT not in default_shadow.parents, "the default shadow db is outside the repo")
+os.environ["EXIT_SHADOW_DB"] = saved_shadow
+check(exit_watch.shadow_db_path() == Path(saved_shadow), "EXIT_SHADOW_DB overrides the default")
+ignored = subprocess.run(["git", "check-ignore", "data/exit_shadow.db", "data/exit_shadow.db-wal",
+                          "data/exit_shadow.db-shm", "data/exit_shadow.db-journal"],
+                         cwd=ROOT, capture_output=True, text=True)
+check(ignored.stdout.splitlines() == ["data/exit_shadow.db", "data/exit_shadow.db-wal",
+                                      "data/exit_shadow.db-shm", "data/exit_shadow.db-journal"],
+      "data/exit_shadow.db and its wal, shm, and journal are gitignored")
 os.environ.pop("EXIT_WATCH_SHADOW", None)
 check(exit_watch.shadow_mode() is True, "shadow is on when EXIT_WATCH_SHADOW is unset")
 os.environ["EXIT_WATCH_SHADOW"] = "false"
