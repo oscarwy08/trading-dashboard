@@ -26,6 +26,7 @@ h1{font-size:20px;margin:0;color:var(--hi);font-weight:800;letter-spacing:-.2px}
 .tabs a:hover{color:var(--txt);background:var(--hover)}
 .tabs a.on{color:var(--hi);font-weight:700}.tabs a.on:after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:4px;border-radius:4px;background:var(--blue)}
 main{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
+.rules-banner{max-width:1200px;margin:12px auto 0;padding:10px 16px;border-radius:12px;border:1px solid var(--blue);color:var(--txt);background:var(--blue-d)}
 .alert{max-width:1200px;margin:12px auto 0;padding:12px 16px;border-radius:12px;border:1px solid var(--red);color:var(--txt);background:rgba(244,33,46,.08)}
 .tab{display:none}.tab.on{display:block;animation:fade .15s ease-out}
 @keyframes fade{from{opacity:.4}to{opacity:1}}
