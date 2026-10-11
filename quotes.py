@@ -1,22 +1,15 @@
 """Fresh quotes immediately before a paper fill. No-op in sim / tests (TRADING_DB or TRADING_OFFLINE):
-those runs must keep trading the stored snapshots. Live: one batched CoinGecko simple/price for the
-coins about to fill, Yahoo for at most 8 stocks, KyberSwap for at most 4 Monad tokens. A failed
-quote leaves the stored price in place.
+those runs must keep trading the stored snapshots. Live: the same price router as the collector
+(one Kraken ticker for listed coins, Coinbase tickers, KyberSwap for Monad tokens, one CoinGecko
+simple/price for whatever is still missing). Yahoo for at most 8 stocks. A failed quote leaves the
+stored price in place.
 """
-import json, os
+import os, time
 from datetime import datetime, timezone
 from common import iso
 
 def enabled():
     return not (os.environ.get("TRADING_DB") or os.environ.get("TRADING_OFFLINE"))
-
-def _cg_id(con, sym):
-    r = con.execute("SELECT value FROM state WHERE key=?", (f"cgid:{sym}",)).fetchone()
-    if not r: return None
-    v = r[0]
-    try: v = json.loads(v)
-    except Exception: pass
-    return v if isinstance(v, str) and v else None
 
 def _apply(px, sym, usd, ts, src_ts):
     q = px.get(sym)
@@ -38,29 +31,44 @@ def prefetch(con, c, symbols, px):
         return 0
 
 def _prefetch(con, c, symbols, px):
-    import collector
+    import collector, pricesrc
+    from common import usd_gbp
     from freshness import to_iso
     ts = iso(); n = 0
+    own = collector._BUDGET_CON is None
+    if own: collector.bind_budget(con, c)
+    try:
+        n = _prefetch_bound(con, c, symbols, px, ts, collector, pricesrc, usd_gbp, to_iso)
+    finally:
+        if own: collector.bind_budget(None, None)
+    return n
+
+def _prefetch_bound(con, c, symbols, px, ts, collector, pricesrc, usd_gbp, to_iso):
+    n = 0
     crypto = [s for s in symbols if (px.get(s) or {}).get("klass") == "crypto"]
     stocks = [s for s in symbols if (px.get(s) or {}).get("klass") == "stock"][:8]
+    routes = pricesrc.ensure_routes(con, c, crypto, collector.get) if crypto else {}
+    fx = usd_gbp(con)
+    priced, missed = pricesrc.quote_exchanges(
+        crypto, routes, fx[0] if fx else None, collector.get, lambda route: collector._kyber_usd(c, route), ts, pace=time.sleep)
+    for sym, row in priced.items():
+        if not row.get("usd"): continue
+        collector._write_crypto(con, ts, sym, row)
+        _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
     ids = {}
-    for s in crypto:
-        i = _cg_id(con, s)
-        if i: ids.setdefault(i, s)
-    idlist = list(ids)
-    for i in range(0, len(idlist), 80):
-        chunk = idlist[i:i + 80]
+    cg = [s for s in crypto if (routes.get(s) or {}).get("src") == "coingecko"]
+    for s in missed:
+        if s not in cg: cg.append(s)
+    for s in cg:
+        cid = (routes.get(s) or {}).get("id") or pricesrc._cgid(con, s)
+        if cid: ids.setdefault(cid, s)
+    if ids:
         d = collector.get(f"{collector.CG}/simple/price",
-                          {"ids": ",".join(chunk), "vs_currencies": "usd", "include_last_updated_at": "true"}, tries=2)
-        if not d: continue
-        for cid in chunk:
-            row = d.get(cid) or {}; usd = row.get("usd")
-            if not usd or usd <= 0: continue
-            lu = row.get("last_updated_at")
-            src = datetime.fromtimestamp(lu, timezone.utc).replace(microsecond=0).isoformat() if lu else ts
-            sym = ids[cid]
-            _insert(con, ts, sym, "crypto", usd, "coingecko-live", src)
-            _apply(px, sym, usd, ts, src); n += 1
+                          {"ids": ",".join(list(ids)[:250]), "vs_currencies": "usd", "include_last_updated_at": "true"},
+                          tries=2, purpose="live")
+        for sym, row in pricesrc.parse_cg_simple(d, ids, ts).items():
+            collector._write_crypto(con, ts, sym, row)
+            _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
     for s in stocks:
         sym, price, meta, _vi = collector.stock_quote(s)
         if not price or not meta: continue
@@ -71,46 +79,4 @@ def _prefetch(con, c, symbols, px):
         usd = price * f
         _insert(con, ts, sym, "stock", usd, "yahoo-live", src)
         _apply(px, sym, usd, ts, src); n += 1
-    n += _kyber(con, c, crypto, px, ts)
-    return n
-
-def _kyber(con, c, crypto, px, ts):
-    """Direct Monad route for MON and up to 3 other tokens we have an address for. Quote time is the provider time."""
-    import collector
-    k = ((c.get("crypto") or {}).get("kyberswap") or {})
-    if not k or not crypto: return 0
-    n = 0; done = 0
-    if "MON" in crypto and "MON" in px and done < 4:
-        d = collector.get("https://aggregator-api.kyberswap.com/monad/api/v1/routes",
-                          {"tokenIn": k["token_in"], "tokenOut": k["token_out"], "amountIn": str(int(float(k["amount_mon"]) * 10**18))},
-                          headers={"x-client-id": "paper-trader"}, tries=1)
-        try:
-            usd = int(d["data"]["routeSummary"]["amountOut"]) / 1e6 / float(k["amount_mon"])
-            if usd > 0:
-                _insert(con, ts, "MON", "crypto", usd, "kyberswap-live", ts)
-                _apply(px, "MON", usd, ts, ts); n += 1; done += 1
-        except Exception:
-            pass
-    try:
-        addr = json.loads((con.execute("SELECT value FROM state WHERE key='monad_addr'").fetchone() or ["{}"])[0]) or {}
-    except Exception:
-        addr = {}
-    usdc = k.get("token_out")
-    for s in crypto:
-        if done >= 4 or s == "MON": continue
-        cid = _cg_id(con, s); meta = addr.get(cid) if cid else None
-        token, dec = (meta or {}).get("a"), (meta or {}).get("dec")
-        if not token or dec is None or not usdc: continue
-        amt = 50  # USDC, small probe
-        d = collector.get("https://aggregator-api.kyberswap.com/monad/api/v1/routes",
-                          {"tokenIn": usdc, "tokenOut": token, "amountIn": str(int(amt * 1e6))},
-                          headers={"x-client-id": "paper-trader"}, tries=1)
-        try:
-            out = int(d["data"]["routeSummary"]["amountOut"]) / (10 ** int(dec))
-            usd = amt / out if out else 0
-            if usd > 0:
-                _insert(con, ts, s, "crypto", usd, "kyberswap-live", ts)
-                _apply(px, s, usd, ts, ts); n += 1; done += 1
-        except Exception:
-            continue
     return n

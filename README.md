@@ -31,7 +31,7 @@ The rule set is frozen at `rules.frozen_since` (shown on the dashboard). The nex
 
 ## v7.5 (2026-10-10): P&L in words, fresher fills, burst floor, Risk EV per setup (paper only)
 - **P&L cards** (Overview today and all-time, each account, each pot, Day today) show `open positions` and `closed trades (after fees)` underneath the headline. The two add up to that headline exactly, in pence. Fees are already inside both numbers. Today's closed figure is sells since midnight UK; the open figure is the rest of the day's move.
-- **Data freshness.** Every price stores the provider's last-updated time. Right before a live fill the trader asks for a fresh quote (one batched CoinGecko call, at most 8 Yahoo quotes, at most 4 KyberSwap routes on Monad). Age is a confidence component on Day burst and Risk: a fresh price leaves the score unchanged, an older one scales it down, and a setup skipped for that says so. Full credit is 10 min for crypto and 5 min for stocks. Sentiment's weight fades to zero by 12 hours; the hard sentiment gates still use the raw score. If a cycle was missed and price went through a stop, the fill is the real price and the reason says `[gap fill]`. Only a missing price (or, offline, one older than 45 min) blocks a trade. Sim and tests stay offline.
+- **Data freshness.** Every price stores the provider's last-updated time. Right before a live fill the trader asks for a fresh quote from the same router as the collector (Kraken or Coinbase when the coin is listed, KyberSwap for a Monad token, otherwise one CoinGecko simple/price; at most 8 Yahoo quotes). Age is a confidence component on Day burst and Risk: a fresh price leaves the score unchanged, an older one scales it down, and a setup skipped for that says so. Full credit is 10 min for crypto and 5 min for stocks. Sentiment's weight fades to zero by 12 hours; the hard sentiment gates still use the raw score. If a cycle was missed and price went through a stop, the fill is the real price and the reason says `[gap fill]`. Only a missing price (or, offline, one older than 45 min) blocks a trade. Sim and tests stay offline.
 - **Burst cash.** If the burst budget is under the £5 minimum but at least £4 (`day.burst.cash_floor_gbp`), that remaining cash is spent. Below £4, an exceptional setup still borrows under the existing inter-pot rules.
 - **Day burst list.** If the account filter hides every setup, the rows are shown anyway with a note. A quiet cycle (nothing broke out) still says so.
 - **Risk setups.** The table shows the top 8 by confidence (anything bought stays visible) with a show-all toggle.
@@ -270,15 +270,19 @@ US (NVDA), London main market + AIM (RPI.L, ITM.L), ASX (LYC.AX) - the same inst
 The cycle runs 24/7 on a Hetzner VPS (Ubuntu 24.04, Nuremberg, user `bot`): systemd `trading-cycle.timer`
 (`OnCalendar *:02/5`, Persistent, 14 min timeout) -> `/home/bot/run_cycle.sh` (flock; hard-sync to origin/main;
 `scripts/ci_cycle.sh`; `scripts/ci_push.sh` as `vps-cycle`; log `/home/bot/logs/cycle.log`, logrotate daily x14).
-Cadence: every 5 min the fast cycle (collector `COLLECT_MODE=fast`: crypto re-priced with ONE CoinGecko call by id,
-stocks/KyberSwap/gas/market proxy, then sentiment ingest, trader incl. exits, maintenance, dashboard, push); every ~15 min
-the full collector (top-300 screen, meme/Monad categories, daily closes, backfills). FX stays hourly. Pushes only when
-state changed (at most one per 5-min cycle). Health: `/home/bot/health.sh`.
-CoinGecko Demo key (optional): the free demo tier is 30 calls/min and 10,000 calls/month, so that 5-min fast / ~15-min full
-split stays. On the VPS put `COINGECKO_API_KEY=...` in `$HOME/.trading_env` (mode 600, not in git; `TRADING_ENV` overrides
-the path). `scripts/ci_cycle.sh` sources that file when it is present. When the variable is set, every CoinGecko request
-(collector and the live quote) sends header `x-cg-demo-api-key`. The base URL stays `https://api.coingecko.com/api/v3`.
-When it is unset, those requests are unchanged. The key is never written to the log.
+Cadence: every 5 min the fast cycle (collector `COLLECT_MODE=fast`: crypto re-priced from Kraken / Coinbase / KyberSwap,
+CoinGecko only for coins those do not list, then stocks, gas, market proxy, sentiment ingest, trader incl. exits,
+maintenance, dashboard, push); every ~15 min the full collector (daily closes, backfills, and the top-300 screen when it
+is due). FX stays hourly. Pushes only when state changed (at most one per 5-min cycle). Health: `/home/bot/health.sh`.
+CoinGecko Demo key (optional): the demo tier is 100 calls/min but only 10,000 calls/month. Prices therefore come from
+public Kraken (one Ticker call for every listed coin) and Coinbase, with KyberSwap for Monad tokens. CoinGecko is the
+fallback (one simple/price about every 15 min for whatever is left) and the top-300 screen (about every 3 hours, every
+6 hours once 70% of the day's budget is used). Target is 300 calls per UK day, about 9,000 a month. Calls are counted
+in table `cg_calls`; the Markets tab shows today and this month. On the VPS put `COINGECKO_API_KEY=...` in
+`$HOME/.trading_env` (mode 600, not in git; `TRADING_ENV` overrides the path). `scripts/ci_cycle.sh` sources that file
+when it is present. When the variable is set, every CoinGecko request (collector and the live quote) sends header
+`x-cg-demo-api-key`. The base URL stays `https://api.coingecko.com/api/v3`. When it is unset, those requests are
+unchanged. The key is never written to the log. No key is required for Kraken or Coinbase public endpoints.
 The GitHub Actions workflow (.github/workflows/cycle.yml) is manual-only (workflow_dispatch) - no two scheduled writers.
 Box fallback: `/workspace/tools/vps_watchdog.sh` (box cron */10) runs `FORCE_BOX=1 box_cycle.sh` if the newest
 `cycle` commit on main is older than 20 min.

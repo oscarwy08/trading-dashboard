@@ -18,6 +18,15 @@ fx:                             # USD->GBP rate, fetched every collector cycle (
   max_age_h: 24                 # if the stored rate is older than this, no new buys (exits still run)
   refresh_min: 55               # fetch at most hourly (saves CoinGecko calls; GBP/USD moves little intraday)
 
+coingecko:                      # demo key: 100 calls/min but 10,000/month. Prices come from exchanges; this caps the fallback.
+  day_budget: 300               # UK day. About 9,000/month. Scan, charts and the FX cross-check stop once tight_pct is used.
+  month_budget: 9000
+  scan_every_min: 180           # top-300 screen (two markets calls). Slower is fine; 3 hours leaves headroom.
+  scan_every_min_tight: 360
+  fallback_every_min: 15        # one simple/price for every coin with no Kraken or Coinbase pair
+  fallback_every_min_tight: 60
+  tight_pct: 0.70               # past this fraction of the day or month budget, drop scan/charts before fallback prices
+
 crypto:
   core_ids: [bitcoin, ethereum, ripple, worldcoin-wld, monad, solana]   # CoinGecko ids
   watch_ids: {pax-gold: rwa, tether-gold: rwa, ondo-finance: rwa}   # always priced (Markets 'watch closely'); verified liquid 2026-10-10 (vol > $95M/day)

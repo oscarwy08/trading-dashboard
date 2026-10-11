@@ -1,9 +1,10 @@
-"""Price collector: CoinGecko (crypto), KyberSwap (MON/USDC on Monad), stocks (Yahoo, normal exchange tickers, v5), USD->GBP FX,
-Monad gas price (simulated network fee), daily closes of the CORE stock universe (Yahoo) + ranking.
+"""Price collector. Crypto prices: Kraken and Coinbase public markets when the coin is listed, KyberSwap for Monad
+tokens, CoinGecko only for the rest and for the top-300 screen. Stocks: Yahoo (normal exchange tickers). USD->GBP FX,
+Monad gas (simulated network fee), daily closes of the CORE universe.
 All asset prices are stored in raw USD; the FX rate is stored in table fx and applied by trader/dashboard."""
 import json, os, time, requests
 from datetime import datetime, timedelta, timezone
-from common import cfg, db, iso, log
+from common import cfg, db, iso, log, usd_gbp
 import freshness
 
 L = log("collector")
@@ -20,11 +21,30 @@ def cg_headers(extra=None):
         h["x-cg-demo-api-key"] = key
     return h
 
-def get(url, params=None, headers=None, tries=3):
-    if str(url).startswith(CG):
+_BUDGET_CON = None
+_BUDGET_CFG = None
+
+def bind_budget(con, c):
+    """Count CoinGecko calls against cg_calls while this is set (collector.main and the pre-trade quote)."""
+    global _BUDGET_CON, _BUDGET_CFG
+    _BUDGET_CON, _BUDGET_CFG = con, c
+
+def get(url, params=None, headers=None, tries=3, purpose="other"):
+    cg = str(url).startswith(CG)
+    if cg:
         headers = cg_headers(headers)
+        if _BUDGET_CON is not None:
+            import pricesrc
+            from common import now as _now
+            if not pricesrc.allow(_BUDGET_CON, _BUDGET_CFG, _now(), purpose):
+                L.info("coingecko %s skipped (day budget)", purpose)
+                return None
     for i in range(tries):
         try:
+            if cg and _BUDGET_CON is not None:
+                import pricesrc
+                from common import now as _now
+                pricesrc.add_calls(_BUDGET_CON, _now(), 1)
             r = S.get(url, params=params, headers=headers, timeout=20)
             if r.status_code == 429:
                 if tries == 1: L.warning("429 from %s", url); return None
@@ -45,14 +65,15 @@ def st_set(con, k, v): con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (
 PCT = "1h,24h,7d"
 
 def markets_top(n):
-    """Top-n coins by market cap in as few calls as possible: 250 per page, then the remainder in pages of 50."""
+    """Top-n coins by market cap in as few calls as possible: 250 per page, then the remainder in pages of 50.
+    Both calls count against the CoinGecko day budget (purpose scan)."""
     rows = get(f"{CG}/coins/markets", {"vs_currency": "usd", "order": "market_cap_desc", "per_page": min(n, 250), "page": 1,
-                                       "price_change_percentage": PCT}) or []
+                                       "price_change_percentage": PCT}, purpose="scan") or []
     if n > 250 and rows:
         time.sleep(2)
         for pg in range(6, n // 50 + 1):      # per_page=50: page 6 = ranks 251-300
             rows += get(f"{CG}/coins/markets", {"vs_currency": "usd", "order": "market_cap_desc", "per_page": 50, "page": pg,
-                                               "price_change_percentage": PCT}) or []
+                                               "price_change_percentage": PCT}, purpose="scan") or []
     return rows
 
 def monad_tokens(con, c, status):
@@ -65,7 +86,7 @@ def monad_tokens(con, c, status):
     if not cache.get("ts") or datetime.fromisoformat(cache["ts"]) < datetime.now(timezone.utc) - timedelta(hours=float(M.get("refresh_h", 6))):
         time.sleep(2)
         rows = get(f"{CG}/coins/markets", {"vs_currency": "usd", "category": M.get("category", "monad-ecosystem"), "order": "market_cap_desc",
-                                           "per_page": 100, "price_change_percentage": PCT}, tries=1)
+                                           "per_page": 100, "price_change_percentage": PCT}, tries=1, purpose="meta")
         if rows is not None:
             keep = [x for x in rows if (x.get("market_cap") or 0) >= float(R["min_mcap_usd"]) and (x.get("total_volume") or 0) >= float(R["min_vol_usd"])]
             cache = dict(ts=iso(), rows=keep, dex={}); st_set(con, "monad_eco", cache)
@@ -75,7 +96,7 @@ def monad_tokens(con, c, status):
         if x["id"] in addr or looked >= 2: continue
         time.sleep(2); looked += 1
         d = get(f"{CG}/coins/{x['id']}", {"localization": "false", "tickers": "false", "market_data": "false",
-                                           "community_data": "false", "developer_data": "false"}, tries=1)
+                                           "community_data": "false", "developer_data": "false"}, tries=1, purpose="meta")
         if d is None: break
         dp = (d.get("detail_platforms") or {}).get("monad") or {}
         addr[x["id"]] = dict(a=dp.get("contract_address"), dec=dp.get("decimal_place"))
@@ -109,7 +130,7 @@ def meme_ids(con, U):
     if not cache.get("ts") or datetime.fromisoformat(cache["ts"]) < datetime.now(timezone.utc) - timedelta(hours=float(U.get("meme_refresh_h", 24))):
         time.sleep(2)
         rows = get(f"{CG}/coins/markets", {"vs_currency": "usd", "category": U.get("meme_category", "meme-token"), "order": "market_cap_desc",
-                                           "per_page": 250, "page": 1}, tries=1)
+                                           "per_page": 250, "page": 1}, tries=1, purpose="meta")
         if rows:
             cache = dict(ts=iso(), ids=sorted({x["id"] for x in rows}), syms=sorted({(x.get("symbol") or "").upper() for x in rows}))
             st_set(con, "meme_ids", cache)
@@ -161,10 +182,88 @@ def day_universe(con, c, top, ts):
                                      coins={x["symbol"].upper(): [x["id"], x["_rank"], round(x.get("market_cap") or 0), round(x.get("total_volume") or 0)] for x in keep}))
     return keep
 
+def _write_crypto(con, ts, sym, row):
+    """Insert a crypto price. Market cap and, when the source has none, volume and the 24h range stay from the last row
+    so the liquidity cost still sees the last CoinGecko size."""
+    prev = con.execute("""SELECT high24, low24, vol24, mcap FROM prices
+                          WHERE asset=? AND klass='crypto' AND source!='backfill' ORDER BY ts DESC LIMIT 1""", (sym,)).fetchone()
+    high = row.get("high") if row.get("high") else (prev["high24"] if prev else None)
+    low = row.get("low") if row.get("low") else (prev["low24"] if prev else None)
+    vol = row.get("vol") if row.get("vol") else (prev["vol24"] if prev else None)
+    mcap = prev["mcap"] if prev else None
+    con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)",
+                (ts, sym, "crypto", row["usd"], high, low, vol, mcap, row.get("source") or "coingecko", row.get("src_ts") or ts))
+
+def _kyber_usd(c, route):
+    """USD price of a Monad token from one KyberSwap route. MON uses the configured MON->USDC size; other tokens a $50 USDC probe."""
+    k = ((c.get("crypto") or {}).get("kyberswap") or {})
+    if not k: return None
+    if route.get("mon"):
+        d = get("https://aggregator-api.kyberswap.com/monad/api/v1/routes",
+                {"tokenIn": k["token_in"], "tokenOut": k["token_out"], "amountIn": str(int(float(k["amount_mon"]) * 10 ** 18))},
+                headers={"x-client-id": "paper-trader"}, tries=1)
+        try: return int(d["data"]["routeSummary"]["amountOut"]) / 1e6 / float(k["amount_mon"])
+        except Exception: return None
+    token, dec, usdc = route.get("token"), route.get("dec"), k.get("token_out")
+    if not token or dec is None or not usdc: return None
+    amt = 50.0
+    d = get("https://aggregator-api.kyberswap.com/monad/api/v1/routes",
+            {"tokenIn": usdc, "tokenOut": token, "amountIn": str(int(amt * 1e6))},
+            headers={"x-client-id": "paper-trader"}, tries=1)
+    try:
+        out = int(d["data"]["routeSummary"]["amountOut"]) / (10 ** int(dec))
+        return amt / out if out else None
+    except Exception:
+        return None
+
+def price_tracked(con, c, ts, status):
+    """Re-price every tracked coin. One Kraken Ticker call, then Coinbase tickers, then Kyber for Monad tokens.
+    CoinGecko simple/price is one call for coins with no exchange, and for any exchange call that just failed.
+    That fallback is every 15 min (hourly once the day budget is tight), not every 5-min cycle."""
+    import pricesrc
+    from collections import Counter
+    from common import now as now_fn
+    syms = pricesrc.tracked(con)
+    routes = pricesrc.ensure_routes(con, c, syms, get)
+    fx = usd_gbp(con)
+    priced, missed = pricesrc.quote_exchanges(syms, routes, fx[0] if fx else None, get, lambda route: _kyber_usd(c, route), ts, pace=time.sleep)
+    wrote = set()
+    for sym, row in priced.items():
+        if row.get("usd"): _write_crypto(con, ts, sym, row); wrote.add(sym)
+    now = now_fn()
+    cg_syms = []
+    if pricesrc.fallback_due(con, c, now):
+        cg_syms = [s for s in syms if (routes.get(s) or {}).get("src") == "coingecko"]
+        pricesrc.mark(con, "cg_fallback_ts", ts)
+    for s in missed:
+        if s not in cg_syms: cg_syms.append(s)
+    ids = {}
+    for s in cg_syms:
+        cid = (routes.get(s) or {}).get("id") or pricesrc._cgid(con, s)
+        if cid: ids.setdefault(cid, s)
+    if ids:
+        d = get(f"{CG}/simple/price", {"ids": ",".join(list(ids)[:250]), "vs_currencies": "usd", "include_last_updated_at": "true"},
+                tries=2, purpose="fallback")
+        for sym, row in pricesrc.parse_cg_simple(d, ids, ts).items():
+            _write_crypto(con, ts, sym, row); wrote.add(sym)
+    cnt = Counter()
+    for sym in wrote:
+        src = con.execute("SELECT source FROM prices WHERE asset=? AND ts=? AND klass='crypto' ORDER BY rowid DESC LIMIT 1", (sym, ts)).fetchone()
+        cnt[(src["source"] if src else None) or "?"] += 1
+    today, _month = pricesrc.usage(con, now)
+    status["prices"] = ", ".join(f"{k} {v}" for k, v in sorted(cnt.items())) + f" of {len(syms)}; CoinGecko {today}/{pricesrc.cfg_of(c)['day_budget']} today"
+    return wrote
+
 def crypto(con, c, ts, status):
-    """ONE top-300 markets snapshot (2 calls) feeds: the base set (top_n + core ids, priced as before), and the RISK pot
-    breakout screen (riskpot.screen). Only the best riskpot.crypto.watch_n candidates (+ recently screened, + held) are
-    stored as prices each cycle; the screen itself goes to state 'risk_screen' (small JSON) - keeps the DB small."""
+    """Prices come from the router (Kraken / Coinbase / Kyber / CoinGecko fallback). The top-300 markets snapshot
+    still feeds the DAY universe and the RISK screen, but only every few hours so it stays inside the monthly CoinGecko cap.
+    A coin already priced by an exchange this cycle keeps that source; the snapshot only fills in market cap and volume."""
+    import pricesrc
+    from common import now as now_fn
+    priced_now = price_tracked(con, c, ts, status)
+    if not pricesrc.scan_due(con, c, now_fn()):
+        status["screen"] = "top-300 not due (CoinGecko budget; prices from exchanges)"
+        return {}
     import riskpot
     cc = c["crypto"]; ex = {s.upper() for s in cc["exclude_symbols"]}
     R = (c.get("riskpot") or {}).get("crypto") or {}
@@ -176,7 +275,7 @@ def crypto(con, c, ts, status):
     need = [i for i in list(cc["core_ids"]) + wids + [v for v in held.values() if v] if i not in ids]
     extra = []
     if need:
-        time.sleep(2); extra = get(f"{CG}/coins/markets", {"vs_currency": "usd", "ids": ",".join(dict.fromkeys(need)), "price_change_percentage": PCT}) or []
+        time.sleep(2); extra = get(f"{CG}/coins/markets", {"vs_currency": "usd", "ids": ",".join(dict.fromkeys(need)), "price_change_percentage": PCT}, purpose="scan") or []
     base = [x for x in top if x["symbol"].upper() not in ex and "USD" not in x["symbol"].upper()][:cc["top_n"]]
     uni = day_universe(con, c, top, ts)                       # v7.2: + liquid mid/small caps (same snapshot, no extra calls)
     bids = {x["id"] for x in base}; base += [x for x in uni if x["id"] not in bids]
@@ -221,42 +320,37 @@ def crypto(con, c, ts, status):
     st_set(con, "risk_only", sorted(risk_syms))
     from stockrank import themes, risk_stocks
     stock_syms = {s.upper() for s in list(themes(c)) + risk_stocks(c) + list(c["stocks"]["watchlist"])}
-    seen = set()
+    seen = set(); kept = 0
     for x in rows.values():
         sym = x["symbol"].upper()
         if sym in stock_syms: continue                # a coin with the same symbol as a stock ticker (e.g. ONDO.L / B / PL) - skip
         if sym in seen: continue                  # symbol clash between two coins: keep the first (base/higher ranked)
         seen.add(sym)
+        con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"cgid:{sym}", x["id"]))
+        if sym in priced_now:
+            # The exchange row written a moment ago stays the price. This snapshot only fills size.
+            con.execute("""UPDATE prices SET mcap=COALESCE(?, mcap), vol24=COALESCE(?, vol24),
+                            high24=COALESCE(?, high24), low24=COALESCE(?, low24)
+                            WHERE ts=? AND asset=? AND klass='crypto'""",
+                        (x.get("market_cap"), x.get("total_volume"), x.get("high_24h"), x.get("low_24h"), ts, sym))
+            kept += 1
+            continue
+        if x.get("current_price") is None: continue
         con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts, sym, "crypto",
                     x["current_price"], x.get("high_24h"), x.get("low_24h"), x.get("total_volume"),
                     x.get("market_cap"), "coingecko", freshness.to_iso(x.get("last_updated")) or ts))
-        con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"cgid:{sym}", x["id"]))
-    status["coingecko"] = (f"ok ({len(seen)} coins priced, top {len(top)} screened, DAY universe +{len(uni)}, {len(risk_syms)} risk-only)" if rows else "FAILED")
+    if top:
+        pricesrc.mark(con, "cg_scan_ts", ts)
+    status["coingecko"] = (f"ok ({len(seen)} screened, {len(seen) - kept} CoinGecko prices, {kept} already from an exchange, "
+                           f"top {len(top)}, DAY universe +{len(uni)}, {len(risk_syms)} risk-only)" if top else "FAILED")
     return rows
 
 def crypto_fast(con, c, ts, status):
-    """COLLECT_MODE=fast (VPS 5-min cycles between the 15-min full ones): re-price only the coins priced by the last full
-    snapshot (+ held coins) with ONE CoinGecko markets call by id. No top-300 screen, no meme/Monad category refresh, no
-    universe/screen state updates (those stay from the last full cycle) - keeps CoinGecko usage within the free tier."""
-    since = (datetime.fromisoformat(ts) - timedelta(minutes=40)).isoformat()
-    syms = [r[0] for r in con.execute("SELECT DISTINCT asset FROM prices WHERE klass='crypto' AND source='coingecko' AND ts>=?", (since,))]
-    syms += [r[0] for r in con.execute("SELECT DISTINCT asset FROM positions WHERE klass='crypto'")]
-    by_id = {}
-    for sym in dict.fromkeys(syms):
-        r = con.execute("SELECT value FROM state WHERE key=?", (f"cgid:{sym}",)).fetchone()
-        cid = str(r[0]).strip('"') if r and r[0] else None
-        if cid and cid not in by_id: by_id[cid] = sym
-    if not by_id: status["coingecko"] = "fast: nothing to re-price"; return {}
-    rows = get(f"{CG}/coins/markets", {"vs_currency": "usd", "ids": ",".join(list(by_id)[:250]), "per_page": 250, "page": 1,
-                                       "price_change_percentage": PCT}, tries=2) or []
-    n = 0
-    for x in rows:
-        sym = by_id.get(x.get("id"))
-        if not sym or x.get("current_price") is None: continue
-        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts, sym, "crypto",
-                    x["current_price"], x.get("high_24h"), x.get("low_24h"), x.get("total_volume"),
-                    x.get("market_cap"), "coingecko", freshness.to_iso(x.get("last_updated")) or ts)); n += 1
-    status["coingecko"] = f"fast ok ({n}/{len(by_id)} coins re-priced, screens from last full cycle)" if n else "fast FAILED"
+    """COLLECT_MODE=fast (VPS 5-min cycles between the ~15-min full ones): re-price tracked coins from Kraken, Coinbase
+    and KyberSwap. CoinGecko simple/price only for coins with no listing, and only on the fallback interval. No top-300
+    screen and no category refresh (those stay from the last full cycle that was allowed to spend the day budget)."""
+    price_tracked(con, c, ts, status)
+    status["coingecko"] = status.get("prices") or "fast: nothing to re-price"
     return {}
 
 def kyber(con, c, ts, status):
@@ -281,7 +375,7 @@ def fxrate(con, c, ts, status):
     if last and datetime.fromisoformat(last[0]) > datetime.fromisoformat(ts) - timedelta(minutes=float(c["fx"].get("refresh_min", 55))):
         status["fx"] = f"ok (last rate {last[0][11:16]} UTC, refreshed hourly)"; return
     cg = er = None
-    d = get(f"{CG}/simple/price", {"ids": "bitcoin", "vs_currencies": "gbp,usd"}, tries=2)
+    d = get(f"{CG}/simple/price", {"ids": "bitcoin", "vs_currencies": "gbp,usd"}, tries=2, purpose="fx")
     try: cg = d["bitcoin"]["gbp"] / d["bitcoin"]["usd"]
     except Exception as e: L.warning("fx coingecko parse failed: %s %s", e, str(d)[:200])
     d = get("https://open.er-api.com/v6/latest/USD", tries=2)
@@ -479,9 +573,30 @@ def daily(con, c, status):
     except Exception as e: L.warning("crypto daily failed: %s", e); extra = 0
     status["daily"] = f"{have}/{len(uni)} fresh (+{ok} this cycle)" + (f", crypto candidates +{extra}" if extra else "")
 
+def exchange_points(route, kind, fx):
+    """[(unix seconds, USD close)] from Kraken or Coinbase OHLC. None when this coin is not on an exchange,
+    or the call failed (the caller then uses CoinGecko). kind is 'daily' or 'hourly'."""
+    import pricesrc
+    src, pair = (route or {}).get("src"), (route or {}).get("pair")
+    if src not in ("kraken", "coinbase") or not pair: return None
+    if src == "kraken":
+        d = get(f"{pricesrc.KRAKEN}/OHLC", {"pair": pair, "interval": 1440 if kind == "daily" else 60}, tries=1)
+        raw = pricesrc.parse_kraken_ohlc(d, route) if d else None
+    else:
+        d = get(f"{pricesrc.COINBASE}/products/{pair}/candles", {"granularity": 86400 if kind == "daily" else 3600}, tries=1)
+        raw = pricesrc.parse_coinbase_candles(d) if isinstance(d, list) else None
+    if not raw: return None
+    out = []
+    for t, close in raw:
+        usd = pricesrc.to_usd(close, route.get("quote"), fx)
+        if usd: out.append((t, usd))
+    return out or None
+
 def crypto_daily(con, c):
-    """Daily USD closes for one CORE crypto candidate (CoinGecko market_chart; days=365 is daily on the free API).
-    One coin per cycle, same staleness window as the stock closes, so two candidates refresh without extra bursts."""
+    """Daily USD closes for one CORE crypto candidate. Kraken or Coinbase OHLC when that coin is listed there;
+    CoinGecko market_chart only otherwise (and if the exchange call failed). One coin per cycle. A skipped chart
+    is not marked done, so the next cycle retries it."""
+    import pricesrc
     from stockrank import crypto_ids
     ids = crypto_ids(c)
     if not ids: return 0
@@ -491,42 +606,67 @@ def crypto_daily(con, c):
     todo = sorted([s for s in ids if str(last.get(s, "")).strip('"') < cut], key=lambda s: str(last.get(s, "")))
     if not todo: return 0
     sym = todo[0]; cid = ids[sym]
-    time.sleep(2)
-    d = get(f"{CG}/coins/{cid}/market_chart", {"vs_currency": "usd", "days": "365"}, tries=1)
-    pts = (d or {}).get("prices") or []
-    if not pts:
-        L.warning("crypto daily %s (%s) unavailable", sym, cid); return 0
+    route = pricesrc.routes_of(con).get(sym) or {}
+    fx = usd_gbp(con)
     by = {}
-    for ms, p in pts:
-        if not p or p <= 0: continue
-        by[datetime.fromtimestamp(ms / 1000, timezone.utc).date().isoformat()] = float(p)
+    pts = exchange_points(route, "daily", fx[0] if fx else None)
+    if pts:
+        for t, p in pts:
+            by[datetime.fromtimestamp(t, timezone.utc).date().isoformat()] = p
+    if not by:
+        time.sleep(2)
+        d = get(f"{CG}/coins/{cid}/market_chart", {"vs_currency": "usd", "days": "365"}, tries=1, purpose="chart")
+        for ms, p in ((d or {}).get("prices") or []):
+            if p and p > 0: by[datetime.fromtimestamp(ms / 1000, timezone.utc).date().isoformat()] = float(p)
+    if not by:
+        L.warning("crypto daily %s (%s) unavailable", sym, cid); return 0
     for day, p in by.items():
         con.execute("INSERT OR REPLACE INTO daily_closes VALUES(?,?,?)", (sym, day, p))
     con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"cgid:{sym}", cid))
     con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (f"dfetch:{sym}", iso()))
-    L.info("crypto daily %s: %d closes", sym, len(by))
+    L.info("crypto daily %s: %d closes via %s", sym, len(by), route.get("src") if pts else "coingecko")
     return 1
 
 def backfill(con, c, crypto_rows, cg_limit=3):
-    """One-off hourly history so momentum works from day one. Yahoo for stocks (all at once),
-    CoinGecko for crypto (a few per run, focus coins first, to respect free-tier rate limits)."""
-    focus = c["strategy"]["focus_assets"]
-    coins = sorted(crypto_rows.values(), key=lambda x: x["symbol"].upper() not in focus)
+    """One-off hourly history so momentum works from day one. Yahoo for stocks. Exchange OHLC for coins listed on
+    Kraken or Coinbase (a few per cycle, no CoinGecko). CoinGecko market_chart only for the rest, a few per cycle,
+    and a chart the budget skipped is left unmarked so the next cycle retries it."""
+    import pricesrc
+    focus = set(c["strategy"]["focus_assets"])
+    routes = pricesrc.routes_of(con)
+    fx = usd_gbp(con); fxr = fx[0] if fx else None
+    coins = {}
+    for s in pricesrc.tracked(con):
+        if (routes.get(s) or {}).get("src") in ("kraken", "coinbase"): coins[s] = (routes.get(s) or {}).get("id")
+    for x in (crypto_rows or {}).values():
+        sym = x["symbol"].upper()
+        if (routes.get(sym) or {}).get("src") in ("kraken", "coinbase"): continue
+        coins.setdefault(sym, x.get("id"))
+    ordered = sorted(coins, key=lambda s: ((routes.get(s) or {}).get("src") not in ("kraken", "coinbase"), s not in focus, s))
     todo = [(s, "stock", s) for s in intraday_stocks(con, c)]
-    todo += [(x["symbol"].upper(), "crypto", x["id"]) for x in coins]
-    done = cg = 0
+    todo += [(s, "crypto", coins[s]) for s in ordered]
+    done = cg = ex = 0; cg_blocked = False
     for asset, klass, ref in todo:
         if con.execute("SELECT 1 FROM state WHERE key=?", (f"bf:{asset}",)).fetchone(): continue
-        if klass == "crypto" and cg >= cg_limit: break
         try:
-            if klass == "crypto":
-                cg += 1; time.sleep(6)
-                d = get(f"{CG}/coins/{ref}/market_chart", {"vs_currency": "usd", "days": 2}, tries=1)
-                if not d: L.info("backfill %s deferred (rate limit)", asset); break
-                pts = [(t / 1000, p) for t, p in d["prices"]]
-            else:
+            if klass != "crypto":
                 r_, pts = yahoo(ref, "5d", "60m"); f = usd_factor(con, r_["meta"].get("currency")) or 1.0
                 pts = [(t_, p * f) for t_, p in pts]
+            else:
+                route = routes.get(asset) or {}
+                listed = route.get("src") in ("kraken", "coinbase")
+                pts = None
+                if listed:
+                    if ex >= cg_limit: continue
+                    ex += 1
+                    pts = exchange_points(route, "hourly", fxr)
+                if not pts:
+                    if cg_blocked or cg >= cg_limit or not ref: continue
+                    cg += 1; time.sleep(6)
+                    d = get(f"{CG}/coins/{ref}/market_chart", {"vs_currency": "usd", "days": 2}, tries=1, purpose="chart")
+                    if not d:
+                        L.info("backfill %s deferred (CoinGecko budget or rate limit)", asset); cg_blocked = True; continue
+                    pts = [(t / 1000, p) for t, p in d["prices"]]
             first = con.execute("SELECT MIN(ts) FROM prices WHERE asset=?", (asset,)).fetchone()[0]
             for t, p in pts:
                 tsx = datetime.fromtimestamp(t, timezone.utc).replace(microsecond=0).isoformat()
@@ -540,27 +680,30 @@ def backfill(con, c, crypto_rows, cg_limit=3):
     return done
 
 def main():
-    """COLLECT_MODE=fast (set by the VPS runner for the 5-min cycles between full ones): cheap price refresh only (crypto by
-    id, FX if due, KyberSwap, gas, stocks, market proxy). Default/full: everything (top-300 screen, categories, daily
-    closes, backfills) - GitHub Actions and the box fallback always run full."""
+    """COLLECT_MODE=fast (the VPS 5-min cycles): exchange prices, FX if due, KyberSwap, gas, stocks, market proxy.
+    Full (~15 min): the same prices, plus the top-300 screen when the CoinGecko day budget allows it, categories,
+    daily closes and a few backfills. GitHub Actions and the box fallback always run full."""
     fast = os.environ.get("COLLECT_MODE", "").lower() == "fast"
     c, con, ts, status = cfg(), db(), iso(), {}
-    rows = {}
-    for name, fn in (("coingecko", crypto_fast if fast else crypto), ("fx", fxrate), ("kyberswap", kyber), ("gas", gas), ("stocks", stocks), ("market_proxy", market_proxy)):
-        try:
-            r = fn(con, c, ts, status)
-            if name == "coingecko": rows = r
-        except Exception as e:
-            L.exception("%s failed", name); status[name] = f"FAILED: {e}"
+    bind_budget(con, c)
+    rows = {}; n = 0
+    try:
+        for name, fn in (("coingecko", crypto_fast if fast else crypto), ("fx", fxrate), ("kyberswap", kyber), ("gas", gas), ("stocks", stocks), ("market_proxy", market_proxy)):
+            try:
+                r = fn(con, c, ts, status)
+                if name == "coingecko": rows = r or {}
+            except Exception as e:
+                L.exception("%s failed", name); status[name] = f"FAILED: {e}"
+            con.commit()
+        if not fast:
+            try: daily(con, c, status)
+            except Exception as e: L.exception("daily closes failed"); status["daily"] = f"FAILED: {e}"
+            uni_only = {i for i, x in rows.items() if x.get("_rank")} - set(c["crypto"]["core_ids"]) - set((c["crypto"].get("watch_ids") or {}).keys())
+            n = backfill(con, c, {i: x for i, x in rows.items() if i not in uni_only}); con.commit()   # universe coins warm up from snapshots; listed coins use exchange OHLC
+        con.execute("INSERT OR REPLACE INTO state VALUES('collector_status',?)", (f"{ts} " + ("[fast] " if fast else "") + "; ".join(f"{k}: {v}" for k, v in status.items()),))
         con.commit()
-    n = 0
-    if not fast:
-        try: daily(con, c, status)
-        except Exception as e: L.exception("daily closes failed"); status["daily"] = f"FAILED: {e}"
-        uni_only = {i for i, x in rows.items() if x.get("_rank")} - set(c["crypto"]["core_ids"]) - set((c["crypto"].get("watch_ids") or {}).keys())
-        n = backfill(con, c, {i: x for i, x in rows.items() if i not in uni_only}); con.commit()   # v7.2: universe coins warm up from snapshots (no extra calls)
-    con.execute("INSERT OR REPLACE INTO state VALUES('collector_status',?)", (f"{ts} " + ("[fast] " if fast else "") + "; ".join(f"{k}: {v}" for k, v in status.items()),))
-    con.commit()
+    finally:
+        bind_budget(None, None)
     print(f"[collector {ts}{' fast' if fast else ''}]", status, f"backfilled={n}")
 
 if __name__ == "__main__":

@@ -66,6 +66,8 @@ CREATE TABLE IF NOT EXISTS daily_closes(asset TEXT, d TEXT, close REAL, PRIMARY 
 -- loan never shows as P&L; repaid (principal only) when the borrower's position closes; P&L stays with the borrower.
 CREATE TABLE IF NOT EXISTS loans(id INTEGER PRIMARY KEY, ts TEXT, account TEXT, lender TEXT, borrower TEXT, sub TEXT, asset TEXT,
   amount REAL, repaid REAL DEFAULT 0, status TEXT DEFAULT 'open', repaid_ts TEXT, reason TEXT);
+-- CoinGecko HTTP calls per UK day (the demo key is 10,000/month). pricesrc.allow reads this before a call.
+CREATE TABLE IF NOT EXISTS cg_calls(day TEXT PRIMARY KEY, n INTEGER NOT NULL);
 """
 
 def loans_open(con):

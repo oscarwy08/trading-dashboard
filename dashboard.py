@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from common import (loans_open, ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
                     transfer_adj, transfer_adj_acct, usd_gbp)
-import daypot, freshness, markets, stockrank, trader
+import daypot, freshness, markets, pricesrc, stockrank, trader
 
 def plain(a):   # v5: xStock name -> normal ticker (AMDx -> AMD); historical orders keep the xStock name, alias links them
     m = re.match(r"^([A-Z][A-Z0-9.]*)x$", a or ""); return m.group(1) if m else a
@@ -736,6 +736,7 @@ def build(con):
                               min_trade=rk["min_trade_size"], buy=st["buy_threshold"], focus_buy=st["focus_buy_threshold"],
                               sell=st["sell_threshold"])),
         collector=coll,
+        cg=pricesrc.stats(con, t_now, c),
         mon_check=dict(cg=sig(mon["MON"]), dex=sig(mon["MON.DEX"]), diff=round((mon["MON.DEX"] / mon["MON"] - 1) * 100, 2))
                   if len(mon) == 2 else None,
         equity=equity, positions=positions, trades=trades, assets=assets, prices=prices, fx_hist=fx_hourly,
