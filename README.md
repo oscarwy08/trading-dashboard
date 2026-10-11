@@ -181,8 +181,8 @@ count as momentum) and carries `trades.conf` (burst confidence 0-1 / momentum si
   everything flat by 22:00 UK (stocks 15 min before their close). **DAY daily loss stop raised from 5% to 15%** of the
   pot's start-of-day equity (`day.daily_loss_cap_pct`, user request 2026-10-10): at the stop all new DAY entries halt for
   the rest of the UK day; open positions keep their own stops. CORE and RISK unchanged. KILL halts everything.
-- **15-minute granularity**: cycles run every 15 min (GitHub Actions schedule `7,22,37,52 * * * *`, often started 5-20 min
-  late or skipped under load; box_cycle.sh while the box is awake). Breakouts, stops, targets and trailing stops are only
+- **Cycle granularity**: cycles run every 5 min on the VPS (full collector screen every ~15 min; before 2026-10-11 every 15 min
+  on GitHub Actions, often late). Breakouts, stops, targets and trailing stops are only
   checked at those snapshots, so fills can be well past a level (a -1.5% stop can fill at -3% after a fast drop) and short
   spikes between cycles are missed. ATR is built from ~4 snapshots per hour, so it under-states the true hourly range.
 - **Dashboard (Day tab)**: gauges for today's loss vs the 15% stop, the current burst confidence threshold (base marked)
@@ -265,6 +265,18 @@ US (NVDA), London main market + AIM (RPI.L, ITM.L), ASX (LYC.AX) - the same inst
   names without a live quote show the last daily close; Core pot shows theme + ★ per pick and queued stock orders.
 - test/sim.py v5 checks: no stock trade outside its session, queued rebalance sell filled at the US open, DAY stock flatten
   before the LSE close, DST gap, holidays, early close, 664.5p -> £6.645, stock costs. Last run: logs/sim_v5.txt.
+
+## Operations (since 2026-10-11): cycle runs on a Hetzner VPS
+The cycle runs 24/7 on a Hetzner VPS (Ubuntu 24.04, Nuremberg, user `bot`): systemd `trading-cycle.timer`
+(`OnCalendar *:02/5`, Persistent, 14 min timeout) -> `/home/bot/run_cycle.sh` (flock; hard-sync to origin/main;
+`scripts/ci_cycle.sh`; `scripts/ci_push.sh` as `vps-cycle`; log `/home/bot/logs/cycle.log`, logrotate daily x14).
+Cadence: every 5 min the fast cycle (collector `COLLECT_MODE=fast`: crypto re-priced with ONE CoinGecko call by id,
+stocks/KyberSwap/gas/market proxy, then sentiment ingest, trader incl. exits, maintenance, dashboard, push); every ~15 min
+the full collector (top-300 screen, meme/Monad categories, daily closes, backfills). FX stays hourly. Pushes only when
+state changed (at most one per 5-min cycle). Health: `/home/bot/health.sh`.
+The GitHub Actions workflow (.github/workflows/cycle.yml) is manual-only (workflow_dispatch) - no two scheduled writers.
+Box fallback: `/workspace/tools/vps_watchdog.sh` (box cron */10) runs `FORCE_BOX=1 box_cycle.sh` if the newest
+`cycle` commit on main is older than 20 min.
 
 ## Architecture (v4, 2026-10-10): runs 24/7 on GitHub Actions
 The box sleeps when the AI is not active, so the */15 cron missed hours. The engine now runs on GitHub Actions in the

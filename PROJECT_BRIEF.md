@@ -110,9 +110,10 @@ Each account divides its funds across three pots with distinct strategies:
 ## Operations
 
 ### Execution Cadence
-- **Primary**: 15-minute cycles via GitHub Actions (cron: 7,22,37,52 * * * *)
-- **Challenge**: GitHub's scheduler is unreliable (often 5-20 min late, sometimes skipped)
-- **Backup**: Owner's assistant computer runs cycles if none detected in 20 minutes
+- **Primary** (since 2026-10-11): Hetzner VPS, systemd timer every 5 min (`*:02/5`). Fast cycles re-price + trade + exits;
+  the full collector screen (top-300, categories, daily closes, backfills) runs every ~15 min to respect CoinGecko's free tier
+- **GitHub Actions**: workflow kept as manual-only fallback (no schedule - avoids two writers)
+- **Backup**: Owner's assistant computer runs a cycle if no `cycle` commit lands on main for 20 minutes
 
 ### Data Sources
 - **Crypto Prices**: CoinGecko (top 300 markets snapshot), KyberSwap (Monad tokens)
@@ -233,7 +234,7 @@ Each account divides its funds across three pots with distinct strategies:
 - **Version**: v7.8 (rules frozen 2026-10-10: honest EV and a 0.3% hurdle, liquidity-based crypto costs, no chase on a flat range / RSI 80 / a 7-day run, scorecard on the dashboard)
 - **Start Date**: 2026-10-10 (great reset after initial development)
 - **Balance**: £200 GBP (£100 crypto, £100 stocks)
-- **Cycle Frequency**: Every 15 minutes (when GitHub Actions cooperates)
+- **Cycle Frequency**: Every 5 minutes on the VPS (full market screen every ~15 min)
 - **Data Quality**: Building 15-min price history; some assets still "warming up"
 - **Mode**: PAPER TRADING (no real money)
 - **Next Milestone**: Several weeks of profitable paper trading before considering live deployment

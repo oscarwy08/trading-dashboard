@@ -1,11 +1,11 @@
-# Paper-trading cycle, every 15 minutes (GitHub may start scheduled runs late or skip some under load; the trader is
+# Paper-trading cycle - MANUAL ONLY (workflow_dispatch) since 2026-10-11: the cycle now runs on the Hetzner VPS
+# (systemd trading-cycle.timer, every 5 min; see README 'Operations'). Kept as a manual fallback.
+# Originally every 15 minutes (GitHub may start scheduled runs late or skip some under load; the trader is
 # delay-tolerant: e.g. the DAY pot is flattened by the first cycle at/after 22:00 UK, or by any cycle before 08:00).
 # State (data/trading.db) and the published site (docs/) live on main; GitHub Pages serves main:/docs.
 # KILL file in the repo root = halt all trading. RISK_RESUME = resume the RISK pot after a drawdown review.
 name: trading-cycle
 on:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 permissions:
   contents: write        # commit state + site with the built-in GITHUB_TOKEN
