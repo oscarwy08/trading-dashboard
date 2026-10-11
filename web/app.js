@@ -1,11 +1,11 @@
 /* Paper Trader dashboard - static single-page app with hash tabs. Loads data.json (written by dashboard.py) and
-   re-fetches it every 60 s. Tabs: #overview #portfolio #core #day #risk #markets #sentiment #orders; #asset=XRP opens an asset. */
+   re-fetches it every 60 s. Tabs: #overview #portfolio #core #day #risk #markets #sentiment #orders #variants; #asset=XRP opens an asset. */
 (() => {
 'use strict';
 const LC = window.LightweightCharts;
 const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const TZ = 'Europe/London', REFRESH_MS = 60000;
-const TABS = ['overview', 'portfolio', 'core', 'day', 'risk', 'markets', 'sentiment', 'orders'];
+const TABS = ['overview', 'portfolio', 'core', 'day', 'risk', 'markets', 'sentiment', 'orders', 'variants'];
 const C = {green: '#00ba7c', red: '#f4212e', blue: '#1d9bf0', mut: '#71767b', txt: '#e7e9ea', grid: '#16181c', line: '#2f3336', grey: '#536471'};
 let D = null, lastGen = null, loadErr = null;
 const S = {tab: 'overview', aSort: {k: 'a', d: 1}, tSort: {k: 't', d: -1}, pSort: {k: 'value', d: -1}, rSort: {k: 'score', d: -1},
@@ -976,9 +976,47 @@ function renderSentTimeline(a) {
   ch.timeScale().fitContent();
 }
 
+/* ---------- variant books ---------- */
+const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff'};
+function renderVariants() {
+  const V = (D && D.variants) || {}, books = V.books || [];
+  const el = $('#var-explain');
+  if (el) el.textContent = V.since
+    ? `Same snapshot from ${fTs(Math.floor(Date.parse(V.since) / 1000))}, starting at ${fM(V.start_equity)}. P&L, trades, win rate and drawdown are the change since then. The main book keeps the frozen rules.`
+    : 'The snapshot is taken the first cycle after this is deployed. Until then there is nothing to compare.';
+  const rows = books.filter(b => !b.error);
+  table($('#var-table'), [
+    {k: 'label', l: 'Book', f: r => `<b style="color:${VAR_COL[r.name] || '#e7e9ea'}">${esc(r.label)}</b><div class="muted small">${esc(r.blurb || '')}</div>`},
+    {k: 'equity', l: 'Value', num: 1, f: r => fM(r.equity)},
+    {k: 'pnl', l: 'P&L after fees', num: 1, f: r => `<span class="${cls(r.pnl)}">${fM(r.pnl, true)}</span>`},
+    {k: 'trades', l: 'Trades', num: 1, f: r => String(r.trades ?? '')},
+    {k: 'win_rate', l: 'Win rate', num: 1, f: r => r.win_rate == null ? 'n/a' : r.win_rate.toFixed(0) + '%'},
+    {k: 'max_dd', l: 'Max drawdown', num: 1, f: r => r.max_dd == null ? '' : r.max_dd.toFixed(1) + '%'},
+  ], rows, null, renderVariants, {empty: V.enabled ? 'No variant has run yet' : 'Variants are switched off'});
+  const host = $('#var-score');
+  if (host) host.innerHTML = rows.map(b => {
+    const sc = b.scorecard || [];
+    if (!sc.length) return '';
+    const body = sc.map(s => `<tr><td>${esc(s.setup)}</td><td class="num">${s.closed}</td><td class="num ${cls(s.net)}">${fM(s.net, true)}</td><td class="num">${s.win_rate == null ? 'n/a' : s.win_rate.toFixed(0) + '%'}</td></tr>`).join('');
+    return `<h3>${esc(b.label)}</h3><table class="tbl"><thead><tr><th>Setup</th><th class="num">Closed</th><th class="num">P&L</th><th class="num">Win rate</th></tr></thead><tbody>${body}</tbody></table>`;
+  }).join('');
+  const chartEl = $('#var-chart');
+  if (!chartEl || !LC || S.tab !== 'variants') return;
+  if (!charts.var) charts.var = mkChart(chartEl, {rightPriceScale: {borderVisible: false}});
+  (charts.varLines || []).forEach(s => charts.var.removeSeries(s));
+  charts.varLines = rows.filter(b => (b.curve || []).length).map(b => {
+    const s = charts.var.addLineSeries({color: VAR_COL[b.name] || '#aaa', lineWidth: 2, title: b.label, priceFormat: {type: 'custom', formatter: v => '£' + v.toFixed(2)}});
+    s.setData(b.curve.map(p => ({time: p.t, value: p.eq})).filter(p => isNum(p.value)));
+    return s;
+  });
+  const times = rows.flatMap(b => (b.curve || []).map(p => p.t));
+  emptyMsg('var-empty', times.length ? '' : 'No points yet');
+  if (times.length) charts.var.timeScale().fitContent();
+}
+
 /* ---------- tabs / routing ---------- */
 const RENDER = {overview: () => { renderOverview(); renderEquity(); }, portfolio: renderPortfolio, core: renderCore, day: renderDay, risk: renderRiskPot,
-  markets: renderMarkets, sentiment: renderSentiment, orders: renderOrders};
+  markets: renderMarkets, sentiment: renderSentiment, orders: renderOrders, variants: renderVariants};
 const safe = (name, fn) => { try { fn(); } catch (e) { console.error('render ' + name + ' failed:', e); } };
 function setAcct(a, render = true) {
   S.acct = a || ''; try { localStorage.setItem('acct', S.acct); } catch (e) {}

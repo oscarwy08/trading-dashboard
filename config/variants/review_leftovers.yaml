@@ -1,0 +1,8 @@
+# Leftover review ideas: a wider burst stop that stands down when EV is already bad, a half-size
+# Core 18:00 fallback on an extended coin, the coin's own multi-day trend for new entries, and no
+# Day plus Core buy of the same coin on the same afternoon.
+variant_rules:
+  burst_stop_widen: true
+  core_fallback_half: true
+  entry_own_trend: true
+  no_day_core_same_afternoon: true

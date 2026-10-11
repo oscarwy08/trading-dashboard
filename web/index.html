@@ -31,6 +31,7 @@
     <a href="#markets" data-tab="markets" role="tab">Markets</a>
     <a href="#sentiment" data-tab="sentiment" role="tab">Sentiment</a>
     <a href="#orders" data-tab="orders" role="tab">Orders</a>
+    <a href="#variants" data-tab="variants" role="tab">Variants</a>
   </nav>
   <div class="acct-bar hidden" id="acct-bar"><div class="acct-in"><span class="muted small">Account</span>
     <div class="seg" id="acct-switch" role="group" aria-label="Account"><button data-a="" class="on">All</button><button data-a="crypto">Crypto <span class="muted">· Monad wallet</span></button><button data-a="stocks">Stocks <span class="muted">· Trading 212</span></button></div>
@@ -151,6 +152,16 @@
     <div class="card"><div class="card-h"><h2>Summaries &amp; sources</h2>
       <select id="sent-asset" aria-label="Asset"><option value="">All assets</option></select></div>
       <div id="sent-list" class="sent-list"></div></div>
+  </section>
+
+  <!-- ===================== VARIANTS ===================== -->
+  <section class="tab" id="tab-variants" data-tab="variants">
+    <div class="card">
+      <div class="card-h"><div><h2>Variant books</h2><p class="explain" id="var-explain">Paper books that start from the same snapshot as the main book and then follow a different rule. The main book is the frozen one. A variant cannot change it.</p></div></div>
+      <div class="chart-wrap"><div id="var-chart" class="chart"></div><div id="var-empty" class="empty hidden"></div></div>
+      <div class="tw"><table id="var-table" class="tbl"></table></div>
+      <div id="var-score" class="tw"></div>
+    </div>
   </section>
 
   <!-- ===================== ORDERS ===================== -->

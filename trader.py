@@ -27,7 +27,7 @@ collector, or gas.fallback_gbp) paid from cash on top and recorded in trades.gas
 import json, math
 from datetime import datetime, timedelta, timezone, time as dtime
 from common import ACCOUNTS, KILL, LON, RISK_RESUME, SLEEVES, acct_of, acct_start, cfg, db, funding, iso, loans_open, log, move_cash, now, sync_pot_cash, usd_gbp
-import daypot, freshness, markets, quotes, riskpot, stockrank
+import daypot, freshness, markets, quotes, riskpot, stockrank, variants
 
 L = log("trader")
 ACCT = {"crypto": "crypto-account", "stocks": "stocks-account"}
@@ -207,6 +207,7 @@ def init_core(con, c):
 
 def main():
     c, con = cfg(), db()
+    R = variants.rules_of(c)   # all false on the main book; a variant overlay turns flags on
     t = now(); ts = iso(t); lt = t.astimezone(LON); day = lt.date().isoformat(); mins = lt.hour * 60 + lt.minute
     st, rk, K, D = c["strategy"], c["risk"], c["core"], c["day"]
     f, mint = rk["fee_slippage_pct"] / 100, float(rk["min_trade_size"])
@@ -274,6 +275,16 @@ def main():
         return cost_pct(c, a, k, "SELL", q, notion)
     def klass_of(a):
         return (px.get(a) or {}).get("klass") or next((p["klass"] for (sl, x), p in pos.items() if x == a), "crypto")
+    def pos_ev(meta, price, asset):
+        """(EV now, entry EV) from the snapshot stored at the buy. None when that snapshot has no probability."""
+        snap = (meta or {}).get("snap") or {}
+        p_hit, tgt, loss, entry = snap.get("p"), snap.get("target"), snap.get("loss"), snap.get("entry")
+        if p_hit is None or tgt is None or loss is None or not entry or not price:
+            return None, snap.get("ev")
+        cost = cost_pct(c, asset, klass_of(asset), "SELL", px.get(asset)) * 100
+        evn = daypot.ev_now(p_hit, price, float(entry) * (1 + float(tgt) / 100.0),
+                            float(entry) * (1 - float(loss) / 100.0), cost)
+        return evn, snap.get("ev")
     def mopen(a):          # crypto trades 24/7; stocks only during their exchange's regular session (markets.py)
         return klass_of(a) != "stock" or markets.is_open(a, t)
     def mclose_in(a):      # minutes to the close of the current session (None = closed); crypto: large
@@ -386,15 +397,30 @@ def main():
         held_d = (t - datetime.fromisoformat(p["opened"])).total_seconds() / 86400
         se = sentiment(con, a, st["sentiment_max_age_h"])
         trail_on = pk_gain >= RP["trail_after_pct"] / 100
-        reason = (f"risk stop-loss {chg*100:.1f}% <= -{RP['stop_loss_pct']}%" if chg <= -RP["stop_loss_pct"] / 100 else
-                  f"trailing take-profit: {(q['price']/pk-1)*100:.1f}% from peak (peak +{pk_gain*100:.1f}%), now {chg*100:+.1f}%"
-                  if trail_on and q["price"] <= pk * (1 - RP["trail_pct"] / 100) else
-                  f"max hold {RP['max_hold_days']} days reached ({held_d:.1f} d), {chg*100:+.1f}%" if held_d >= RP["max_hold_days"] else
-                  f"sentiment exit {se['score']:+.2f} (conf {se['confidence']:.2f})"
-                  if se and se["score"] <= RP["sentiment_exit"] and se["confidence"] >= 0.6 else None)
+        stop_pct = float(RP["stop_loss_pct"])
+        ev_reason = None
+        if R["ev_exit"]:
+            evn, eev = pos_ev(rmeta.get(a) or {}, q["price"], a)
+            if variants.ev_action(evn, eev, R) == "exit":
+                ev_reason = variants.ev_exit_reason(evn, eev, R)
+            else:
+                stop_pct = variants.effective_stop_pct(stop_pct, evn, R, "risk")
+        if ev_reason:
+            reason = ev_reason
+        elif chg <= -stop_pct / 100:
+            reason = (f"risk stop-loss {chg*100:.1f}% <= -{RP['stop_loss_pct']}%" if abs(stop_pct - float(RP["stop_loss_pct"])) < 1e-9
+                      else f"risk stop-loss {chg*100:.1f}% <= -{stop_pct:.1f}% (tightened from -{RP['stop_loss_pct']}%)")
+        elif trail_on and q["price"] <= pk * (1 - RP["trail_pct"] / 100):
+            reason = f"trailing take-profit: {(q['price']/pk-1)*100:.1f}% from peak (peak +{pk_gain*100:.1f}%), now {chg*100:+.1f}%"
+        elif held_d >= RP["max_hold_days"]:
+            reason = f"max hold {RP['max_hold_days']} days reached ({held_d:.1f} d), {chg*100:+.1f}%"
+        elif se and se["score"] <= RP["sentiment_exit"] and se["confidence"] >= 0.6:
+            reason = f"sentiment exit {se['score']:+.2f} (conf {se['confidence']:.2f})"
+        else:
+            reason = None
         if reason:
             if "stop-loss" in reason:
-                reason = tag_gap(a, p["entry"] * (1 - RP["stop_loss_pct"] / 100) / (1 - f), q["price"], reason)
+                reason = tag_gap(a, p["entry"] * (1 - stop_pct / 100) / (1 - f), q["price"], reason)
             elif "trailing" in reason:
                 reason = tag_gap(a, pk * (1 - RP["trail_pct"] / 100), q["price"], reason)
             meta = rmeta.get(a) or {}
@@ -462,8 +488,17 @@ def main():
         trail_on = pkg >= float(C["trail_after_pct"]) / 100; lvl = pkg * (1 - gb)
         held_h = (t - datetime.fromisoformat(p["opened"])).total_seconds() / 3600
         reason = None
-        if chg <= -md["sl"] / 100:
-            reason = f"stop-loss {chg*100:.1f}% <= -{md['sl']:.1f}% (ATR-scaled)"
+        stop_pct = md["sl"]
+        if R["ev_exit"] or (md.get("sub") == "burst" and R["burst_stop_widen"]):
+            evn, eev = pos_ev(md, q["price"], a)
+            if variants.ev_action(evn, eev, R) == "exit":
+                reason = variants.ev_exit_reason(evn, eev, R)
+            else:
+                stop_pct = variants.effective_stop_pct(md["sl"], evn, R, md.get("sub") or "day")
+        if reason is None and chg <= -stop_pct / 100:
+            reason = f"stop-loss {chg*100:.1f}% <= -{stop_pct:.1f}% (ATR-scaled)"
+            if abs(stop_pct - md["sl"]) > 1e-9:
+                reason += f" [stored -{md['sl']:.1f}%]"
         elif trail_on and chg <= lvl:
             reason = f"trailing stop {chg*100:+.1f}% (peak +{pkg*100:.1f}%, gives back {gb*100:.0f}% of the gain)"
         elif chg >= md["tp"] / 100 and not md.get("runner"):
@@ -478,7 +513,7 @@ def main():
             reason = f"signal {comb} <= {st['sell_threshold']} ({info})"
         if reason:
             if reason.startswith("stop-loss"):
-                reason = tag_gap(a, p["entry"] * (1 - md["sl"] / 100) / (1 - f_), q["price"], reason)
+                reason = tag_gap(a, p["entry"] * (1 - stop_pct / 100) / (1 - f_), q["price"], reason)
             elif reason.startswith("trailing"):
                 # trail sells when the gain has given back `gb` of the peak gain, not `gb` of the price
                 lvl_px = p["entry"] * (1 + pkg * (1 - gb)) / (1 - f_)
@@ -600,6 +635,12 @@ def main():
         out.append(f"[core] REBALANCE{' (forced: ' + str(forced) + ')' if forced else ''} (picks {', '.join(new_picks)}): " + "; ".join(log_rb))
         picks = new_picks; crypto_picks = new_cp
 
+    def entry_pts(a):
+        """Prices for a variant entry gate. The own-trend check needs a tick at or before N days before the last one."""
+        if R["entry_own_trend"]:
+            return history(con, a, variants.trend_lookback_h(R))
+        return hist.get(a) or []
+
     # staggered entry: tranches for assets still being built
     tg = core_targets(c, picks, crypto_picks); ntr = int(K["tranches"])
     for a, (ac, w_t) in tg.items():
@@ -631,6 +672,20 @@ def main():
             if pl["n"] >= ntr - 1 or gap - size < mint: size = gap
             size = min(size, cash[("core", ac)] - gas_of("stock" if ac == "stocks" else "crypto"))
             if size < mint: why = f"core {ACCT[ac]} cash £{cash[('core', ac)]:.2f} < min trade £{mint:.0f}"
+            if not why and R["core_fallback_half"] and trig.startswith("daily tranche after"):
+                pts7 = history(con, a, 24 * 8)
+                r7 = variants.ret_over_days(pts7, 7)
+                rs7 = rsi(list({ts.strftime("%Y%m%d%H"): px_ for ts, px_ in pts7}.values())) if len(pts7) > 14 else rsi_at.get(a)
+                frac = variants.fallback_fraction(r7, rs7, R)
+                if frac < 1:
+                    note = variants.extended_note(r7, rs7, R)
+                    size = size * frac
+                    trig = f"{trig}; half size ({note})"
+                    if size < mint - 1e-9:
+                        why = f"extended day, half tranche £{size:.2f} is under the £{mint:.0f} minimum ({note})"
+            if not why and (R["entry_own_trend"] or R["no_day_core_same_afternoon"]):
+                blk = variants.entry_block(con, ("day",), a, entry_pts(a), lt, R)
+                if blk: why = blk
         if why: sig("core", a, None, None, None, "HOLD", f"tranche {pl['n']+1}/{ntr} {why}; £{cur:.2f}/£{T:.2f}"); continue
         pl["n"] += 1; pl["day_n"] += 1
         fin = " final" if size >= gap - 1e-9 else ""
@@ -723,11 +778,14 @@ def main():
     mcx = float(D.get("min_move_cost_x", 4)); scl = int(D.get("stock_entry_stop_before_close_min", 30))
     def gate(a):             # shared entry gates (None = ok)
         q = px[a]
-        return ("day-pot daily loss cap hit" if halted else
-                f"outside entry window {D['entry_start_uk']}-{D['entry_cutoff_uk']} UK" if not window else
-                closed_msg(a) if not mopen(a) else
-                f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= scl else
-                "no current price" if not q["fresh"] else "stale FX rate" if fx_stale else None)
+        g = ("day-pot daily loss cap hit" if halted else
+             f"outside entry window {D['entry_start_uk']}-{D['entry_cutoff_uk']} UK" if not window else
+             closed_msg(a) if not mopen(a) else
+             f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= scl else
+             "no current price" if not q["fresh"] else "stale FX rate" if fx_stale else None)
+        if g or not (R["entry_own_trend"] or R["no_day_core_same_afternoon"]):
+            return g
+        return variants.entry_block(con, ("core",), a, entry_pts(a), lt, R) or g
     warm_h = float(c["crypto"].get("warmup_h", st["min_history_h"]))
     def warming(a):          # v7.2: wide-universe coins build history from the 15-min snapshots -> no DAY entries until warm
         if klass_of(a) != "crypto": return None    # stocks: intraday history restarts every session (not a universe coin)
@@ -899,6 +957,8 @@ def main():
                   f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= 15 else
                   "no current price" if not q["fresh"] else "stale FX rate" if fx_stale else
                   f"cooldown after exit {last_exit[:16]}" if last_exit and datetime.fromisoformat(last_exit) > t - timedelta(hours=RP["cooldown_h"]) else None)
+        if shared is None and (R["entry_own_trend"] or R["no_day_core_same_afternoon"]):
+            shared = variants.entry_block(con, ("core",), a, entry_pts(a), lt, R)
         def note(hard):
             if hard and fr < 0.999 and "freshness" not in hard:
                 age = q.get("age_min"); hard += f"; data freshness {fr:.0%}" + (f" (price {age:.0f} min)" if age is not None else "")

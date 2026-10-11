@@ -22,6 +22,8 @@ echo "=== cycle $(date '+%F %T %Z') ==="
 ${PY:-python} collector.py        || echo "::warning::collector failed"
 ${PY:-python} ingest_sentiment.py || echo "::warning::sentiment ingest failed"
 ${PY:-python} trader.py           || { echo "::error::trader failed"; fail=1; }
+# Variant books use the prices this cycle already stored. A failure here must not fail the main book.
+${PY:-python} variants.py         || echo "::warning::variants failed"
 ${PY:-python} maintenance.py      || echo "::warning::maintenance failed"
 ${PY:-python} dashboard.py        || { echo "::error::dashboard failed"; fail=1; }
 ${PY:-python} test/check_data.py docs/data.json || echo "::warning::dashboard figures do not reconcile (test/check_data.py)"
