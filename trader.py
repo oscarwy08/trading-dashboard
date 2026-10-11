@@ -28,6 +28,7 @@ import json, math
 from datetime import datetime, timedelta, timezone, time as dtime
 from common import ACCOUNTS, KILL, LON, RISK_RESUME, SLEEVES, acct_of, acct_start, cfg, db, funding, iso, loans_open, log, move_cash, now, sync_pot_cash, usd_gbp
 import daypot, freshness, markets, quotes, riskpot, stockrank, variants
+from exits import book_lock, day_flat_reason, day_reason, gap_tag, risk_reason, stock_flatten_reason
 
 L = log("trader")
 ACCT = {"crypto": "crypto-account", "stocks": "stocks-account"}
@@ -205,7 +206,62 @@ def init_core(con, c):
     sset(con, "core_last_rebalance", iso())
     return picks
 
+def score_asset(con, asset, st, t):
+    """(momentum, sentiment, combined, info, rsi, history). The cycle and the exit watcher share this blend."""
+    pts = history(con, asset)
+    m, info, rs_ = momentum(pts, st["min_history_h"])
+    if m is None:
+        return None, None, None, info, None, pts
+    s = sentiment(con, asset, st["sentiment_max_age_h"])
+    fac = 1.0
+    if s:     # weight decays to 0 by sentiment_max_age_h; the score in the blend stays raw. Hard gates use the raw score.
+        fac = freshness.sentiment_factor((t - datetime.fromisoformat(s["ts"])).total_seconds() / 3600, st["sentiment_max_age_h"])
+    w = st["sentiment_weight"] * s["confidence"] * fac if s else 0
+    comb = round((1 - w) * m + w * (s["score"] if s else 0), 3)
+    info = info + (f", sentiment {s['score']:+.2f} (conf {s['confidence']:.2f}{'' if fac > 0.999 else f', weight x{fac:.2f}'})" if s else ", no fresh sentiment")
+    return m, (s["score"] if s else None), comb, info, rs_, pts
+
+
+def apply_sell(con, c, ts, rate, gas, sleeve, asset, klass, qty, price, reason, q, sub=None, conf=None, snap=None):
+    """Write the sell the 5-minute cycle writes. Returns None if the row is already gone (the other writer sold it)."""
+    row = con.execute("SELECT qty, cost, klass FROM positions WHERE sleeve=? AND asset=?", (sleeve, asset)).fetchone()
+    if not row or not row["qty"] or float(row["qty"]) <= 0:
+        return None
+    qty_held, cost_basis = float(row["qty"]), float(row["cost"])
+    qty = min(float(qty), qty_held)
+    klass = row["klass"] or klass
+    fp = cost_pct(c, asset, klass, "SELL", q, qty * price)
+    gas_paid = gas if klass == "crypto" else 0.0
+    proceeds = qty * price * (1 - fp) - gas_paid
+    part = cost_basis * qty / qty_held
+    pnl = proceeds - part
+    fill = price * (1 - fp)
+    blob = json.dumps(snap, separators=(",", ":")) if snap else None
+    con.execute("INSERT INTO trades(ts,sleeve,asset,klass,side,qty,price,fill,value,cost,pnl,reason,price_usd,usd_gbp,gas,sub,conf,snap) "
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (ts, sleeve, asset, klass, "SELL", qty, price, fill, qty * fill, qty * price * fp, pnl,
+                 f"{reason}; P&L £{pnl:+.2f}", price / rate, rate, gas_paid, sub, conf, blob))
+    ac = acct_of(klass)
+    cur = con.execute("SELECT amount FROM acct_cash WHERE sleeve=? AND account=?", (sleeve, ac)).fetchone()
+    con.execute("INSERT OR REPLACE INTO acct_cash VALUES(?,?,?)", (sleeve, ac, (float(cur[0]) if cur else 0.0) + proceeds))
+    sync_pot_cash(con)
+    closed = qty >= qty_held * (1 - 1e-9)
+    if closed:
+        con.execute("DELETE FROM positions WHERE sleeve=? AND asset=?", (sleeve, asset))
+        qty_left, cost_left = 0.0, 0.0
+    else:
+        qty_left, cost_left = qty_held - qty, cost_basis - part
+        con.execute("UPDATE positions SET qty=?, cost=? WHERE sleeve=? AND asset=?", (qty_left, cost_left, sleeve, asset))
+    return dict(pnl=pnl, proceeds=proceeds, closed=closed, qty_left=qty_left, cost_left=cost_left)
+
+
 def main():
+    """One cycle. Holds the book lock the exit watcher also uses, so a position is sold once."""
+    with book_lock():
+        _cycle()
+
+
+def _cycle():
     c, con = cfg(), db()
     R = variants.rules_of(c)   # all false on the main book; a variant overlay turns flags on
     t = now(); ts = iso(t); lt = t.astimezone(LON); day = lt.date().isoformat(); mins = lt.hour * 60 + lt.minute
@@ -324,16 +380,16 @@ def main():
         cash[ck] -= spent
 
     def sell(sleeve, a, qty, reason, price=None, sub=None, conf=None, snap=None):
-        p = pos[(sleeve, a)]; price = price or px[a]["price"]; qty = min(qty, p["qty"])
-        proceeds = qty * price * (1 - cost_pct(c, a, p["klass"], "SELL", px.get(a), qty * price)) - gas_of(p["klass"]); part = p["cost"] * qty / p["qty"]; pnl = proceeds - part
-        trade(sleeve, a, p["klass"], "SELL", qty, price, f"{reason}; P&L £{pnl:+.2f}", pnl, sub=sub, conf=conf, snap=snap, notional=qty * price)
-        cash[(sleeve, acct_of(p["klass"]))] += proceeds
-        if qty >= p["qty"] * (1 - 1e-9):
-            con.execute("DELETE FROM positions WHERE sleeve=? AND asset=?", (sleeve, a)); del pos[(sleeve, a)]
-        else:
-            p["qty"] -= qty; p["cost"] -= part
-            con.execute("UPDATE positions SET qty=?, cost=? WHERE sleeve=? AND asset=?", (p["qty"], p["cost"], sleeve, a))
-        return pnl
+        p = pos.get((sleeve, a))
+        if not p: return None
+        price = price or px[a]["price"]
+        done = apply_sell(con, c, ts, rate, gas, sleeve, a, p["klass"], min(qty, p["qty"]), price, reason, px.get(a), sub=sub, conf=conf, snap=snap)
+        if done is None:
+            pos.pop((sleeve, a), None); return None
+        cash[(sleeve, acct_of(p["klass"]))] += done["proceeds"]
+        if done["closed"]: pos.pop((sleeve, a), None)
+        else: p["qty"], p["cost"] = done["qty_left"], done["cost_left"]
+        return done["pnl"]
 
     def val(p): q = px.get(p["asset"]); return p["qty"] * q["price"] if q else p["cost"]
     loans = loans_open(con)                               # v7.3 inter-pot loans inside one account (outstanding)
@@ -345,30 +401,15 @@ def main():
     # ---- score every asset (DAY signal; sentiment also used by CORE tranche timing) ----
     scores, hist, rsi_at = {}, {}, {}
     for a, p in px.items():
-        hist[a] = history(con, a)
-        m, info, rs_ = momentum(hist[a], st["min_history_h"])
-        rsi_at[a] = rs_
-        s = sentiment(con, a, st["sentiment_max_age_h"])
-        if m is None: scores[a] = (None, None, None, info); rsi_at[a] = None; continue
-        fac = 1.0
-        if s:     # weight decays to 0 by sentiment_max_age_h; the score in the blend stays raw. Hard gates below use the raw score.
-            fac = freshness.sentiment_factor((t - datetime.fromisoformat(s["ts"])).total_seconds() / 3600, st["sentiment_max_age_h"])
-        w = st["sentiment_weight"] * s["confidence"] * fac if s else 0
-        comb = round((1 - w) * m + w * (s["score"] if s else 0), 3)
-        scores[a] = (m, s["score"] if s else None, comb,
-                     info + (f", sentiment {s['score']:+.2f} (conf {s['confidence']:.2f}{'' if fac > 0.999 else f', weight x{fac:.2f}'})" if s else ", no fresh sentiment"))
+        m, s, comb, info, rs_, pts = score_asset(con, a, st, t)
+        hist[a] = pts; rsi_at[a] = rs_; scores[a] = (m, s, comb, info)
 
     def exit_ok(q):
         """Offline/sim: same 45-minute cutoff as before. Live: any stored price can exit (a missed cycle fills at the real price)."""
         if not q: return False
         return True if quotes.enabled() else bool(q.get("fresh"))
     def tag_gap(a, level, cur, reason):
-        pts = hist.get(a) or []
-        if len(pts) < 2 or not level or not reason: return reason
-        t0, p0 = pts[-2]; mins = (pts[-1][0] - t0).total_seconds() / 60.0
-        if freshness.crossed_gap(p0, cur, level, mins, abs(cur - level) / level * 100) and "[gap fill]" not in reason:
-            return reason + " [gap fill]"
-        return reason
+        return gap_tag(hist.get(a) or [], level, cur, reason)
     def sent_in(se):
         """Sentiment fed to a confidence score: decayed toward 0 (neutral) as it ages. None stays None. Hard gates use se['score']."""
         if not se: return None
@@ -392,11 +433,7 @@ def main():
         if not mopen(a): sig("risk", a, None, None, None, "HOLD", f"{closed_msg(a)} - exits checked when it opens"); continue
         if not exit_ok(q): sig("risk", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
         f = fsell(a)
-        pk = peaks[a] = max(float(peaks.get(a) or 0), q["price"])
-        chg = q["price"] * (1 - f) / p["entry"] - 1; pk_gain = pk * (1 - f) / p["entry"] - 1
-        held_d = (t - datetime.fromisoformat(p["opened"])).total_seconds() / 86400
         se = sentiment(con, a, st["sentiment_max_age_h"])
-        trail_on = pk_gain >= RP["trail_after_pct"] / 100
         stop_pct = float(RP["stop_loss_pct"])
         ev_reason = None
         if R["ev_exit"]:
@@ -405,19 +442,9 @@ def main():
                 ev_reason = variants.ev_exit_reason(evn, eev, R)
             else:
                 stop_pct = variants.effective_stop_pct(stop_pct, evn, R, "risk")
-        if ev_reason:
-            reason = ev_reason
-        elif chg <= -stop_pct / 100:
-            reason = (f"risk stop-loss {chg*100:.1f}% <= -{RP['stop_loss_pct']}%" if abs(stop_pct - float(RP["stop_loss_pct"])) < 1e-9
-                      else f"risk stop-loss {chg*100:.1f}% <= -{stop_pct:.1f}% (tightened from -{RP['stop_loss_pct']}%)")
-        elif trail_on and q["price"] <= pk * (1 - RP["trail_pct"] / 100):
-            reason = f"trailing take-profit: {(q['price']/pk-1)*100:.1f}% from peak (peak +{pk_gain*100:.1f}%), now {chg*100:+.1f}%"
-        elif held_d >= RP["max_hold_days"]:
-            reason = f"max hold {RP['max_hold_days']} days reached ({held_d:.1f} d), {chg*100:+.1f}%"
-        elif se and se["score"] <= RP["sentiment_exit"] and se["confidence"] >= 0.6:
-            reason = f"sentiment exit {se['score']:+.2f} (conf {se['confidence']:.2f})"
-        else:
-            reason = None
+        d = risk_reason(p["entry"], q["price"], peaks.get(a), p["opened"], RP, se, t, f, stop_pct)
+        pk = peaks[a] = d["peak"]; chg, pk_gain, trail_on = d["chg"], d["pk_gain"], d["trail_on"]
+        reason = ev_reason or d["reason"]
         if reason:
             if "stop-loss" in reason:
                 reason = tag_gap(a, p["entry"] * (1 - stop_pct / 100) / (1 - f), q["price"], reason)
@@ -425,10 +452,10 @@ def main():
                 reason = tag_gap(a, pk * (1 - RP["trail_pct"] / 100), q["price"], reason)
             meta = rmeta.get(a) or {}
             pnl = sell("risk", a, p["qty"], reason, sub=meta.get("setup") or "breakout", conf=meta.get("conf"), snap=meta.get("snap")); peaks.pop(a, None)
+            if pnl is None: continue
             sset(con, f"risk_exit:{a}", ts); sig("risk", a, None, None, None, "SELL", f"{reason}; P&L £{pnl:+.2f}")
         else:
-            sig("risk", a, None, None, None, "HOLD", f"open {chg*100:+.1f}%, peak +{pk_gain*100:.1f}%, {held_d:.1f} d"
-                + (f", trailing stop £{pk*(1-RP['trail_pct']/100):.5g}" if trail_on else ""))
+            sig("risk", a, None, None, None, "HOLD", d["hold"])
 
     # ================= DAY exits (v7: momentum + burst sub-strategies) =================
     # flatten window (both subs) / ATR-scaled stop / trailing stop / ATR-scaled target (momentum 'runner') / burst max hold /
@@ -452,6 +479,8 @@ def main():
                 pkg_ = pk_ * (1 - ff) / p["entry"] - 1
                 why += "; " + variants.ran_note(chg_, pkg_, md_.get("tp") or 0, float(R.get("burst_runner_giveback_pct", 20)))
         pnl = sell("day", a, p["qty"], f"[{tag}] {why}", sub=sub, conf=md_.get("conf", md_.get("score")), snap=md_.get("snap"))
+        if pnl is None:
+            dmeta.pop(a, None); return
         dmeta.pop(a, None); sset(con, f"day_exit:{a}", ts)
         sig("day", a, m, s, comb, "SELL", f"[{tag}] {why}; P&L £{pnl:+.2f}")
     def burst_keep(a, q_):
@@ -487,8 +516,7 @@ def main():
                 else:
                     day_late.append(a); sig("day", a, m, s, comb, "HOLD", "flatten due but no price at all"); continue
             cl = mclose_in(a)
-            day_exit(a, p, f"flatten {int(cl)} min before the {markets.exchange(a)} close (flat overnight)" if cl is not None else
-                     "flatten: market already closed - at the last (closing) price", m, s, comb); continue
+            day_exit(a, p, stock_flatten_reason(cl, markets.exchange(a)), m, s, comb); continue
         if flat_now or opened_day != day:
             if not q:
                 last = con.execute("SELECT price FROM prices WHERE asset=? AND source!='backfill' AND ts<=? ORDER BY ts DESC LIMIT 1",
@@ -499,9 +527,8 @@ def main():
                 else:
                     day_late.append(a)
                     sig("day", a, m, s, comb, "HOLD", f"flatten {D['flatten_uk']} UK due but no price at all"); continue
-            why = (f"flatten {D['flatten_uk']} UK (flat overnight)" if mins >= flat else
-                   f"flatten: overnight/before {D['entry_start_uk']} UK" if mins < e0 else "flatten: carried from previous UK day")
-            day_exit(a, p, why + ("" if q.get("fresh") else " [last price, after 22:00]"), m, s, comb); continue
+            why = day_flat_reason(mins, flat, e0, D["flatten_uk"], D["entry_start_uk"], q.get("fresh"))
+            day_exit(a, p, why, m, s, comb); continue
         if not exit_ok(q): sig("day", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
         md = dmeta.get(a)
         if not md:     # pre-v7 position: becomes a momentum trade with ATR levels computed now
@@ -509,48 +536,30 @@ def main():
             md = dmeta[a] = dict(sub="momentum", tp=round(tp_, 3), sl=round(sl_, 3), atr=round(at_, 3) if at_ else None,
                                  peak=max(q["price"], p["entry"]), opened=p["opened"], legacy=True)
         C = SUBC[md["sub"]]; f_ = fsell(a)
-        md["peak"] = max(float(md.get("peak") or 0), q["price"])
-        chg = q["price"] * (1 - f_) / p["entry"] - 1; pkg = md["peak"] * (1 - f_) / p["entry"] - 1
-        if md.get("runner") and md.get("sub") == "burst" and R["burst_runner"]:
-            gb = float(R.get("burst_runner_giveback_pct", 20)) / 100
-        elif md.get("runner"):
-            gb = float(C.get("runner_giveback_pct", 20)) / 100
-        else:
-            gb = float(C["trail_giveback_pct"]) / 100
-        trail_on = pkg >= float(C["trail_after_pct"]) / 100; lvl = pkg * (1 - gb)
-        held_h = (t - datetime.fromisoformat(p["opened"])).total_seconds() / 3600
-        reason = None
         stop_pct = md["sl"]
+        ev_reason = None
         if R["ev_exit"] or (md.get("sub") == "burst" and R["burst_stop_widen"]):
             evn, eev = pos_ev(md, q["price"], a)
             if variants.ev_action(evn, eev, R) == "exit":
-                reason = variants.ev_exit_reason(evn, eev, R)
+                ev_reason = variants.ev_exit_reason(evn, eev, R)
             else:
                 stop_pct = variants.effective_stop_pct(md["sl"], evn, R, md.get("sub") or "day")
-        if reason is None and chg <= -stop_pct / 100:
-            reason = f"stop-loss {chg*100:.1f}% <= -{stop_pct:.1f}% (ATR-scaled)"
-            if abs(stop_pct - md["sl"]) > 1e-9:
-                reason += f" [stored -{md['sl']:.1f}%]"
-        elif trail_on and chg <= lvl:
-            reason = f"trailing stop {chg*100:+.1f}% (peak +{pkg*100:.1f}%, gives back {gb*100:.0f}% of the gain)"
-        elif chg >= md["tp"] / 100 and not md.get("runner"):
-            if md["sub"] == "momentum" and C.get("runner") and comb is not None and comb >= thr_of(a):
+        gb_override = float(R.get("burst_runner_giveback_pct", 20)) if (
+            md.get("runner") and md.get("sub") == "burst" and R["burst_runner"]) else None
+        d = day_reason(p["entry"], q["price"], p["opened"], md, C, st, comb, info, t, f_, thr_of(a), a,
+                       stop_pct, gb_override, defer_burst_target=bool(R["burst_runner"]))
+        chg, pkg, trail_on, lvl, gb = d["chg"], d["pkg"], d["trail_on"], d["lvl"], d["gb"]
+        reason = ev_reason or d["reason"]
+        if d["runner"] and not ev_reason:
+            out.append(d["runner"])
+        elif d["at_target"] and not ev_reason and q:
+            keep, why_b = burst_keep(a, q)
+            gb_b = float(R.get("burst_runner_giveback_pct", C.get("runner_giveback_pct", 20)))
+            if keep:
                 md["runner"] = True
-                out.append(f"[day] RUNNER {a}: target +{md['tp']:.1f}% reached at {chg*100:+.1f}% with signal {comb} still a buy - trailing {float(C.get('runner_giveback_pct', 20)):.0f}% of the gain")
-            elif md.get("sub") == "burst" and R["burst_runner"] and q:
-                keep, why_b = burst_keep(a, q)
-                gb_b = float(R.get("burst_runner_giveback_pct", C.get("runner_giveback_pct", 20)))
-                if keep:
-                    md["runner"] = True
-                    out.append(f"[day] BURST RUNNER {a}: target +{md['tp']:.1f}% reached at {chg*100:+.1f}% ({why_b}) - trailing {gb_b:.0f}% of the gain")
-                else:
-                    reason = f"take-profit {chg*100:.1f}% >= {md['tp']:.1f}% (ATR-scaled); {variants.sold_at_target_note(why_b)}"
+                out.append(f"[day] BURST RUNNER {a}: target +{md['tp']:.1f}% reached at {chg*100:+.1f}% ({why_b}) - trailing {gb_b:.0f}% of the gain")
             else:
-                reason = f"take-profit {chg*100:.1f}% >= {md['tp']:.1f}% (ATR-scaled)"
-        elif md["sub"] == "burst" and held_h >= float(C["max_hold_h"]):
-            reason = f"max hold {C['max_hold_h']}h reached ({held_h:.1f}h), {chg*100:+.1f}%"
-        elif md["sub"] == "momentum" and comb is not None and comb <= st["sell_threshold"]:
-            reason = f"signal {comb} <= {st['sell_threshold']} ({info})"
+                reason = f"take-profit {chg*100:.1f}% >= {md['tp']:.1f}% (ATR-scaled); {variants.sold_at_target_note(why_b)}"
         if reason:
             if reason.startswith("stop-loss"):
                 reason = tag_gap(a, p["entry"] * (1 - stop_pct / 100) / (1 - f_), q["price"], reason)
@@ -596,6 +605,7 @@ def main():
             p = pos.get((o["sleeve"], a))
             if not p: continue
             pnl = sell(o["sleeve"], a, p["qty"] * min(1.0, o["frac"]), f"{o['reason']} [queued {o['queued'][:16]}Z, filled at the open]")
+            if pnl is None: continue
             sig(o["sleeve"], a, None, None, None, "SELL", f"queued: {o['reason']}; P&L £{pnl:+.2f}")
         else:
             v = min(o["value"], cash_for(o["sleeve"], a) - gas_of(klass_of(a)))
@@ -614,6 +624,7 @@ def main():
         chg = q["price"] * (1 - fsell(a)) / p["entry"] - 1
         if chg <= -K["stop_loss_pct"] / 100:
             pnl = sell("core", a, p["qty"], f"core stop-loss {chg*100:.1f}% <= -{K['stop_loss_pct']}% from avg cost")
+            if pnl is None: continue
             plan.setdefault(a, {}).update(status="stopped", stopped=ts)
             sig("core", a, None, None, None, "SELL", f"stop-loss {chg*100:.1f}% from avg cost; P&L £{pnl:+.2f}; "
                                                     "re-enters in tranches after next weekly rebalance")
@@ -648,6 +659,7 @@ def main():
                     enqueue("core", a, "SELL", "rebalance: no longer a CORE pick (target 0%)", frac=1.0)
                     log_rb.append(f"SELL {a} all queued ({closed_msg(a)})"); continue
                 pnl = sell("core", a, p["qty"], "rebalance: no longer a CORE pick (target 0%)")
+                if pnl is None: continue
                 log_rb.append(f"SELL {a} all (dropped pick)"); sig("core", a, None, None, None, "SELL", f"rebalance: dropped pick; P&L £{pnl:+.2f}")
         moves = []
         for a, (ac, w_t) in tg.items():     # weights are % of the CORE money in the asset's own account
@@ -664,6 +676,7 @@ def main():
             if dv < 0:
                 p = pos[("core", a)]; qty = p["qty"] * min(1, -dv / val(p))
                 pnl = sell("core", a, qty, f"rebalance trim {w*100:.1f}% -> {w_t*100:.0f}% (band {band}pp)")
+                if pnl is None: continue
                 log_rb.append(f"SELL {a} £{-dv:.2f}"); sig("core", a, None, None, None, "SELL", f"rebalance trim {w*100:.1f}% -> {w_t*100:.0f}%; P&L £{pnl:+.2f}")
             else:
                 v = min(dv, cash_for("core", a) - gas_of(klass_of(a)))

@@ -274,6 +274,21 @@ Cadence: every 5 min the fast cycle (collector `COLLECT_MODE=fast`: crypto re-pr
 CoinGecko only for coins those do not list, then stocks, gas, market proxy, sentiment ingest, trader incl. exits,
 maintenance, dashboard, push); every ~15 min the full collector (daily closes, backfills, and the top-300 screen when it
 is due). FX stays hourly. Pushes only when state changed (at most one per 5-min cycle). Health: `/home/bot/health.sh`.
+Exit watcher (separate from the timer): `exit_watch.py` runs as systemd `trading-exit-watch`
+(`deploy/trading-exit-watch.service`, `Restart=on-failure`). It watches open Day positions, then Risk,
+on Kraken and Coinbase public websockets. A coin those do not list, or a socket that goes quiet, is
+polled about every 20 seconds (CoinGecko only inside the existing daily budget). It sells with the same
+stops, trails, targets, max-hold and costs as the cycle, and it does not open trades. The cycle still
+exits if the watcher or a stream is down. Both take the same book lock so a position is sold once.
+`KILL` in the clone stops the watcher as well as the cycle. Install (user `bot`, after the file is on
+main; point the unit at the clone `run_cycle.sh` uses):
+
+```
+sudo cp deploy/trading-exit-watch.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now trading-exit-watch
+journalctl -u trading-exit-watch -f
+```
 CoinGecko Demo key (optional): the demo tier is 100 calls/min but only 10,000 calls/month. Prices therefore come from
 public Kraken (one Ticker call for every listed coin) and Coinbase, with KyberSwap for Monad tokens. CoinGecko is the
 fallback (one simple/price about every 15 min for whatever is left) and the top-300 screen (about every 3 hours, every
