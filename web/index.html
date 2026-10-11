@@ -182,17 +182,17 @@
         <div class="seg" id="d-type"><button data-t="candle" class="on">Candles</button><button data-t="line">Line</button></div>
         <div class="seg" id="d-range"><button data-r="1D">1D</button><button data-r="3D">3D</button><button data-r="1W">1W</button><button data-r="ALL" class="on">All</button></div></div></div>
     <div class="chart-wrap"><div id="d-chart" class="chart sm"></div><div id="d-empty" class="empty hidden"></div></div>
-    <div class="note">Hourly candles, last 14 days &middot; <span class="pos">&#9650; buy</span> <span class="neg">&#9660; sell</span></div>
+    <div class="note">Hourly candles, last 14 days &middot; <span class="pos">&#9650; buy</span> <span class="neg">&#9660; sell</span> &middot; click a marker or a trade to highlight the match. The selected marker turns blue.</div>
+    <div class="card-h sm"><h3>Trades</h3><span class="muted small">Each buy and sell, with the full at-entry breakdown</span></div>
+    <div id="d-trades" class="trade-list"></div>
     <div class="card-h sm"><h3>Signal score</h3><span class="muted small">Day pot buy/sell score, hourly; dashed lines = buy/sell levels</span></div>
     <div class="chart-wrap"><div id="d-sig" class="chart xs"></div><div id="d-sig-empty" class="empty hidden"></div></div>
     <div class="card-h sm"><h3>Why it traded / held</h3></div>
     <div id="d-reasons" class="reasons"></div>
-    <div class="card-h sm"><h3>Sentiment</h3></div>
+    <div class="card-h sm"><h3>Sentiment</h3><span class="muted small">Score over time, and the latest note</span></div>
     <div class="chart-wrap"><div id="d-sent" class="chart xs"></div><div id="d-sent-empty" class="empty hidden"></div></div>
+    <div id="d-sent-latest"></div>
     <div id="d-sent-list" class="sent-list"></div>
-    <div id="d-entry"></div>
-    <div class="card-h sm"><h3>Orders</h3></div>
-    <div class="tw"><table id="d-trades" class="tbl"></table></div>
   </div>
 </aside>
 <noscript><p class="empty">This dashboard needs JavaScript.</p></noscript>

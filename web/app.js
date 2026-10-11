@@ -12,7 +12,7 @@ const S = {tab: 'overview', aSort: {k: 'a', d: 1}, tSort: {k: 't', d: -1}, pSort
   rcSort: {k: 'conf', d: -1}, rsSort: {k: 'score', d: -1},
   filter: 'all', q: '', eqRange: 'ALL', ccy: 'gbp', ptype: 'candle', dRange: 'ALL', open: null,
   tAsset: '', tSide: '', tSleeve: '', tFrom: '', tTo: '', tLimit: 50, sLimit: 15, sAsset: '', pPot: '', rTheme: '', mTheme: '',
-  acct: (() => { try { const a = localStorage.getItem('acct') || ''; return ['', 'crypto', 'stocks'].includes(a) ? a : ''; } catch (e) { return ''; } })(), eqAcct: ''};
+  acct: (() => { try { const a = localStorage.getItem('acct') || ''; return ['', 'crypto', 'stocks'].includes(a) ? a : ''; } catch (e) { return ''; } })(), eqAcct: '', trade: null};
 const POT = {core: 'Core pot', day: 'Day pot', risk: 'Risk pot'};
 const POTS = ['core', 'day', 'risk'];
 const potTag = s => s ? `<span class="tag ${s === 'core' ? 'blue' : s === 'risk' ? 'risk' : ''}">${esc(POT[s] || s)}</span>` : '';
@@ -87,7 +87,10 @@ function setRange(chart, times, r) {
   if (!span || last - times[0] <= span) { chart.timeScale().fitContent(); return; }
   try { chart.timeScale().setVisibleRange({from: last - span, to: last}); } catch (e) { chart.timeScale().fitContent(); }
 }
-function dropChart(k) { if (charts[k]) { charts[k].remove(); charts[k] = null; } }
+function dropChart(k) {
+  if (charts[k]) { charts[k].remove(); charts[k] = null; }
+  if (k === 'd') { charts.dSeries = null; charts.dMarks = null; }
+}
 function emptyMsg(id, msg) { const e = $('#' + id); e.classList.toggle('hidden', !msg); e.textContent = msg || ''; }
 function seg(id, attr, val) { $$('#' + id + ' button').forEach(b => b.classList.toggle('on', b.dataset[attr] === val)); }
 
@@ -435,18 +438,48 @@ const pctNum = v => isNum(v) ? String(Math.round(v * 1000) / 1000) : '-';
 const LEGACY_TIP = 'bought before confidence scoring';
 const scoredRow = r => (r.sleeve === 'day' || r.sleeve === 'risk') && (r.side == null || r.side === 'BUY' || r.side === 'SELL');
 const evMarkup = s => !s || !isNum(s.ev) ? '' : `<span class="${cls(s.ev)}">${fPct(s.ev)}</span><div class="muted small">after ${isNum(s.costs) ? fPct(s.costs, 2, false) : (isNum(s.rt_cost) ? fPct(s.rt_cost, 2, false) : '-')} costs${isNum(s.p) ? ` · p ${(s.p * 100).toFixed(0)}%` : ''}${isNum(s.target) ? ` · +${pctNum(s.target)}% / -${pctNum(s.loss)}%` : ''}</div>`;
+const entryTip = r => {
+  const s = r.snap;
+  if (!s) return LEGACY_TIP;
+  const who = isNum(s.conf) ? `Confidence ${(s.conf * 100).toFixed(0)}%` : (isNum(s.score) ? `Score ${Number(s.score).toFixed(2)}` : 'At entry');
+  const parts = s.parts ? Object.keys(COMPN).filter(k => isNum(s.parts[k])).map(k => `${COMPN[k]} ${(s.parts[k] * 100).toFixed(0)}%`).join(', ') : '';
+  const ev = isNum(s.ev) ? `EV after costs ${fPct(s.ev)}` : '';
+  const extra = [isNum(s.p) ? `chance ${(s.p * 100).toFixed(0)}%` : '', isNum(s.target) ? `target +${pctNum(s.target)}% / stop -${pctNum(s.loss)}%` : '',
+    isNum(s.costs) ? `round trip ${fPct(s.costs, 2, false)}` : ''].filter(Boolean).join(' · ');
+  return [who, parts, ev, extra, 'Open the asset for the full bars.'].filter(Boolean).join('. ');
+};
+const evNowTip = r => {
+  const bits = [EVNOW_TIP];
+  if (isNum(r.ev_p)) bits.push(`chance ${(r.ev_p * 100).toFixed(0)}%`);
+  if (isNum(r.ev_tgt)) bits.push(`target ${fP(r.ev_tgt)}`);
+  if (isNum(r.ev_stop)) bits.push(`stop ${fP(r.ev_stop)}`);
+  if (isNum(r.ev_cost)) bits.push(`sell cost ${fPct(r.ev_cost, 2, false)}`);
+  return bits.join(' · ');
+};
+/* Tables: one small confidence bar and one line, e.g. 75% · +0.64%. The component bars live in the asset panel. */
 const entryCell = r => {
   if (!scoredRow(r)) return '<span class="muted">-</span>';
   const s = r.snap;
-  if (!s) return `<span class="muted" title="${LEGACY_TIP}">-</span>`;
-  const head = s.parts ? confBar(s.conf, null) + compBars(s.parts) : isNum(s.score) ? `<span class="muted small">score ${Number(s.score).toFixed(2)}</span>` : (isNum(s.conf) ? confBar(s.conf, null) : '');
-  return head + evMarkup(s);
+  if (!s) return `<span class="muted" title="${esc(LEGACY_TIP)}">-</span>`;
+  const ev = isNum(s.ev) ? `<span class="${cls(s.ev)}">${fPct(s.ev)}</span>` : '<span class="muted">-</span>';
+  const left = isNum(s.conf) ? `${mbar(s.conf, null, '', true)}<span>${(s.conf * 100).toFixed(0)}%</span>`
+    : (isNum(s.score) ? `<span>score ${Number(s.score).toFixed(2)}</span>` : '<span class="muted">-</span>');
+  return `<span class="evc" title="${esc(entryTip(r))}">${left}<span class="sep">·</span>${ev}</span>`;
 };
 const evNowCell = r => {
   if (!scoredRow(r)) return '<span class="muted">-</span>';
-  return isNum(r.ev_now) ? `<span class="${cls(r.ev_now)}">${fPct(r.ev_now)}</span>` : '<span class="muted">-</span>';
+  if (!isNum(r.ev_now)) return `<span class="muted" title="${esc(EVNOW_TIP)}">-</span>`;
+  return `<span class="evc" title="${esc(evNowTip(r))}"><span class="${cls(r.ev_now)}">${fPct(r.ev_now)}</span></span>`;
 };
-const ENTRY_TIP = 'Confidence (or the Day momentum score) and expected value after costs when the trade was bought. A dash means it was bought before confidence scoring.';
+const entryDetail = r => {
+  if (!scoredRow(r)) return '';
+  const s = r.snap;
+  const now = isNum(r.ev_now) ? `<div class="evline"><span class="muted small">EV now</span> <span class="${cls(r.ev_now)}">${fPct(r.ev_now)}</span><div class="muted small">${esc(evNowTip(r))}</div></div>` : '';
+  if (!s) return `<div class="muted small">${esc(LEGACY_TIP)}</div>${now}`;
+  const head = s.parts ? confBar(s.conf, null) + compBars(s.parts) : isNum(s.score) ? `<span class="muted small">score ${Number(s.score).toFixed(2)}</span>` : (isNum(s.conf) ? confBar(s.conf, null) : '');
+  return `<div class="at-entry"><div class="muted small">At entry</div>${head}${evMarkup(s)}</div>${now}`;
+};
+const ENTRY_TIP = 'Confidence (or the Day momentum score) and expected value after costs when the trade was bought. A dash means it was bought before confidence scoring. Open the asset for every component.';
 const EVNOW_TIP = 'Expected value from the current price: the chance of hitting times the percent still left up to the target, minus the chance of losing times the percent down to the stop or the live trail, minus the sell cost still to pay.';
 const subTag = s => s ? `<span class="tag ${s === 'burst' ? 'risk' : 'blue'}">${esc(SUBN[s] || s)}</span>` : '<span class="muted">-</span>';
 const lvlTxt = d => d ? `max(${d.min_pct}%, ${d.atr_x}x ATR)${d.max_pct ? `, max ${d.max_pct}%` : ''}` : '-';
@@ -807,11 +840,38 @@ function showDrawer(a) {
     ['Sentiment', se ? (se.s >= 0 ? '+' : '') + se.s.toFixed(2) : '-', cls(se && se.s)],
     ...(posAll(a).length ? posAll(a).map(x => [POT[x.sleeve] || x.sleeve, `${fM(x.value)} (${fPct(x.pnl_pct)})`, cls(x.pnl)]) : [['Holding', 'none', '']])];
   $('#d-stats').innerHTML = k.map(([l, v, c]) => stat(l, esc(v), c)).join('');
-  const heldScored = posAll(a).filter(x => x.sleeve === 'day' || x.sleeve === 'risk');
-  $('#d-entry').innerHTML = heldScored.map(x => `<div class="note"><b>${esc(POT[x.sleeve] || x.sleeve)}</b> at entry<div>${entryCell(x)}</div><div style="margin-top:6px"><span class="muted small">EV now</span> ${evNowCell(x)}</div></div>`).join('');
+  if (first) S.trade = null;
   seg('d-ccy', 'c', S.ccy); seg('d-type', 't', S.ptype); seg('d-range', 'r', S.dRange);
-  renderPriceChart(a, p); renderSigChart(a, A); renderReasons(a); renderSentTimeline(a);
-  table($('#d-trades'), orderCols(false), (D.trades || []).filter(t => t.asset === a), {k: 't', d: -1}, () => showDrawer(a), {empty: 'No orders in this asset'});
+  const paint = (name, fn) => { try { fn(); } catch (e) { console.error(name + ' failed:', e); } };
+  paint('price', () => renderPriceChart(a, p));
+  paint('signal', () => renderSigChart(a, A));
+  paint('reasons', () => renderReasons(a));
+  paint('trades', () => renderTrades(a));
+  paint('sentiment', () => renderSentTimeline(a));
+}
+const tradeKey = t => t.id != null ? String(t.id) : `${t.t}-${t.side}-${t.sleeve}`;
+function assetFills(a) {
+  return (D.trades || []).filter(t => (t.asset === a || t.alias === a) && (t.side === 'BUY' || t.side === 'SELL'));
+}
+function renderTrades(a, scroll) {
+  const el = $('#d-trades'); if (!el) return;
+  const rows = assetFills(a).slice().sort((x, y) => y.t - x.t || String(x.side).localeCompare(String(y.side)));
+  if (!rows.length) { el.innerHTML = '<div class="muted">No trades in this asset yet.</div>'; return; }
+  const setup = t => t.sleeve === 'day' ? subTag(t.sub) : (t.sleeve === 'risk' ? setupTag(t.sub || 'breakout') : '');
+  el.innerHTML = rows.map(t => {
+    const id = tradeKey(t);
+    return `<div class="trade${S.trade === id ? ' on' : ''}" data-tid="${esc(id)}" id="trade-${esc(id)}" role="button" tabindex="0">` +
+      `<div class="th">${sideTag(t.side)}<b>${fP(t.fill)}</b><span class="muted">${esc(fTs(t.t))}</span>${potTag(t.sleeve)}${setup(t)}${isNum(t.value) ? `<span class="muted">${fM(t.value)}</span>` : ''}${isNum(t.pnl) ? pnlCell(t.pnl) : ''}</div>` +
+      (entryDetail(t) ? `<div class="tdet">${entryDetail(t)}</div>` : '') +
+      (t.reason ? `<div class="treason">${esc(t.reason)}</div>` : '') + `</div>`;
+  }).join('');
+  const pick = id => { S.trade = S.trade === id ? null : id; renderTrades(a, true); paintPriceMarkers(); if (S.trade) focusTrade(a, S.trade); };
+  $$('.trade', el).forEach(row => {
+    row.onclick = () => pick(row.dataset.tid);
+    row.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(row.dataset.tid); } };
+  });
+  const cur = scroll && S.trade && document.getElementById('trade-' + S.trade);
+  if (cur) cur.scrollIntoView({block: 'nearest'});
 }
 function renderPriceChart(a, p) {
   dropChart('d'); if (!LC) return;
@@ -825,11 +885,25 @@ function renderPriceChart(a, p) {
     : ch.addCandlestickSeries({upColor: C.green, downColor: C.red, wickUpColor: C.green, wickDownColor: C.red, borderVisible: false, priceFormat: fmt});
   s.setData(S.ptype === 'line' ? bars.map(b => ({time: b.time, value: b.close})) : bars);
   const times = bars.map(b => b.time);
-  const snap = t => { const h = t - t % 3600; let best = times[0]; for (const x of times) { if (Math.abs(x - h) < Math.abs(best - h)) best = x; } return best; };
+  const snapT = t => { const h = t - t % 3600; let best = times[0]; for (const x of times) { if (Math.abs(x - h) < Math.abs(best - h)) best = x; } return best; };
   const t0 = times[0] - 3600, t1 = times[times.length - 1] + 3600;
-  s.setMarkers((D.trades || []).filter(t => (t.asset === a || t.alias === a) && t.side !== 'CONVERT' && !CASHROW(t) && t.t >= t0 && t.t <= t1).map(t => ({time: snap(t.t), position: t.side === 'BUY' ? 'belowBar' : 'aboveBar',
-    color: t.side === 'BUY' ? C.green : C.red, shape: t.side === 'BUY' ? 'arrowUp' : 'arrowDown',
-    text: t.side === 'BUY' ? `B ${fM(t.value)}` : `S ${isNum(t.pnl) ? fM(t.pnl, true) : ''}`})).sort((x, y) => x.time - y.time));
+  charts.dSeries = s;
+  charts.dMarks = assetFills(a).filter(t => t.t >= t0 && t.t <= t1).map(t => ({t, time: snapT(t.t), id: tradeKey(t)})).sort((x, y) => x.time - y.time || (x.t.side === 'BUY' ? -1 : 1));
+  paintPriceMarkers();
+  ch.subscribeClick(param => {
+    if (!param) return;
+    const marks = charts.dMarks || [];
+    const known = id => marks.some(m => m.id === id);
+    let id = param.hoveredObjectId != null ? String(param.hoveredObjectId) : '';
+    if (!known(id)) id = '';
+    if (!id && param.time != null) {
+      const hits = marks.filter(m => m.time === param.time);
+      if (hits.length === 1) id = hits[0].id;
+    }
+    if (!id) return;
+    S.trade = S.trade === id ? null : id;
+    renderTrades(a, true); paintPriceMarkers();
+  });
   if (p) { const f = usd ? (p.now_usd && p.now ? p.now_usd / p.now : 1) : 1, tg = p.sleeve;
     if (isNum(p.trail)) s.createPriceLine({price: p.trail * f, color: C.green, lineStyle: LC.LineStyle.Dotted, lineWidth: 1, axisLabelVisible: true, title: 'trailing stop'});
     s.createPriceLine({price: p.entry * f, color: C.blue, lineStyle: LC.LineStyle.Dashed, lineWidth: 1, axisLabelVisible: true, title: tg + ' avg buy'});
@@ -837,6 +911,24 @@ function renderPriceChart(a, p) {
     if (isNum(p.take)) s.createPriceLine({price: p.take * f, color: C.green, lineStyle: LC.LineStyle.Dotted, lineWidth: 1, axisLabelVisible: true, title: 'target'}); }
   setRange(ch, times, S.dRange);
   $('#d-chart').ondblclick = () => { S.dRange = 'ALL'; seg('d-range', 'r', 'ALL'); ch.timeScale().fitContent(); };
+}
+function paintPriceMarkers() {
+  const s = charts.dSeries; if (!s || !charts.dMarks) return;
+  s.setMarkers(charts.dMarks.map(m => {
+    const buy = m.t.side === 'BUY', on = S.trade === m.id;
+    return {id: m.id, time: m.time, position: buy ? 'belowBar' : 'aboveBar',
+      color: on ? C.blue : (buy ? C.green : C.red), shape: buy ? 'arrowUp' : 'arrowDown', size: on ? 2 : 1,
+      text: buy ? `B ${fM(m.t.value)}` : `S ${isNum(m.t.pnl) ? fM(m.t.pnl, true) : ''}`};
+  }));
+}
+function focusTrade(a, id) {
+  const m = (charts.dMarks || []).find(x => x.id === id), ch = charts.d;
+  if (!m || !ch) return;
+  let vr = null;
+  try { vr = ch.timeScale().getVisibleRange(); } catch (e) { return; }
+  if (vr && m.time >= vr.from && m.time <= vr.to) return;
+  const span = vr && vr.to > vr.from ? vr.to - vr.from : 3 * 86400;
+  try { ch.timeScale().setVisibleRange({from: m.time - span * 0.65, to: m.time + span * 0.35}); } catch (e) {}
 }
 function renderSigChart(a, A) {
   dropChart('dsig'); if (!LC) return;
@@ -862,7 +954,10 @@ function renderReasons(a) {
 function renderSentTimeline(a) {
   dropChart('dsent');
   const rows = (D.sentiment || []).filter(s => s.a === a);
-  $('#d-sent-list').innerHTML = rows.length ? rows.slice(0, 20).map(s => sentItem(s, false)).join('') : '';
+  const latest = rows[0];
+  const box = $('#d-sent-latest');
+  if (box) box.innerHTML = latest ? `<div class="sent-latest"><div class="muted small">Latest note</div>${sentItem(latest, false)}</div>` : '';
+  $('#d-sent-list').innerHTML = rows.length > 1 ? rows.slice(1, 8).map(s => sentItem(s, false)).join('') : '';
   emptyMsg('d-sent-empty', rows.length ? '' : 'No sentiment for this asset yet.');
   if (!rows.length || !LC) return;
   const ch = charts.dsent = mkChart($('#d-sent'));

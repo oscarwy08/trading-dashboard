@@ -152,7 +152,8 @@ overflow-y:auto;padding:20px 24px 48px;animation:slide .18s ease-out}
 @media (max-width:1000px){.grid2,.grid-pf,.hero{grid-template-columns:1fr}.plans{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
 @media (max-width:640px){.alloc-in{grid-template-columns:1fr;gap:8px}.alloc-in .legend-list{columns:1}main{padding:12px 12px 32px}.top-in{padding:10px 12px 4px}.tabs{padding:0 4px}.tabs a{padding:11px 11px 12px;font-size:14px}
 .card{padding:16px;border-radius:14px}.tw{margin:0 -16px;padding:0 16px}.big{font-size:40px}.hero-r{grid-template-columns:1fr 1fr}.stat .v{font-size:18px}
-.chart{height:240px}.chart.sm{height:240px}.drawer-panel{padding:14px 14px 32px}.drawer .tw{margin:0 -14px;padding:0 14px}
+.chart{height:240px}.chart.sm{height:220px}.drawer-panel{padding:14px 14px 32px}.drawer .tw{margin:0 -14px;padding:0 14px}
+.trade .th{gap:6px}.evc .mbar{width:36px;min-width:36px}.comp{grid-template-columns:auto minmax(40px,1fr) auto}
 input[type=search]{min-width:0;width:100%}.tools{width:100%}#updated-ago{display:none}.tg-row{grid-template-columns:70px 1fr 100px;gap:8px}
 .stat-row{grid-template-columns:1fr 1fr}.kv{grid-template-columns:1fr}.kv>div:nth-child(odd){margin-top:6px}}
 /* v4: Risk pot */
@@ -192,7 +193,19 @@ input[type=search]{min-width:0;width:100%}.tools{width:100%}#updated-ago{display
 .mbar>i.ok{background:var(--green)}.mbar>i.lo{background:var(--mut)}.mbar>i.neg{background:var(--red)}
 .mbar>b{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--hi);border-radius:1px}
 .bval{display:flex;align-items:center;gap:8px;min-width:130px}.bval>span{white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right;min-width:36px}
-.comp{display:grid;grid-template-columns:auto minmax(56px,1fr) auto;gap:3px 6px;align-items:center;font-size:12px;color:var(--mut2);min-width:190px}
+.comp{display:grid;grid-template-columns:auto minmax(56px,1fr) auto;gap:3px 6px;align-items:center;font-size:12px;color:var(--mut2);min-width:0}
+.comp .mbar{min-width:0;width:100%}
+.evc{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.evc .mbar{width:48px;min-width:48px;flex:none}
+.evc .sep{color:var(--mut)}
+.trade-list{display:flex;flex-direction:column;gap:8px;margin:4px 0 16px;min-width:0}
+.trade{display:block;width:100%;max-width:100%;box-sizing:border-box;min-width:0;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:inherit;cursor:pointer}
+.trade.on{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.trade .th{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.trade .tdet{margin-top:8px;min-width:0}
+.trade .treason{margin-top:6px;color:var(--mut2);font-size:13px;white-space:normal;line-height:1.4;overflow-wrap:anywhere}
+.trade .at-entry,.trade .evline{margin-top:6px}
+.sent-latest{margin-top:4px}
 .comp>span:last-child,.comp>span:nth-child(3n){text-align:right;font-variant-numeric:tabular-nums;color:var(--txt)}
 .gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
 .gauge{display:flex;flex-direction:column;gap:8px}.g-h{font-weight:700;color:var(--hi)}
