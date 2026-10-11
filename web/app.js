@@ -126,6 +126,13 @@ function spark(vals) {
 }
 const sideTag = a => a ? `<span class="tag ${a === 'BUY' ? 'buy' : a === 'SELL' ? 'sell' : a === 'TRANSFER' || a === 'CONVERT' || a === 'LOAN' || a === 'REPAY' ? 'xfer' : ''}">${esc(a === 'BUY' ? 'Buy' : a === 'SELL' ? 'Sell' : a === 'HOLD' ? 'Hold' : a === 'SKIP' ? 'Skip' : a === 'TRANSFER' ? 'Transfer' : a === 'CONVERT' ? 'Convert' : a === 'LOAN' ? 'Loan' : a === 'REPAY' ? 'Repay' : a)}</span>` : '<span class="muted">-</span>';
 const pnlCell = (v, pct) => isNum(v) ? `<span class="${cls(v)}">${fM(v, true)}${isNum(pct) ? ` <span style="opacity:.85">(${fPct(pct)})</span>` : ''}</span>` : '<span class="muted">-</span>';
+/* A sell: '+£0.12 (+2.4%)' against the cost basis (buy fees included). 'peak +6.1%' only when the exit recorded it. */
+const sellPnl = (r, inline) => {
+  if (!isNum(r.pnl)) return '<span class="muted">-</span>';
+  const pct = isNum(r.pnl_pct) ? ` (${fPct(r.pnl_pct, 1)})` : '';
+  const peak = isNum(r.peak_pct) ? (inline ? ` <span class="muted">peak ${fPct(r.peak_pct, 1)}</span>` : `<div class="muted small">peak ${fPct(r.peak_pct, 1)}</div>`) : '';
+  return `<span class="${cls(r.pnl)}">${fM(r.pnl, true)}${pct}</span>${peak}`;
+};
 
 /* 'open positions +£X · closed trades -£Y (after fees)'. Both lines are always shown; they add up to the headline.
    Fees are already inside those two numbers. */
@@ -770,7 +777,8 @@ const orderCols = (withAsset = true) => [
   {k: 'value', l: 'Value', num: 1, f: r => fM(r.value)},
   {k: 'fee', l: 'Fee', num: 1, f: r => `${fFee(r.fee)}${feeSub(r)}`},
   {k: 'gas', l: 'Gas', num: 1, f: r => isNum(r.gas) ? fGas(r.gas) : '<span class="muted">-</span>'},
-  {k: 'pnl', l: 'P&L', num: 1, f: r => pnlCell(r.pnl)},
+  {k: 'pnl', l: 'P&L', num: 1, f: r => r.side === 'SELL' ? sellPnl(r) : pnlCell(r.pnl),
+    tip: 'On a sell: profit or loss after all fees, as pounds and as a percent of what that slice cost (buy fees included). Peak is the best gain during the hold, when the exit recorded it.'},
   {k: 'snap', l: 'At entry', nosort: 1, f: r => entryCell(r), tip: ENTRY_TIP},
   {k: 'ev_now', l: 'EV now', num: 1, f: r => evNowCell(r), tip: EVNOW_TIP},
   {k: 'reason', l: 'Reason', asc: 1, wrap: 1, f: r => esc(r.reason)},
@@ -792,8 +800,8 @@ function renderOrders() {
 }
 function exportCsv() {
   const q = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-  const head = ['time_uk', 'pot', 'account', 'side', 'asset', 'qty', 'price_gbp', 'market_usd', 'value_gbp', 'fee_gbp', 'spread_gbp', 'fx_fee_gbp', 'stamp_gbp', 'gas_gbp', 'pnl_gbp', 'reason'];
-  const lines = orderRows().map(t => { const f = t.fees || {}; return [fTs(t.t), POT[t.sleeve] || t.sleeve, t.acct ? ACC[t.acct] : '', t.side, t.asset, t.qty, t.fill, t.usd, t.value, t.fee, f.spread, f.fx, f.stamp, t.gas, t.pnl, t.reason].map(q).join(','); });
+  const head = ['time_uk', 'pot', 'account', 'side', 'asset', 'qty', 'price_gbp', 'market_usd', 'value_gbp', 'fee_gbp', 'spread_gbp', 'fx_fee_gbp', 'stamp_gbp', 'gas_gbp', 'pnl_gbp', 'pnl_pct', 'peak_pct', 'reason'];
+  const lines = orderRows().map(t => { const f = t.fees || {}; return [fTs(t.t), POT[t.sleeve] || t.sleeve, t.acct ? ACC[t.acct] : '', t.side, t.asset, t.qty, t.fill, t.usd, t.value, t.fee, f.spread, f.fx, f.stamp, t.gas, t.pnl, t.side === 'SELL' ? t.pnl_pct : '', t.side === 'SELL' ? t.peak_pct : '', t.reason].map(q).join(','); });
   const url = URL.createObjectURL(new Blob([head.join(',') + '\n' + lines.join('\n')], {type: 'text/csv'}));
   const a = document.createElement('a'); a.href = url; a.download = 'paper-orders.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -861,7 +869,7 @@ function renderTrades(a, scroll) {
   el.innerHTML = rows.map(t => {
     const id = tradeKey(t);
     return `<div class="trade${S.trade === id ? ' on' : ''}" data-tid="${esc(id)}" id="trade-${esc(id)}" role="button" tabindex="0">` +
-      `<div class="th">${sideTag(t.side)}<b>${fP(t.fill)}</b><span class="muted">${esc(fTs(t.t))}</span>${potTag(t.sleeve)}${setup(t)}${isNum(t.value) ? `<span class="muted">${fM(t.value)}</span>` : ''}${isNum(t.pnl) ? pnlCell(t.pnl) : ''}</div>` +
+      `<div class="th">${sideTag(t.side)}<b>${fP(t.fill)}</b><span class="muted">${esc(fTs(t.t))}</span>${potTag(t.sleeve)}${setup(t)}${isNum(t.value) ? `<span class="muted">${fM(t.value)}</span>` : ''}${t.side === 'SELL' ? sellPnl(t, true) : (isNum(t.pnl) ? pnlCell(t.pnl) : '')}</div>` +
       (entryDetail(t) ? `<div class="tdet">${entryDetail(t)}</div>` : '') +
       (t.reason ? `<div class="treason">${esc(t.reason)}</div>` : '') + `</div>`;
   }).join('');
