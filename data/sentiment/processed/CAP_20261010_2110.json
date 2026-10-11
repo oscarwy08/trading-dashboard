@@ -1,0 +1,9 @@
+{
+ "timestamp": "2026-10-10T21:10:00Z",
+ "asset": "CAP",
+ "score": 0.0,
+ "volume": 0,
+ "confidence": 0.15,
+ "summary": "No meaningful X signal found this run; neutral.",
+ "sources": []
+}

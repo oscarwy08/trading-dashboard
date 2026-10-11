@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-10T21:10:00Z",
+ "asset": "DRV",
+ "score": 0.15,
+ "volume": 2,
+ "confidence": 0.25,
+ "summary": "Mildly positive: appears in trending-coin lists; little credible news found.",
+ "sources": [
+  "https://x.com/Mannuelkinggs/status/2109027497052385343"
+ ]
+}

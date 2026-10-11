@@ -1,0 +1,13 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "ETH",
+ "score": -0.25,
+ "volume": 20,
+ "confidence": 0.6,
+ "summary": "Bearish tilt: spot ETH ETFs on a 9-session outflow streak (-$56M on Oct 9), price at 3-week lows watching $2,500, quantum 'bunker mode' debate adds FUD; long-term bulls (Tom Lee) cut targets.",
+ "sources": [
+  "https://x.com/i/trending/2108842941917573613",
+  "https://x.com/YJ5807811335783/status/2108779123648917792",
+  "https://x.com/FuturesWire/status/2108896225449685204"
+ ]
+}
