@@ -302,11 +302,11 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
 risk:
   fee_slippage_pct: 0.3         # per side when market cap is unknown. A known cap uses liquidity_cost instead.
   liquidity_cost:               # crypto per-side cost from liquidity. Stocks keep spread + FX 0.15% + stamp (below).
-    major_pct: 0.05             # deep book (large mcap): pool-fee floor
-    thin_pct: 1.0               # small-cap ceiling
+    major_pct: 0.05             # deep book (large mcap): Monad pool-fee floor. 11 Oct 2026 Kyber £5/£8: BTC, ETH and MON on Monad were about 0.05% or less including gas.
+    thin_pct: 0.40              # small-cap ceiling. Same quotes: whitelisted Base/Arbitrum alts were about 0.14-0.36% pool loss, up to about 0.44% with gas. The old 1% ceiling was about double the pool loss.
     thin_mcap_usd: 20000000
     deep_mcap_usd: 10000000000
-    turn_thin: 0.05             # volume/mcap at or below this lifts the cost
+    turn_thin: 0                # 0 turns the thin-turnover lift off. Stored vol24 is the venue book, not global volume, so 0.05 pinned nearly every coin on the ceiling. The mcap curve is the DEX cost.
     turn_deep: 0.30             # volume/mcap at or above this trims it
     impact_check_usd: 200       # a stored Kyber loss_pct is on this notional; scaled by sqrt(trade / check)
   max_price_age_min: 45         # offline / sim: a price older than this is unusable (same gate as before)
