@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-10T21:10:00Z",
+ "asset": "ETH",
+ "score": 0.05,
+ "volume": 8,
+ "confidence": 0.4,
+ "summary": "Neutral: ETH/BTC near breakout levels per traders, but ETH ETFs saw outflows this week.",
+ "sources": [
+  "https://x.com/i/trending/2107442106478559592"
+ ]
+}
