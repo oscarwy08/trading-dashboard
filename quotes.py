@@ -70,10 +70,11 @@ def _prefetch_bound(con, c, symbols, px, ts, collector, pricesrc, usd_gbp, to_is
             collector._write_crypto(con, ts, sym, row)
             _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
     for s in stocks:
-        sym, price, meta, _vi = collector.stock_quote(s)
+        sym, price, meta, _vi, bars = collector.stock_quote(s)
         if not price or not meta: continue
         f = collector.usd_factor(con, meta.get("currency"))
         if not f: continue
+        collector.store_stock_bars(con, sym, meta, bars)
         rmt = meta.get("regularMarketTime")
         src = datetime.fromtimestamp(rmt, timezone.utc).replace(microsecond=0).isoformat() if rmt else (to_iso(meta.get("regularMarketTime")) or ts)
         usd = price * f
