@@ -46,6 +46,7 @@ from pathlib import Path
 import daypot
 import entries
 import markets
+import riskpot
 import pricesrc
 import variants
 from common import KILL, LON, cfg, db, iso, log, now, usd_gbp
@@ -189,11 +190,20 @@ def _shadow_peaks(shcon, book="main"):
     return data
 
 
+def _exit_triggers(shcon, sleeve, asset, opened, book="main"):
+    return [r[0] or "" for r in shcon.execute(
+        """SELECT trigger FROM would_exit WHERE sleeve=? AND asset=? AND IFNULL(opened,'')=IFNULL(?,'')
+           AND IFNULL(book,'main')=?""",
+        (sleeve, asset, opened, _book_name(book))).fetchall()]
+
+
 def _shadow_seen(shcon, sleeve, asset, opened, book="main"):
-    return shcon.execute(
-        """SELECT 1 FROM would_exit WHERE sleeve=? AND asset=? AND IFNULL(opened,'')=IFNULL(?,'')
-           AND IFNULL(book,'main')=? LIMIT 1""",
-        (sleeve, asset, opened, _book_name(book))).fetchone() is not None
+    return bool(_exit_triggers(shcon, sleeve, asset, opened, book))
+
+
+def _shadow_closed(shcon, sleeve, asset, opened, book="main"):
+    """A full exit was already logged. A half-sale does not close the shadow of the remainder."""
+    return any(not t.startswith("partial take") for t in _exit_triggers(shcon, sleeve, asset, opened, book))
 
 
 def _buy_line(shadow, ts, arm, gbp, book="main"):
@@ -344,14 +354,23 @@ def _would_line(ts, sleeve, asset, price, chg, peak, reason, book="main"):
     return f"WOULD EXIT {tag}{sleeve} {asset} at {ts} trigger £{price:.6g} net {chg * 100:+.1f}%{peak_s} | {reason}"
 
 
-def _record_would(shcon, ts, p, gbp, reason, chg, peak, book="main"):
-    """First WOULD EXIT for this open position on this book. A later tick does not add another row."""
+def _record_would(shcon, ts, p, gbp, reason, chg, peak, book="main", qty=None):
+    """First WOULD EXIT for this open position on this book. A later tick does not add another row.
+
+    A half-sale is logged once and does not block the later exit of the remainder.
+    """
     book = _book_name(book)
-    if _shadow_seen(shcon, p["sleeve"], p["asset"], p.get("opened"), book):
+    triggers = _exit_triggers(shcon, p["sleeve"], p["asset"], p.get("opened"), book)
+    is_partial = str(reason or "").startswith("partial take")
+    if is_partial:
+        if any(t.startswith("partial take") for t in triggers):
+            return None
+    elif any(not t.startswith("partial take") for t in triggers):
         return None
+    use_qty = p.get("qty") if qty is None else qty
     shcon.execute(
         "INSERT INTO would_exit(ts,sleeve,asset,opened,trigger,price,chg,peak,qty,entry,klass,book) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-        (ts, p["sleeve"], p["asset"], p.get("opened"), reason, gbp, chg, peak, p.get("qty"), p.get("entry"), p.get("klass"), book))
+        (ts, p["sleeve"], p["asset"], p.get("opened"), reason, gbp, chg, peak, use_qty, p.get("entry"), p.get("klass"), book))
     shcon.commit()
     line = _would_line(ts, p["sleeve"], p["asset"], gbp, chg, peak, reason, book)
     return dict(sleeve=p["sleeve"], asset=p["asset"], price=gbp, reason=reason, pnl=None,
@@ -622,7 +641,7 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
         for p in rows:
             if p["sleeve"] != "day": continue
             a = p["asset"]
-            if shadow and _shadow_seen(shcon, "day", a, p.get("opened"), book):
+            if shadow and _shadow_closed(shcon, "day", a, p.get("opened"), book):
                 continue
             live = a in prices_gbp
             gbp = prices_gbp[a] if live else _stored_gbp(con, a, rate)
@@ -714,6 +733,42 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
                               f"{variants.sold_at_target_note(why_b)}")
             if not live and not (reason or "").startswith("max hold"):
                 md["peak"], md["runner"], reason = old_peak, old_runner, None
+            if shadow and not reason and live and R.get("partial_take") and d.get("trail_on") and not md.get("partial"):
+                half, _n = variants.partial_half(p["qty"], gbp, float(R.get("partial_min_gbp", 1)))
+                if half:
+                    full_n = float(p["qty"]) * gbp
+                    extra = variants.split_extra_gbp(full_n, full_n / 2.0, f_, f_, gas, p["klass"])
+                    why = variants.partial_reason(SUBC[md["sub"]]["trail_after_pct"], extra)
+                    tag = md.get("sub", "momentum") + (f" {md['kind']}" if md.get("kind") else "")
+                    rec = _record_would(shcon, ts, p, gbp, f"[{tag}] {why}", d["chg"], d["pkg"], book, qty=half)
+                    if rec:
+                        L.info(rec["log"])
+                        exits.append(rec)
+            part = md.get("partial") or {}
+            if shadow and not reason and live and R.get("partial_take") and part and not part.get("bought"):
+                subc = SUBC[md["sub"]]
+                ss = daypot.sell_record(con, "day", md.get("sub") or "momentum", t, float(subc.get("record_days", 14)))
+                p_ = daypot.hit_p(md.get("conf", md.get("score")), ss, int(subc.get("ev_prior_n", 10)), int(subc.get("ev_conf_full_n", 30)))
+                if p["klass"] == "stock":
+                    mleft = markets.mins_to_close(a, t)
+                    h = 0.0 if mleft is None else max(0.0, (mleft - int(D.get("stock_flatten_before_close_min", 15))) / 60.0)
+                else:
+                    h = max(0.0, (flat - mins) / 60.0)
+                if md.get("sub") == "burst" and subc.get("max_hold_h"):
+                    h = min(h, float(subc["max_hold_h"]))
+                wt = daypot.flatten_p(h, float(D.get("ev_flatten_floor", 0.40)), float(D.get("ev_flatten_full_h", 6)))
+                notion = float(part["qty"]) * gbp
+                rt = (cost_pct(c, a, p["klass"], "BUY", q, notion) + cost_pct(c, a, p["klass"], "SELL", q, notion)) * 100
+                evb = daypot.day_ev(p_, md.get("tp") or 0, md.get("sl") or 0, rt, wt)
+                if variants.buyback_ok(gbp, part.get("px"), evb, float(subc.get("ev_min_pct", 0.3))):
+                    arm = dict(sleeve="day", asset=a, ts=part.get("ts") or p.get("opened"), sub=md.get("sub"),
+                               setup=md.get("kind"), klass=p["klass"], level=float(part.get("px") or gbp),
+                               size_gbp=notion, stop_pct=md.get("sl") or 0, target_pct=md.get("tp") or 0,
+                               reason=f"buyback half: dip below the partial sale; fresh EV {evb:+.2f}%")
+                    rec = _record_would_buy(shcon, ts, arm, gbp, book)
+                    if rec:
+                        L.info(rec["log"])
+                        exits.append(rec)
             if reason:
                 if reason.startswith("stop-loss"):
                     sl_used = float(md["sl"] if stop_over is None else stop_over)
@@ -736,7 +791,7 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
         for p in rows:
             if p["sleeve"] != "risk": continue
             a = p["asset"]
-            if shadow and _shadow_seen(shcon, "risk", a, p.get("opened"), book):
+            if shadow and _shadow_closed(shcon, "risk", a, p.get("opened"), book):
                 continue
             if p["klass"] == "stock" and not markets.is_open(a, t): continue
             live = a in prices_gbp
@@ -765,6 +820,34 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
                 peaks[a] = d["peak"]
             if not live and not (reason or "").startswith("max hold"):
                 reason = None
+            if shadow and not reason and live and R.get("partial_take") and d.get("trail_on") and not (rmeta.get(a) or {}).get("partial"):
+                half, _n = variants.partial_half(p["qty"], gbp, float(R.get("partial_min_gbp", 1)))
+                if half:
+                    full_n = float(p["qty"]) * gbp
+                    extra = variants.split_extra_gbp(full_n, full_n / 2.0, f_, f_, gas, p["klass"])
+                    why = variants.partial_reason(RP["trail_after_pct"], extra)
+                    rec = _record_would(shcon, ts, p, gbp, why, d["chg"], d["pk_gain"], book, qty=half)
+                    if rec:
+                        L.info(rec["log"])
+                        exits.append(rec)
+            part = (rmeta.get(a) or {}).get("partial") or {}
+            if shadow and not reason and live and R.get("partial_take") and part and not part.get("bought"):
+                meta = rmeta.get(a) or {}
+                ss = riskpot.setup_stats(con, RP, t, sub=meta.get("setup"))
+                p_ = daypot.hit_p(meta.get("conf"), ss, int(RP.get("ev_prior_n", 10)), int(RP.get("ev_conf_full_n", 30)))
+                notion = float(part["qty"]) * gbp
+                rt = (cost_pct(c, a, p["klass"], "BUY", q, notion) + cost_pct(c, a, p["klass"], "SELL", q, notion)) * 100
+                evb = variants.fresh_ev(p_, variants.risk_lock_pct(RP), float(RP.get("stop_loss_pct", 12)), rt)
+                if variants.buyback_ok(gbp, part.get("px"), evb, float(RP.get("ev_min_pct", 0.3))):
+                    arm = dict(sleeve="risk", asset=a, ts=part.get("ts") or p.get("opened"), sub=meta.get("setup") or "breakout",
+                               setup=meta.get("setup") or "breakout", klass=p["klass"], level=float(part.get("px") or gbp),
+                               size_gbp=notion, stop_pct=float(RP.get("stop_loss_pct", 12)),
+                               target_pct=variants.risk_lock_pct(RP),
+                               reason=f"buyback half: dip below the partial sale; fresh EV {evb:+.2f}%")
+                    rec = _record_would_buy(shcon, ts, arm, gbp, book)
+                    if rec:
+                        L.info(rec["log"])
+                        exits.append(rec)
             if not reason: continue
             pts = history(con, a) if live else []
             if "stop-loss" in reason:

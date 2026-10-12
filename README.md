@@ -15,6 +15,7 @@ None of these changes the main book. Each is its own database, shadow-logged by 
 - **day_ev_blend.** Per sub-strategy, EV = (n × measured expectancy + 10 × the model) / (n + 10). Momentum and burst are measured apart.
 - **no_risk_clock.** The 24-hour Risk re-entry clock is deleted. No new-high gate and no stop-out cooldown.
 - **day_capital_caution.** Per account, f = that account's Day loss today / 15% of that account's start-of-day Day equity, with no cap at 1. The hurdle rises by 0.30 × f and size is multiplied by (1 − min(f, 1)). The −15% halt on the whole Day pot stays.
+- **partial_take.** At the trail arm, sell half of a Day or Risk position and leave the rest on that book's trail. Buy the half back on a later dip only when a fresh expected value (recomputed chance, upside and downside from the current price) clears the hurdle. That half may be £1. The £5 minimum is unchanged on every other order. The sell logs the extra fee of splitting one exit into two.
 
 ## v7.8 (2026-10-10): honest costs, honest EV, and a frozen scorecard (paper only)
 

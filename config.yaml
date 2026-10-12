@@ -341,7 +341,7 @@ plans:                          # display-only 'investment plans' for bigger top
 variants:
   enabled: true
   run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
-        risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution]
+        risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take]
 variant_rules:
   ev_exit: false
   ev_exit_now_pct: -0.4         # sell when EV now is below this (percent) ...
@@ -374,3 +374,5 @@ variant_rules:
   day_capital_caution: false      # paper book: per-account Day loss tightens the hurdle and the size
   day_caution_raise: 0.30
   risk_ev_legacy_win: false       # day_ev_blend sets this so it does not inherit a later Risk-win fix
+  partial_take: false             # paper book: at the trail arm sell half; buy it back on a dip only if fresh EV clears
+  partial_min_gbp: 1              # that half may be £1. risk.min_trade_size stays £5 on every book, including this one

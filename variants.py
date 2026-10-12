@@ -25,6 +25,7 @@ LABELS = {
     "day_ev_blend": "Day EV blend",
     "no_risk_clock": "No risk clock",
     "day_capital_caution": "Day capital caution",
+    "partial_take": "Partial take",
 }
 BLURB = {
     "ev_exit": "Sells a Day or Risk position when live expected value is below -0.4% and at least 0.8 points worse than the value stored at entry. While live value is negative but still above -0.4%, the stop is three quarters of the stored stop.",
@@ -39,6 +40,7 @@ BLURB = {
     "day_ev_blend": "Day only. Each sub-strategy's expected value is its measured expectancy blended with the model: (n x measured + 10 x model) / (n + 10). Momentum and burst are measured apart. The Risk win is not changed on this book.",
     "no_risk_clock": "Risk only. The 24-hour re-entry clock is deleted. The next setup buys when its own confidence and expected value clear. No new-high gate and no stop-out cooldown.",
     "day_capital_caution": "Day only, per account. f is that account's Day loss today divided by 15% of that account's start-of-day Day equity, with no cap at 1. Momentum's threshold is its base (0.35, or 0.30 on MON, WLD and XRP) plus 0.30 x f. Burst uses the same f. Size is multiplied by (1 - min(f, 1)). The -15% halt on the whole Day pot stays.",
+    "partial_take": "Day and Risk. At the trail arm, sell half and leave the rest on this book's trail. Buy that half back on a later dip only when a fresh expected value clears the hurdle. The fresh value uses a recomputed chance and the percent still available from the current price, not the inverted live EV. Orders in this split may be £1. Every other book keeps the £5 minimum. The sell records the extra fee of splitting one exit into two.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
@@ -57,7 +59,8 @@ def rules_of(c):
              day_ev_blend=False,
              no_risk_clock=False,
              day_capital_caution=False, day_caution_raise=0.30,
-             risk_ev_legacy_win=False)
+             risk_ev_legacy_win=False,
+             partial_take=False, partial_min_gbp=1.0)
     for k, v in ((c or {}).get("variant_rules") or {}).items():
         if k in d and v is not None:
             d[k] = v
@@ -69,10 +72,11 @@ def active(R):
                 or R.get("entry_own_trend") or R.get("no_day_core_same_afternoon") or R.get("burst_runner")
                 or R.get("midnight_crypto") or R.get("entry_watch")
                 or R.get("risk_giveback_15") or R.get("day_trail_arm") or R.get("day_ev_blend")
-                or R.get("no_risk_clock") or R.get("day_capital_caution"))
+                or R.get("no_risk_clock") or R.get("day_capital_caution") or R.get("partial_take"))
 
 
-TABLE_BOOKS = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock", "day_capital_caution")
+TABLE_BOOKS = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock",
+               "day_capital_caution", "partial_take")
 
 
 def blend_ev(model, n, exp, prior_n=10):
@@ -112,6 +116,68 @@ def day_arm_bar(R, rt_cost_pct, atr_pct):
     cost = 0.0 if rt_cost_pct is None else float(rt_cost_pct)
     atr = 0.0 if not atr_pct else float(atr_pct)
     return max(float(R.get("day_trail_cost_x", 4)) * cost, float(R.get("day_trail_atr_x", 1)) * atr)
+
+
+def risk_lock_pct(R):
+    """Percent the Risk trail locks when it first arms: (1 + arm) * (1 - trail) - 1.
+
+    At +15% and a 10% give-back from that price this is 3.5%. It is the win a fresh
+    expected value uses, measured from the current price rather than from the entry.
+    """
+    arm = float((R or {}).get("trail_after_pct", 15))
+    trail = float((R or {}).get("trail_pct", 10))
+    return (100.0 + arm) * (100.0 - trail) / 100.0 - 100.0
+
+
+def fresh_ev(p, upside_pct, downside_pct, rt_cost_pct):
+    """Expected value in % from the current price.
+
+    Upside and downside are the percent distances from here (a new target and stop),
+    not the residual to the prices stored at entry. p is recomputed, not the frozen
+    entry chance. EV = p * upside - (1 - p) * downside - round-trip cost.
+    The stored live EV does the opposite: it rises when the trade falls.
+    """
+    if p is None:
+        p = 0.5
+    p = max(0.0, min(1.0, float(p)))
+    return round(float(p) * float(upside_pct) - (1.0 - float(p)) * float(downside_pct) - float(rt_cost_pct), 3)
+
+
+def partial_half(qty, price, min_gbp=1.0):
+    """(half quantity, half notional) when that half is at least min_gbp. Otherwise (None, None)."""
+    if not qty or not price or float(price) <= 0:
+        return None, None
+    half = float(qty) / 2.0
+    notional = half * float(price)
+    if notional + 1e-9 < float(min_gbp):
+        return None, None
+    return half, notional
+
+
+def split_extra_gbp(full_notional, half_notional, fee_full_frac, fee_half_frac, gas_gbp, klass):
+    """Pounds two half-sells cost above one sell of the whole position.
+
+    Percentage fees on the two halves sum to the fee on the whole. Crypto pays gas
+    on each fill, so the second fill's gas is the extra. A stock has no gas.
+    """
+    gas_each = 0.0 if klass == "stock" else float(gas_gbp or 0.0)
+    two = 2.0 * (float(half_notional) * float(fee_half_frac) + gas_each)
+    one = float(full_notional) * float(fee_full_frac) + gas_each
+    return round(two - one, 4)
+
+
+def partial_reason(arm_pct, extra_gbp):
+    return (f"partial take: sold half at the +{float(arm_pct):g}% arm; "
+            f"extra fee of the split £{float(extra_gbp):.4f} (two half-sells versus one full sell)")
+
+
+def buyback_ok(price, sold_px, ev, hurdle):
+    """True on a later dip (price under the half-sale) when fresh EV clears the hurdle."""
+    if price is None or sold_px is None or float(price) >= float(sold_px) - 1e-12:
+        return False
+    if ev is None:
+        return False
+    return float(ev) > float(hurdle)
 
 
 def risk_on_clock(R, last_exit, t, cooldown_h):

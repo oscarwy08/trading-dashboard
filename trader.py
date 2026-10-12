@@ -465,6 +465,41 @@ def _cycle():
     risk_only = set(sget(con, "risk_only") or []) | set(sget(con, "risk_only_stocks") or [])   # priced only for the RISK pot
     day_x = sget(con, "day_excluded") or {}    # v7.2: base coins outside the DAY universe (exchange tokens, gold/RWA tokens, memes)
     RP = c.get("riskpot") or {}
+    DM0, DB0 = D["momentum"], D["burst"]
+
+    def round_trip_pct(a, q, notional):
+        k = (q or {}).get("klass") or "crypto"
+        return (cost_pct(c, a, k, "BUY", q, notional) + cost_pct(c, a, k, "SELL", q, notional)) * 100
+
+    def split_extra(a, q, qty, price):
+        full = float(qty) * float(price)
+        half_n = full / 2.0
+        k = (q or {}).get("klass") or "crypto"
+        return variants.split_extra_gbp(full, half_n, cost_pct(c, a, k, "SELL", q, full),
+                                        cost_pct(c, a, k, "SELL", q, half_n), gas, k)
+
+    def flatten_wt(a, klass, max_hold_h=None):
+        if klass == "stock":
+            mleft = mclose_in(a)
+            h = 0.0 if mleft is None else max(0.0, (mleft - int(D.get("stock_flatten_before_close_min", 15))) / 60.0)
+        else:
+            h = max(0.0, (hm(D["flatten_uk"]) - mins) / 60.0)
+        if max_hold_h is not None:
+            h = min(h, float(max_hold_h))
+        return daypot.flatten_p(h, float(D.get("ev_flatten_floor", 0.40)), float(D.get("ev_flatten_full_h", 6)))
+
+    def day_fresh_ev(a, q, sub, conf, tp, sl, notional):
+        subc = DB0 if sub == "burst" else DM0
+        ss = daypot.sell_record(con, "day", sub, t, float(subc.get("record_days", 14)))
+        p_ = daypot.hit_p(conf, ss, int(subc.get("ev_prior_n", 10)), int(subc.get("ev_conf_full_n", 30)))
+        hold = float(subc["max_hold_h"]) if sub == "burst" and subc.get("max_hold_h") else None
+        return daypot.day_ev(p_, tp, sl, round_trip_pct(a, q, notional), flatten_wt(a, (q or {}).get("klass") or "crypto", hold))
+
+    def risk_fresh_ev(a, q, conf, notional, setup):
+        ss = riskpot.setup_stats(con, RP, t, sub=setup)
+        p_ = daypot.hit_p(conf, ss, int(RP.get("ev_prior_n", 10)), int(RP.get("ev_conf_full_n", 30)))
+        return variants.fresh_ev(p_, variants.risk_lock_pct(RP), float(RP.get("stop_loss_pct", 12)),
+                                 round_trip_pct(a, q, notional))
 
     # ================= RISK exits: stop / trailing take-profit / max hold / sentiment =================
     peaks = sget(con, "risk_peaks") or {}; rmeta = sget(con, "risk_meta") or {}     # v7.4 rmeta: confidence + EV at entry
@@ -500,7 +535,33 @@ def _cycle():
             pnl = sell("risk", a, p["qty"], reason, sub=meta.get("setup") or "breakout", conf=meta.get("conf"), snap=meta.get("snap")); peaks.pop(a, None)
             if pnl is None: continue
             sset(con, f"risk_exit:{a}", ts); sig("risk", a, None, None, None, "SELL", f"{reason}; P&L £{pnl:+.2f}")
+        elif R.get("partial_take") and trail_on and not (rmeta.get(a) or {}).get("partial"):
+            half, _notional = variants.partial_half(p["qty"], q["price"], float(R.get("partial_min_gbp", 1)))
+            if half:
+                extra = split_extra(a, q, p["qty"], q["price"])
+                why = variants.partial_reason(RP["trail_after_pct"], extra)
+                meta = rmeta.get(a) or {}
+                pnl = sell("risk", a, half, why, sub=meta.get("setup") or "breakout", conf=meta.get("conf"), snap=meta.get("snap"))
+                if pnl is not None:
+                    meta = dict(meta)
+                    meta["partial"] = dict(qty=half, px=q["price"], extra=extra, ts=ts, bought=False)
+                    rmeta[a] = meta
+                    sig("risk", a, None, None, None, "SELL", f"{why}; P&L £{pnl:+.2f}")
+            else:
+                sig("risk", a, None, None, None, "HOLD", d["hold"])
         else:
+            meta = rmeta.get(a) or {}
+            part = meta.get("partial") or {}
+            if (R.get("partial_take") and part and not part.get("bought") and ("risk", a) in pos):
+                evb = risk_fresh_ev(a, q, meta.get("conf"), part["qty"] * q["price"], meta.get("setup"))
+                if variants.buyback_ok(q["price"], part.get("px"), evb, float(RP.get("ev_min_pct", 0.3))):
+                    fp = cost_pct(c, a, p["klass"], "BUY", q, part["qty"] * q["price"])
+                    value = part["qty"] * q["price"] * (1 + fp)
+                    if value + 1e-9 >= float(R.get("partial_min_gbp", 1)) and cash[("risk", acct_of(p["klass"]))] + 1e-9 >= value + gas_of(p["klass"]):
+                        buy("risk", a, value, f"buyback half: dip below the partial sale £{part['px']:.6g}; fresh EV {evb:+.2f}% > {float(RP.get('ev_min_pct', 0.3)):g}%",
+                            sub=meta.get("setup") or "breakout", conf=meta.get("conf"), snap=meta.get("snap"))
+                        part = dict(part); part["bought"] = True; meta = dict(meta); meta["partial"] = part; rmeta[a] = meta
+                        sig("risk", a, None, None, None, "BUY", f"buyback half; fresh EV {evb:+.2f}%")
             sig("risk", a, None, None, None, "HOLD", d["hold"])
 
     # ================= DAY exits (v7: momentum + burst sub-strategies) =================
@@ -631,7 +692,33 @@ def _cycle():
                 lvl_px = p["entry"] * (1 + pkg * (1 - gb)) / (1 - f_)
                 reason = tag_gap(a, lvl_px, q["price"], reason)
             day_exit(a, p, reason, m, s, comb)
+        elif R.get("partial_take") and trail_on and not md.get("partial"):
+            half, _notional = variants.partial_half(p["qty"], q["price"], float(R.get("partial_min_gbp", 1)))
+            tag = md["sub"] + (f" {md['kind']}" if md.get("kind") else "")
+            if half and ("day", a) in pos:
+                extra = split_extra(a, q, p["qty"], q["price"])
+                why = variants.partial_reason(C["trail_after_pct"], extra)
+                pnl = sell("day", a, half, f"[{tag}] {why}", sub=md.get("sub"), conf=md.get("conf", md.get("score")), snap=md.get("snap"))
+                if pnl is not None:
+                    md["partial"] = dict(qty=half, px=q["price"], extra=extra, ts=ts, bought=False)
+                    sig("day", a, m, s, comb, "SELL", f"[{tag}] {why}; P&L £{pnl:+.2f}")
+            else:
+                sig("day", a, m, s, comb, "HOLD", f"[{md['sub']}] open {chg*100:+.1f}%; half is under £{float(R.get('partial_min_gbp', 1)):g}")
         else:
+            part = md.get("partial") or {}
+            if R.get("partial_take") and part and not part.get("bought") and ("day", a) in pos:
+                evb = day_fresh_ev(a, q, md.get("sub") or "momentum", md.get("conf", md.get("score")),
+                                   md.get("tp") or 0, md.get("sl") or 0, part["qty"] * q["price"])
+                hurdle = float(C.get("ev_min_pct", 0.3))
+                if variants.buyback_ok(q["price"], part.get("px"), evb, hurdle):
+                    fp = cost_pct(c, a, p["klass"], "BUY", q, part["qty"] * q["price"])
+                    value = part["qty"] * q["price"] * (1 + fp)
+                    if value + 1e-9 >= float(R.get("partial_min_gbp", 1)) and cash[("day", acct_of(p["klass"]))] + 1e-9 >= value + gas_of(p["klass"]):
+                        tag = md["sub"] + (f" {md['kind']}" if md.get("kind") else "")
+                        buy("day", a, value, f"[{tag}] buyback half: dip below the partial sale £{part['px']:.6g}; fresh EV {evb:+.2f}% > {hurdle:g}%",
+                            sub=md.get("sub"), conf=md.get("conf", md.get("score")), snap=md.get("snap"))
+                        part = dict(part); part["bought"] = True; md["partial"] = part
+                        sig("day", a, m, s, comb, "BUY", f"[{md['sub']}] buyback half; fresh EV {evb:+.2f}%")
             sig("day", a, m, s, comb, "HOLD", f"[{md['sub']}] open {chg*100:+.1f}% (target +{md['tp']:.1f}% / stop -{md['sl']:.1f}%"
                 + (f", trailing at {lvl*100:+.1f}%" if trail_on else "")
                 + ("; burst runner" if md.get("runner") and md.get("sub") == "burst" else "") + f"); {info}")

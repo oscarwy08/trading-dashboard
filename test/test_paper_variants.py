@@ -28,7 +28,7 @@ def check(cond, msg):
     if not cond:
         fails.append(msg)
 
-NAMES = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock", "day_capital_caution")
+NAMES = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock", "day_capital_caution", "partial_take")
 base = common.cfg()
 check(all(not base["variant_rules"][k] for k in NAMES), "main leaves the five paper flags off")
 check(base["rules"]["frozen_since"] == common.cfg()["rules"]["frozen_since"], "freeze date is the config's own")
@@ -150,6 +150,7 @@ check(sold is not None and "keeps 65%" in sold, f"risk_giveback_15 sells that pe
 
 # Watcher shadow-logs the giveback on that book and does not log it on main.
 os.environ["EXIT_WATCH_SHADOW"] = "1"
+Path(os.environ["EXIT_SHADOW_DB"]).unlink(missing_ok=True)
 common._NOW = now_
 con = common.db()
 # book() sold the position. Re-open it for the shadow pass.
@@ -172,6 +173,148 @@ con.close()
 check([r["strategy"] for r in rows] == ["Momentum", "Burst", "Risk"], "each paper book has momentum, burst and risk rows")
 need = {"budget", "trades", "win_rate", "avg_win", "avg_loss", "pf", "pnl", "open_pnl", "fees", "exp_gbp"}
 check(need <= set(rows[0]), f"the row has the Day table columns ({sorted(need - set(rows[0]))})")
+
+# --- partial take: half at the arm, buyback only on a fresh EV, £1 only for that half ---
+check(base["risk"]["min_trade_size"] == 5, "the £5 minimum is unchanged on the main book")
+os.environ["TRADING_VARIANT"] = "partial_take"
+pt = common.cfg()
+os.environ.pop("TRADING_VARIANT", None)
+check(pt["risk"]["min_trade_size"] == 5 and variants.rules_of(pt)["partial_min_gbp"] == 1,
+      "partial_take keeps the £5 minimum and allows a £1 half")
+check(abs(variants.fresh_ev(0.5, 3.5, 12, 0.6) - (0.5 * 3.5 - 0.5 * 12 - 0.6)) < 1e-9,
+      "fresh EV is p x upside - (1-p) x downside - cost, from the current price")
+check(abs(variants.risk_lock_pct(base["riskpot"]) - 3.5) < 1e-9, "the Risk upside in that formula is the 3.5% trail lock")
+check(abs(variants.split_extra_gbp(10, 5, 0.003, 0.003, 0.001, "crypto") - 0.001) < 1e-9,
+      "splitting a crypto sell costs one extra gas")
+check(variants.split_extra_gbp(10, 5, 0.003, 0.003, 0.001, "stock") == 0,
+      "a stock split has no extra gas")
+check(variants.partial_half(0.01, 100, 1)[0] is None, "a half under £1 is not an order")
+check(not variants.buyback_ok(104, 104, 1.0, 0.3), "the arm price is not a dip")
+check(not variants.buyback_ok(100, 104, -1.0, 0.3), "a dip whose fresh EV misses 0.3% is not bought back")
+check(variants.buyback_ok(100, 104, 0.4, 0.3), "a dip whose fresh EV clears 0.3% is bought back")
+
+def arm_book(asset, sleeve, entry, px, qty, meta, variant, peaks=None):
+    if DB.exists():
+        DB.unlink()
+    common._NOW = now_
+    con = common.db()
+    ts = now_.isoformat()
+    con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (ts, "USDGBP", 1.0, "test", None, None))
+    for sl in common.SLEEVES:
+        for ac in common.ACCOUNTS:
+            con.execute("INSERT INTO acct_cash VALUES(?,?,?)", (sl, ac, 500.0))
+    con.execute("INSERT INTO state VALUES('core_plan',?)", ('{}',))
+    con.execute("INSERT INTO state VALUES('order_queue',?)", ('[]',))
+    con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)", (sleeve, asset, "crypto", qty, entry, qty * entry, ts, 1))
+    con.execute("INSERT INTO prices(ts,asset,klass,price,high24,low24,vol24,mcap,source,source_ts) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                (ts, asset, "crypto", px, None, None, None, 1e11, "test", ts))
+    if sleeve == "day":
+        con.execute("INSERT INTO state VALUES('day_meta',?)", (json.dumps({asset: meta}),))
+    else:
+        con.execute("INSERT INTO state VALUES('risk_meta',?)", (json.dumps({asset: meta}),))
+        if peaks:
+            con.execute("INSERT INTO state VALUES('risk_peaks',?)", (json.dumps(peaks),))
+    con.commit(); con.close()
+    if variant:
+        os.environ["TRADING_VARIANT"] = variant
+    trader.main()
+    os.environ.pop("TRADING_VARIANT", None)
+    con = common.db()
+    row = con.execute("SELECT qty FROM positions WHERE asset=?", (asset,)).fetchone()
+    sold = con.execute("SELECT reason FROM trades WHERE asset=? AND side='SELL' ORDER BY id DESC LIMIT 1", (asset,)).fetchone()
+    bought = con.execute("SELECT reason FROM trades WHERE asset=? AND side='BUY' ORDER BY id DESC LIMIT 1", (asset,)).fetchone()
+    con.close()
+    return (None if row is None else row[0], None if sold is None else sold[0], None if bought is None else bought[0])
+
+day_meta = dict(sub="momentum", tp=8, sl=2, atr=1, peak=100, opened=now_.isoformat(), conf=0.6, score=0.6)
+qty, reason, _buy = arm_book("HALF", "day", 100, 104, 10, day_meta, None)
+check(qty == 10 and reason is None, "main does not sell half at the Day arm")
+qty, reason, _buy = arm_book("HALF", "day", 100, 104, 10, day_meta, "partial_take")
+check(qty is not None and abs(qty - 5) < 1e-6 and reason and "partial take" in reason and "extra fee of the split" in reason,
+      f"partial_take sells half at the Day arm and logs the extra fee ({qty}, {reason})")
+qty, reason, _buy = arm_book("TINY", "day", 100, 104, 0.01, day_meta, "partial_take")
+check(qty is not None and abs(qty - 0.01) < 1e-9, "a half under £1 is left on the trail")
+risk_meta = dict(conf=0.7, setup="breakout", ev=0.4)
+qty, reason, _buy = arm_book("CAP", "risk", 100, 116, 2, risk_meta, "partial_take", peaks={"CAP": 100})
+check(qty is not None and abs(qty - 1) < 1e-6 and reason and "partial take" in reason and "+15%" in reason,
+      f"partial_take sells half of a Risk position at the +15% arm ({qty}, {reason})")
+
+# Dip after the half-sale. A wide stop misses 0.3%; the stored target clears it.
+if DB.exists():
+    DB.unlink()
+common._NOW = now_
+con = common.db()
+ts = now_.isoformat()
+con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (ts, "USDGBP", 1.0, "test", None, None))
+for sl in common.SLEEVES:
+    for ac in common.ACCOUNTS:
+        con.execute("INSERT INTO acct_cash VALUES(?,?,?)", (sl, ac, 500.0))
+con.execute("INSERT INTO state VALUES('core_plan',?)", ('{}',))
+con.execute("INSERT INTO state VALUES('order_queue',?)", ('[]',))
+con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)", ("day", "HALF", "crypto", 10, 100, 1000, ts, 1))
+con.execute("INSERT INTO prices(ts,asset,klass,price,high24,low24,vol24,mcap,source,source_ts) VALUES(?,?,?,?,?,?,?,?,?,?)",
+            (ts, "HALF", "crypto", 104, None, None, None, 1e11, "test", ts))
+meta = dict(day_meta, partial=None)
+con.execute("INSERT INTO state VALUES('day_meta',?)", (json.dumps({"HALF": day_meta}),))
+con.commit(); con.close()
+os.environ["TRADING_VARIANT"] = "partial_take"
+trader.main()
+later = now_ + timedelta(minutes=20)
+common._NOW = later
+con = common.db()
+con.execute("INSERT INTO prices(ts,asset,klass,price,high24,low24,vol24,mcap,source,source_ts) VALUES(?,?,?,?,?,?,?,?,?,?)",
+            (later.isoformat(), "HALF", "crypto", 103, None, None, None, 1e11, "test", later.isoformat()))
+# Stored target/stop make the fresh value miss the hurdle.
+meta = json.loads(con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone()[0])
+meta["HALF"]["tp"], meta["HALF"]["sl"] = 3, 8
+con.execute("UPDATE state SET value=? WHERE key='day_meta'", (json.dumps(meta),))
+con.commit(); con.close()
+trader.main()
+con = common.db()
+miss = con.execute("SELECT COUNT(*) FROM trades WHERE asset='HALF' AND side='BUY'").fetchone()[0]
+qty_miss = con.execute("SELECT qty FROM positions WHERE asset='HALF'").fetchone()[0]
+con.close()
+check(miss == 0 and abs(qty_miss - 5) < 1e-4, "a dip is not bought back when fresh EV misses 0.3%")
+con = common.db()
+meta = json.loads(con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone()[0])
+meta["HALF"]["tp"], meta["HALF"]["sl"] = 8, 2
+con.execute("UPDATE state SET value=? WHERE key='day_meta'", (json.dumps(meta),))
+con.execute("INSERT INTO prices(ts,asset,klass,price,high24,low24,vol24,mcap,source,source_ts) VALUES(?,?,?,?,?,?,?,?,?,?)",
+            ((later + timedelta(minutes=5)).isoformat(), "HALF", "crypto", 102.8, None, None, None, 1e11, "test",
+             (later + timedelta(minutes=5)).isoformat()))
+con.commit(); con.close()
+common._NOW = later + timedelta(minutes=5)
+trader.main()
+os.environ.pop("TRADING_VARIANT", None)
+con = common.db()
+back = con.execute("SELECT reason FROM trades WHERE asset='HALF' AND side='BUY' ORDER BY id DESC LIMIT 1").fetchone()
+qty_back = con.execute("SELECT qty FROM positions WHERE asset='HALF'").fetchone()[0]
+con.close()
+check(back and "buyback half" in back[0] and "fresh EV" in back[0] and qty_back > 9,
+      f"the sold half is bought back once fresh EV clears ({None if not back else back[0]}, qty {qty_back})")
+
+# Watcher shadow-logs the half-sale on this book only.
+os.environ["EXIT_WATCH_SHADOW"] = "1"
+Path(os.environ["EXIT_SHADOW_DB"]).unlink(missing_ok=True)
+common._NOW = now_
+if DB.exists():
+    DB.unlink()
+con = common.db()
+ts = now_.isoformat()
+con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (ts, "USDGBP", 1.0, "test", None, None))
+for sl in common.SLEEVES:
+    for ac in common.ACCOUNTS:
+        con.execute("INSERT INTO acct_cash VALUES(?,?,?)", (sl, ac, 500.0))
+con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)", ("day", "HALF", "crypto", 10, 100, 1000, ts, 1))
+con.execute("INSERT INTO state VALUES('day_meta',?)", (json.dumps({"HALF": day_meta}),))
+con.commit()
+main_hit = exit_watch.shadow_evaluate(con, {"HALF": 104.0}, book="main", c=exit_watch.config_for("main"))
+var_hit = exit_watch.shadow_evaluate(con, {"HALF": 104.0}, book="partial_take", c=exit_watch.config_for("partial_take"))
+con.close()
+check(not any("partial take" in (e.get("reason") or "") for e in main_hit), "main does not shadow a half-sale")
+check(any("partial take" in (e.get("reason") or "") and "extra fee" in (e.get("reason") or "")
+          and "[partial_take]" in (e.get("log") or "") for e in var_hit),
+      "the watcher tags the half-sale and its extra fee with the book")
 
 print(f"\n{len(fails)} failure(s)")
 raise SystemExit(1 if fails else 0)
