@@ -5,8 +5,10 @@
 # That lease SHA is the remote-tracking ref: a fetch can move it to a tip this tree was never rebased onto, and the
 # orphan then replaces that tip. Instead: fetch, rebase this cycle onto that exact SHA, fetch once more, and only
 # then push, leasing the SHA we integrated. If the second fetch moved, do not push; the next cycle retries.
-# Squash only when this cycle's parent is still that tip. Otherwise fast-forward the rebased cycle so the new
-# commits stay on main.
+# Squash only when this cycle's parent is still that tip, and no pull request is open against main.
+# An orphan force-push has no merge-base with an open pull request, and GitHub closes it. If the
+# pull-request check cannot be made, fast-forward instead. SQUASH_EVEN_WITH_PRS=1 squashes anyway.
+# Otherwise fast-forward the rebased cycle so the new commits stay on main.
 set -u
 SQUASH_AT=${SQUASH_AT:-100}
 git config user.name "${BOT_NAME:-trading-bot}"
@@ -115,17 +117,68 @@ rc=$?
 if [ "$rc" -eq 2 ]; then exit 0; fi
 [ "$rc" -eq 0 ] || exit 1
 
+# How many pull requests are open against main. Prints a count and returns 0, or returns 1
+# when the count is unknown. SQUASH_OPEN_PRS is the offline seam (tests, no network).
+# SQUASH_EVEN_WITH_PRS=1 reports zero so the squash still runs.
+open_prs_against_main() {
+  if [ "${SQUASH_EVEN_WITH_PRS:-}" = "1" ]; then
+    echo 0
+    return 0
+  fi
+  if [ -n "${SQUASH_OPEN_PRS+x}" ]; then
+    echo "${SQUASH_OPEN_PRS}"
+    return 0
+  fi
+  local token="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+  local slug="${GITHUB_REPOSITORY:-${REPO_SLUG:-oscarwy08/trading-dashboard}}"
+  if [ -z "$token" ]; then
+    echo "skipping squash; no GitHub token to check open pull requests against main" >&2
+    return 1
+  fi
+  local body
+  if ! body=$(curl -fsS --max-time 20 \
+      -H "Authorization: Bearer $token" \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "https://api.github.com/repos/${slug}/pulls?state=open&base=main&per_page=100"); then
+    echo "skipping squash; the GitHub pull-request list failed" >&2
+    return 1
+  fi
+  local count
+  if ! count=$(printf '%s' "$body" | python3 -c 'import json,sys
+try:
+    data=json.load(sys.stdin)
+except Exception:
+    sys.exit(2)
+if not isinstance(data, list):
+    sys.exit(2)
+print(len(data))'); then
+    echo "skipping squash; the GitHub pull-request list was not a list" >&2
+    return 1
+  fi
+  echo "$count"
+}
+
 n=$(git rev-list --count HEAD)
 # Squash only when nobody else committed: our parent is still the tip we just leased.
 # A code commit that landed during the cycle stays in history (fast-forward below).
+# An open pull request also stays. The orphan force-push would close it.
 if [ "$n" -gt "$SQUASH_AT" ] && [ "$TIP" = "$BASE_BEFORE" ]; then
-  NEW=$(git commit-tree "HEAD^{tree}" -m "Squashed history ($n commits) at $(date -u +%FT%TZ) - state + site snapshot")
-  if git push -q --force-with-lease=main:"$TIP" origin "$NEW":main; then
-    echo "squashed $n commits into $NEW and pushed"
+  open_n=$(open_prs_against_main)
+  open_rc=$?
+  if [ "$open_rc" -ne 0 ]; then
+    :
+  elif [ "${open_n:-}" != "0" ]; then
+    echo "skipping squash; ${open_n} open pull request(s) against main"
+  else
+    NEW=$(git commit-tree "HEAD^{tree}" -m "Squashed history ($n commits) at $(date -u +%FT%TZ) - state + site snapshot")
+    if git push -q --force-with-lease=main:"$TIP" origin "$NEW":main; then
+      echo "squashed $n commits into $NEW and pushed"
+      exit 0
+    fi
+    echo "squash push lost the race (main was no longer ${TIP:0:7}); not force-pushing, next cycle will retry" >&2
     exit 0
   fi
-  echo "squash push lost the race (main was no longer ${TIP:0:7}); not force-pushing, next cycle will retry" >&2
-  exit 0
 fi
 push_ff
 exit $?
