@@ -1,0 +1,5 @@
+# Day crypto only. Do not set day.entry_* or day.flatten_uk here: those clocks are shared with
+# stocks, and the main book stays on 08:00 / 21:00 / 22:00. The times live under variant_rules.
+# The first cycle copies data/variants/_snapshot.db, the same start as the other books.
+variant_rules:
+  midnight_crypto: true

@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-10T21:10:00Z",
+ "asset": "NEAR",
+ "score": 0.1,
+ "volume": 1,
+ "confidence": 0.2,
+ "summary": "Slightly positive: in today's trending lists, no specific news.",
+ "sources": [
+  "https://x.com/Mannuelkinggs/status/2109027497052385343"
+ ]
+}
