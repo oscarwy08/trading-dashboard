@@ -25,6 +25,10 @@ None of these changes the main book. Each is its own database, shadow-logged by 
 - **day_capital_caution.** Per account, f = that account's Day loss today / 15% of that account's start-of-day Day equity, with no cap at 1. The hurdle rises by 0.30 × f and size is multiplied by (1 − min(f, 1)). The −15% halt on the whole Day pot stays.
 - **partial_take.** At the trail arm, sell half of a Day or Risk position and leave the rest on that book's trail. Buy the half back on a later dip only when a fresh expected value (recomputed chance, upside and downside from the current price) clears the hurdle. That half may be £1. The £5 minimum is unchanged on every other order. The sell logs the extra fee of splitting one exit into two.
 
+## Stock intraday history (2026-10-12)
+
+Day and Risk stock rows were scoring RSI 50 and 4h +0.0% because Yahoo's 15-minute closes were fetched and then thrown away. Only one print per cycle was stored, so a weekend left fewer than 15 hourly closes and the score filled the gap with a neutral RSI and a zero move. The collector and the pre-trade quote now keep those 15-minute closes (USD, no duplicate timestamps). Stock momentum looks back eight calendar days so prior sessions survive the weekend. If the 4h move or the 15 hourly closes are still missing, the signal is `stale history` and the name does not score. Buy and sell thresholds are unchanged. Crypto prices still come from `pricesrc.py` (Kraken / Coinbase / Kyber / CoinGecko); that router does not carry stock bars.
+
 ## v7.8 (2026-10-10): honest costs, honest EV, and a frozen scorecard (paper only)
 
 The rule set is frozen at `rules.frozen_since` (shown on the dashboard). The next change to a threshold needs a reason that is not one day's P&L.
