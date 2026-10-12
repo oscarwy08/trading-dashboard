@@ -42,7 +42,9 @@ def setup(score, risk_cash, core_cash=None, day_cash=None, cap_pct=20):
     con.execute("INSERT OR REPLACE INTO state VALUES('risk_only',?)", (json.dumps(["TESTX"]),))
     con.execute("INSERT OR REPLACE INTO state VALUES('riskpot_base',?)", (json.dumps(None),))
     con.commit(); con.close()
-    c = json.loads(json.dumps(C0)); c["loans"]["max_outstanding_pct"] = cap_pct; trader.cfg = lambda: c
+    c = json.loads(json.dumps(C0)); c["loans"]["max_outstanding_pct"] = cap_pct
+    c["riskpot"]["max_open"] = 99          # the copied live book may already be full; this case is the loan, not the cap
+    trader.cfg = lambda: c
     return c
 
 def run():

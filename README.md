@@ -10,6 +10,12 @@ writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100
 
 The last 30% of the daily CoinGecko budget (`reserve_pct`) is only for `simple/price` of coins we hold and coins with an armed entry, plus a quote immediately before a fill. A top-300 scan, category refresh, chart or backfill, the FX cross-check, and the general fallback for every unlisted coin stop before that slice. When CoinGecko is skipped or returns nothing, a coin with no Kraken, Coinbase or Kyber route can take the most liquid GeckoTerminal or DexScreener pool, rejected if it is more than twice the last good price. The price row is tagged with that source. The markets page lists how many calls each purpose spent.
 
+## Backtest (report only)
+
+`python3 backtest.py` replays the stored prices in `data/trading.db` through the main book and each name in `variants.run`. It uses the live trader, so fees and slippage are the ones the cycle charges. It writes a temporary copy only. It does not change the frozen rules or the live database.
+
+Each book is marked FAIL when closed trades are under 100, max drawdown is over 20%, profit factor is under 1.1, or net P&L does not beat buying and holding BTC over the same window (one buy and one sell at `fee_slippage_pct`). Daily closes and the stored Risk screen are not rewound with the clock, so Core picks and Risk crypto can see later information. Day entries and exits only see prices up to the clock.
+
 ## v7.9 (2026-10-12): dead quotes, EV exit off, Risk win is the trail lock (paper only)
 
 Three corrections on the main book. The frozen thresholds are otherwise unchanged.
@@ -28,6 +34,10 @@ None of these changes the main book. Each is its own database, shadow-logged by 
 - **no_risk_clock.** The 24-hour Risk re-entry clock is deleted. No new-high gate and no stop-out cooldown.
 - **day_capital_caution.** Per account, f = that account's Day loss today / 15% of that account's start-of-day Day equity, with no cap at 1. The hurdle rises by 0.30 × f and size is multiplied by (1 − min(f, 1)). The −15% halt on the whole Day pot stays.
 - **partial_take.** At the trail arm, sell half of a Day or Risk position and leave the rest on that book's trail. Buy the half back on a later dip only when a fresh expected value (recomputed chance, upside and downside from the current price) clears the hurdle. That half may be £1. The £5 minimum is unchanged on every other order. The sell logs the extra fee of splitting one exit into two.
+
+## Stock intraday history (2026-10-12)
+
+Day and Risk stock rows were scoring RSI 50 and 4h +0.0% because Yahoo's 15-minute closes were fetched and then thrown away. Only one print per cycle was stored, so a weekend left fewer than 15 hourly closes and the score filled the gap with a neutral RSI and a zero move. The collector and the pre-trade quote now keep those 15-minute closes (USD, no duplicate timestamps). Stock momentum looks back eight calendar days so prior sessions survive the weekend. If the 4h move or the 15 hourly closes are still missing, the signal is `stale history` and the name does not score. Buy and sell thresholds are unchanged. Crypto prices still come from `pricesrc.py` (Kraken / Coinbase / Kyber / CoinGecko); that router does not carry stock bars.
 
 ## v7.8 (2026-10-10): honest costs, honest EV, and a frozen scorecard (paper only)
 
