@@ -11,12 +11,15 @@ QUOTE_RANK = {"USD": 0, "USDT": 1, "USDC": 1, "GBP": 2}
 _FROM = (("XBT", "BTC"), ("XDG", "DOGE"))
 
 
+# simple/price for a coin we hold or have armed. These may spend the reserved slice. Everything else stops at the line.
+RESERVE_OK = ("held", "live")
+
 def cfg_of(c):
     d = (c or {}).get("coingecko") or {}
     return dict(day_budget=int(d.get("day_budget", 300)), month_budget=int(d.get("month_budget", 9000)),
                 scan_min=float(d.get("scan_every_min", 180)), scan_min_tight=float(d.get("scan_every_min_tight", 360)),
                 fallback_min=float(d.get("fallback_every_min", 15)), fallback_min_tight=float(d.get("fallback_every_min_tight", 60)),
-                tight=float(d.get("tight_pct", 0.70)))
+                tight=float(d.get("tight_pct", 0.70)), reserve=float(d.get("reserve_pct", 0.30)))
 
 
 def day_key(now):
@@ -33,10 +36,13 @@ def usage(con, now):
     return int(today[0] if today else 0), int(month[0] if month else 0)
 
 
-def add_calls(con, now, n=1):
+def add_calls(con, now, n=1, purpose=None):
     if not n: return
     day = day_key(now)
     con.execute("INSERT INTO cg_calls(day, n) VALUES(?, ?) ON CONFLICT(day) DO UPDATE SET n = n + ?", (day, int(n), int(n)))
+    if purpose:
+        con.execute("""INSERT INTO cg_purpose(day, purpose, n) VALUES(?,?,?)
+                       ON CONFLICT(day, purpose) DO UPDATE SET n = n + ?""", (day, str(purpose), int(n), int(n)))
 
 
 def tight(con, c, now):
@@ -45,14 +51,24 @@ def tight(con, c, now):
     return today >= P["day_budget"] * P["tight"] or month >= P["month_budget"] * P["tight"]
 
 
+def reserve_line(c):
+    """Calls already spent at which scan/meta/charts/FX/general fallback must stop. Held and live quotes may continue."""
+    P = cfg_of(c)
+    return P["day_budget"] * (1 - P["reserve"])
+
+
 def allow(con, c, now, purpose):
-    """False when this CoinGecko call should not be sent. Scan, charts, category refreshes and the
-    FX cross-check stop first. A scheduled fallback price slows down. A pre-trade quote ('live')
-    keeps going until the hard daily or monthly cap."""
+    """False when this CoinGecko call should not be sent.
+
+    The last reserve_pct of the day budget is only for simple/price of held coins and armed entries
+    ('held') and a quote immediately before a fill ('live'). Scan, category meta, charts/backfill,
+    the FX cross-check and the general fallback cannot spend that slice. Nothing is sent once the
+    hard daily or monthly cap is reached."""
     if con is None or c is None: return True
     P = cfg_of(c)
     today, month = usage(con, now)
     if today >= P["day_budget"] or month >= P["month_budget"]: return False
+    if purpose not in RESERVE_OK and today >= reserve_line(c): return False
     if purpose in ("scan", "meta", "chart", "fx") and tight(con, c, now): return False
     return True
 
@@ -77,11 +93,19 @@ def scan_due(con, c, now):
 
 
 def fallback_due(con, c, now):
-    """Scheduled simple/price for coins with no exchange. Exchange failures do not wait for this."""
+    """Scheduled simple/price for coins with no exchange. Exchange failures do not wait for this.
+    This cannot spend the reserved slice."""
     if not allow(con, c, now, "fallback"): return False
     P = cfg_of(c)
     every = P["fallback_min_tight"] if tight(con, c, now) else P["fallback_min"]
     return _due(_state(con, "cg_fallback_ts"), now, every)
+
+
+def held_due(con, c, now):
+    """simple/price for a coin we hold or have armed. This may spend the reserved slice, until the hard cap."""
+    if not allow(con, c, now, "held"): return False
+    P = cfg_of(c)
+    return _due(_state(con, "cg_held_ts"), now, P["fallback_min"])
 
 
 def mark(con, key, ts):
@@ -93,10 +117,40 @@ def routes_of(con):
     return dict(load_routes(con).get("routes") or {})
 
 
+def purpose_counts(con, now):
+    """{purpose: calls} for the current UK day."""
+    day = day_key(now)
+    try:
+        rows = con.execute("SELECT purpose, n FROM cg_purpose WHERE day=?", (day,)).fetchall()
+    except Exception:
+        return {}
+    return {r[0]: int(r[1]) for r in rows}
+
+
 def stats(con, now, c):
     today, month = usage(con, now)
     P = cfg_of(c)
-    return dict(today=today, month=month, day_budget=P["day_budget"], month_budget=P["month_budget"])
+    return dict(today=today, month=month, day_budget=P["day_budget"], month_budget=P["month_budget"],
+                reserve_pct=P["reserve"], purpose=purpose_counts(con, now))
+
+
+def protected(con, now=None):
+    """Symbols whose simple/price may use the reserved budget: open crypto positions and armed crypto entries."""
+    from common import iso, now as now_fn
+    now = now or now_fn()
+    syms = [r[0] for r in con.execute("SELECT DISTINCT asset FROM positions WHERE klass='crypto'")]
+    try:
+        syms += [r[0] for r in con.execute(
+            "SELECT DISTINCT asset FROM armed_entries WHERE status='armed' AND klass='crypto' AND expires>?",
+            (iso(now),))]
+    except Exception:
+        pass
+    out, seen = [], set()
+    for s in syms:
+        s = (s or "").upper()
+        if s and s not in seen:
+            seen.add(s); out.append(s)
+    return out
 
 
 def kraken_norm(name):
@@ -424,6 +478,142 @@ def tracked(con):
         s = (s or "").upper()
         if not s or "." in s or s in seen: continue
         seen.add(s); out.append(s)
+    return out
+
+
+GT = "https://api.geckoterminal.com/api/v2"
+DS = "https://api.dexscreener.com"
+# DexScreener chain id -> GeckoTerminal network id. Used when a cached contract is queried on both.
+GT_NET = {"ethereum": "eth", "eth": "eth", "solana": "solana", "base": "base", "arbitrum": "arbitrum",
+          "bsc": "bsc", "polygon": "polygon_pos", "monad": "monad"}
+
+
+def sane_price(new, last, jump=2.0):
+    """A backup quote against the last good price. No last price accepts any positive number.
+    jump 2 rejects a print below half or above twice the last good price."""
+    try: p = float(new)
+    except (TypeError, ValueError): return False
+    if p <= 0: return False
+    try: prev = float(last) if last else 0.0
+    except (TypeError, ValueError): prev = 0.0
+    if prev <= 0: return True
+    j = float(jump or 2)
+    if j < 1: j = 2.0
+    return prev / j <= p <= prev * j
+
+
+def _liq_pick(cands):
+    cands = [c for c in cands or [] if c.get("usd") and float(c["usd"]) > 0]
+    if not cands: return None
+    return max(cands, key=lambda c: float(c.get("liq") or 0))
+
+
+def parse_ds_pairs(data, sym=None):
+    """DexScreener pairs -> [{usd, liq, chain, address, source}]. sym, when set, keeps that base token only."""
+    if isinstance(data, dict):
+        pairs = data.get("pairs")
+        if pairs is None and isinstance(data.get("data"), list): pairs = data["data"]
+    elif isinstance(data, list):
+        pairs = data
+    else:
+        pairs = None
+    out = []
+    want = (sym or "").upper()
+    for p in pairs or []:
+        if not isinstance(p, dict): continue
+        base = p.get("baseToken") or {}
+        if want and (base.get("symbol") or "").upper() != want: continue
+        try:
+            usd = float(p.get("priceUsd") or 0)
+            liq = float((p.get("liquidity") or {}).get("usd") or 0)
+        except (TypeError, ValueError):
+            continue
+        if usd <= 0: continue
+        out.append(dict(usd=usd, liq=liq, chain=p.get("chainId"), address=base.get("address"), source="dexscreener"))
+    return out
+
+
+def parse_gt_pools(data, sym=None):
+    """GeckoTerminal pools -> the same shape. A search result is filtered by the pool name's base symbol."""
+    out = []
+    want = (sym or "").upper()
+    for p in (data or {}).get("data") or []:
+        if not isinstance(p, dict): continue
+        attr = p.get("attributes") or {}
+        name = str(attr.get("name") or "")
+        base_sym = name.split("/")[0].strip().upper() if "/" in name else ""
+        if want and base_sym and base_sym != want: continue
+        try:
+            usd = float(attr.get("base_token_price_usd") or 0)
+            liq = float(attr.get("reserve_in_usd") or 0)
+        except (TypeError, ValueError):
+            continue
+        if usd <= 0: continue
+        rel = ((p.get("relationships") or {}).get("base_token") or {}).get("data") or {}
+        tid = str(rel.get("id") or "")
+        chain, address = (tid.split("_", 1) if "_" in tid else (None, None))
+        out.append(dict(usd=usd, liq=liq, chain=chain, address=address, source="geckoterminal"))
+    return out
+
+
+def _dex_cache(con):
+    import json
+    raw = con.execute("SELECT value FROM state WHERE key='dex_tokens'").fetchone()
+    try: blob = json.loads(raw[0]) if raw and raw[0] else {}
+    except Exception: blob = {}
+    return blob if isinstance(blob, dict) else {}
+
+
+def _dex_save(con, blob):
+    import json
+    con.execute("INSERT OR REPLACE INTO state VALUES('dex_tokens',?)", (json.dumps(blob),))
+
+
+def _last_usd(con, sym):
+    row = con.execute("""SELECT price FROM prices WHERE asset=? AND klass='crypto' AND source!='backfill' AND price>0
+                         ORDER BY ts DESC LIMIT 1""", (sym,)).fetchone()
+    return float(row[0]) if row and row[0] else None
+
+
+def backup_quotes(con, c, symbols, fetch, now_iso, limit=None):
+    """USD rows for CoinGecko-only coins, from GeckoTerminal then DexScreener.
+
+    fetch(url, params, headers, tries) is collector.get. The most liquid pool wins.
+    A price outside dex.max_jump of the last good price is rejected. Held symbols are first.
+    Returns {sym: price row} with source geckoterminal or dexscreener."""
+    D = (c or {}).get("dex") or {}
+    jump = float(D.get("max_jump", 2))
+    cap = int(D.get("max_per_cycle", 8) if limit is None else limit)
+    if cap <= 0 or not symbols: return {}
+    protected_set = set(protected(con))
+    ordered = sorted({(s or "").upper() for s in symbols if s}, key=lambda s: (s not in protected_set, s))[:cap]
+    cache = _dex_cache(con)
+    headers = {"Accept": "application/json;version=20230302"}
+    out = {}
+    for sym in ordered:
+        last = _last_usd(con, sym)
+        known = cache.get(sym) if isinstance(cache.get(sym), dict) else None
+        cands = []
+        if known and known.get("address"):
+            net = GT_NET.get(str(known.get("chain") or "").lower(), known.get("chain"))
+            addr = known["address"]
+            if net:
+                gt = fetch(f"{GT}/networks/{net}/tokens/{addr}/pools", None, headers, 1)
+                cands += parse_gt_pools(gt)
+            ds = fetch(f"{DS}/latest/dex/tokens/{addr}", None, None, 1)
+            cands += parse_ds_pairs(ds, sym)
+        else:
+            gt = fetch(f"{GT}/search/pools", {"query": sym}, headers, 1)
+            cands += parse_gt_pools(gt, sym)
+            ds = fetch(f"{DS}/latest/dex/search", {"q": sym}, None, 1)
+            cands += parse_ds_pairs(ds, sym)
+        pick = _liq_pick([c for c in cands if sane_price(c.get("usd"), last, jump)])
+        if not pick: continue
+        if pick.get("address"):
+            cache[sym] = dict(chain=pick.get("chain"), address=pick.get("address"))
+        out[sym] = dict(usd=float(pick["usd"]), high=None, low=None, vol=None, src_ts=now_iso, source=pick["source"])
+    if cache:
+        _dex_save(con, cache)
     return out
 
 

@@ -1017,13 +1017,24 @@ def _rest_once(con, c, plan, rate, deliver):
                 import collector
                 usd = collector._kyber_usd(c, item.get("route") or {})
                 if usd: deliver(item["asset"], usd, "USD", "kyber")
-            elif item["kind"] == "coingecko" and pricesrc.allow(con, c, now(), "live"):
+            elif item["kind"] == "coingecko":
                 import collector
+                usd, src = None, "coingecko"
                 cid = (item.get("route") or {}).get("id") or pricesrc._cgid(con, item["asset"])
-                if not cid: continue
-                d = collector.get(f"{collector.CG}/simple/price", {"ids": cid, "vs_currencies": "usd"}, tries=1, purpose="live")
-                usd = ((d or {}).get(cid) or {}).get("usd")
-                if usd: deliver(item["asset"], float(usd), "USD", "coingecko")
+                if cid and pricesrc.allow(con, c, now(), "live"):
+                    own = collector._BUDGET_CON is None
+                    if own: collector.bind_budget(con, c)
+                    try:
+                        d = collector.get(f"{collector.CG}/simple/price", {"ids": cid, "vs_currencies": "usd"}, tries=1, purpose="live")
+                    finally:
+                        if own: collector.bind_budget(None, None)
+                    raw = ((d or {}).get(cid) or {}).get("usd")
+                    if raw: usd = float(raw)
+                if not usd:
+                    rows = pricesrc.backup_quotes(con, c, [item["asset"]], collector.get, ts, limit=1)
+                    row = rows.get(item["asset"]) or {}
+                    if row.get("usd"): usd, src = float(row["usd"]), row.get("source") or "geckoterminal"
+                if usd: deliver(item["asset"], usd, "USD", src)
         except Exception as e:
             L.warning("REST %s failed (%s); the 5-min cycle still exits", item["asset"], e)
 

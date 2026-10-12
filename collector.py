@@ -44,7 +44,7 @@ def get(url, params=None, headers=None, tries=3, purpose="other"):
             if cg and _BUDGET_CON is not None:
                 import pricesrc
                 from common import now as _now
-                pricesrc.add_calls(_BUDGET_CON, _now(), 1)
+                pricesrc.add_calls(_BUDGET_CON, _now(), 1, purpose)
             r = S.get(url, params=params, headers=headers, timeout=20)
             if r.status_code == 429:
                 if tries == 1: L.warning("429 from %s", url); return None
@@ -218,8 +218,9 @@ def _kyber_usd(c, route):
 
 def price_tracked(con, c, ts, status):
     """Re-price every tracked coin. One Kraken Ticker call, then Coinbase tickers, then Kyber for Monad tokens.
-    CoinGecko simple/price is one call for coins with no exchange, and for any exchange call that just failed.
-    That fallback is every 15 min (hourly once the day budget is tight), not every 5-min cycle."""
+    CoinGecko simple/price covers coins with no exchange, and any exchange call that just failed.
+    Held coins and armed entries may use the reserved slice of the day budget. The general fallback may not.
+    A CoinGecko-only coin that still has no price is tried on GeckoTerminal and DexScreener."""
     import pricesrc
     from collections import Counter
     from common import now as now_fn
@@ -231,27 +232,50 @@ def price_tracked(con, c, ts, status):
     for sym, row in priced.items():
         if row.get("usd"): _write_crypto(con, ts, sym, row); wrote.add(sym)
     now = now_fn()
-    cg_syms = []
+    guard = set(pricesrc.protected(con, now))
+    def _cid(s):
+        return (routes.get(s) or {}).get("id") or pricesrc._cgid(con, s)
+    held_ids, other_ids = {}, {}
+    if pricesrc.held_due(con, c, now):
+        for s in syms:
+            if s not in guard: continue
+            if (routes.get(s) or {}).get("src") == "coingecko" or s in missed:
+                cid = _cid(s)
+                if cid: held_ids.setdefault(cid, s)
+        if held_ids: pricesrc.mark(con, "cg_held_ts", ts)
     if pricesrc.fallback_due(con, c, now):
-        cg_syms = [s for s in syms if (routes.get(s) or {}).get("src") == "coingecko"]
+        for s in syms:
+            if s in guard: continue
+            if (routes.get(s) or {}).get("src") == "coingecko" or s in missed:
+                cid = _cid(s)
+                if cid and cid not in held_ids: other_ids.setdefault(cid, s)
         pricesrc.mark(con, "cg_fallback_ts", ts)
-    for s in missed:
-        if s not in cg_syms: cg_syms.append(s)
-    ids = {}
-    for s in cg_syms:
-        cid = (routes.get(s) or {}).get("id") or pricesrc._cgid(con, s)
-        if cid: ids.setdefault(cid, s)
-    if ids:
+    def _pull(ids, purpose):
+        if not ids: return False
         d = get(f"{CG}/simple/price", {"ids": ",".join(list(ids)[:250]), "vs_currencies": "usd", "include_last_updated_at": "true"},
-                tries=2, purpose="fallback")
+                tries=2, purpose=purpose)
+        if not d: return False
         for sym, row in pricesrc.parse_cg_simple(d, ids, ts).items():
             _write_crypto(con, ts, sym, row); wrote.add(sym)
+        return True
+    _pull(held_ids, "held")
+    _pull(other_ids, "fallback")
+    # CoinGecko-only coins still unpriced: a public pool, most liquid, checked against the last good price.
+    # Run when this cycle asked CoinGecko and it missed, or when the general fallback is not allowed to spend.
+    need = [s for s in syms if s not in wrote and (routes.get(s) or {}).get("src") == "coingecko"]
+    if need and (held_ids or other_ids or not pricesrc.allow(con, c, now, "fallback")):
+        for sym, row in pricesrc.backup_quotes(con, c, need, get, ts).items():
+            if row.get("usd"): _write_crypto(con, ts, sym, row); wrote.add(sym)
     cnt = Counter()
     for sym in wrote:
         src = con.execute("SELECT source FROM prices WHERE asset=? AND ts=? AND klass='crypto' ORDER BY rowid DESC LIMIT 1", (sym, ts)).fetchone()
         cnt[(src["source"] if src else None) or "?"] += 1
     today, _month = pricesrc.usage(con, now)
-    status["prices"] = ", ".join(f"{k} {v}" for k, v in sorted(cnt.items())) + f" of {len(syms)}; CoinGecko {today}/{pricesrc.cfg_of(c)['day_budget']} today"
+    by = pricesrc.purpose_counts(con, now)
+    purpose = ", ".join(f"{k} {v}" for k, v in sorted(by.items()))
+    status["prices"] = (", ".join(f"{k} {v}" for k, v in sorted(cnt.items()))
+                        + f" of {len(syms)}; CoinGecko {today}/{pricesrc.cfg_of(c)['day_budget']} today"
+                        + (f" ({purpose})" if purpose else ""))
     return wrote
 
 def crypto(con, c, ts, status):

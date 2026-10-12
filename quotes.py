@@ -69,6 +69,13 @@ def _prefetch_bound(con, c, symbols, px, ts, collector, pricesrc, usd_gbp, to_is
         for sym, row in pricesrc.parse_cg_simple(d, ids, ts).items():
             collector._write_crypto(con, ts, sym, row)
             _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
+    missed_cg = [s for s in cg if (routes.get(s) or {}).get("src") == "coingecko" and not con.execute(
+        "SELECT 1 FROM prices WHERE ts=? AND asset=?", (ts, s)).fetchone()]
+    if missed_cg:
+        for sym, row in pricesrc.backup_quotes(con, c, missed_cg, collector.get, ts).items():
+            if not row.get("usd"): continue
+            collector._write_crypto(con, ts, sym, row)
+            _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
     for s in stocks:
         sym, price, meta, _vi, bars = collector.stock_quote(s)
         if not price or not meta: continue
