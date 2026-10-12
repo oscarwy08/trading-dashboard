@@ -10,17 +10,41 @@ from datetime import datetime
 from pathlib import Path
 
 import freshness
+import markets
 
 
-def dead_quote(age_min, dead_min):
+def dead_quote(age_min, dead_min, klass=None, asset=None, quote_ts=None, now=None):
     """A stored quote older than dead_min must not stop, trail, or flatten.
 
-    Unknown age is dead. The position is unpriced until a quote inside the window arrives,
-    and that first fresh print is the one that can sell.
+    Unknown age is dead. Crypto uses wall-clock minutes. A stock uses wall-clock
+    minutes while its exchange is closed, so a close does not become an exit
+    hours later, and only regular-session minutes while that exchange is open
+    (weekends, holidays, and the overnight gap do not count). The first quote
+    inside the window is the one that can sell.
     """
+    if klass == "stock" and asset is not None and now is not None and markets.is_open(asset, now):
+        open_age = markets.open_minutes(asset, quote_ts, now)
+        if open_age is None:
+            return True
+        return float(open_age) > float(dead_min)
     if age_min is None:
         return True
     return float(age_min) > float(dead_min)
+
+
+def held_quote_view(klass, asset, quote_ts, now, dead_min, has_quote=True):
+    """How a held price should be labelled. A closed stock market is not unpriced.
+
+    Returns unpriced, market_closed, and the wall-clock and open-session ages in minutes.
+    """
+    age = freshness.age_min(quote_ts, now) if quote_ts else None
+    open_age = markets.open_minutes(asset, quote_ts, now) if klass == "stock" and quote_ts else None
+    if not has_quote:
+        return dict(unpriced=False, market_closed=False, price_age_min=age, open_age_min=open_age)
+    if klass == "stock" and not markets.is_open(asset, now):
+        return dict(unpriced=False, market_closed=True, price_age_min=age, open_age_min=open_age)
+    dead = dead_quote(age, dead_min, klass=klass, asset=asset, quote_ts=quote_ts, now=now)
+    return dict(unpriced=dead, market_closed=False, price_age_min=age, open_age_min=open_age)
 
 
 def gap_tag(pts, level, cur, reason):

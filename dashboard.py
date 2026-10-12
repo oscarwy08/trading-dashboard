@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from common import (loans_open, ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
                     transfer_adj, transfer_adj_acct, usd_gbp)
 import daypot, freshness, markets, pricesrc, riskpot, stockrank, trader
+from exits import held_quote_view
 
 def plain(a):   # v5: xStock name -> normal ticker (AMDx -> AMD); historical orders keep the xStock name, alias links them
     m = re.match(r"^([A-Z][A-Z0-9.]*)x$", a or ""); return m.group(1) if m else a
@@ -434,16 +435,20 @@ def build(con):
         now_gbp = usd * rate if usd is not None and rate else None
         val = r["qty"] * now_gbp if now_gbp is not None else None
         src = lp.get(r["asset"])
-        age_m = freshness.age_min((src["source_ts"] or src["ts"]) if src else None, t_now) if src else None
+        qts = (src["source_ts"] or src["ts"]) if src else None
         dead_m = float(rk.get("price_dead_min", 180))
-        # A quote older than price_dead_min is still shown (so the totals reconcile) and marked unpriced.
-        # The trader will not stop, trail, or flatten on it.
-        unpriced = bool(src) and (age_m is None or age_m > dead_m)
+        # A quote older than price_dead_min is still shown (so the totals reconcile). Crypto, and a
+        # stock while its market is open, are marked unpriced when that age is past the window
+        # (a stock counts only open-session minutes). A closed stock market shows the last close.
+        view = held_quote_view(r["klass"], r["asset"], qts, t_now, dead_m, has_quote=bool(src))
+        age_m, open_age = view["price_age_min"], view["open_age_min"]
         positions.append(dict(sleeve=r["sleeve"], acct=acct_of(r["klass"]), tranches=r["tranches"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]), entry=sig(r["entry"]), now=sig(now_gbp),
                               now_usd=sig(usd), cost=r2(r["cost"]), value=r2(val),
                               pnl=r2(r2(val) - r2(r["cost"])) if val is not None else None,   # = shown value - shown cost (reconciles)
                               pnl_pct=round((now_gbp / r["entry"] - 1) * 100, 2) if now_gbp and r["entry"] else None,
-                              unpriced=unpriced, price_age_min=round(age_m, 1) if age_m is not None else None,
+                              unpriced=view["unpriced"], market_closed=view["market_closed"],
+                              price_age_min=round(age_m, 1) if age_m is not None else None,
+                              open_age_min=round(open_age, 1) if open_age is not None else None,
                               stop=sig(r["entry"] * (1 - sl_pct / 100)) if sl_pct else None,
                               take=sig(r["entry"] * (1 + tp_pct / 100)) if tp_pct else None, opened=ep(r["opened"])))
         if r["sleeve"] == "day":     # v7: per-position ATR-scaled levels (prices at which the net-of-sell-cost P&L hits them)

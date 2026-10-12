@@ -29,7 +29,7 @@ import json, math
 from datetime import datetime, timedelta, timezone, time as dtime
 from common import ACCOUNTS, KILL, LON, RISK_RESUME, SLEEVES, acct_of, acct_start, cfg, db, funding, iso, loans_open, log, move_cash, now, sync_pot_cash, usd_gbp
 import daypot, entries, freshness, markets, quotes, riskpot, stockrank, variants
-from exits import book_lock, day_flat_reason, day_reason, gap_tag, risk_reason, stock_flatten_reason
+from exits import book_lock, day_flat_reason, day_reason, dead_quote, gap_tag, risk_reason, stock_flatten_reason
 
 L = log("trader")
 ACCT = {"crypto": "crypto-account", "stocks": "stocks-account"}
@@ -101,7 +101,7 @@ def latest_prices(con, max_age_min, rate, rk=None):
         age = freshness.age_min(r["source_ts"] or r["ts"], now())
         full = float(fulls.get("stock" if r["klass"] == "stock" else "crypto", 5 if r["klass"] == "stock" else 10))
         tradable = age is not None and age <= dead
-        out[r["asset"]] = dict(klass=r["klass"], price=r["price"] * rate, price_usd=r["price"], fresh=tradable, tradable=tradable,
+        out[r["asset"]] = dict(asset=r["asset"], klass=r["klass"], price=r["price"] * rate, price_usd=r["price"], fresh=tradable, tradable=tradable,
                                ts=r["ts"], source_ts=r["source_ts"] or r["ts"], age_min=age, fr_price=freshness.price_score(age, full, dead),
                                vol24=r["vol24"], mcap=r["mcap"])
     return out
@@ -467,14 +467,23 @@ def _cycle():
     def dead_min():
         return float(rk["max_price_age_min"] if not quotes.enabled() else rk.get("price_dead_min", 180))
     def exit_ok(q):
-        """Stop and trail need a quote inside the dead window. latest_prices sets fresh from
-        max_price_age_min offline (45) and from price_dead_min live (180). A held quote older than
-        that is unpriced: it must not sell. The first fresh print is the one that can."""
-        return bool(q and q.get("fresh"))
+        """Stop and trail need a quote inside the dead window. Crypto uses wall-clock age
+        (offline 45 min, live price_dead_min 180). A stock, while its exchange is open, counts
+        only regular-session minutes; while it is closed the wall-clock rule stays, so a close
+        does not stop, trail, or flatten hours later. The first quote inside the window can sell."""
+        if not q: return False
+        if q.get("klass") == "stock":
+            return not dead_quote(q.get("age_min"), dead_min(), klass="stock", asset=q.get("asset"),
+                                  quote_ts=q.get("source_ts") or q.get("ts"), now=t)
+        return bool(q.get("fresh"))
     def unpriced_msg(q, what):
         age = None if not q else q.get("age_min")
         if age is None:
             return f"unpriced: no usable quote; {what} waits for a fresh price"
+        if q.get("klass") == "stock" and mopen(q.get("asset") or ""):
+            shown = markets.open_minutes(q.get("asset"), q.get("source_ts") or q.get("ts"), t)
+            if shown is None: shown = age
+            return f"unpriced: quote {float(shown):.0f} min of market time old, older than {dead_min():.0f} min; {what} waits for a fresh price"
         return f"unpriced: quote {float(age):.0f} min old, older than {dead_min():.0f} min; {what} waits for a fresh price"
     def tag_gap(a, level, cur, reason):
         return gap_tag(hist.get(a) or [], level, cur, reason)
@@ -797,7 +806,7 @@ def _cycle():
     for (sl, a), p in list(pos.items()):
         if sl != "core": continue
         q = px.get(a)
-        if not q or not q["fresh"] or not mopen(a): continue
+        if not q or not exit_ok(q) or not mopen(a): continue
         chg = q["price"] * (1 - fsell(a)) / p["entry"] - 1
         if chg <= -K["stop_loss_pct"] / 100:
             pnl = sell("core", a, p["qty"], f"core stop-loss {chg*100:.1f}% <= -{K['stop_loss_pct']}% from avg cost")

@@ -316,7 +316,7 @@ risk:
     turn_deep: 0.30             # volume/mcap at or above this trims it
     impact_check_usd: 200       # a stored Kyber loss_pct is on this notional; scaled by sqrt(trade / check)
   max_price_age_min: 45         # offline / sim: a price older than this is unusable (same gate as before)
-  price_dead_min: 180           # live: after a failed refresh, ignore a price older than this; younger prices are usable
+  price_dead_min: 180           # live: after a failed refresh, ignore a price older than this; younger prices are usable. Stocks count only minutes the exchange is open.
                                 #   and the freshness score penalises them (full credit inside fresh_full_min)
   fresh_full_min: {crypto: 10, stock: 5}   # minutes of provider-timestamp age that still score full freshness
   min_trade_size: 5             # GBP; skip buys (and rebalance trades) smaller than this (DAY burst may use cash_floor_gbp)

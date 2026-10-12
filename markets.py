@@ -98,6 +98,45 @@ def mins_to_close(sym_or_ex, t):
     s = session(ex, t.astimezone(EXCH[ex]["tz"]).date())
     return (s[1] - t).total_seconds() / 60 if s and s[0] <= t < s[1] else None
 
+def open_minutes(sym_or_ex, start, end):
+    """Minutes between two times that fall inside a regular session.
+
+    Overnight gaps, weekends, and exchange holidays count as zero. An early
+    close ends that day at the early time. None if `start` cannot be read.
+    A span longer than 30 exchange-local days is treated as far past any
+    dead-quote window.
+    """
+    a, b = _as_utc(start), _as_utc(end)
+    if a is None or b is None: return None
+    if b <= a: return 0.0
+    ex = sym_or_ex if sym_or_ex in EXCH else exchange(sym_or_ex)
+    tz = EXCH[ex]["tz"]
+    d, last = a.astimezone(tz).date(), b.astimezone(tz).date()
+    if (last - d).days > 30: return 1e9
+    total = 0.0
+    while d <= last:
+        s = session(ex, d)
+        if s:
+            lo, hi = max(s[0], a), min(s[1], b)
+            if hi > lo: total += (hi - lo).total_seconds() / 60.0
+        d += timedelta(days=1)
+    return total
+
+def _as_utc(t):
+    if t is None: return None
+    if isinstance(t, datetime): return _utc(t)
+    s = str(t).strip().replace("Z", "+00:00")
+    if "." in s:
+        pre, post = s.split(".", 1)
+        for i, ch in enumerate(post):
+            if ch in "+-":
+                s = pre + post[i:]; break
+        else:
+            s = pre
+    try: dt = datetime.fromisoformat(s)
+    except ValueError: return None
+    return _utc(dt)
+
 def last_close(sym_or_ex, t):
     """Most recent session close <= t (UTC)."""
     ex = sym_or_ex if sym_or_ex in EXCH else exchange(sym_or_ex); t = _utc(t)
