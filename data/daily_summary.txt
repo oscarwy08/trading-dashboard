@@ -1,6 +1,6 @@
-PAPER scorecard Mon 12 Oct 06:53 UK
+PAPER scorecard Mon 12 Oct 06:58 UK
 TOTAL Equity £201.00 (+0.50% since £200 start) | Day P&L £-0.90
-vs BTC buy&hold (£) +1.44% | Max DD -1.04% | Win rate 63.16% over 19 closed
+vs BTC buy&hold (£) +1.52% | Max DD -1.04% | Win rate 63.16% over 19 closed
 CRYPTO acct (Monad wallet) £101.00 (+1.00% vs £100) | P&L £+1.00 | day £-0.90 | cash £27.56 | invested £73.44 | realised £+0.41 | fees £0.96 (fee £0.941, gas £0.019) | by pot: CORE £50.96 (cash £-0.00, lent £0.15), DAY £30.13 (cash £27.16, lent £2.97), RISK £19.91 (cash £0.39, owes £3.12)
 STOCKS acct (Trading 212) £100.00 (+0.00% vs £100) | P&L £+0.00 | day £+0.00 | cash £100.00 | invested £0.00 | realised £+0.00 | fees £0.00 () | by pot: CORE £50.00 (cash £50.00), DAY £30.00 (cash £30.00), RISK £20.00 (cash £20.00)
 CORE £100.96 (+0.96% vs £100) | day £-0.54 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | built 5/11 | open: BTC, ETH, MON, WLD, XRP | crypto £50.81 (cash £-0.00) / stocks £50.00 (cash £50.00)
@@ -9,7 +9,7 @@ RISK £39.91 (-0.22% vs £40) | day £-0.36 | realised £+0.28 | win 66.67% of 3
 SELLS RISK CFX +£0.39 (+7.7%), peak +21.5%
   DAY momentum all: 8 closed trades, win 62.5%, avg win +1.88%, avg loss -4.27%, PF 0.75, closed P&L £-0.20 (after its fees £0.28; + £0.00 buy fees on open positions), expectancy -0.42%/trade | today: 0 trades, P&L £+0.00
   DAY burst    all: 8 closed trades, win 62.5%, avg win +2.12%, avg loss -1.33%, PF 2.65, closed P&L £+0.33 (after its fees £0.18; + £0.00 buy fees on open positions), expectancy +0.83%/trade | today: 0 trades, P&L £+0.00
-  DAY burst threshold 0.55 (Day pot today +0.00%), 0/4 setups taken last cycle
+  DAY burst threshold 0.55 (Day pot today +0.00%), 0/5 setups taken last cycle
 RULES frozen since 2026-10-10 (v7.8). Do not retune from one day.
   SETUP momentum         closed   8  net £-0.20  fees £0.28  fee/gross 332%  win 62%  exits: flatten 3, trail 3, stop 2
   SETUP burst            closed   8  net £+0.33  fees £0.18  fee/gross 36%  win 62%  exits: stop 1, flatten 3, trail 3, target 1
@@ -18,4 +18,4 @@ RULES frozen since 2026-10-10 (v7.8). Do not retune from one day.
 LOANS outstanding: RISK owes CORE £0.15 (crypto) for WLD; RISK owes DAY £2.97 (crypto) for WLD
 LOANS repaid (24h): RISK -> CORE £3.97 (crypto) STRK
 GBP/USD 1.3234 (open.er-api.com, 2026-10-12T05:52 UTC)
-VARIANTS since 2026-10-11 18:07: Main book £201.00 (P&L £-1.36, win 83%, max DD -0.8%) | EV exit £201.75 (P&L £-0.62, win 78%, max DD -0.7%) | Review leftovers £201.17 (P&L £-1.19, win 83%, max DD -0.8%) | Both together £201.75 (P&L £-0.62, win 78%, max DD -0.7%) | Burst runner £201.17 (P&L £-1.19, win 83%, max DD -0.8%) | Everything combined £201.86 (P&L £-0.51, win 86%, max DD -0.7%) | Midnight crypto £200.63 (P&L £-1.73, win 33%, max DD -1.0%)
+VARIANTS since 2026-10-11 18:07: Main book £201.00 (P&L £-1.36, win 83%, max DD -0.8%) | EV exit £201.73 (P&L £-0.63, win 78%, max DD -0.7%) | Review leftovers £201.18 (P&L £-1.18, win 83%, max DD -0.8%) | Both together £201.73 (P&L £-0.63, win 78%, max DD -0.7%) | Burst runner £201.18 (P&L £-1.18, win 83%, max DD -0.8%) | Everything combined £201.87 (P&L £-0.50, win 86%, max DD -0.7%) | Midnight crypto £200.62 (P&L £-1.74, win 33%, max DD -1.0%)
