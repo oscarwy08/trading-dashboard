@@ -20,6 +20,11 @@ LABELS = {
     "everything": "Everything combined",
     "midnight_crypto": "Midnight crypto",
     "entry_watch": "Entry watch",
+    "risk_giveback_15": "Risk giveback 15",
+    "day_trail_arm": "Day trail arm",
+    "day_ev_blend": "Day EV blend",
+    "no_risk_clock": "No risk clock",
+    "day_capital_caution": "Day capital caution",
 }
 BLURB = {
     "ev_exit": "Sells a Day or Risk position when live expected value is below -0.4% and at least 0.8 points worse than the value stored at entry. While live value is negative but still above -0.4%, the stop is three quarters of the stored stop.",
@@ -29,6 +34,11 @@ BLURB = {
     "everything": "EV exit, the review leftovers, and the burst runner, on one book. It is copied from the same snapshot as the other books.",
     "midnight_crypto": "Same as the main book, except Day crypto entries run until 23:45 UK and those positions flatten at 00:00 UK. New crypto entries are allowed again from 00:00, and the daily loss budget still resets then. Stocks still flatten 15 minutes before their market closes. Copied from the same snapshot as the other books.",
     "entry_watch": "Same scoring as the main book. Setups the cycle would buy are also armed with a price trigger, a size, and the same stop and target. This is the only book the live watcher is allowed to buy when that trigger trades between cycles. The main book only logs those as WOULD BUY.",
+    "risk_giveback_15": "Risk only. The trail still arms at +15% net. Once armed, it sells when the net gain falls to 65% of the peak net gain, and the 7-day exit waits while that trail is armed. The -12% stop stays. Not combined with the other paper books.",
+    "day_trail_arm": "Day only. A trail arms only when 60% of the peak gain is at least the greater of 4x that trade's round-trip cost and 1x its 1-hour ATR. Once armed, a crossed trail sells. Stop, target, the burst 6-hour hold and the 22:00 flatten stay.",
+    "day_ev_blend": "Day only. Each sub-strategy's expected value is its measured expectancy blended with the model: (n x measured + 10 x model) / (n + 10). Momentum and burst are measured apart. The Risk win is not changed on this book.",
+    "no_risk_clock": "Risk only. The 24-hour re-entry clock is deleted. The next setup buys when its own confidence and expected value clear. No new-high gate and no stop-out cooldown.",
+    "day_capital_caution": "Day only, per account. f is that account's Day loss today divided by 15% of that account's start-of-day Day equity, with no cap at 1. Momentum's threshold is its base (0.35, or 0.30 on MON, WLD and XRP) plus 0.30 x f. Burst uses the same f. Size is multiplied by (1 - min(f, 1)). The -15% halt on the whole Day pot stays.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
@@ -41,7 +51,13 @@ def rules_of(c):
              core_ext_rsi=75.0, entry_own_trend=False, entry_trend_days=3, no_day_core_same_afternoon=False,
              afternoon_hour_uk=12, burst_runner=False, burst_runner_giveback_pct=20,
              midnight_crypto=False, midnight_entry_start_uk="00:00", midnight_entry_cutoff_uk="23:45",
-             midnight_flatten_uk="00:00", entry_watch=False, entry_watch_expiry_min=15)
+             midnight_flatten_uk="00:00", entry_watch=False, entry_watch_expiry_min=15,
+             risk_giveback_15=False, risk_giveback_keep_pct=65,
+             day_trail_arm=False, day_trail_cost_x=4, day_trail_atr_x=1,
+             day_ev_blend=False,
+             no_risk_clock=False,
+             day_capital_caution=False, day_caution_raise=0.30,
+             risk_ev_legacy_win=False)
     for k, v in ((c or {}).get("variant_rules") or {}).items():
         if k in d and v is not None:
             d[k] = v
@@ -51,7 +67,64 @@ def rules_of(c):
 def active(R):
     return bool(R.get("ev_exit") or R.get("burst_stop_widen") or R.get("core_fallback_half")
                 or R.get("entry_own_trend") or R.get("no_day_core_same_afternoon") or R.get("burst_runner")
-                or R.get("midnight_crypto") or R.get("entry_watch"))
+                or R.get("midnight_crypto") or R.get("entry_watch")
+                or R.get("risk_giveback_15") or R.get("day_trail_arm") or R.get("day_ev_blend")
+                or R.get("no_risk_clock") or R.get("day_capital_caution"))
+
+
+TABLE_BOOKS = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock", "day_capital_caution")
+
+
+def blend_ev(model, n, exp, prior_n=10):
+    """(n x measured expectancy + prior_n x model) / (n + prior_n). The model stands alone until a close exists."""
+    model = float(model)
+    if not n or exp is None:
+        return round(model, 3)
+    n, prior = float(n), float(prior_n)
+    return round((n * float(exp) + prior * model) / (n + prior), 3)
+
+
+def caution_f(pnl_frac, cap_pct):
+    """That account's Day loss today / the daily-stop fraction. No cap at 1. A gain is 0."""
+    if not cap_pct or pnl_frac is None or float(pnl_frac) >= 0:
+        return 0.0
+    return (-float(pnl_frac)) / (float(cap_pct) / 100.0)
+
+
+def caution_threshold(base, f, raise_):
+    """Base plus raise x f. f is not clipped at 1, so the hurdle keeps rising past the daily stop."""
+    return round(min(0.99, float(base) + float(raise_) * max(0.0, float(f))), 3)
+
+
+def caution_size_scale(f):
+    """1 at no loss, 0 once f reaches 1. Size is multiplied by this. f above 1 does not go negative."""
+    return max(0.0, 1.0 - min(max(0.0, float(f)), 1.0))
+
+
+def day_arm_bar(R, rt_cost_pct, atr_pct):
+    """Percent the locked share of the peak gain must clear before a Day trail may arm.
+
+    None on the main book. Otherwise max(cost_x x round-trip cost, atr_x x 1-hour ATR).
+    The lock is 60% of the peak when the trail gives back 40%.
+    """
+    if not R.get("day_trail_arm"):
+        return None
+    cost = 0.0 if rt_cost_pct is None else float(rt_cost_pct)
+    atr = 0.0 if not atr_pct else float(atr_pct)
+    return max(float(R.get("day_trail_cost_x", 4)) * cost, float(R.get("day_trail_atr_x", 1)) * atr)
+
+
+def risk_on_clock(R, last_exit, t, cooldown_h):
+    """True when the re-entry clock still blocks. no_risk_clock deletes it.
+
+    There is no new-high gate and no separate cooldown after a stop.
+    """
+    if R.get("no_risk_clock") or not last_exit:
+        return False
+    hours = float(cooldown_h or 0)
+    if hours <= 0:
+        return False
+    return datetime.fromisoformat(str(last_exit)) > t - timedelta(hours=hours)
 
 
 def crypto_hours_to_flat(mins, flat_mins, midnight):
@@ -423,6 +496,124 @@ def _since(con, since, start_equity):
                 max_dd=mdd, realized=sum(x or 0 for x in sells))
 
 
+def sleeve_table(con):
+    """Momentum, burst and risk rows in the Day sub-strategy table shape.
+
+    Closed-trade columns come from the same stats the Day and Risk pages use.
+    Budget is that sleeve's equity (cash + open positions). Open P&L is value minus cost.
+    """
+    from dashboard import day_sub_stats, risk_stats
+    c = cfg()
+    lt = now().astimezone(LON)
+    day = day_sub_stats(con, lt)
+    risk = risk_stats(con, lt).get("all:all") or {}
+    rate = None
+    try:
+        from common import usd_gbp
+        fx = usd_gbp(con, (c.get("fx") or {}).get("max_age_h", 12))
+        rate = fx[0] if fx else None
+    except Exception:
+        rate = None
+    px = {}
+    try:
+        for asset, price in con.execute(
+                """SELECT asset, price FROM (
+                     SELECT asset, price, ROW_NUMBER() OVER (PARTITION BY asset ORDER BY ts DESC, rowid DESC) rn
+                     FROM prices WHERE source!='backfill') WHERE rn=1"""):
+            px[asset] = price
+    except Exception:
+        px = {}
+    import json as _json
+    try:
+        dmeta = _json.loads((con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone() or ["{}"])[0]) or {}
+    except Exception:
+        dmeta = {}
+    open_day = {"momentum": 0.0, "burst": 0.0}
+    open_risk = 0.0
+    cost_day = {"momentum": 0.0, "burst": 0.0}
+    val_day = {"momentum": 0.0, "burst": 0.0}
+    cost_risk = val_risk = 0.0
+    for r in con.execute("SELECT sleeve, asset, klass, qty, cost FROM positions"):
+        usd = px.get(r["asset"])
+        val = (r["qty"] * usd * rate) if (usd is not None and rate) else (r["cost"] or 0)
+        pnl = (val or 0) - (r["cost"] or 0)
+        if r["sleeve"] == "day":
+            sb = (dmeta.get(r["asset"]) or {}).get("sub") or "momentum"
+            if sb not in open_day:
+                sb = "momentum"
+            open_day[sb] += pnl
+            cost_day[sb] += r["cost"] or 0
+            val_day[sb] += val or 0
+        elif r["sleeve"] == "risk":
+            open_risk += pnl
+            cost_risk += r["cost"] or 0
+            val_risk += val or 0
+    cash = {}
+    try:
+        for sl, ac, amt in con.execute("SELECT sleeve, account, amount FROM acct_cash"):
+            cash[(sl, ac)] = amt or 0
+    except Exception:
+        cash = {}
+    risk_cash = sum(v for (sl, _), v in cash.items() if sl == "risk")
+    day_budget = {"momentum": None, "burst": None}
+    try:
+        import daypot
+        from common import acct_start, loans_open
+        base = acct_start(con, c)
+        sh = daypot.sub_shares(c["day"])
+        since = ""
+        try:
+            raw = con.execute("SELECT value FROM state WHERE key='account_split'").fetchone()
+            since = (_json.loads(raw[0]) or {}).get("ts", "") if raw else ""
+        except Exception:
+            since = ""
+        held = []
+        for r in con.execute("SELECT asset, klass, qty, cost FROM positions WHERE sleeve='day'"):
+            sb = (dmeta.get(r["asset"]) or {}).get("sub") or "momentum"
+            usd = px.get(r["asset"])
+            val = (r["qty"] * usd * rate) if (usd is not None and rate) else (r["cost"] or 0)
+            ac = "stocks" if r["klass"] == "stock" else "crypto"
+            held.append(dict(sub=sb if sb in ("momentum", "burst") else "momentum", acct=ac, cost=r["cost"] or 0, value=val or 0))
+        real = daypot.sub_realized(con, since)
+        LO = loans_open(con)
+        L = daypot.sub_ledger(
+            {ac: base["day"][ac] for ac in ("crypto", "stocks")},
+            {ac: cash.get(("day", ac), 0.0) for ac in ("crypto", "stocks")},
+            held, real, sh, ("crypto", "stocks"),
+            borrowed={(sb, ac): sum(l["out"] for l in LO if l["borrower"] == "day" and l["account"] == ac and l["sub"] == sb)
+                      for sb in ("momentum", "burst") for ac in ("crypto", "stocks")},
+            lent={ac: sum(l["out"] for l in LO if l["lender"] == "day" and l["account"] == ac) for ac in ("crypto", "stocks")})
+        for sb in ("momentum", "burst"):
+            day_budget[sb] = sum(L[ac][sb]["equity"] for ac in ("crypto", "stocks"))
+    except Exception:
+        day_budget = {"momentum": None, "burst": None}
+
+    def row(label, st, budget, open_pnl):
+        return dict(
+            strategy=label,
+            budget=None if budget is None else round(budget, 2),
+            trades=st.get("trades") or 0,
+            win_rate=st.get("win_rate"),
+            avg_win=st.get("avg_win"),
+            avg_loss=st.get("avg_loss"),
+            pf=st.get("pf"),
+            pnl=st.get("pnl"),
+            open_pnl=round(open_pnl, 2),
+            fees=st.get("fees"),
+            fees_closed=st.get("fees_closed"),
+            fees_open=st.get("fees_open"),
+            exp_gbp=st.get("exp_gbp"),
+            exp_pct=st.get("exp_pct"),
+        )
+
+    rows = []
+    for sb, label in (("momentum", "Momentum"), ("burst", "Burst")):
+        st = (day.get(sb) or {}).get("all:all") or {}
+        rows.append(row(label, st, day_budget[sb], open_day[sb]))
+    rows.append(row("Risk", risk, risk_cash + val_risk, open_risk))
+    return rows
+
+
 def _book(con, name, label, blurb, since, start_equity):
     from dashboard import setup_scorecard
     st = _since(con, since, start_equity)
@@ -437,6 +628,7 @@ def _book(con, name, label, blurb, since, start_equity):
         realized=round(st["realized"], 2),
         scorecard=setup_scorecard(con, since),
         curve=_curve(con, since),
+        table=sleeve_table(con) if name in TABLE_BOOKS else None,
     )
 
 

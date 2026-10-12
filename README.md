@@ -6,6 +6,16 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## Paper books (2026-10-12): five variants beside the frozen book
+
+None of these changes the main book. Each is its own database, shadow-logged by the exit watcher, and compared on the variants page with the same columns as the Day sub-strategy table.
+
+- **risk_giveback_15.** Arm stays at +15% net. Once armed, sell when the net gain falls to 65% of the peak net gain. The 7-day exit waits while the trail is armed. The −12% stop stays.
+- **day_trail_arm.** A Day trail arms only when 60% of the peak gain is at least the greater of 4× that trade's round-trip cost and 1× its 1-hour ATR. Stop, target, the burst 6-hour hold and the 22:00 flatten stay.
+- **day_ev_blend.** Per sub-strategy, EV = (n × measured expectancy + 10 × the model) / (n + 10). Momentum and burst are measured apart.
+- **no_risk_clock.** The 24-hour Risk re-entry clock is deleted. No new-high gate and no stop-out cooldown.
+- **day_capital_caution.** Per account, f = that account's Day loss today / 15% of that account's start-of-day Day equity, with no cap at 1. The hurdle rises by 0.30 × f and size is multiplied by (1 − min(f, 1)). The −15% halt on the whole Day pot stays.
+
 ## v7.8 (2026-10-10): honest costs, honest EV, and a frozen scorecard (paper only)
 
 The rule set is frozen at `rules.frozen_since` (shown on the dashboard). The next change to a threshold needs a reason that is not one day's P&L.

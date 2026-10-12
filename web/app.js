@@ -534,7 +534,9 @@ function renderDay() {
     `<div class="gauge"><div class="g-h">Today's loss vs the ${R.cap}% daily stop</div>${bval(lf, null, lf >= 1 ? 'neg' : lf > 0.5 ? 'neg' : lf > 0 ? 'lo' : 'ok', `${lossPct.toFixed(2)}% <span class="muted">of ${R.cap}%</span>`)}` +
     `<div class="muted small">${lf >= 1 ? 'Stop reached - no new Day trades today' : `${(lf * 100).toFixed(0)}% of the daily stop used · Day pot today ${fPct(d0.day_pnl_pct)}`}</div></div>` +
     `<div class="gauge"><div class="g-h">Burst confidence threshold</div>${bval(thrV, B.conf_threshold, '', (thrV * 100).toFixed(0) + '%')}` +
-    `<div class="muted small">base ${(B.conf_threshold * 100).toFixed(0)}% (marker), rises to ${((B.conf_threshold + B.conf_raise_at_cap) * 100).toFixed(0)}% at the ${R.cap}% stop · also needs expected value after costs &gt; ${B.ev_min_pct}%</div></div>` +
+    `<div class="muted small">base ${(B.conf_threshold * 100).toFixed(0)}% (marker), rises to ${((B.conf_threshold + B.conf_raise_at_cap) * 100).toFixed(0)}% at the ${R.cap}% stop · also needs expected value after costs &gt; ${B.ev_min_pct}%` +
+    (SS.caution_f ? ` · per account f ${Object.entries(SS.caution_f).map(([k, v]) => `${k} ${Number(v).toFixed(3)}`).join(', ')}` : '') +
+    `</div></div>` +
     `<div class="gauge"><div class="g-h">Free cash per account and sub-strategy</div>${cashRows}<div class="muted small">Budget = the sub-strategy's own money (its ${SH.momentum ?? M.share_pct}% / ${SH.burst ?? B.share_pct}% share of the Day start money + its closed-trade P&L) incl. its open positions at today's price. Free = budget minus its open positions = cash it can still spend. Total free ${fM(freeT)} = Day cash card.</div></div>`;
   // per sub-strategy stats (money columns from the ledger; trade stats for the chosen period)
   const per = S.dayPer || 'all', sc = S.acct || 'all', subs = d0.subs || {};
@@ -997,7 +999,7 @@ function renderSentTimeline(a) {
 }
 
 /* ---------- variant books ---------- */
-const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880', everything: '#2dd4bf', midnight_crypto: '#6366f1'};
+const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880', everything: '#2dd4bf', midnight_crypto: '#6366f1', risk_giveback_15: '#e8b931', day_trail_arm: '#2dd4bf', day_ev_blend: '#c084fc', no_risk_clock: '#fb7185', day_capital_caution: '#38bdf8'};
 function renderVariants() {
   const V = (D && D.variants) || {}, books = V.books || [];
   const el = $('#var-explain');
@@ -1013,6 +1015,27 @@ function renderVariants() {
     {k: 'win_rate', l: 'Win rate', num: 1, f: r => r.win_rate == null ? 'n/a' : r.win_rate.toFixed(0) + '%'},
     {k: 'max_dd', l: 'Max drawdown', num: 1, f: r => r.max_dd == null ? '' : r.max_dd.toFixed(1) + '%'},
   ], rows, null, renderVariants, {empty: V.enabled ? 'No variant has run yet' : 'Variants are switched off'});
+  const booksHost = $('#var-books');
+  if (booksHost) booksHost.innerHTML = rows.filter(b => (b.table || []).length).map(b => {
+    const body = (b.table || []).map(s => `<tr><td>${esc(s.strategy)}</td>` +
+      `<td class="num">${s.budget == null ? '-' : fM(s.budget)}</td>` +
+      `<td class="num">${s.trades ?? 0}</td>` +
+      `<td class="num">${s.win_rate == null ? '-' : s.win_rate.toFixed(0) + '%'}</td>` +
+      `<td class="num"><span class="pos">${fPct(s.avg_win)}</span></td>` +
+      `<td class="num"><span class="neg">${fPct(s.avg_loss)}</span></td>` +
+      `<td class="num">${s.pf == null ? '-' : (s.pf >= 99 ? '∞' : Number(s.pf).toFixed(2))}</td>` +
+      `<td class="num">${pnlCell(s.pnl)}</td>` +
+      `<td class="num">${pnlCell(s.open_pnl)}</td>` +
+      `<td class="num">${fM(s.fees)}<div class="muted small">${fM(s.fees_closed)} closed · ${fM(s.fees_open)} on open buys</div></td>` +
+      `<td class="num">${isNum(s.exp_gbp) ? `<span class="${cls(s.exp_gbp)}">${fM(s.exp_gbp, true)}</span><div class="muted small">${fPct(s.exp_pct)}</div>` : '-'}</td></tr>`).join('');
+    return `<h3 style="color:${VAR_COL[b.name] || '#e7e9ea'}">${esc(b.label)}</h3>` +
+      `<p class="explain">${esc(b.blurb || '')}</p>` +
+      `<div class="tw"><table class="tbl"><thead><tr>` +
+      `<th>Strategy</th><th class="num">Budget</th><th class="num">Closed trades</th><th class="num">Win rate</th>` +
+      `<th class="num">Avg win</th><th class="num">Avg loss</th><th class="num">Profit factor</th>` +
+      `<th class="num">Closed P&amp;L</th><th class="num">Open P&amp;L</th><th class="num">Fees</th>` +
+      `<th class="num">Expectancy / trade</th></tr></thead><tbody>${body}</tbody></table></div>`;
+  }).join('');
   const host = $('#var-score');
   if (host) host.innerHTML = rows.map(b => {
     const sc = b.scorecard || [];
@@ -1035,7 +1058,7 @@ function renderVariants() {
 }
 
 /* ---------- book switch ---------- */
-const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch'};
+const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch', risk_giveback_15: 'Risk giveback 15', day_trail_arm: 'Day trail arm', day_ev_blend: 'Day EV blend', no_risk_clock: 'No risk clock', day_capital_caution: 'Day capital caution'};
 const bookLabel = (name, fallback) => BOOK_LABEL[name] || fallback || name;
 const bookFile = name => (!name || name === 'main') ? 'data.json' : (/^[a-z0-9_]+$/.test(name) ? 'data_' + name + '.json' : null);
 let menu = [{name: 'main', label: 'Main (frozen)', file: 'data.json', variant: false}];

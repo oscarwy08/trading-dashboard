@@ -38,7 +38,7 @@ def day_flat_reason(mins, flat, e0, flatten_uk, entry_start_uk, fresh):
 
 
 def day_reason(entry, price, opened, md, sub_cfg, st, comb, info, now, fee_frac, buy_thr, asset, stop_pct=None,
-               giveback_pct=None, defer_burst_target=False):
+               giveback_pct=None, defer_burst_target=False, arm_floor_pct=None):
     """Day stop / trail / target / max-hold / signal. Mutates md['peak'] and maybe md['runner'].
 
     Returns reason (or None), the runner note, and the gain figures the hold line uses.
@@ -47,6 +47,8 @@ def day_reason(entry, price, opened, md, sub_cfg, st, comb, info, now, fee_frac,
     `giveback_pct` overrides the trail giveback once a burst is already a runner.
     `defer_burst_target` leaves a burst that has just hit its target for the caller (the
     burst-runner book). The watcher does not pass it, so a burst still sells at the target.
+    `arm_floor_pct` replaces the fixed arm: the trail arms only when the locked share of the
+    peak gain (percent) is at least this. None keeps trail_after_pct.
     """
     md["peak"] = max(float(md.get("peak") or 0), price)
     chg = price * (1 - fee_frac) / entry - 1
@@ -55,7 +57,11 @@ def day_reason(entry, price, opened, md, sub_cfg, st, comb, info, now, fee_frac,
         gb = float(giveback_pct) / 100
     else:
         gb = float(sub_cfg.get("runner_giveback_pct", 20) if md.get("runner") else sub_cfg["trail_giveback_pct"]) / 100
-    trail_on = pkg >= float(sub_cfg["trail_after_pct"]) / 100
+    lock_pct = pkg * (1 - gb) * 100
+    if arm_floor_pct is None:
+        trail_on = pkg >= float(sub_cfg["trail_after_pct"]) / 100
+    else:
+        trail_on = lock_pct + 1e-9 >= float(arm_floor_pct)
     lvl = pkg * (1 - gb)
     held_h = (now - datetime.fromisoformat(opened)).total_seconds() / 3600
     sl = float(md["sl"] if stop_pct is None else stop_pct)
@@ -85,9 +91,11 @@ def day_reason(entry, price, opened, md, sub_cfg, st, comb, info, now, fee_frac,
                 held_h=held_h, at_target=at_target)
 
 
-def risk_reason(entry, price, peak, opened, rp, sent, now, fee_frac, stop_pct=None):
+def risk_reason(entry, price, peak, opened, rp, sent, now, fee_frac, stop_pct=None, keep_pct=None):
     """Risk stop / trail / max-hold / sentiment. `peak` is the stored peak price (GBP).
-    `stop_pct` overrides the config stop when a variant book has tightened it."""
+    `stop_pct` overrides the config stop when a variant book has tightened it.
+    `keep_pct` replaces the price trail: once armed at trail_after_pct, sell when the net gain
+    falls to this share of the peak net gain. The 7-day exit then waits while the trail is armed."""
     pk = max(float(peak or 0), price)
     chg = price * (1 - fee_frac) / entry - 1
     pk_gain = pk * (1 - fee_frac) / entry - 1
@@ -97,16 +105,24 @@ def risk_reason(entry, price, peak, opened, rp, sent, now, fee_frac, stop_pct=No
     if chg <= -stop / 100:
         reason = (f"risk stop-loss {chg*100:.1f}% <= -{rp['stop_loss_pct']}%" if abs(stop - float(rp["stop_loss_pct"])) < 1e-9
                   else f"risk stop-loss {chg*100:.1f}% <= -{stop:.1f}% (tightened from -{rp['stop_loss_pct']}%)")
-    elif trail_on and pk and price <= pk * (1 - rp["trail_pct"] / 100):
+    elif keep_pct is not None and trail_on and chg <= pk_gain * float(keep_pct) / 100.0:
+        reason = (f"trailing stop {chg*100:+.1f}% (peak +{pk_gain*100:.1f}%, "
+                  f"keeps {float(keep_pct):.0f}% of the gain)")
+    elif keep_pct is None and trail_on and pk and price <= pk * (1 - rp["trail_pct"] / 100):
         reason = f"trailing take-profit: {(price / pk - 1) * 100:.1f}% from peak (peak +{pk_gain*100:.1f}%), now {chg*100:+.1f}%"
-    elif held_d >= rp["max_hold_days"]:
+    elif held_d >= rp["max_hold_days"] and not (keep_pct is not None and trail_on):
         reason = f"max hold {rp['max_hold_days']} days reached ({held_d:.1f} d), {chg*100:+.1f}%"
     elif sent and sent["score"] <= rp["sentiment_exit"] and sent["confidence"] >= 0.6:
         reason = f"sentiment exit {sent['score']:+.2f} (conf {sent['confidence']:.2f})"
     else:
         reason = None
-    hold = (f"open {chg*100:+.1f}%, peak +{pk_gain*100:.1f}%, {held_d:.1f} d"
-            + (f", trailing stop £{pk * (1 - rp['trail_pct'] / 100):.5g}" if trail_on else ""))
+    if trail_on and keep_pct is not None:
+        trail_bit = f", lock +{pk_gain * float(keep_pct):.1f}%"
+    elif trail_on:
+        trail_bit = f", trailing stop £{pk * (1 - rp['trail_pct'] / 100):.5g}"
+    else:
+        trail_bit = ""
+    hold = f"open {chg*100:+.1f}%, peak +{pk_gain*100:.1f}%, {held_d:.1f} d" + trail_bit
     return dict(reason=reason, peak=pk, chg=chg, pk_gain=pk_gain, trail_on=trail_on, hold=hold)
 
 

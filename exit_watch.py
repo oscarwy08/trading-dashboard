@@ -688,11 +688,21 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
             if md.get("runner") and md.get("sub") == "burst" and R.get("burst_runner"):
                 giveback = float(R.get("burst_runner_giveback_pct", 20))
             defer = bool(R.get("burst_runner"))
-            if stop_over is None and giveback is None and not defer:
+            snap = md.get("snap") if isinstance(md.get("snap"), dict) else {}
+            if isinstance(md.get("snap"), str):
+                try:
+                    snap = json.loads(md["snap"])
+                except (TypeError, ValueError):
+                    snap = {}
+            rt_here = snap.get("costs") if isinstance(snap, dict) else None
+            if rt_here is None:
+                rt_here = (cost_pct(c, a, p["klass"], "BUY", q, p["qty"] * gbp) + f_) * 100
+            bar = variants.day_arm_bar(R, rt_here, md.get("atr"))
+            if stop_over is None and giveback is None and not defer and bar is None:
                 d = day_reason(p["entry"], gbp, p["opened"], md, SUBC[md["sub"]], st, comb, info, t, f_, thr, a)
             else:
                 d = day_reason(p["entry"], gbp, p["opened"], md, SUBC[md["sub"]], st, comb, info, t, f_, thr, a,
-                               stop_over, giveback, defer_burst_target=defer)
+                               stop_over, giveback, defer_burst_target=defer, arm_floor_pct=bar)
             reason = ev_reason or d["reason"]
             if d.get("at_target") and not ev_reason and defer:
                 keep, why_b = _burst_keep(con, c, a, p["klass"], gbp, t)
@@ -742,11 +752,12 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
                     ev_reason = variants.ev_exit_reason(evn, eev, R)
                 else:
                     stop_over = variants.effective_stop_pct(float(RP["stop_loss_pct"]), evn, R, "risk")
-            if ev_reason is None and stop_over is None:
+            keep = float(R["risk_giveback_keep_pct"]) if R.get("risk_giveback_15") else None
+            if ev_reason is None and stop_over is None and keep is None:
                 d = risk_reason(p["entry"], gbp, peaks.get(a), p["opened"], RP, se, t, f_)
             else:
                 d = risk_reason(p["entry"], gbp, peaks.get(a), p["opened"], RP, se, t, f_,
-                                float(RP["stop_loss_pct"]) if stop_over is None else stop_over)
+                                float(RP["stop_loss_pct"]) if stop_over is None else stop_over, keep)
             reason = ev_reason or d["reason"]
             if live and float(peaks.get(a) or 0) != d["peak"]:
                 peaks[a] = d["peak"]; note_book()

@@ -1,0 +1,4 @@
+# Day trail arms only when 60% of the peak gain clears the greater of 4x round-trip cost
+# and 1x the trade's 1-hour ATR. Stop, target, the burst 6-hour hold and the 22:00 flatten stay.
+variant_rules:
+  day_trail_arm: true
