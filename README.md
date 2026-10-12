@@ -6,6 +6,12 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## Backtest (report only)
+
+`python3 backtest.py` replays the stored prices in `data/trading.db` through the main book and each name in `variants.run`. It uses the live trader, so fees and slippage are the ones the cycle charges. It writes a temporary copy only. It does not change the frozen rules or the live database.
+
+Each book is marked FAIL when closed trades are under 100, max drawdown is over 20%, profit factor is under 1.1, or net P&L does not beat buying and holding BTC over the same window (one buy and one sell at `fee_slippage_pct`). Daily closes and the stored Risk screen are not rewound with the clock, so Core picks and Risk crypto can see later information. Day entries and exits only see prices up to the clock.
+
 ## v7.9 (2026-10-12): dead quotes, EV exit off, Risk win is the trail lock (paper only)
 
 Three corrections on the main book. The frozen thresholds are otherwise unchanged.
