@@ -900,7 +900,7 @@ def _rest_once(con, c, plan, rate, deliver):
         try:
             if item["kind"] == "stock":
                 import collector
-                _s, price, meta, _v = collector.stock_quote(item["asset"])
+                _s, price, meta, _v, _bars = collector.stock_quote(item["asset"])
                 if not price or not meta: continue
                 factor = collector.usd_factor(con, meta.get("currency"))
                 if factor: deliver(item["asset"], price * factor, "USD", "yahoo")

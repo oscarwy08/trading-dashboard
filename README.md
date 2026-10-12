@@ -6,6 +6,10 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## Stock intraday history (2026-10-12)
+
+Day and Risk stock rows were scoring RSI 50 and 4h +0.0% because Yahoo's 15-minute closes were fetched and then thrown away. Only one print per cycle was stored, so a weekend left fewer than 15 hourly closes and the score filled the gap with a neutral RSI and a zero move. The collector and the pre-trade quote now keep those 15-minute closes (USD, no duplicate timestamps). Stock momentum looks back eight calendar days so prior sessions survive the weekend. If the 4h move or the 15 hourly closes are still missing, the signal is `stale history` and the name does not score. Buy and sell thresholds are unchanged. Crypto prices still come from `pricesrc.py` (Kraken / Coinbase / Kyber / CoinGecko); that router does not carry stock bars.
+
 ## v7.8 (2026-10-10): honest costs, honest EV, and a frozen scorecard (paper only)
 
 The rule set is frozen at `rules.frozen_since` (shown on the dashboard). The next change to a threshold needs a reason that is not one day's P&L.

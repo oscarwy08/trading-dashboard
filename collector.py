@@ -458,12 +458,34 @@ def vol_ratio(r, now_ts=None):
     except Exception: return None
 
 def stock_quote(sym):
-    """(sym, price in quote currency, meta, volume info) from Yahoo (regularMarketPrice: real-time for US, ~15 min delayed
-    for London). v7: 5 days of 15-min bars (same single call) for the DAY burst volume-spike check."""
+    """(sym, price in quote currency, meta, volume info, [(epoch, close)]) from Yahoo (regularMarketPrice: real-time
+    for US, ~15 min delayed for London). The 5-day 15-minute closes come from the same call: burst volume, and the
+    intraday series stored for 4h / 24h / RSI / EMA."""
     try:
-        r = yahoo(sym, "5d", "15m")[0]; return sym, r["meta"]["regularMarketPrice"], r["meta"], vol_ratio(r)
+        r, bars = yahoo(sym, "5d", "15m"); return sym, r["meta"]["regularMarketPrice"], r["meta"], vol_ratio(r), bars
     except Exception as e:
-        L.error("stock %s: Yahoo quote failed: %s", sym, e); return sym, None, None, None
+        L.error("stock %s: Yahoo quote failed: %s", sym, e); return sym, None, None, None, None
+
+def store_stock_bars(con, sym, meta, bars, source="yahoo-15m"):
+    """Insert Yahoo intraday closes that are not already stored, converted to USD. Returns how many rows were new.
+    The cycle's regularMarketPrice row is separate (newer timestamp), so the latest price stays the live print.
+    Calling this again does not duplicate bars already in the table."""
+    if not sym or not bars or not meta: return 0
+    f = usd_factor(con, meta.get("currency"))
+    if not f: return 0
+    epochs = []
+    for t, p in bars:
+        if t is None or not p or p <= 0: continue
+        epochs.append((datetime.fromtimestamp(t, timezone.utc).replace(microsecond=0).isoformat(), p * f))
+    if not epochs: return 0
+    have = {r[0] for r in con.execute("SELECT ts FROM prices WHERE asset=? AND ts>=?", (sym, epochs[0][0]))}
+    n = 0
+    for tsx, usd in epochs:
+        if tsx in have: continue
+        con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (tsx, sym, "stock", usd, None, None, None, None, source, tsx))
+        have.add(tsx); n += 1
+    return n
 
 def market_proxy(con, c, ts, status):
     """v7: broad-market filter for DAY burst stock entries - index proxy per exchange (config day.burst.market.stocks.proxy,
@@ -491,7 +513,9 @@ def market_proxy(con, c, ts, status):
 def stocks(con, c, ts, status):
     """Intraday stock quotes (Yahoo, 8 threads; DB writes on the main thread), converted to USD (prices table is USD).
     Market-hours aware: a ticker is fetched while its exchange is open, and once more after the close (to capture the
-    closing price); otherwise skipped (saves calls nights/weekends - the trader does not trade closed markets anyway)."""
+    closing price); otherwise skipped (saves calls nights/weekends - the trader does not trade closed markets anyway).
+    Each fetch also stores the 5-day 15-minute closes Yahoo already returned. Names the Day/Risk table still scores
+    after they leave the top-N list are refreshed while their market is open, at most every 15 minutes."""
     from concurrent.futures import ThreadPoolExecutor
     import markets
     syms = intraday_stocks(con, c)
@@ -503,21 +527,28 @@ def stocks(con, c, ts, status):
         lc = markets.last_close(s, now_)
         last = con.execute("SELECT MAX(ts) FROM prices WHERE asset=? AND source='yahoo'", (s,)).fetchone()[0]
         if not last or (lc and datetime.fromisoformat(last) < lc + timedelta(minutes=25)): todo.append(s)   # closing price (Yahoo LSE delay ~15 min)
+    cut = (now_ - timedelta(minutes=15)).isoformat(); symset = set(syms)
+    for s, in con.execute("SELECT DISTINCT asset FROM prices WHERE klass='stock'"):
+        if s in symset or not markets.is_open(s, now_): continue
+        last = con.execute("SELECT MAX(ts) FROM prices WHERE asset=? AND klass='stock' AND source!='backfill'", (s,)).fetchone()[0]
+        if not last or last < cut: todo.append(s)
     with ThreadPoolExecutor(8) as ex: res = list(ex.map(stock_quote, todo))
-    ok = 0
+    ok = bars_n = 0
     svol = st_get(con, "stock_vol") or {}
-    for sym, price, meta, vi in res:
+    for sym, price, meta, vi, bars in res:
         if not price: continue
         if vi: svol[sym] = dict(ts=ts, **vi)
         f = usd_factor(con, meta.get("currency"))
         if not f: L.warning("stock %s: unknown currency %s", sym, meta.get("currency")); continue
         stock_meta(con, sym, meta)
+        bars_n += store_stock_bars(con, sym, meta, bars)
         rmt = meta.get("regularMarketTime")
         src_ts = datetime.fromtimestamp(rmt, timezone.utc).replace(microsecond=0).isoformat() if rmt else ts
         con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts, sym, "stock", price * f, None, None, None, None, "yahoo", src_ts))
         ok += 1
     st_set(con, "stock_vol", {k: v for k, v in svol.items() if v["ts"] >= (now_ - timedelta(days=2)).isoformat()})
-    status["stocks"] = f"{ok}/{len(todo)} quotes ok (Yahoo), {len(syms) - len(todo)} skipped (market closed, closing price stored)"
+    status["stocks"] = (f"{ok}/{len(todo)} quotes ok (Yahoo), {bars_n} new 15m bars, "
+                        f"{len(syms) - len([s for s in syms if s in set(todo)])} skipped (market closed, closing price stored)")
 
 def gas(con, c, ts, status):
     """Simulated Monad network fee per swap: eth_gasPrice (public RPC) * gas_per_swap, MON -> USD (latest MON price) -> GBP.

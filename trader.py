@@ -45,6 +45,10 @@ def rsi(xs, n=14):
     up, dn = sum(x for x in d if x > 0), -sum(x for x in d if x < 0)
     return 100.0 if dn == 0 else 100 - 100 / (1 + up / dn)
 
+# Stocks only print while the exchange is open, so a 72h window often holds one session (under 15 hourly
+# closes) and RSI/EMA cannot be computed. Eight calendar days covers a long weekend plus the prior sessions.
+STOCK_MOM_H = 24 * 8
+
 def history(con, asset, hours=72):
     since, until = iso(now() - timedelta(hours=hours)), iso(now() + timedelta(seconds=1))
     return [(datetime.fromisoformat(r[0]), r[1]) for r in con.execute(
@@ -52,7 +56,12 @@ def history(con, asset, hours=72):
         (asset, since, until))]
 
 def momentum(pts, min_h):
-    """Returns (score, info, rsi) or (None, reason, None)."""
+    """Returns (score, info, rsi) or (None, reason, None).
+
+    A 4h move that is not in the series, or fewer than 15 hourly closes, is stale history. It is not scored
+    as RSI 50 and a 0% move (that neutral stand-in cannot be told apart from a real flat tape, and it kept
+    stocks under the buy line). A real 0% move with enough hourly closes still scores. Thresholds are unchanged.
+    """
     if not pts or (pts[-1][0] - pts[0][0]).total_seconds() < min_h * 3600:
         return None, "insufficient history", None
     t, p = pts[-1]
@@ -61,10 +70,12 @@ def momentum(pts, min_h):
         return p / old[-1] - 1 if old else None
     hourly = list({ts.strftime("%Y%m%d%H"): x for ts, x in pts}.values())
     r4, r24 = ret(4), ret(24)
+    if r4 is None or len(hourly) <= 14:
+        return None, "stale history", None
     cross = 1 if ema(hourly, 6) > ema(hourly, 24) else -1
-    rs = rsi(hourly) if len(hourly) > 14 else 50
+    rs = rsi(hourly)
     rsi_term = -1 if rs > 75 else 0.5 if rs < 25 else 0
-    score = 0.35 * clip((r4 or 0) / 0.03) + 0.35 * clip((r24 if r24 is not None else r4 or 0) / 0.08) \
+    score = 0.35 * clip(r4 / 0.03) + 0.35 * clip((r24 if r24 is not None else r4) / 0.08) \
         + 0.2 * cross + 0.1 * rsi_term
     fmt = lambda r: "n/a" if r is None else f"{r*100:+.1f}%"
     return round(score, 3), f"4h {fmt(r4)}, 24h {fmt(r24)}, EMA6/24 {'up' if cross > 0 else 'down'}, RSI {rs:.0f}", rs
@@ -207,10 +218,18 @@ def init_core(con, c):
     sset(con, "core_last_rebalance", iso())
     return picks
 
-def score_asset(con, asset, st, t):
-    """(momentum, sentiment, combined, info, rsi, history). The cycle and the exit watcher share this blend."""
+def score_asset(con, asset, st, t, klass=None):
+    """(momentum, sentiment, combined, info, rsi, history). The cycle and the exit watcher share this blend.
+
+    The returned history stays the 72h window the rest of the cycle uses (breakouts, ATR, dips). Stock momentum
+    reads further back so a weekend does not wipe the prior sessions out of RSI and the 4h/24h move.
+    """
     pts = history(con, asset)
-    m, info, rs_ = momentum(pts, st["min_history_h"])
+    if klass is None:
+        row = con.execute("SELECT klass FROM prices WHERE asset=? ORDER BY ts DESC LIMIT 1", (asset,)).fetchone()
+        klass = row[0] if row else None
+    mom = history(con, asset, STOCK_MOM_H) if klass == "stock" else pts
+    m, info, rs_ = momentum(mom, st["min_history_h"])
     if m is None:
         return None, None, None, info, None, pts
     s = sentiment(con, asset, st["sentiment_max_age_h"])
@@ -442,7 +461,7 @@ def _cycle():
     # ---- score every asset (DAY signal; sentiment also used by CORE tranche timing) ----
     scores, hist, rsi_at = {}, {}, {}
     for a, p in px.items():
-        m, s, comb, info, rs_, pts = score_asset(con, a, st, t)
+        m, s, comb, info, rs_, pts = score_asset(con, a, st, t, p.get("klass"))
         hist[a] = pts; rsi_at[a] = rs_; scores[a] = (m, s, comb, info)
 
     def exit_ok(q):
@@ -1230,7 +1249,9 @@ def _cycle():
     rstat = []
     for a, bscore, ok, why, kind, c7 in raw_c:
         if ("risk", a) in pos or any(x["a"] == a for x in rstat): continue
-        q = px[a]; pts = hist.get(a) or history(con, a); m, minfo, _rs7 = momentum(pts, RP.get("min_history_h", 2))
+        q = px[a]; pts = hist.get(a) or history(con, a)
+        mom_pts = history(con, a, STOCK_MOM_H) if q["klass"] == "stock" else pts
+        m, minfo, _rs7 = momentum(mom_pts, RP.get("min_history_h", 2))
         se = sentiment(con, a, st["sentiment_max_age_h"])
         vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
         mok, reg, mkinfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
