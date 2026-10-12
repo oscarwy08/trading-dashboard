@@ -64,6 +64,10 @@ common._NOW = trader.now().replace(second=0)
 import riskpot
 _rconf = riskpot.confidence
 riskpot.confidence = lambda R, brk, *a, **k: (brk, dict(breakout=brk, volume=brk, sentiment=brk, market=brk, hit_rate=brk)) if brk in (0.80, 0.60) else _rconf(R, brk, *a, **k)
+# The 3.5% trail lock does not clear 0.3% with no measured edge. This file is about the loan,
+# so an exceptional 0.80 setup is given an EV above the hurdle. The hurdle itself is tested in sim.
+_sev = riskpot.setup_ev
+riskpot.setup_ev = lambda R, conf, atr, rt, ss: ((1.0, 3.5, 8.0, 0.5) if conf == 0.80 else _sev(R, conf, atr, rt, ss))
 print("1. exceptional breakout short of cash -> borrow from CORE")
 c = setup(0.80, risk_cash=3.0, core_cash=60.0)
 before, _, _, _ = snap(); out = run(); cash, loans, pos, ln = snap()

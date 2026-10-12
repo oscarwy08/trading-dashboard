@@ -6,6 +6,14 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7.9 (2026-10-12): dead quotes, EV exit off, Risk win is the trail lock (paper only)
+
+Three corrections on the main book. The frozen thresholds are otherwise unchanged.
+
+- **Dead exit price.** A held quote older than `price_dead_min` (180 minutes live, 45 offline) does not stop, trail, or flatten. The position is marked unpriced and is sold on the first fresh print. Entries already refused a dead price.
+- **EV exit off.** `ev_now` rises as the trade falls, so it was a take-profit on winners. `ev_action` stays off until the upside is taken from the current price and the chance is recomputed. `ev_exit`, `all_combined` and `everything` are reset from the current main book; sells before that reset are not counted. The dashboard says so.
+- **Risk expected win.** The win in `setup_ev` is the gain the trail locks when it arms: `(1 + 15%) × (1 − 10%) − 1 = 3.5%`, the same on every coin. It is not the old 13.5%, and it is not scaled by ATR. The loss prior is still scaled by ATR. The 12% stop and the trail rules are unchanged.
+
 ## v7.8 (2026-10-10): honest costs, honest EV, and a frozen scorecard (paper only)
 
 The rule set is frozen at `rules.frozen_since` (shown on the dashboard). The next change to a threshold needs a reason that is not one day's P&L.

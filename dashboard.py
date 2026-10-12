@@ -9,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 from common import (loans_open, ACCOUNTS, KILL, LON, RISK_RESUME, ROOT, SITE, SLEEVES, acct_of, acct_start, cfg, db, now, rebase,
                     transfer_adj, transfer_adj_acct, usd_gbp)
-import daypot, freshness, markets, pricesrc, stockrank, trader
+import daypot, freshness, markets, pricesrc, riskpot, stockrank, trader
 
 def plain(a):   # v5: xStock name -> normal ticker (AMDx -> AMD); historical orders keep the xStock name, alias links them
     m = re.match(r"^([A-Z][A-Z0-9.]*)x$", a or ""); return m.group(1) if m else a
@@ -433,10 +433,17 @@ def build(con):
         usd = lp[r["asset"]]["price"] if r["asset"] in lp else None
         now_gbp = usd * rate if usd is not None and rate else None
         val = r["qty"] * now_gbp if now_gbp is not None else None
+        src = lp.get(r["asset"])
+        age_m = freshness.age_min((src["source_ts"] or src["ts"]) if src else None, t_now) if src else None
+        dead_m = float(rk.get("price_dead_min", 180))
+        # A quote older than price_dead_min is still shown (so the totals reconcile) and marked unpriced.
+        # The trader will not stop, trail, or flatten on it.
+        unpriced = bool(src) and (age_m is None or age_m > dead_m)
         positions.append(dict(sleeve=r["sleeve"], acct=acct_of(r["klass"]), tranches=r["tranches"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]), entry=sig(r["entry"]), now=sig(now_gbp),
                               now_usd=sig(usd), cost=r2(r["cost"]), value=r2(val),
                               pnl=r2(r2(val) - r2(r["cost"])) if val is not None else None,   # = shown value - shown cost (reconciles)
                               pnl_pct=round((now_gbp / r["entry"] - 1) * 100, 2) if now_gbp and r["entry"] else None,
+                              unpriced=unpriced, price_age_min=round(age_m, 1) if age_m is not None else None,
                               stop=sig(r["entry"] * (1 - sl_pct / 100)) if sl_pct else None,
                               take=sig(r["entry"] * (1 + tp_pct / 100)) if tp_pct else None, opened=ep(r["opened"])))
         if r["sleeve"] == "day":     # v7: per-position ATR-scaled levels (prices at which the net-of-sell-cost P&L hits them)
@@ -721,6 +728,7 @@ def build(con):
                    ev_min=RP.get("ev_min_pct"), ev_win=RP.get("ev_win_pct"), ev_loss=RP.get("ev_loss_pct"),
                    volume_x=RP.get("volume_x"), record_days=RP.get("record_days"), confirm=RP.get("confirm_momentum"), min_trade=c["risk"]["min_trade_size"],
                    stop=RP.get("stop_loss_pct"), trail_after=RP.get("trail_after_pct"), trail=RP.get("trail_pct"),
+                   ev_lock=round(riskpot.arm_lock_pct(RP), 2),
                    hold=RP.get("max_hold_days"), cap=RP.get("drawdown_cap_pct"), cooldown=RP.get("cooldown_h"), top_n=RC.get("top_n"),
                    min_mcap=RC.get("min_mcap_usd"), max_mcap=RC.get("max_mcap_usd"), min_vol=RC.get("min_vol_usd"), sent_block=RP.get("sentiment_block"),
                    sent_exit=RP.get("sentiment_exit")))

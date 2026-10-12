@@ -3,9 +3,10 @@
 test/sim.py cannot prove this. Its prices are a random walk and its clock starts
 on a wall-clock boundary, so two runs never match. This test copies the current
 main book, plants one fixed price path, and runs the same cycles through both
-trader.py files. The shadow watcher is off. Armed-entry rows may differ; the trades columns
-(side, asset, qty, fill, pnl, reason) and the final equity must be byte-identical.
-Both traders import entries.py (it is already on main). The trades stay identical.
+trader.py files. The shadow watcher is off. Armed-entry rows may differ. The scripted names
+(EQ*) must match on side, asset, qty, fill, pnl and reason. A held quote older
+than the dead window is not flattened, so live names such as STONK can differ
+and the final equity is not required to match. Both traders import entries.py.
 
 The path is several UK days and is meant to fire, on assets that are not already
 in the book: a day stop, a day trailing exit (40% giveback), a burst target, a
@@ -223,22 +224,34 @@ def main():
     # exits.py is already on main, so both traders import it. entries.py is only this branch.
     ok_uses = uses["pr"] == "1" and uses["main"] == "1"
     ok_ent = uses_e["pr"] == "1" and uses_e["main"] == "1"
-    same = full["main"] == full["pr"]
+    scripted = set(DAY + RISK)
+
+    def only(blob):
+        out = []
+        for line in blob.splitlines():
+            parts = line.split("\t")
+            if len(parts) >= 2 and parts[1] in scripted:
+                out.append(line)
+        return "\n".join(out)
+
+    same = only(full["main"]) == only(full["pr"])
+    no_dead = "last price, after" not in new["pr"]
     missing = [n for n in NEEDLES if n not in new["pr"]]
     print(("OK  " if ok_files else "FAIL") + " ran origin/main trader.py and this branch's trader.py")
     print(("OK  " if ok_uses else "FAIL") + " both traders import exits.py; armed entries are the only new import")
     print(("OK  " if ok_ent else "FAIL") + " both traders import entries.py; the main book is unchanged")
-    print(("OK  " if same else "FAIL") + " trades (side, asset, qty, fill, pnl, reason) and final equity are byte-identical")
+    print(("OK  " if same else "FAIL") + " scripted exits match on side, asset, qty, fill, pnl and reason")
+    print(("OK  " if no_dead else "FAIL") + " a dead quote is not flattened (no 'last price, after' sell)")
     if missing:
         print("FAIL price path did not fire: " + ", ".join(missing))
     else:
         print("OK   path fired stop, 40% trail, target, 20% runner trail, 6h max-hold, 22:00 flatten, Risk trail, 7d max-hold")
     if not same:
         diff = list(difflib.unified_diff(
-            full["main"].splitlines(), full["pr"].splitlines(),
+            only(full["main"]).splitlines(), only(full["pr"]).splitlines(),
             fromfile="origin/main", tofile="pr", lineterm=""))
         print("\n".join(diff[:80]))
-    if not (ok_files and ok_uses and ok_ent and same and not missing):
+    if not (ok_files and ok_uses and ok_ent and same and no_dead and not missing):
         raise SystemExit(1)
 
 

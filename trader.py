@@ -445,10 +445,18 @@ def _cycle():
         m, s, comb, info, rs_, pts = score_asset(con, a, st, t)
         hist[a] = pts; rsi_at[a] = rs_; scores[a] = (m, s, comb, info)
 
+    def dead_min():
+        return float(rk["max_price_age_min"] if not quotes.enabled() else rk.get("price_dead_min", 180))
     def exit_ok(q):
-        """Offline/sim: same 45-minute cutoff as before. Live: any stored price can exit (a missed cycle fills at the real price)."""
-        if not q: return False
-        return True if quotes.enabled() else bool(q.get("fresh"))
+        """Stop and trail need a quote inside the dead window. latest_prices sets fresh from
+        max_price_age_min offline (45) and from price_dead_min live (180). A held quote older than
+        that is unpriced: it must not sell. The first fresh print is the one that can."""
+        return bool(q and q.get("fresh"))
+    def unpriced_msg(q, what):
+        age = None if not q else q.get("age_min")
+        if age is None:
+            return f"unpriced: no usable quote; {what} waits for a fresh price"
+        return f"unpriced: quote {float(age):.0f} min old, older than {dead_min():.0f} min; {what} waits for a fresh price"
     def tag_gap(a, level, cur, reason):
         return gap_tag(hist.get(a) or [], level, cur, reason)
     def sent_in(se):
@@ -472,7 +480,9 @@ def _cycle():
         if sl != "risk": continue
         q = px.get(a)
         if not mopen(a): sig("risk", a, None, None, None, "HOLD", f"{closed_msg(a)} - exits checked when it opens"); continue
-        if not exit_ok(q): sig("risk", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
+        if not exit_ok(q):
+            sig("risk", a, None, None, None, "HOLD", unpriced_msg(q, "stop and trail") if q else "stale/missing price, cannot evaluate exit")
+            continue
         f = fsell(a)
         se = sentiment(con, a, st["sentiment_max_age_h"])
         stop_pct = float(RP["stop_loss_pct"])
@@ -548,14 +558,12 @@ def _cycle():
         q = px.get(a); m, s, comb, info = scores.get(a, (None, None, None, ""))
         opened_day = datetime.fromisoformat(p["opened"]).astimezone(LON).date().isoformat()
         if p["klass"] == "stock" and (mclose_in(a) is None or mclose_in(a) <= int(D.get("stock_flatten_before_close_min", 15))):
-            if not q:
-                last = con.execute("SELECT price FROM prices WHERE asset=? AND source!='backfill' AND ts<=? ORDER BY ts DESC LIMIT 1",
-                                   (a, ts)).fetchone()
-                if last:
-                    q = px[a] = dict(klass=p["klass"], price=last[0] * rate, price_usd=last[0], fresh=False, tradable=True,
-                                     ts=ts, source_ts=ts, age_min=None, fr_price=0, vol24=None, mcap=None)
+            if not exit_ok(q):
+                if not q:
+                    day_late.append(a); sig("day", a, m, s, comb, "HOLD", "flatten due but no price at all")
                 else:
-                    day_late.append(a); sig("day", a, m, s, comb, "HOLD", "flatten due but no price at all"); continue
+                    sig("day", a, m, s, comb, "HOLD", unpriced_msg(q, "flatten"))
+                continue
             cl = mclose_in(a)
             day_exit(a, p, stock_flatten_reason(cl, markets.exchange(a)), m, s, comb); continue
         crypto_midnight = bool(R["midnight_crypto"]) and p["klass"] != "stock"
@@ -566,21 +574,21 @@ def _cycle():
             session_flat = flat_now or opened_day != day
             flat_label = D["flatten_uk"]
         if session_flat:
-            if not q:
-                last = con.execute("SELECT price FROM prices WHERE asset=? AND source!='backfill' AND ts<=? ORDER BY ts DESC LIMIT 1",
-                                   (a, ts)).fetchone()
-                if last:
-                    q = px[a] = dict(klass=p["klass"], price=last[0] * rate, price_usd=last[0], fresh=False, tradable=True,
-                                     ts=ts, source_ts=ts, age_min=None, fr_price=0, vol24=None, mcap=None)
-                else:
+            if not exit_ok(q):
+                if not q:
                     day_late.append(a)
-                    sig("day", a, m, s, comb, "HOLD", f"flatten {flat_label} UK due but no price at all"); continue
+                    sig("day", a, m, s, comb, "HOLD", f"flatten {flat_label} UK due but no price at all")
+                else:
+                    sig("day", a, m, s, comb, "HOLD", unpriced_msg(q, "flatten"))
+                continue
             if crypto_midnight:
                 why = day_flat_reason(mins, 0, 0, flat_label, flat_label, q.get("fresh"))
             else:
                 why = day_flat_reason(mins, flat, e0, D["flatten_uk"], D["entry_start_uk"], q.get("fresh"))
             day_exit(a, p, why, m, s, comb); continue
-        if not exit_ok(q): sig("day", a, None, None, None, "HOLD", "stale/missing price, cannot evaluate exit"); continue
+        if not exit_ok(q):
+            sig("day", a, None, None, None, "HOLD", unpriced_msg(q, "stop and trail") if q else "stale/missing price, cannot evaluate exit")
+            continue
         md = dmeta.get(a)
         if not md:     # pre-v7 position: becomes a momentum trade with ATR levels computed now
             at_ = atr_of(a); tp_, sl_ = daypot.levels(DM["take_profit"], DM["stop"], at_)
