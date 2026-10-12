@@ -1035,7 +1035,7 @@ function renderVariants() {
 }
 
 /* ---------- book switch ---------- */
-const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto'};
+const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch'};
 const bookLabel = (name, fallback) => BOOK_LABEL[name] || fallback || name;
 const bookFile = name => (!name || name === 'main') ? 'data.json' : (/^[a-z0-9_]+$/.test(name) ? 'data_' + name + '.json' : null);
 let menu = [{name: 'main', label: 'Main (frozen)', file: 'data.json', variant: false}];
