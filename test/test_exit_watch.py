@@ -294,7 +294,7 @@ check(missed_only[0]["status"] == "cycle missed" and "missed this move" in text 
       "a would-buy with no cycle buy is a move the cycle missed")
 
 os.environ["ENTRY_WATCH_SHADOW"] = "0"
-bought = exit_watch.act_entries(con, {"ARM1": 1.05}, live=True)
+bought = exit_watch.act_entries(con, {"ARM1": 1.05}, live=True, book="entry_watch")
 check(len(bought) == 1 and bought[0]["log"].startswith("BUY ") and bought[0].get("shadow") is False,
       "live mode buys when the trigger trades")
 check(con.execute("SELECT COUNT(*) FROM positions WHERE sleeve='risk' AND asset='ARM1'").fetchone()[0] == 1,
@@ -302,7 +302,7 @@ check(con.execute("SELECT COUNT(*) FROM positions WHERE sleeve='risk' AND asset=
 meta = __import__("json").loads(con.execute("SELECT value FROM state WHERE key='risk_meta'").fetchone()[0])
 check(meta.get("ARM1", {}).get("setup") == "breakout", "the fill stores the risk setup the cycle would have stored")
 n_live = con.execute("SELECT COUNT(*) FROM trades WHERE asset='ARM1' AND side='BUY'").fetchone()[0]
-second = exit_watch.act_entries(con, {"ARM1": 1.08}, live=True)
+second = exit_watch.act_entries(con, {"ARM1": 1.08}, live=True, book="entry_watch")
 check(second == [] and n_live == 1 and con.execute("SELECT COUNT(*) FROM trades WHERE asset='ARM1' AND side='BUY'").fetchone()[0] == 1,
       "a second tick does not buy again")
 cash_after = con.execute("SELECT amount FROM acct_cash WHERE sleeve='risk' AND account='crypto'").fetchone()[0]
@@ -312,10 +312,86 @@ common._NOW = datetime(2026, 10, 11, 21, 30, tzinfo=timezone.utc)  # 22:30 UK, f
 entries.upsert(con, dict(arm, asset="ARM2", sleeve="day", sub="momentum", setup="momentum", ts="2026-10-11T21:20:00+00:00",
                          expires="2026-10-11T21:40:00+00:00", reason="momentum hold"))
 con.commit()
-blocked = exit_watch.act_entries(con, {"ARM2": 1.05}, live=True)
+blocked = exit_watch.act_entries(con, {"ARM2": 1.05}, live=True, book="entry_watch")
 check(blocked == [] and con.execute("SELECT 1 FROM positions WHERE asset='ARM2'").fetchone() is None,
       "flatten time blocks an entry even when the price has traded")
 common._NOW = datetime(2026, 10, 11, 12, 0, tzinfo=timezone.utc)
+
+# --- every variant book is shadow-only, tagged, and uses its own rules ---
+from exit_shadow_report import format_book_summary, pair_stats
+
+refused = exit_watch.act_entries(con, {"ARM1": 1.05}, live=True, book="ev_exit")
+check(refused == [] or (refused and refused[0].get("shadow") is True),
+      "a live buy on a book other than entry_watch is not written")
+check(con.execute("SELECT COUNT(*) FROM trades WHERE asset='ARM1' AND side='BUY'").fetchone()[0] == 1,
+      "refusing ev_exit does not add another ARM1 buy")
+
+# Same open position, two books: each gets its own WOULD EXIT, and neither is sold while exits are live.
+os.environ["EXIT_WATCH_SHADOW"] = "0"
+opened_v = "2026-10-11T10:00:00+00:00"
+con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)", ("day", "VARY", "crypto", 10, 1.0, 10.0, opened_v, 1))
+dmeta = __import__("json").loads(con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone()[0])
+dmeta["VARY"] = dict(sub="burst", tp=8, sl=2.5, peak=px_for(0.061), opened=opened_v)
+con.execute("INSERT OR REPLACE INTO state VALUES('day_meta', ?)", (__import__("json").dumps(dmeta),))
+con.commit()
+main_hit = exit_watch.shadow_evaluate(con, {"VARY": px_for(0.02)}, book="main", c=exit_watch.config_for("main"))
+ev_hit = exit_watch.shadow_evaluate(con, {"VARY": px_for(0.02)}, book="ev_exit", c=exit_watch.config_for("ev_exit"))
+check(main_hit and main_hit[0]["log"].startswith("WOULD EXIT") and "[ev_exit]" not in main_hit[0]["log"],
+      "main shadow exits stay untagged")
+check(ev_hit and ev_hit[0]["log"].startswith("WOULD EXIT [ev_exit]"), "a variant shadow exit is tagged with the book")
+check(con.execute("SELECT 1 FROM positions WHERE asset='VARY'").fetchone() is not None,
+      "shadow exits do not sell the variant, even when main exits are live")
+sh = __import__("sqlite3").connect(exit_watch.shadow_db_path())
+books = {r[0] for r in sh.execute("SELECT DISTINCT IFNULL(book,'main') FROM would_exit WHERE asset='VARY'")}
+sh.close()
+check(books == {"main", "ev_exit"}, "the same position is logged once per book")
+
+# 22:30 UK flattens the main book and leaves a same-day midnight-crypto position open.
+common._NOW = datetime(2026, 10, 11, 21, 30, tzinfo=timezone.utc)
+con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)",
+            ("day", "NIGHT", "crypto", 10, 1.0, 10.0, "2026-10-11T12:00:00+00:00", 1))
+dmeta = __import__("json").loads(con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone()[0])
+dmeta["NIGHT"] = dict(sub="momentum", tp=8, sl=2.5, peak=1.0, opened="2026-10-11T12:00:00+00:00")
+con.execute("INSERT OR REPLACE INTO state VALUES('day_meta', ?)", (__import__("json").dumps(dmeta),))
+con.commit()
+night_main = exit_watch.shadow_evaluate(con, {"NIGHT": 1.0}, book="main", c=exit_watch.config_for("main"))
+night_mid = exit_watch.shadow_evaluate(con, {"NIGHT": 1.0}, book="midnight_crypto", c=exit_watch.config_for("midnight_crypto"))
+check(any("flatten 22:00" in (e.get("reason") or "") for e in night_main), "main flattens Day crypto at 22:00 UK")
+check(night_mid == [], "midnight crypto does not flatten a position opened today at 22:30 UK")
+
+# EV exit fires on that book only. Price is not through the stored 8% stop.
+common._NOW = datetime(2026, 10, 11, 12, 0, tzinfo=timezone.utc)
+snap = dict(p=0.2, target=4, loss=8, entry=1.0, ev=1.2, conf=0.7)
+dmeta = __import__("json").loads(con.execute("SELECT value FROM state WHERE key='day_meta'").fetchone()[0])
+dmeta["EVX"] = dict(sub="burst", tp=8, sl=8, peak=1.0, opened=opened_v, snap=snap)
+con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)", ("day", "EVX", "crypto", 10, 1.0, 10.0, opened_v, 1))
+con.execute("INSERT OR REPLACE INTO state VALUES('day_meta', ?)", (__import__("json").dumps(dmeta),))
+con.commit()
+ev_main = exit_watch.shadow_evaluate(con, {"EVX": 0.995}, book="main", c=exit_watch.config_for("main"))
+ev_var = exit_watch.shadow_evaluate(con, {"EVX": 0.995}, book="ev_exit", c=exit_watch.config_for("ev_exit"))
+check(not any("EV exit" in (e.get("reason") or "") for e in ev_main), "main does not use the EV exit rule")
+check(any("EV exit" in (e.get("reason") or "") for e in ev_var), "ev_exit shadows a sell when live EV turns down")
+
+# One symbol shared by two books is watched once.
+os.environ["VARIANTS_DIR"] = str(_watch_tmp / "variants")
+vdir = Path(os.environ["VARIANTS_DIR"])
+vdir.mkdir(parents=True, exist_ok=True)
+import shutil
+shutil.copy(os.environ["TRADING_DB"], vdir / "burst_runner.db")
+rows = exit_watch.books_to_watch(con)
+check(len([r for r in rows if r["asset"] == "VARY"]) == 1, "one price fetch per symbol even when two books hold it")
+
+stats = pair_stats([
+    dict(status="matched", dt_s=10, price_pct=1.0),
+    dict(status="matched", dt_s=30, price_pct=-1.0),
+    dict(status="cycle missed", dt_s=None, price_pct=None),
+])
+check(stats["pairs"] == 2 and abs(stats["avg_dt_s"] - 20) < 1e-9 and abs(stats["avg_price_pct"]) < 1e-9 and stats["missed"] == 1,
+      "per-book stats average the time gap and the price gap, and count missed moves")
+text = format_book_summary("ev_exit", stats, dict(pairs=0, avg_dt_s=None, avg_price_pct=None, missed=0))
+check("ev_exit" in text and "2 pairs" in text and "avg time gap 20s" in text and "avg price gap +0.00%" in text
+      and "missed moves 1" in text and "entries: no shadow rows" in text,
+      "the per-book report prints pairs, average gaps, and missed moves")
 
 print(f"\n{len(fails)} failure(s)")
 raise SystemExit(1 if fails else 0)

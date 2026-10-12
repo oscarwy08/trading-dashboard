@@ -12,7 +12,10 @@ Two shadow switches, independent of each other. Both default to on.
 EXIT_WATCH_SHADOW: log WOULD EXIT and do not sell. Set it to 0 to sell for real.
 ENTRY_WATCH_SHADOW: log WOULD BUY and do not buy. Set it to 0 to buy, and only
 on the entry_watch variant book. The main book never receives an entry from
-this process. WOULD EXIT and WOULD BUY both go to
+this process. Every other paper book under data/variants/ is shadow-logged
+too (WOULD EXIT and WOULD BUY), using that book's own rules, and is never
+sold or bought by this process. Each shadow row is tagged with the book name.
+WOULD EXIT and WOULD BUY both go to
 ~/exit_shadow/exit_shadow.db (EXIT_SHADOW_DB overrides that path), outside the
 clone, so run_cycle.sh's git reset --hard does not delete it. Review with
 `python3 exit_shadow_report.py`.
@@ -44,6 +47,7 @@ import daypot
 import entries
 import markets
 import pricesrc
+import variants
 from common import KILL, LON, cfg, db, iso, log, now, usd_gbp
 from exits import book_lock, day_flat_reason, day_reason, gap_tag, risk_reason, stock_flatten_reason
 from trader import apply_buy, apply_sell, cost_pct, gas_gbp, history, hm, score_asset, sentiment, sget, sset
@@ -81,6 +85,29 @@ def entry_shadow_mode():
     return _flag_on("ENTRY_WATCH_SHADOW")
 
 
+def config_for(book):
+    """Config for one book. Main uses config.yaml. A variant merges its overlay.
+
+    The environment is restored before this returns, so a later cfg() call is main again.
+    """
+    old = os.environ.get("TRADING_VARIANT")
+    try:
+        if book and book != "main":
+            os.environ["TRADING_VARIANT"] = book
+        else:
+            os.environ.pop("TRADING_VARIANT", None)
+        return cfg()
+    finally:
+        if old is None:
+            os.environ.pop("TRADING_VARIANT", None)
+        else:
+            os.environ["TRADING_VARIANT"] = old
+
+
+def _book_name(book):
+    return book or "main"
+
+
 def shadow_db_path():
     """Where WOULD EXIT rows are stored. Outside the clone by default.
 
@@ -111,6 +138,7 @@ def _shadow_connect():
         qty REAL,
         entry REAL,
         klass TEXT)""")
+    _ensure_book_column(con, "would_exit")
     con.execute("CREATE TABLE IF NOT EXISTS shadow_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
     con.execute("""CREATE TABLE IF NOT EXISTS would_buy (
         id INTEGER PRIMARY KEY,
@@ -129,14 +157,27 @@ def _shadow_connect():
         target_pct REAL,
         klass TEXT,
         reason TEXT)""")
+    _ensure_book_column(con, "would_buy")
     con.commit()
     return con
 
 
-def _shadow_peaks(shcon):
+def _ensure_book_column(con, table):
+    cols = {r[1] for r in con.execute(f"PRAGMA table_info({table})")}
+    if "book" not in cols:
+        con.execute(f"ALTER TABLE {table} ADD COLUMN book TEXT")
+        con.execute(f"UPDATE {table} SET book='main' WHERE book IS NULL")
+
+
+def _peaks_key(book):
+    """Main keeps the original key so an existing shadow file still has its peaks."""
+    return "peaks" if _book_name(book) == "main" else "peaks:" + _book_name(book)
+
+
+def _shadow_peaks(shcon, book="main"):
     if shcon is None:
         return {"day": {}, "risk": {}}
-    row = shcon.execute("SELECT value FROM shadow_state WHERE key='peaks'").fetchone()
+    row = shcon.execute("SELECT value FROM shadow_state WHERE key=?", (_peaks_key(book),)).fetchone()
     if not row:
         return {"day": {}, "risk": {}}
     try:
@@ -148,34 +189,38 @@ def _shadow_peaks(shcon):
     return data
 
 
-def _shadow_seen(shcon, sleeve, asset, opened):
+def _shadow_seen(shcon, sleeve, asset, opened, book="main"):
     return shcon.execute(
-        "SELECT 1 FROM would_exit WHERE sleeve=? AND asset=? AND IFNULL(opened,'')=IFNULL(?,'') LIMIT 1",
-        (sleeve, asset, opened)).fetchone() is not None
+        """SELECT 1 FROM would_exit WHERE sleeve=? AND asset=? AND IFNULL(opened,'')=IFNULL(?,'')
+           AND IFNULL(book,'main')=? LIMIT 1""",
+        (sleeve, asset, opened, _book_name(book))).fetchone() is not None
 
 
-def _buy_line(shadow, ts, arm, gbp):
+def _buy_line(shadow, ts, arm, gbp, book="main"):
     head = "WOULD BUY" if shadow else "BUY"
+    tag = "" if _book_name(book) == "main" else f"[{_book_name(book)}] "
     vol = f" vol x{float(arm['volume_min']):g}" if arm.get("volume_min") is not None else ""
-    return (f"{head} {arm['sleeve']} {arm['asset']} at {ts} trigger £{gbp:.6g} "
+    return (f"{head} {tag}{arm['sleeve']} {arm['asset']} at {ts} trigger £{gbp:.6g} "
             f"(level £{float(arm['level']):.6g}{vol}) size £{float(arm['size_gbp']):.2f} "
             f"stop -{float(arm['stop_pct']):.1f}% target +{float(arm['target_pct']):.1f}% | {arm.get('reason') or ''}")
 
 
-def _record_would_buy(shcon, ts, arm, gbp):
-    """First WOULD BUY for this armed row. A later tick does not add another."""
+def _record_would_buy(shcon, ts, arm, gbp, book="main"):
+    """First WOULD BUY for this armed row on this book. A later tick does not add another."""
+    book = _book_name(book)
     if shcon.execute(
-            "SELECT 1 FROM would_buy WHERE sleeve=? AND asset=? AND IFNULL(armed,'')=? LIMIT 1",
-            (arm["sleeve"], arm["asset"], arm.get("ts"))).fetchone():
+            """SELECT 1 FROM would_buy WHERE sleeve=? AND asset=? AND IFNULL(armed,'')=?
+               AND IFNULL(book,'main')=? LIMIT 1""",
+            (arm["sleeve"], arm["asset"], arm.get("ts"), book)).fetchone():
         return None
     shcon.execute(
-        """INSERT INTO would_buy(ts,sleeve,sub,setup,asset,armed,expires,trigger,level,price,size_gbp,stop_pct,target_pct,klass,reason)
-           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        """INSERT INTO would_buy(ts,sleeve,sub,setup,asset,armed,expires,trigger,level,price,size_gbp,stop_pct,target_pct,klass,reason,book)
+           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (ts, arm["sleeve"], arm.get("sub"), arm.get("setup"), arm["asset"], arm.get("ts"), arm.get("expires"),
          arm.get("reason") or arm.get("trigger") or "break_above", arm.get("level"), gbp, arm.get("size_gbp"),
-         arm.get("stop_pct"), arm.get("target_pct"), arm.get("klass"), arm.get("reason")))
+         arm.get("stop_pct"), arm.get("target_pct"), arm.get("klass"), arm.get("reason"), book))
     shcon.commit()
-    line = _buy_line(True, ts, arm, gbp)
+    line = _buy_line(True, ts, arm, gbp, book)
     return dict(sleeve=arm["sleeve"], asset=arm["asset"], price=gbp, reason=arm.get("reason"), log=line,
                 shadow=True, ts=ts, level=arm.get("level"))
 
@@ -201,13 +246,17 @@ def _stamp_open(con, arm, ts, price, snap):
     sset(con, "risk_meta", rmeta)
 
 
-def _entry_tick(con, prices_gbp, live):
+def _entry_tick(con, prices_gbp, live, book="main", c=None):
     """Shadow-log (live False) or buy (live True) armed entries whose trigger has traded.
 
     A missing live tick does not fire. Flatten, cash, session and the open-slot
-    checks are entries.skip_reason. The main book is only ever called with live False.
+    checks are entries.skip_reason. Live buys are only for the entry_watch book.
+    Every other book, including main, only logs WOULD BUY.
     """
-    c = cfg()
+    book = _book_name(book)
+    if live and book != "entry_watch":
+        live = False
+    c = c or cfg()
     t = now()
     ts = iso(t)
     fx = usd_gbp(con, c["fx"]["max_age_h"])
@@ -230,7 +279,7 @@ def _entry_tick(con, prices_gbp, live):
             if entries.skip_reason(con, c, arm, gbp, t, rate, prices_gbp):
                 continue
             if not live:
-                rec = _record_would_buy(shcon, ts, arm, gbp)
+                rec = _record_would_buy(shcon, ts, arm, gbp, book)
                 if rec:
                     L.info(rec["log"])
                     out.append(rec)
@@ -246,7 +295,7 @@ def _entry_tick(con, prices_gbp, live):
             con.execute(
                 "INSERT INTO signals(ts,sleeve,asset,momentum,sentiment,combined,action,reason) VALUES(?,?,?,?,?,?,?,?)",
                 (ts, arm["sleeve"], asset, None, None, arm.get("conf"), "BUY", arm.get("reason") or "live trigger"))
-            line = _buy_line(False, ts, arm, gbp)
+            line = _buy_line(False, ts, arm, gbp, book)
             L.info(line)
             out.append(dict(sleeve=arm["sleeve"], asset=asset, price=gbp, reason=arm.get("reason"), log=line,
                             shadow=False, ts=ts))
@@ -256,14 +305,20 @@ def _entry_tick(con, prices_gbp, live):
             shcon.close()
 
 
-def act_entries(con, prices_gbp, recv_mono=None, live=False):
-    """One entry pass. live=False never writes the book. live=True buys under that book's lock."""
+def act_entries(con, prices_gbp, recv_mono=None, live=False, book="main", c=None):
+    """One entry pass. live=False never writes the book. live=True buys under that book's lock.
+
+    live=True is ignored unless book is entry_watch. Variant shadow logs never buy.
+    """
     del recv_mono
+    book = _book_name(book)
+    if live and book != "entry_watch":
+        live = False
     if KILL.exists():
         L.info("KILL file present - watcher halted, no entries")
         return []
     if not live:
-        return _entry_tick(con, prices_gbp, live=False)
+        return _entry_tick(con, prices_gbp, live=False, book=book, c=c)
     try:
         path = con.execute("PRAGMA database_list").fetchone()[2]
     except Exception:
@@ -272,7 +327,7 @@ def act_entries(con, prices_gbp, recv_mono=None, live=False):
         with book_lock(timeout=2, db_path=path):
             con.execute("BEGIN IMMEDIATE")
             try:
-                rows = _entry_tick(con, prices_gbp, live=True)
+                rows = _entry_tick(con, prices_gbp, live=True, book=book, c=c)
                 con.commit()
                 return rows
             except Exception:
@@ -283,20 +338,22 @@ def act_entries(con, prices_gbp, recv_mono=None, live=False):
         return []
 
 
-def _would_line(ts, sleeve, asset, price, chg, peak, reason):
+def _would_line(ts, sleeve, asset, price, chg, peak, reason, book="main"):
     peak_s = f" peak {peak * 100:+.1f}%" if peak is not None else ""
-    return f"WOULD EXIT {sleeve} {asset} at {ts} trigger £{price:.6g} net {chg * 100:+.1f}%{peak_s} | {reason}"
+    tag = "" if _book_name(book) == "main" else f"[{_book_name(book)}] "
+    return f"WOULD EXIT {tag}{sleeve} {asset} at {ts} trigger £{price:.6g} net {chg * 100:+.1f}%{peak_s} | {reason}"
 
 
-def _record_would(shcon, ts, p, gbp, reason, chg, peak):
-    """First WOULD EXIT for this open position. A later tick does not add another row."""
-    if _shadow_seen(shcon, p["sleeve"], p["asset"], p.get("opened")):
+def _record_would(shcon, ts, p, gbp, reason, chg, peak, book="main"):
+    """First WOULD EXIT for this open position on this book. A later tick does not add another row."""
+    book = _book_name(book)
+    if _shadow_seen(shcon, p["sleeve"], p["asset"], p.get("opened"), book):
         return None
     shcon.execute(
-        "INSERT INTO would_exit(ts,sleeve,asset,opened,trigger,price,chg,peak,qty,entry,klass) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-        (ts, p["sleeve"], p["asset"], p.get("opened"), reason, gbp, chg, peak, p.get("qty"), p.get("entry"), p.get("klass")))
+        "INSERT INTO would_exit(ts,sleeve,asset,opened,trigger,price,chg,peak,qty,entry,klass,book) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+        (ts, p["sleeve"], p["asset"], p.get("opened"), reason, gbp, chg, peak, p.get("qty"), p.get("entry"), p.get("klass"), book))
     shcon.commit()
-    line = _would_line(ts, p["sleeve"], p["asset"], gbp, chg, peak, reason)
+    line = _would_line(ts, p["sleeve"], p["asset"], gbp, chg, peak, reason, book)
     return dict(sleeve=p["sleeve"], asset=p["asset"], price=gbp, reason=reason, pnl=None,
                 log=line, chg=chg, peak=peak, shadow=True, ts=ts)
 
@@ -310,7 +367,7 @@ def _lift_day_peak(md, asset, opened, state):
         md["runner"] = True
 
 
-def _store_shadow_peaks(shcon, dmeta, peaks, rows, state):
+def _store_shadow_peaks(shcon, dmeta, peaks, rows, state, book="main"):
     """Remember peaks the watcher has seen, without writing day_meta or risk_peaks."""
     day = dict(state.get("day") or {})
     risk = dict(state.get("risk") or {})
@@ -329,8 +386,8 @@ def _store_shadow_peaks(shcon, dmeta, peaks, rows, state):
     # Drop a peak that belonged to a position which has since been closed in the book.
     day = {a: v for a, v in day.items() if a in open_day and v.get("opened") == open_day[a]["opened"]}
     risk = {a: v for a, v in risk.items() if a in open_risk and v.get("opened") == open_risk[a]["opened"]}
-    shcon.execute("INSERT OR REPLACE INTO shadow_state VALUES('peaks', ?)",
-                  (json.dumps({"day": day, "risk": risk}),))
+    shcon.execute("INSERT OR REPLACE INTO shadow_state VALUES(?, ?)",
+                  (_peaks_key(book), json.dumps({"day": day, "risk": risk})))
 
 
 def kraken_symbol(route):
@@ -421,6 +478,56 @@ def _line(sleeve, asset, price, chg, peak, lat, reason):
     return f"EXIT {sleeve} {asset} trigger £{price:.6g} net {chg * 100:+.1f}%{peak_s} latency {lat_s} | {reason}"
 
 
+def _pos_ev(c, meta, price, asset, klass, q):
+    """(EV now, entry EV) from the snapshot stored at the buy. None without a stored probability."""
+    snap = (meta or {}).get("snap") or {}
+    if isinstance(snap, str):
+        try:
+            snap = json.loads(snap)
+        except (TypeError, ValueError):
+            snap = {}
+    p_hit, tgt, loss, entry = snap.get("p"), snap.get("target"), snap.get("loss"), snap.get("entry")
+    if p_hit is None or tgt is None or loss is None or not entry or not price:
+        return None, snap.get("ev")
+    cost = cost_pct(c, asset, klass, "SELL", q) * 100
+    evn = daypot.ev_now(p_hit, price, float(entry) * (1 + float(tgt) / 100.0),
+                        float(entry) * (1 - float(loss) / 100.0), cost)
+    return evn, snap.get("ev")
+
+
+def _burst_keep(con, c, asset, klass, gbp, t):
+    """Same gates as a new burst entry, used when a burst_runner book hits its target."""
+    D, st = c["day"], c["strategy"]
+    DB = D["burst"]
+    pts = history(con, asset)
+    brk = daypot.breakout(con, asset, pts, DB)
+    vol = daypot.crypto_vol_ratio(con, asset, t) if klass != "stock" else daypot.stock_vol_ratio(con, asset, t, sget)
+    r_ = daypot.rsi_h(pts)
+    se = sentiment(con, asset, st["sentiment_max_age_h"])
+    hist = {asset: pts}
+    if klass != "stock":
+        hist["BTC"] = history(con, "BTC")
+    mok, reg, _info = daypot.market_regime(con, klass, asset, hist, t, DB, sget, markets.exchange)
+    kind = brk.get("kind")
+    ss = daypot.setup_stats(con, kind or "24h", DB, t)
+    sent = None if not se else se["score"]
+    conf, _parts = daypot.confidence(DB, brk.get("strength") or 0, vol, sent, reg, ss["p"], freshness=1)
+    thr = daypot.threshold(DB, 0.0, D["daily_loss_cap_pct"])
+    vx = float(DB["volume_x"])
+    vol_ok = not ((vol is not None and vol < vx) or (vol is None and (DB.get("require_volume") or kind != "24h")))
+    sent_ok = not (se and se["score"] < float(DB["sentiment_min"]))
+    return variants.burst_target_action(bool(kind), vol_ok, r_, DB["rsi_max"], sent_ok, bool(mok), conf, thr)
+
+
+def shadow_evaluate(con, prices_gbp, recv_mono=None, book="main", c=None):
+    """WOULD EXIT for one book. Never writes that book, even when exits are live on main."""
+    if KILL.exists():
+        return []
+    c = c or config_for(book)
+    _exits, _wrote = _tick(con, prices_gbp, recv_mono or {}, time.monotonic(), c=c, book=book, force_shadow=True)
+    return _exits
+
+
 def evaluate(con, prices_gbp, recv_mono=None):
     """Sell open Day positions, then Risk, at these GBP prices. No entries.
 
@@ -450,8 +557,11 @@ def evaluate(con, prices_gbp, recv_mono=None):
         return []
 
 
-def _tick(con, prices_gbp, recv_mono, started):
-    c = cfg(); t = now(); ts = iso(t)
+def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow=False):
+    c = c or cfg()
+    book = _book_name(book)
+    R = variants.rules_of(c)
+    t = now(); ts = iso(t)
     fx = usd_gbp(con, c["fx"]["max_age_h"])
     if not fx: return [], False
     rate = fx[0]
@@ -469,9 +579,9 @@ def _tick(con, prices_gbp, recv_mono, started):
     peaks = dict(sget(con, "risk_peaks") or {})
     rmeta = dict(sget(con, "risk_meta") or {})
     exits, wrote = [], False
-    shadow = shadow_mode()
+    shadow = True if force_shadow else shadow_mode()
     shcon = _shadow_connect() if shadow else None
-    shadow_state = _shadow_peaks(shcon)
+    shadow_state = _shadow_peaks(shcon, book)
     if shadow:
         for p in rows:
             if p["sleeve"] != "risk": continue
@@ -491,7 +601,7 @@ def _tick(con, prices_gbp, recv_mono, started):
 
     def sell_one(sleeve, p, gbp, reason, sub, conf, snap, chg, peak):
         if shadow:
-            rec = _record_would(shcon, ts, p, gbp, reason, chg, peak)
+            rec = _record_would(shcon, ts, p, gbp, reason, chg, peak, book)
             if rec:
                 L.info(rec["log"])
                 exits.append(rec)
@@ -512,7 +622,7 @@ def _tick(con, prices_gbp, recv_mono, started):
         for p in rows:
             if p["sleeve"] != "day": continue
             a = p["asset"]
-            if shadow and _shadow_seen(shcon, "day", a, p.get("opened")):
+            if shadow and _shadow_seen(shcon, "day", a, p.get("opened"), book):
                 continue
             live = a in prices_gbp
             gbp = prices_gbp[a] if live else _stored_gbp(con, a, rate)
@@ -529,7 +639,19 @@ def _tick(con, prices_gbp, recv_mono, started):
                         if not shadow: sset(con, f"day_exit:{a}", ts)
                     continue
             opened_day = datetime.fromisoformat(p["opened"]).astimezone(LON).date().isoformat()
-            if flat_now or opened_day != day:
+            if R.get("midnight_crypto") and p["klass"] != "stock":
+                if not variants.crypto_flatten_due(opened_day, day, flat_now, True):
+                    pass
+                else:
+                    why = day_flat_reason(mins, 0, 0, str(R["midnight_flatten_uk"]), str(R["midnight_flatten_uk"]), live)
+                    q = _quote(con, a, p["klass"], gbp, rate)
+                    f_ = cost_pct(c, a, p["klass"], "SELL", q, p["qty"] * gbp)
+                    chg = gbp * (1 - f_) / p["entry"] - 1
+                    if sell_one("day", p, gbp, f"[{tag}] {why}", sub, md.get("conf", md.get("score")), md.get("snap"), chg, None):
+                        dmeta.pop(a, None)
+                        if not shadow: sset(con, f"day_exit:{a}", ts)
+                    continue
+            elif flat_now or opened_day != day:
                 why = day_flat_reason(mins, flat, e0, D["flatten_uk"], D["entry_start_uk"], live)
                 q = _quote(con, a, p["klass"], gbp, rate)
                 f_ = cost_pct(c, a, p["klass"], "SELL", q, p["qty"] * gbp)
@@ -556,13 +678,36 @@ def _tick(con, prices_gbp, recv_mono, started):
                 comb, info, pts = None, "", []
             thr = st["focus_buy_threshold"] if a in (st.get("focus_assets") or []) else st["buy_threshold"]
             old_peak, old_runner = md.get("peak"), md.get("runner")
-            d = day_reason(p["entry"], gbp, p["opened"], md, SUBC[md["sub"]], st, comb, info, t, f_, thr, a)
-            reason = d["reason"]
+            stop_over, ev_reason, giveback, defer = None, None, None, False
+            if R.get("ev_exit") or (md.get("sub") == "burst" and R.get("burst_stop_widen")):
+                evn, eev = _pos_ev(c, md, gbp, a, p["klass"], q)
+                if variants.ev_action(evn, eev, R) == "exit":
+                    ev_reason = variants.ev_exit_reason(evn, eev, R)
+                else:
+                    stop_over = variants.effective_stop_pct(md["sl"], evn, R, md.get("sub") or "day")
+            if md.get("runner") and md.get("sub") == "burst" and R.get("burst_runner"):
+                giveback = float(R.get("burst_runner_giveback_pct", 20))
+            defer = bool(R.get("burst_runner"))
+            if stop_over is None and giveback is None and not defer:
+                d = day_reason(p["entry"], gbp, p["opened"], md, SUBC[md["sub"]], st, comb, info, t, f_, thr, a)
+            else:
+                d = day_reason(p["entry"], gbp, p["opened"], md, SUBC[md["sub"]], st, comb, info, t, f_, thr, a,
+                               stop_over, giveback, defer_burst_target=defer)
+            reason = ev_reason or d["reason"]
+            if d.get("at_target") and not ev_reason and defer:
+                keep, why_b = _burst_keep(con, c, a, p["klass"], gbp, t)
+                if keep:
+                    md["runner"] = True
+                    reason = None
+                else:
+                    reason = (f"take-profit {d['chg']*100:.1f}% >= {md['tp']:.1f}% (ATR-scaled); "
+                              f"{variants.sold_at_target_note(why_b)}")
             if not live and not (reason or "").startswith("max hold"):
                 md["peak"], md["runner"], reason = old_peak, old_runner, None
             if reason:
                 if reason.startswith("stop-loss"):
-                    reason = gap_tag(pts, p["entry"] * (1 - md["sl"] / 100) / (1 - f_), gbp, reason)
+                    sl_used = float(md["sl"] if stop_over is None else stop_over)
+                    reason = gap_tag(pts, p["entry"] * (1 - sl_used / 100) / (1 - f_), gbp, reason)
                 elif reason.startswith("trailing"):
                     lvl_px = p["entry"] * (1 + d["pkg"] * (1 - d["gb"])) / (1 - f_)
                     reason = gap_tag(pts, lvl_px, gbp, reason)
@@ -581,7 +726,7 @@ def _tick(con, prices_gbp, recv_mono, started):
         for p in rows:
             if p["sleeve"] != "risk": continue
             a = p["asset"]
-            if shadow and _shadow_seen(shcon, "risk", a, p.get("opened")):
+            if shadow and _shadow_seen(shcon, "risk", a, p.get("opened"), book):
                 continue
             if p["klass"] == "stock" and not markets.is_open(a, t): continue
             live = a in prices_gbp
@@ -590,8 +735,19 @@ def _tick(con, prices_gbp, recv_mono, started):
             q = _quote(con, a, p["klass"], gbp, rate)
             f_ = cost_pct(c, a, p["klass"], "SELL", q, p["qty"] * gbp)
             se = sentiment(con, a, st["sentiment_max_age_h"]) if live else None
-            d = risk_reason(p["entry"], gbp, peaks.get(a), p["opened"], RP, se, t, f_)
-            reason = d["reason"]
+            stop_over, ev_reason = None, None
+            if R.get("ev_exit"):
+                evn, eev = _pos_ev(c, rmeta.get(a) or {}, gbp, a, p["klass"], q)
+                if variants.ev_action(evn, eev, R) == "exit":
+                    ev_reason = variants.ev_exit_reason(evn, eev, R)
+                else:
+                    stop_over = variants.effective_stop_pct(float(RP["stop_loss_pct"]), evn, R, "risk")
+            if ev_reason is None and stop_over is None:
+                d = risk_reason(p["entry"], gbp, peaks.get(a), p["opened"], RP, se, t, f_)
+            else:
+                d = risk_reason(p["entry"], gbp, peaks.get(a), p["opened"], RP, se, t, f_,
+                                float(RP["stop_loss_pct"]) if stop_over is None else stop_over)
+            reason = ev_reason or d["reason"]
             if live and float(peaks.get(a) or 0) != d["peak"]:
                 peaks[a] = d["peak"]; note_book()
             elif live:
@@ -601,7 +757,8 @@ def _tick(con, prices_gbp, recv_mono, started):
             if not reason: continue
             pts = history(con, a) if live else []
             if "stop-loss" in reason:
-                reason = gap_tag(pts, p["entry"] * (1 - RP["stop_loss_pct"] / 100) / (1 - f_), gbp, reason)
+                sl_used = float(RP["stop_loss_pct"]) if stop_over is None else float(stop_over)
+                reason = gap_tag(pts, p["entry"] * (1 - sl_used / 100) / (1 - f_), gbp, reason)
             elif "trailing" in reason and d["peak"]:
                 reason = gap_tag(pts, d["peak"] * (1 - RP["trail_pct"] / 100), gbp, reason)
             meta = rmeta.get(a) or {}
@@ -609,7 +766,7 @@ def _tick(con, prices_gbp, recv_mono, started):
                 peaks.pop(a, None); rmeta.pop(a, None)
                 if not shadow: sset(con, f"risk_exit:{a}", ts)
         if shadow:
-            _store_shadow_peaks(shcon, dmeta, peaks, rows, shadow_state)
+            _store_shadow_peaks(shcon, dmeta, peaks, rows, shadow_state, book)
             shcon.commit()
             return exits, False
         held = {a for (a,) in con.execute("SELECT asset FROM positions WHERE sleeve='risk'")}
@@ -762,6 +919,35 @@ def _rest_once(con, c, plan, rate, deliver):
             L.warning("REST %s failed (%s); the 5-min cycle still exits", item["asset"], e)
 
 
+def books_to_watch(main_con):
+    """Open positions and armed entries across main and every variant, one row per symbol.
+
+    The price socket is shared. A coin held on two books is fetched once.
+    """
+    rows, seen = [], set()
+    cons = [("main", main_con)]
+    extra = []
+    for name, path in entries.variant_books():
+        try:
+            vcon = sqlite3.connect(f"file:{path.resolve().as_posix()}?mode=ro", uri=True)
+            vcon.row_factory = sqlite3.Row
+            extra.append(vcon)
+            cons.append((name, vcon))
+        except Exception as e:
+            L.warning("%s not readable for prices (%s)", name, e)
+    try:
+        for _name, con in cons:
+            for r in entries.watched_rows(con, iso()):
+                if r["asset"] in seen:
+                    continue
+                seen.add(r["asset"])
+                rows.append(r)
+    finally:
+        for vcon in extra:
+            vcon.close()
+    return rows
+
+
 def _streams(rate_box, seen, deliver, stop):
     """Sockets for listed coins. REST for the rest, and for a socket that has gone quiet."""
     ws_stop = threading.Event()
@@ -772,16 +958,7 @@ def _streams(rate_box, seen, deliver, stop):
             con = db(); c = cfg()
             fx = usd_gbp(con)
             rate_box["fx"] = fx[0] if fx else None
-            rows = entries.watched_rows(con, iso())
-            vpath = entries.variant_db_path()
-            if vpath.exists():
-                try:
-                    vcon = sqlite3.connect(f"file:{vpath}?mode=ro", uri=True)
-                    vcon.row_factory = sqlite3.Row
-                    rows = rows + entries.watched_rows(vcon, iso())
-                    vcon.close()
-                except Exception as e:
-                    L.warning("entry-watch book not readable (%s); exits keep running", e)
+            rows = books_to_watch(con)
             plan = watch_plan(rows, pricesrc.routes_of(con))
             key = (tuple((x["asset"], x["symbol"]) for x in plan["kraken"]),
                    tuple((x["asset"], x["symbol"]) for x in plan["coinbase"]))
@@ -837,6 +1014,41 @@ def _streams(rate_box, seen, deliver, stop):
     ws_stop.set()
 
 
+def _shadow_variants(fresh, recv):
+    """WOULD EXIT and WOULD BUY for every variant book, using that book's rules.
+
+    No variant is sold here. entry_watch is the only book that can buy, and only
+    when ENTRY_WATCH_SHADOW is off. Prices are the tick already fetched for main.
+    """
+    for name, path in entries.variant_books():
+        c = config_for(name)
+        try:
+            vcon = sqlite3.connect(f"file:{path.resolve().as_posix()}?mode=ro", uri=True)
+            vcon.row_factory = sqlite3.Row
+        except Exception as e:
+            L.warning("%s shadow skipped (%s)", name, e)
+            continue
+        try:
+            for e in shadow_evaluate(vcon, fresh, recv, book=name, c=c):
+                print(e["log"], flush=True)
+            for e in act_entries(vcon, fresh, recv, live=False, book=name, c=c):
+                print(e["log"], flush=True)
+        except Exception:
+            L.exception("%s shadow tick failed; that book's cycle still trades", name)
+        finally:
+            vcon.close()
+        if name == "entry_watch" and not entry_shadow_mode():
+            wcon = sqlite3.connect(path, timeout=30)
+            wcon.row_factory = sqlite3.Row
+            try:
+                for e in act_entries(wcon, fresh, recv, live=True, book=name, c=c):
+                    print(e["log"], flush=True)
+            except Exception:
+                L.exception("entry_watch live buy failed; the cycle still buys")
+            finally:
+                wcon.close()
+
+
 def serve():
     latest, guard = {}, threading.Lock()
     rate_box, seen, stop = {"fx": None}, {}, threading.Event()
@@ -873,16 +1085,7 @@ def serve():
             for e in act_entries(con, fresh, recv, live=False):
                 print(e["log"], flush=True)
             con.close()
-            if not entry_shadow_mode():
-                vpath = entries.variant_db_path()
-                if vpath.exists():
-                    vcon = sqlite3.connect(vpath, timeout=30)
-                    vcon.row_factory = sqlite3.Row
-                    try:
-                        for e in act_entries(vcon, fresh, recv, live=True):
-                            print(e["log"], flush=True)
-                    finally:
-                        vcon.close()
+            _shadow_variants(fresh, recv)
         except Exception:
             L.exception("tick failed; the 5-min cycle still exits and still buys")
         time.sleep(0.25)

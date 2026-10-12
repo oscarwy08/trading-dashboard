@@ -22,6 +22,23 @@ def variant_db_path():
     return dir_path() / "entry_watch.db"
 
 
+def variant_books():
+    """(name, path) for each paper book that has an overlay and a database file.
+
+    The snapshot and manifest are not books. A name with no file yet is skipped.
+    """
+    from common import ROOT, cfg
+    from variants import dir_path
+    root = dir_path()
+    names = list((cfg().get("variants") or {}).get("run") or [])
+    out = []
+    for name in names:
+        path = root / f"{name}.db"
+        if path.exists() and (ROOT / "config" / "variants" / f"{name}.yaml").exists():
+            out.append((name, path))
+    return out
+
+
 def burst_strength(kind, B, range_frac=None):
     """Confidence breakout component at the moment the level is touched, not after the price has run."""
     B = B or {}
@@ -230,9 +247,16 @@ def skip_reason(con, c, arm, price_gbp, t, rate, live=None):
         if left is not None and left <= lim:
             return "too close to the close"
     if arm["sleeve"] == "day":
-        e0, e1, flat = _hm(D["entry_start_uk"]), _hm(D["entry_cutoff_uk"]), _hm(D["flatten_uk"])
-        if mins >= flat or mins < e0 or not (e0 <= mins < e1):
-            return "outside the day session"
+        import variants
+        R = variants.rules_of(c)
+        # Midnight crypto keeps its own entry clock. Every other book, including main, uses flatten_uk.
+        if arm["klass"] != "stock" and R.get("midnight_crypto"):
+            if not variants.crypto_entry_open(mins, _hm(R["midnight_entry_start_uk"]), _hm(R["midnight_entry_cutoff_uk"])):
+                return "outside the day session"
+        else:
+            e0, e1, flat = _hm(D["entry_start_uk"]), _hm(D["entry_cutoff_uk"]), _hm(D["flatten_uk"])
+            if mins >= flat or mins < e0 or not (e0 <= mins < e1):
+                return "outside the day session"
         day = lt.date().isoformat()
         if _state(con, f"day_halt:{day}") is not None:
             return "day loss cap"

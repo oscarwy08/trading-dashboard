@@ -22,6 +22,7 @@ os.environ.setdefault("TRADING_OFFLINE", "1")
 
 from common import db
 from exit_watch import shadow_db_path
+import entries
 
 
 def _ts(s):
@@ -170,25 +171,112 @@ def _shadow_rows(shadow_path, table, cols):
     sh = sqlite3.connect(shadow_path)
     sh.row_factory = sqlite3.Row
     try:
-        return [dict(r) for r in sh.execute(f"SELECT {cols} FROM {table} ORDER BY ts, id")]
+        try:
+            return [dict(r) for r in sh.execute(f"SELECT {cols} FROM {table} ORDER BY ts, id")]
+        except sqlite3.OperationalError:
+            base = ", ".join(c.strip() for c in cols.split(",") if c.strip() != "book")
+            rows = [dict(r) for r in sh.execute(f"SELECT {base} FROM {table} ORDER BY ts, id")]
+            for r in rows:
+                r.setdefault("book", "main")
+            return rows
     except sqlite3.OperationalError:
         return []
     finally:
         sh.close()
 
 
-def load_report(book, shadow_path):
-    shadow_rows = _shadow_rows(shadow_path, "would_exit", "ts, sleeve, asset, opened, trigger, price")
+def for_book(rows, book):
+    """Rows tagged for this book. A missing tag is the main book."""
+    return [r for r in rows if (r.get("book") or "main") == (book or "main")]
+
+
+def pair_stats(compared):
+    """pairs, average time gap in seconds, average price gap in percent, missed shadow rows."""
+    matched = [r for r in compared if r.get("status") == "matched" and r.get("dt_s") is not None]
+    missed = [r for r in compared if r.get("status") != "matched"]
+
+    def avg(key):
+        xs = [r[key] for r in matched if r.get(key) is not None]
+        return (sum(xs) / len(xs)) if xs else None
+
+    return dict(pairs=len(matched), avg_dt_s=avg("dt_s"), avg_price_pct=avg("price_pct"), missed=len(missed))
+
+
+def format_book_summary(name, exit_stats, buy_stats):
+    def line(label, st):
+        if not st or (st["pairs"] == 0 and st["missed"] == 0):
+            return f"  {label}: no shadow rows"
+        dt = "n/a" if st["avg_dt_s"] is None else f"{st['avg_dt_s']:.0f}s"
+        px = "n/a" if st["avg_price_pct"] is None else f"{st['avg_price_pct']:+.2f}%"
+        return (f"  {label}: {st['pairs']} pairs, avg time gap {dt}, avg price gap {px}, "
+                f"missed moves {st['missed']}")
+    return f"{name}\n{line('exits', exit_stats)}\n{line('entries', buy_stats)}\n"
+
+
+def load_report(book, shadow_path, book_name="main"):
+    shadow_rows = for_book(_shadow_rows(shadow_path, "would_exit", "ts, sleeve, asset, opened, trigger, price, book"), book_name)
     sells = [dict(r) for r in book.execute(
         "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='SELL' AND sleeve IN ('day','risk') ORDER BY ts, id")]
     return compare_exits(shadow_rows, sells)
 
 
-def load_buys(book, shadow_path):
-    shadow_rows = _shadow_rows(shadow_path, "would_buy", "ts, sleeve, asset, armed, trigger, price")
+def load_buys(book, shadow_path, book_name="main"):
+    shadow_rows = for_book(_shadow_rows(shadow_path, "would_buy", "ts, sleeve, asset, armed, trigger, price, book"), book_name)
     buys = [dict(r) for r in book.execute(
         "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='BUY' AND sleeve IN ('day','risk') ORDER BY ts, id")]
     return compare_buys(shadow_rows, buys)
+
+
+def _trade_db(name):
+    """Connection for the book the cycle wrote. None if that file is not there yet."""
+    if not name or name == "main":
+        return db()
+    from variants import dir_path
+    path = dir_path() / f"{name}.db"
+    if not path.exists():
+        return None
+    con = sqlite3.connect(f"file:{path.resolve().as_posix()}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    return con
+
+
+def report_names(exit_rows, buy_rows):
+    names = ["main"]
+    try:
+        for name, _path in entries.variant_books():
+            if name not in names:
+                names.append(name)
+    except Exception:
+        pass
+    for r in list(exit_rows) + list(buy_rows):
+        b = r.get("book") or "main"
+        if b not in names:
+            names.append(b)
+    return names
+
+
+def format_all_books(exit_rows, buy_rows, opener):
+    """One block per book: pair count, average time gap, average price gap, missed moves.
+
+    `opener(name)` returns a sqlite connection of that book's trades, or None.
+    The caller closes it.
+    """
+    lines = ["Per book", ""]
+    for name in report_names(exit_rows, buy_rows):
+        con = opener(name)
+        try:
+            if con is None:
+                exits_c, buys_c = [], []
+            else:
+                exits_c, _m = compare_exits(for_book(exit_rows, name), [dict(r) for r in con.execute(
+                    "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='SELL' AND sleeve IN ('day','risk') ORDER BY ts, id")])
+                buys_c, _bm = compare_buys(for_book(buy_rows, name), [dict(r) for r in con.execute(
+                    "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='BUY' AND sleeve IN ('day','risk') ORDER BY ts, id")])
+        finally:
+            if con is not None:
+                con.close()
+        lines.append(format_book_summary(name, pair_stats(exits_c), pair_stats(buys_c)).rstrip())
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def main():
@@ -197,15 +285,21 @@ def main():
         print(f"No shadow log yet ({path}).")
         print("Deploy the watcher with EXIT_WATCH_SHADOW=1 and ENTRY_WATCH_SHADOW=1, let it run, then run this again.")
         return 0
+    exit_rows = _shadow_rows(path, "would_exit", "ts, sleeve, asset, opened, trigger, price, book")
+    buy_rows = _shadow_rows(path, "would_buy", "ts, sleeve, asset, armed, trigger, price, book")
     book = db()
     try:
-        compared, missed = load_report(book, path)
-        buy_compared, buy_missed = load_buys(book, path)
+        compared, missed = compare_exits(for_book(exit_rows, "main"), [dict(r) for r in book.execute(
+            "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='SELL' AND sleeve IN ('day','risk') ORDER BY ts, id")])
+        buy_compared, buy_missed = compare_buys(for_book(buy_rows, "main"), [dict(r) for r in book.execute(
+            "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='BUY' AND sleeve IN ('day','risk') ORDER BY ts, id")])
     finally:
         book.close()
     print(format_report(compared, missed), end="")
     print()
     print(format_buys(buy_compared, buy_missed), end="")
+    print()
+    print(format_all_books(exit_rows, buy_rows, _trade_db), end="")
     return 0
 
 

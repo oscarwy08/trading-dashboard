@@ -111,9 +111,9 @@ row = con.execute("SELECT * FROM armed_entries WHERE asset='NEAR' AND status='ar
 check(row is not None, "NEAR is still armed for the watcher")
 if row:
     level = float(row["level"])
-    got = exit_watch.act_entries(con, {"NEAR": level + 0.01}, live=True)
+    got = exit_watch.act_entries(con, {"NEAR": level + 0.01}, live=True, book="entry_watch")
     check(len(got) == 1 and got[0]["log"].startswith("BUY"), "the watcher buys when the armed level trades")
-    check(exit_watch.act_entries(con, {"NEAR": level + 0.02}, live=True) == [], "the watcher does not buy twice")
+    check(exit_watch.act_entries(con, {"NEAR": level + 0.02}, live=True, book="entry_watch") == [], "the watcher does not buy twice")
 con.close()
 # The break is now in the stored prices, which is what the cycle would buy on its own.
 con = common.db()
