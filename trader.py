@@ -28,7 +28,7 @@ collector, or gas.fallback_gbp) paid from cash on top and recorded in trades.gas
 import json, math
 from datetime import datetime, timedelta, timezone, time as dtime
 from common import ACCOUNTS, KILL, LON, RISK_RESUME, SLEEVES, acct_of, acct_start, cfg, db, funding, iso, loans_open, log, move_cash, now, sync_pot_cash, usd_gbp
-import daypot, freshness, markets, quotes, riskpot, stockrank, variants
+import daypot, entries, freshness, markets, quotes, riskpot, stockrank, variants
 from exits import book_lock, day_flat_reason, day_reason, gap_tag, risk_reason, stock_flatten_reason
 
 L = log("trader")
@@ -254,6 +254,46 @@ def apply_sell(con, c, ts, rate, gas, sleeve, asset, klass, qty, price, reason, 
         qty_left, cost_left = qty_held - qty, cost_basis - part
         con.execute("UPDATE positions SET qty=?, cost=? WHERE sleeve=? AND asset=?", (qty_left, cost_left, sleeve, asset))
     return dict(pnl=pnl, proceeds=proceeds, closed=closed, qty_left=qty_left, cost_left=cost_left)
+
+
+def apply_buy(con, c, ts, rate, gas, sleeve, asset, klass, value, price, reason, q, sub=None, conf=None, snap=None):
+    """Open one new position the way buy() does. Returns None if it is already held or the cash is short.
+
+    The cycle's own buy() is unchanged. The entry watcher uses this so a trigger fill
+    has the same fee, gas, cost basis and cash movement as a cycle fill. It does not add
+    to a position that is already open, so the cycle and the watcher cannot both buy it.
+    """
+    if con.execute("SELECT 1 FROM positions WHERE sleeve=? AND asset=?", (sleeve, asset)).fetchone():
+        return None
+    value = float(value)
+    if value <= 0 or not price:
+        return None
+    fp = cost_pct(c, asset, klass, "BUY", q, value)
+    qty = value / (float(price) * (1 + fp))
+    fill = float(price) * (1 + fp)
+    gas_paid = gas if klass == "crypto" else 0.0
+    spent = value + gas_paid
+    ac = acct_of(klass)
+    cur = con.execute("SELECT amount FROM acct_cash WHERE sleeve=? AND account=?", (sleeve, ac)).fetchone()
+    have = float(cur[0]) if cur else 0.0
+    if spent > have + 1e-9:
+        return None
+    snap_out = dict(snap) if snap else None
+    blob = None
+    if snap_out is not None:
+        snap_out["entry"] = round(fill, 8)
+        blob = json.dumps(snap_out, separators=(",", ":"))
+    con.execute(
+        "INSERT INTO trades(ts,sleeve,asset,klass,side,qty,price,fill,value,cost,pnl,reason,price_usd,usd_gbp,gas,sub,conf,snap) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (ts, sleeve, asset, klass, "BUY", qty, price, fill, qty * fill, qty * price * fp, None, reason,
+         (price / rate) if rate else None, rate, gas_paid, sub, conf, blob))
+    entry = spent / qty
+    con.execute("INSERT INTO positions VALUES(?,?,?,?,?,?,?,?)",
+                (sleeve, asset, klass, qty, entry, spent, ts, 1))
+    con.execute("INSERT OR REPLACE INTO acct_cash VALUES(?,?,?)", (sleeve, ac, have - spent))
+    sync_pot_cash(con)
+    return dict(qty=qty, fill=fill, entry=entry, spent=spent, snap=snap_out, price=price)
 
 
 def main():
@@ -874,6 +914,35 @@ def _cycle():
         buy("day", a, value, reason, sub=sub, conf=extra.get("conf", extra.get("score")), snap=extra.get("snap"))
         dmeta[a] = dict(sub=sub, tp=round(tp_, 3), sl=round(sl_, 3), atr=round(at_, 3) if at_ else None, peak=px[a]["price"], opened=ts, **extra)
 
+    # Armed entries are a side log. A failure here must not change a buy, a skip, or the cash.
+    arm_meta = {}
+    try:
+        entries.expire(con, ts)
+        entries.settle_open(con, ts)
+    except Exception as e:
+        L.warning("armed entry housekeeping: %s", e)
+
+    def _arm(row):
+        try:
+            entries.upsert(con, row)
+        except Exception as e:
+            L.warning("armed entry skipped: %s", e)
+
+    def _filled(sleeve, asset, price):
+        try:
+            entries.mark_filled(con, sleeve, asset, ts, price, "cycle")
+        except Exception as e:
+            L.warning("armed fill skipped: %s", e)
+
+    def _arm_row(sleeve, sub, setup, asset, account, klass, level_gbp, cap_gbp, volume_min, size, stop, target, conf, ev, reason, snap):
+        if not level_gbp or not size or size <= 0:
+            return
+        exp = iso(t + timedelta(minutes=float(R.get("entry_watch_expiry_min") or 15)))
+        _arm(dict(ts=ts, expires=exp, sleeve=sleeve, sub=sub, setup=setup, asset=asset, account=account, klass=klass,
+                  trigger="break_above", level=float(level_gbp), level_max=None if cap_gbp is None else float(cap_gbp),
+                  volume_min=volume_min, size_gbp=float(size), stop_pct=float(stop), target_pct=float(target),
+                  conf=conf, ev=ev, reason=reason, snap=snap))
+
     # ---- momentum: original score entries, ATR-scaled levels ----
     nmom = sum(1 for (sl, x) in pos if sl == "day" and sub_of(x) == "momentum")
     ss_mom = daypot.sell_record(con, "day", "momentum", t, float(DM.get("record_days", 14)))
@@ -896,21 +965,36 @@ def _cycle():
         rtc_m = rt_cost(a, max(value, mint)); ev_m = daypot.day_ev(p_m, tp_, sl_, rtc_m, clock_p(a))
         evmin_m = float(DM.get("ev_min_pct", 0.3))
         if not why and ev_m <= evmin_m: why = f"expected value {ev_m:+.2f}% after costs <= {evmin_m:g}%"
-        if why: sig("day", a, m, s, comb, "SKIP", f"[momentum] score {comb} >= {thr} but {why}"); continue
+        if why:
+            sig("day", a, m, s, comb, "SKIP", f"[momentum] score {comb} >= {thr} but {why}")
+            if "max open momentum" in why or "momentum budget" in why:
+                size_a = value if value >= mint else mint
+                _arm_row("day", "momentum", "momentum", a, ac, q["klass"], q["price"], None, None, size_a, sl_, tp_, comb, ev_m,
+                         f"[momentum] price holds £{q['price']:.6g}; score {comb} >= {thr}",
+                         dict(score=comb, p=round(p_m, 3), target=round(tp_, 3), loss=round(sl_, 3), costs=round(rtc_m, 3), ev=ev_m))
+            continue
         open_day(a, "momentum", value, tp_, sl_, at_, f"[momentum] DAY score {comb} >= {thr}; target +{tp_:.1f}% / stop -{sl_:.1f}% (ATR {at_ or 0:.2f}%); EV {ev_m:+.2f}%; {info}",
                  extra=dict(score=comb, snap=dict(score=comb, p=round(p_m, 3), target=round(tp_, 3), loss=round(sl_, 3), costs=round(rtc_m, 3), ev=ev_m)))
+        _filled("day", a, q["price"])
         nmom += 1
         sig("day", a, m, s, comb, "BUY", f"[momentum] £{value:.2f}; target +{tp_:.1f}% / stop -{sl_:.1f}%; {info}")
 
     # ---- burst: breakout + volume + RSI + sentiment + market regime, confidence-scored, EV after costs, capital-based threshold + sizing ----
     sstats = {k: daypot.setup_stats(con, k, DB, t) for k in ("24h", "4h")}
     thr_b, evmin = daypot.threshold(DB, day_pnl, D["daily_loss_cap_pct"]), float(DB.get("ev_min_pct", 0))
-    cands = []
+    cands, pending_rows = [], []
     for a, q in px.items():
         if ("day", a) in pos or a in risk_only or a in day_x or q["klass"] not in ("crypto", "stock"): continue
         pts = hist.get(a) or []
         brk = daypot.breakout(con, a, pts, DB)
-        if not brk["kind"] and "broken" not in (brk.get("info") or ""): continue      # only actual / near breakouts are listed
+        # Only a price already close to the level is armed. Anything further away is not a setup
+        # the next few cycles would buy, and scoring the whole universe here would slow the cycle.
+        pending = False
+        if brk.get("pending_kind") and brk.get("level") and not brk["kind"] and pts:
+            last_usd = pts[-1][1]
+            lvl = float(brk["level"])
+            pending = bool(lvl and last_usd < lvl and last_usd >= lvl * (1 - 0.015))
+        if not brk["kind"] and "broken" not in (brk.get("info") or "") and not pending: continue      # only actual / near breakouts are listed
         ac = acct_of(q["klass"]); d = dict(a=a, acct=ac, brk=brk.get("kind"), info=brk.get("info"))
         vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
         r_ = daypot.rsi_h(pts);         se = sentiment(con, a, st["sentiment_max_age_h"])
@@ -938,8 +1022,70 @@ def _cycle():
         if d["block"] and fr < 0.999 and "freshness" not in (d["block"] or ""):
             age = q.get("age_min")
             d["block"] += f"; data freshness {fr:.0%}" + (f" (price {age:.0f} min)" if age is not None else "")
+        arm_meta[a] = dict(pending=brk.get("pending_kind"), trig=brk.get("level"), cap=brk.get("cap"),
+                           range_frac=brk.get("range_frac"), mok=mok, reg=reg, fr=fr, sent=sent_in(se), raw_sent=None if not se else se["score"])
+        if pending:
+            pending_rows.append(d)   # armed for the watcher; not a row on the setups list
+            continue
         cands.append(d)
     nb = {ac: sum(1 for (sl, x), p in pos.items() if sl == "day" and sub_of(x) == "burst" and acct_of(p["klass"]) == ac) for ac in ACCOUNTS}
+
+    def _arm_burst_pending(d):
+        """A breakout that has not traded yet, but would be bought the moment it does."""
+        meta = arm_meta.get(d["a"]) or {}
+        kind = meta.get("pending")
+        if not kind or not meta.get("trig"):
+            return
+        a = d["a"]
+        if gate(a) or warming(a):
+            return
+        lx = sget(con, f"day_exit:{a}")
+        if lx and datetime.fromisoformat(lx) > t - timedelta(hours=float(DB["cooldown_h"])):
+            return
+        vol = d.get("vol")
+        vx = float(DB["volume_x"])
+        if vol is None and (DB.get("require_volume") or kind != "24h"):
+            return
+        if vol is not None and vol < vx:
+            return
+        if d.get("rsi") is not None and d["rsi"] >= float(DB["rsi_max"]):
+            return
+        if meta.get("raw_sent") is not None and meta["raw_sent"] < float(DB["sentiment_min"]):
+            return
+        if not meta.get("mok"):
+            return
+        ac = d["acct"]
+        ss = sstats.get(kind) or dict(p=0.5, n=0, wins=0, exp=None)
+        strength = entries.burst_strength(kind, DB, meta.get("range_frac"))
+        conf, parts = daypot.confidence(DB, strength, vol, meta.get("sent"), meta.get("reg"), ss["p"], freshness=meta.get("fr"))
+        if conf < thr_b:
+            return
+        q = px[a]
+        size0 = max(daypot.conf_size(DB, conf, free("burst", ac)), mint)
+        rtc = rt_cost(a, size0)
+        p_ev = daypot.hit_p(conf, ss, int(DB.get("ev_prior_n", 10)), int(DB.get("ev_conf_full_n", 30)))
+        ev = daypot.day_ev(p_ev, d["tp"], d["sl"], rtc, clock_p(a, DB.get("max_hold_h")))
+        if ev <= evmin:
+            return
+        floor = float(DB.get("cash_floor_gbp", 4))
+        raw = daypot.conf_size(DB, conf, free("burst", ac))
+        value, _avail = daypot.burst_spend(free("burst", ac), gas_of(q["klass"]), raw, mint, floor)
+        size_a = value if value >= floor - 1e-9 else mint
+        if d["tp"] < mcx * rt_cost(a, max(size_a, mint)):
+            return
+        level = float(meta["trig"]) * rate
+        cap = float(meta["cap"]) * rate if meta.get("cap") else None
+        if cap is not None and level > cap:
+            return
+        _arm_row("day", "burst", kind, a, ac, q["klass"], level, cap, None if vol is None else vx, size_a, d["sl"], d["tp"],
+                 conf, ev, f"[burst {kind}] price breaks £{level:.6g}" + ("" if vol is None else f"; volume x{vx:g}"),
+                 dict(conf=conf, parts=dict(parts), p=round(p_ev, 3), target=d["tp"], loss=d["sl"], costs=round(rtc, 3), ev=ev, atr=d.get("atr"), kind=kind))
+
+    for d in pending_rows:
+        try:
+            _arm_burst_pending(d)
+        except Exception as e:
+            L.warning("arm burst %s: %s", d.get("a"), e)
     refresh([d["a"] for d in cands if not d["block"]])   # quote the breakouts we might actually buy
     for d in sorted(cands, key=lambda d: (d["block"] is not None, -d["conf"])):
         if d["block"]: continue
@@ -962,12 +1108,26 @@ def _cycle():
                (f"max {DB['max_open_per_account']} open burst positions in the {ac} account" if nb[ac] >= int(DB["max_open_per_account"]) else None) or
                (f"burst budget: £{max(avail, 0):.2f} free < £{floor:.0f} floor (min trade £{mint:.0f})" if value < floor - 1e-9 else None) or
                (f"target {d['tp']:.1f}% < {mcx:.0f} x round-trip costs {rt_cost(a, value):.2f}%" if d["tp"] < mcx * rt_cost(a, value) else None))
-        if why: d["block"] = why; continue
+        if why:
+            d["block"] = why
+            if d.get("kind") and ("max " in why or "burst budget" in why):
+                meta = arm_meta.get(a) or {}
+                level = (float(meta["trig"]) if meta.get("trig") else q["price_usd"]) * rate
+                cap = float(meta["cap"]) * rate if meta.get("cap") else None
+                if cap is None or q["price"] <= cap + 1e-9:
+                    size_a = value if value >= float(DB.get("cash_floor_gbp", 4)) - 1e-9 else mint
+                    vx = float(DB["volume_x"])
+                    _arm_row("day", "burst", d["kind"], a, ac, q["klass"], level, cap, None if d.get("vol") is None else vx,
+                             size_a, d["sl"], d["tp"], d["conf"], d["ev"],
+                             f"[burst {d['kind']}] price holds the break at £{level:.6g}",
+                             dict(conf=d["conf"], parts=dict(d["parts"]), p=d["hit"], target=d["tp"], loss=d["sl"], costs=d["rt_cost"], ev=d["ev"], kind=d["kind"]))
+            continue
         open_day(a, "burst", value, d["tp"], d["sl"], d["atr"],
                  f"[burst {d['kind']}] {d['info']}; vol {'n/a' if d['vol'] is None else 'x%.1f' % d['vol']}, RSI {d['rsi']}, {d['market']}; confidence {d['conf']:.2f} >= {thr_b:.2f}, EV {d['ev']:+.2f}% after costs; "
                  f"target +{d['tp']:.1f}% / stop -{d['sl']:.1f}% / max {DB['max_hold_h']}h",
                  extra=dict(conf=d["conf"], ev=d["ev"], kind=d["kind"],
                             snap=dict(conf=d["conf"], parts=dict(d["parts"]), p=d["hit"], target=d["tp"], loss=d["sl"], costs=d["rt_cost"], ev=d["ev"])))
+        _filled("day", a, q["price"])
         nb[ac] += 1; d["block"] = None; d["bought"] = round(value, 2)
         sig("day", a, None, d["sent"], None, "BUY", f"[burst] £{value:.2f} confidence {d['conf']:.2f}, EV {d['ev']:+.2f}%; {d['info']}; target +{d['tp']:.1f}% / stop -{d['sl']:.1f}%")
     if cands:
@@ -1020,6 +1180,53 @@ def _cycle():
                     atr=round(at_, 2) if at_ else None, hit=round(ss["p"], 3), hit_n=ss["n"],
                     vol=round(vol, 2) if vol is not None else None, sent=se["score"] if se else None,
                     market=mkinfo, size=round(size0, 2), cap=cap0, block=block, minfo=minfo, trend_ok=bool(trend_ok))
+
+    def _prev_high(asset):
+        row = con.execute(
+            "SELECT high24 FROM prices WHERE asset=? AND ts<? AND high24 IS NOT NULL ORDER BY ts DESC LIMIT 1",
+            (asset, ts)).fetchone()
+        return float(row[0]) if row and row[0] else None
+
+    def _arm_risk_pending(a, chosen, dip_r, ok, why, shared, q, at_):
+        """A breakout that has faded, or a dip that has not turned up, armed at the price that would qualify it."""
+        if shared or ("risk", a) in pos or halt:
+            return
+        if chosen["setup"] == "breakout" and not ok and why and "faded" in why and (not chosen.get("block") or "faded" in chosen["block"]):
+            hi = _prev_high(a)
+            if not hi or q.get("price_usd") is None:
+                return
+            trig = hi * 0.92
+            if float(q["price_usd"]) >= trig:
+                return
+            if chosen["conf"] < thr_r or chosen["ev"] <= evmin_r:
+                return
+            level = trig * rate
+            _arm_row("risk", "breakout", "breakout", a, chosen["acct"], q["klass"], level, None, None, chosen["size"],
+                     float(RP["stop_loss_pct"]), float(RP["trail_after_pct"]), chosen["conf"], chosen["ev"],
+                     f"RISK breakout: price back to £{level:.6g} (92% of the 24h high)",
+                     dict(conf=chosen["conf"], parts=dict(chosen["parts"]), p=chosen["ev_p"], target=chosen["ev_win"],
+                          loss=chosen["ev_loss"], costs=chosen["rt_cost"], ev=chosen["ev"], setup="breakout"))
+            return
+        if not (dip_r and dip_r.get("level") and not dip_r.get("ok") and "turned up" in (dip_r.get("why") or "")):
+            return
+        if chosen["setup"] != "dip":
+            return
+        conf2 = min(1.0, float(dip_r["conf"] or 0) + 0.12)
+        if conf2 < thr_r or q.get("price_usd") is None or float(q["price_usd"]) >= float(dip_r["level"]):
+            return
+        ev2, ev_w, ev_l, ev_p = riskpot.setup_ev(RP, conf2, at_, chosen["rt_cost"], dss)
+        if ev2 <= evmin_r:
+            return
+        size, _cap = riskpot.size(RP, conf2, max(0.0, cash_for("risk", a) - gas_of(q["klass"])), req, mint)
+        if size < mint:
+            return
+        level = float(dip_r["level"]) * rate
+        _arm_row("risk", "dip", "dip", a, chosen["acct"], q["klass"], level, None, None, size,
+                 float(RP["stop_loss_pct"]), float(RP["trail_after_pct"]), conf2, ev2,
+                 f"RISK dip: price lifts through £{level:.6g}",
+                 dict(conf=conf2, parts=dict(dip_r.get("parts") or {}), p=ev_p, target=ev_w, loss=ev_l,
+                      costs=chosen["rt_cost"], ev=ev2, setup="dip"))
+
     rstat = []
     for a, bscore, ok, why, kind, c7 in raw_c:
         if ("risk", a) in pos or any(x["a"] == a for x in rstat): continue
@@ -1066,6 +1273,10 @@ def _cycle():
             elif brk_open and dip_open and dip_row["conf"] > brk["conf"]: chosen = dip_row
             elif not brk_open: chosen = dip_row          # both blocked: explain the pullback
         rstat.append(chosen)
+        try:
+            _arm_risk_pending(a, chosen, dip_r, ok, why, shared, q, at_)
+        except Exception as e:
+            L.warning("arm risk %s: %s", a, e)
     refresh([d["a"] for d in rstat if not d["block"]])
     for d in sorted(rstat, key=lambda d: (d["block"] is not None, -d["conf"])):
         a = d["a"]; q = px[a]; m = d["mom"]
@@ -1088,12 +1299,19 @@ def _cycle():
                           (f"size £{value:.2f} < min trade £{mint:.0f} ({acash('risk', a)})" if value < mint else None))
         if d["block"]:
             if d["setup"] == "dip" or d["ok"]: sig("risk", a, m, d["sent"], d["conf"], "SKIP", f"{d['block']}; {d['plain']}")
+            if "max " in (d["block"] or "") or "min trade" in (d["block"] or ""):
+                _arm_row("risk", d["setup"], d["setup"], a, d["acct"], q["klass"], q["price"], None, None,
+                         max(d.get("size") or 0, mint), float(RP["stop_loss_pct"]), float(RP["trail_after_pct"]),
+                         d["conf"], d["ev"], f"RISK {d['setup']}: price holds £{q['price']:.6g}",
+                         dict(conf=d["conf"], parts=dict(d["parts"]), p=d["ev_p"], target=d["ev_win"], loss=d["ev_loss"],
+                              costs=d["rt_cost"], ev=d["ev"], setup=d["setup"]))
             continue
         label = "dip" if d["setup"] == "dip" else "breakout"
         snap = dict(conf=d["conf"], parts=dict(d["parts"]), p=d["ev_p"], target=d["ev_win"], loss=d["ev_loss"],
                     costs=d["rt_cost"], ev=d["ev"], setup=d["setup"])
         buy("risk", a, value, f"RISK {label} ({d['kind']}): {d['plain']} Confidence {d['conf']:.2f} >= {thr_r:.2f}, EV {d['ev']:+.2f}% after costs; {d['minfo']}; {d['market']}",
             sub=d["setup"], conf=d["conf"], snap=snap)
+        _filled("risk", a, q["price"])
         peaks[a] = q["price"]; nrisk += 1; new_today += 1; d["bought"] = round(value, 2)
         rmeta[a] = dict(conf=d["conf"], ev=d["ev"], opened=ts, setup=d["setup"], why=d["plain"], snap=snap)
         sig("risk", a, m, d["sent"], d["conf"], "BUY", f"£{value:.2f} {label} confidence {d['conf']:.2f}, EV {d['ev']:+.2f}%; {d['plain']}")

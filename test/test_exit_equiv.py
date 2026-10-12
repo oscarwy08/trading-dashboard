@@ -3,8 +3,9 @@
 test/sim.py cannot prove this. Its prices are a random walk and its clock starts
 on a wall-clock boundary, so two runs never match. This test copies the current
 main book, plants one fixed price path, and runs the same cycles through both
-trader.py files. The shadow watcher is off. The trades columns (side, asset, qty,
-fill, pnl, reason) and the final equity must be byte-identical.
+trader.py files. The shadow watcher is off. Armed-entry rows may differ; the trades columns
+(side, asset, qty, fill, pnl, reason) and the final equity must be byte-identical.
+Only this branch's trader imports entries.py. Origin/main does not.
 
 The path is several UK days and is meant to fire, on assets that are not already
 in the book: a day stop, a day trailing exit (40% giveback), a burst target, a
@@ -154,8 +155,10 @@ def run_child(db_path):
     full, new = snapshot(con, after)
     con.close()
     uses = "1" if "exits" in sys.modules else "0"
+    uses_e = "1" if "entries" in sys.modules else "0"
     print("TRADER_FILE " + str(Path(trader.__file__).resolve()))
     print("USES_EXITS " + uses)
+    print("USES_ENTRIES " + uses_e)
     print("EQUIV_FULL")
     print(full)
     print("EQUIV_NEW")
@@ -212,15 +215,19 @@ def main():
         outs[which] = launch(which, db, tmp)
     files = {w: Path(outs[w].split("TRADER_FILE ", 1)[1].splitlines()[0]) for w in outs}
     uses = {w: outs[w].split("USES_EXITS ", 1)[1].splitlines()[0] for w in outs}
+    uses_e = {w: outs[w].split("USES_ENTRIES ", 1)[1].splitlines()[0] for w in outs}
     full = {w: between(outs[w], "EQUIV_FULL", "EQUIV_NEW") for w in outs}
     new = {w: between(outs[w], "EQUIV_NEW", "EQUIV_END") for w in outs}
     pr_file = (ROOT / "trader.py").resolve()
     ok_files = files["pr"] == pr_file and files["main"] != pr_file
-    ok_uses = uses["pr"] == "1" and uses["main"] == "0"
+    # exits.py is already on main, so both traders import it. entries.py is only this branch.
+    ok_uses = uses["pr"] == "1" and uses["main"] == "1"
+    ok_ent = uses_e["pr"] == "1" and uses_e["main"] == "0"
     same = full["main"] == full["pr"]
     missing = [n for n in NEEDLES if n not in new["pr"]]
     print(("OK  " if ok_files else "FAIL") + " ran origin/main trader.py and this branch's trader.py")
-    print(("OK  " if ok_uses else "FAIL") + " shadow watcher off; only the PR trader imports exits.py")
+    print(("OK  " if ok_uses else "FAIL") + " both traders import exits.py; armed entries are the only new import")
+    print(("OK  " if ok_ent else "FAIL") + " only this branch's trader imports entries.py; origin/main does not")
     print(("OK  " if same else "FAIL") + " trades (side, asset, qty, fill, pnl, reason) and final equity are byte-identical")
     if missing:
         print("FAIL price path did not fire: " + ", ".join(missing))
@@ -231,7 +238,7 @@ def main():
             full["main"].splitlines(), full["pr"].splitlines(),
             fromfile="origin/main", tofile="pr", lineterm=""))
         print("\n".join(diff[:80]))
-    if not (ok_files and ok_uses and same and not missing):
+    if not (ok_files and ok_uses and ok_ent and same and not missing):
         raise SystemExit(1)
 
 

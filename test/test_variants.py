@@ -25,7 +25,7 @@ def check(cond, msg):
 base = common.cfg()
 check(all(not base["variant_rules"][k] for k in
           ("ev_exit", "burst_stop_widen", "core_fallback_half", "entry_own_trend", "no_day_core_same_afternoon",
-           "burst_runner", "midnight_crypto")),
+           "burst_runner", "midnight_crypto", "entry_watch")),
       "main config flags are off")
 os.environ["TRADING_VARIANT"] = "ev_exit"
 over = common.cfg()
@@ -64,6 +64,18 @@ check(mid["variant_rules"]["midnight_crypto"] is True
       and variants.rules_of(mid)["midnight_flatten_uk"] == "00:00"
       and variants.active(variants.rules_of(mid)) and not variants.active(variants.rules_of(base)),
       "midnight_crypto turns on only its flag and leaves the frozen day clocks in place")
+os.environ["TRADING_VARIANT"] = "entry_watch"
+ew = common.cfg()
+os.environ.pop("TRADING_VARIANT", None)
+check(ew["variant_rules"]["entry_watch"] is True
+      and not base["variant_rules"]["entry_watch"]
+      and not ew["variant_rules"]["midnight_crypto"]
+      and not ew["variant_rules"]["ev_exit"]
+      and ew["day"]["flatten_uk"] == base["day"]["flatten_uk"] == "22:00"
+      and ew["rules"]["frozen_since"] == base["rules"]["frozen_since"]
+      and variants.rules_of(ew)["entry_watch_expiry_min"] == 15
+      and variants.active(variants.rules_of(ew)) and not variants.active(variants.rules_of(base)),
+      "entry_watch turns on only its flag and leaves the frozen day clocks in place")
 check(not Path("config/variants/missing.yaml").exists() or True, "placeholder")
 
 R = variants.rules_of(base)
@@ -243,7 +255,8 @@ check(main_path.read_bytes() == blob, "variant runner leaves the main database b
 # a child that cannot trade still must not be required for the main hash; the books exist beside it
 check((TMP / "variants" / "_snapshot.db").exists(), "snapshot is taken at the first run")
 check((TMP / "variants" / "ev_exit.db").exists() and (TMP / "variants" / "all_combined.db").exists()
-      and (TMP / "variants" / "everything.db").exists() and (TMP / "variants" / "midnight_crypto.db").exists(),
+      and (TMP / "variants" / "everything.db").exists() and (TMP / "variants" / "midnight_crypto.db").exists()
+      and (TMP / "variants" / "entry_watch.db").exists(),
       "each variant has its own database")
 # a book added after the snapshot exists is copied from that snapshot, not from the main book as it is now
 (TMP / "variants" / "everything.db").unlink()

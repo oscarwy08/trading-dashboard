@@ -48,7 +48,11 @@ def rsi_h(pts, n=14):
     return 100.0 if dn == 0 else 100 - 100 / (1 + up / dn)
 
 def breakout(con, a, pts, B):
-    """Breakout check on USD points. Returns dict(kind '24h'|'4h'|None, strength 0-1, info, ext_pct)."""
+    """Breakout check on USD points. Returns dict(kind '24h'|'4h'|None, strength 0-1, info, ext_pct).
+
+    Also sets level/cap (USD prices) and pending_kind when price has not broken a level yet.
+    Those fields do not change kind, strength, or info. The entry watcher arms pending_kind.
+    """
     if len(pts) < 3: return dict(kind=None, strength=0, info="too little history")
     t, p = pts[-1]
     lb, rl = float(B.get("breakout_lookback_h", 24)), float(B.get("range_lookback_h", 4))
@@ -60,11 +64,17 @@ def breakout(con, a, pts, B):
                     (a, t.isoformat())).fetchone()       # CoinGecko 24h high of the previous snapshot (crypto)
     if r and r[0]: hi24 = max(hi24 or 0, r[0])
     prior4 = [x for ts, x in pts if t - timedelta(hours=rl) <= ts < t]
-    out = dict(kind=None, strength=0.0, hi24=hi24, ext_pct=None)
+    out = dict(kind=None, strength=0.0, hi24=hi24, ext_pct=None, level=None, cap=None, pending_kind=None, range_frac=None)
+    if hi24:
+        out["level"] = hi24 * (1 + mb)
+        out["cap"] = hi24 * (1 + mx)
+        if p < hi24 * (1 + mb):
+            out["pending_kind"] = "24h"
     if hi24 and p >= hi24 * (1 + mb):
         ext = p / hi24 - 1
-        if ext <= mx: return dict(out, kind="24h", ext_pct=ext * 100, strength=clip(0.7 + 0.3 * ext / mx),
+        if ext <= mx: return dict(out, kind="24h", pending_kind=None, ext_pct=ext * 100, strength=clip(0.7 + 0.3 * ext / mx),
                                   info=f"24h-high break +{ext*100:.2f}% (high ${hi24:.5g})")
+        out["pending_kind"] = None
         out["info"] = f"24h high broken but +{ext*100:.1f}% above it (> {mx*100:.0f}%: not chased)"; return out
     if len(prior4) >= 6:
         h4, l4 = max(prior4), min(prior4); rng = h4 / l4 - 1 if l4 else 9
@@ -72,11 +82,21 @@ def breakout(con, a, pts, B):
             ext = p / h4 - 1
             min_rng = float(B.get("range_min_pct", 0.3)) / 100
             if rng < min_rng or len({round(x, 8) for x in prior4}) < 2:
+                out["pending_kind"] = None
                 out["info"] = f"4h range {rng*100:.1f}% is too tight to be a breakout (stuck prints)"; return out
             if rng <= float(B.get("range_max_pct", 4)) / 100 and ext <= mx:
-                return dict(out, kind="4h", ext_pct=ext * 100, strength=clip(0.45 + 0.25 * (1 - rng / (float(B.get('range_max_pct', 4)) / 100)) + 0.2 * ext / mx),
+                return dict(out, kind="4h", pending_kind=None, ext_pct=ext * 100, strength=clip(0.45 + 0.25 * (1 - rng / (float(B.get('range_max_pct', 4)) / 100)) + 0.2 * ext / mx),
                             info=f"4h-range break +{ext*100:.2f}% (range {rng*100:.1f}%)")
+            out["pending_kind"] = None
             out["info"] = f"4h high broken but range {rng*100:.1f}% / extension {ext*100:.1f}% too wide"; return out
+        elif out["pending_kind"] is None and l4:
+            min_rng = float(B.get("range_min_pct", 0.3)) / 100
+            wide = float(B.get("range_max_pct", 4)) / 100
+            if rng >= min_rng and rng <= wide and len({round(x, 8) for x in prior4}) >= 2:
+                out["level"] = h4 * (1 + mb)
+                out["cap"] = h4 * (1 + mx)
+                out["pending_kind"] = "4h"
+                out["range_frac"] = rng
     out["info"] = f"no breakout (24h high {'$%.5g' % hi24 if hi24 else 'n/a'}, now ${p:.5g})"
     return out
 

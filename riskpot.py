@@ -271,5 +271,7 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
         why = f"{lead}, pulled back {pullback:.1f}%{loc}, and the last bars turned up.{rsi_bit}"
     ok = bool(confirmed and (trend_ok or sent_pos) and not too_deep and not chasing)
     conf, parts = dip_confidence(R, pb_s, sup_s, b_s, sent, regime, hr, freshness)
+    # USD price that confirms the bounce. The entry watcher arms this when the dip has not turned up yet.
+    level = low_px * (1 + lift / 100.0)
     return dict(show=True, ok=ok, why=why, trend_ok=trend_ok, pullback=round(pullback, 2), conf=conf, parts=parts,
-                rsi=round(rsi, 1) if rsi is not None else None)
+                rsi=round(rsi, 1) if rsi is not None else None, level=level)

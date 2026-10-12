@@ -86,6 +86,33 @@ CREATE TABLE IF NOT EXISTS loans(id INTEGER PRIMARY KEY, ts TEXT, account TEXT, 
   amount REAL, repaid REAL DEFAULT 0, status TEXT DEFAULT 'open', repaid_ts TEXT, reason TEXT);
 -- CoinGecko HTTP calls per UK day (the demo key is 10,000/month). pricesrc.allow reads this before a call.
 CREATE TABLE IF NOT EXISTS cg_calls(day TEXT PRIMARY KEY, n INTEGER NOT NULL);
+-- Armed entries: the cycle records a price trigger; the watcher fires it. Rows do not move cash.
+CREATE TABLE IF NOT EXISTS armed_entries(
+  id INTEGER PRIMARY KEY,
+  ts TEXT NOT NULL,
+  expires TEXT NOT NULL,
+  sleeve TEXT NOT NULL,
+  sub TEXT,
+  setup TEXT,
+  asset TEXT NOT NULL,
+  account TEXT NOT NULL,
+  klass TEXT NOT NULL,
+  trigger TEXT NOT NULL,
+  level REAL NOT NULL,
+  level_max REAL,
+  volume_min REAL,
+  size_gbp REAL NOT NULL,
+  stop_pct REAL NOT NULL,
+  target_pct REAL NOT NULL,
+  conf REAL,
+  ev REAL,
+  reason TEXT,
+  snap TEXT,
+  status TEXT NOT NULL,
+  filled_ts TEXT,
+  filled_price REAL,
+  filled_by TEXT);
+CREATE INDEX IF NOT EXISTS ix_armed_open ON armed_entries(status, expires);
 """
 
 def loans_open(con):

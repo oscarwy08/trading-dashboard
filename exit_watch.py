@@ -1,18 +1,21 @@
-"""Always-on exit watcher for open Day and Risk positions.
+"""Always-on watcher for Day and Risk exits, and for armed entries.
 
-Entries stay on the 5-minute cycle. This process only sells, and only with the
-same rules and the same fill as that cycle (exits.day_reason / risk_reason and
-trader.apply_sell). It watches Kraken and Coinbase public websockets where the
-coin is listed, and polls everything else about every 20 seconds. If a stream
-drops it keeps running; the 5-minute cycle still exits.
+Exits use the same rules and the same fill as the cycle (exits.day_reason /
+risk_reason and trader.apply_sell). Entries use the armed rows the cycle
+writes (entries.py) and trader.apply_buy. One process, one systemd unit. It
+watches Kraken and Coinbase public websockets where the coin is listed, and
+polls everything else about every 20 seconds. If a stream drops it keeps
+running; the 5-minute cycle still exits and still buys.
 
-The first deploy is shadow mode (EXIT_WATCH_SHADOW defaults to on). The watcher
-tracks open positions and logs WOULD EXIT (trigger, price, time) to
-~/exit_shadow/exit_shadow.db (EXIT_SHADOW_DB overrides that path). That file
-is outside the clone, so run_cycle.sh's git reset --hard does not delete it.
-It does not write trades, cash, or positions. Review with
-`python3 exit_shadow_report.py`, then set EXIT_WATCH_SHADOW=0 and restart to
-sell for real.
+Two shadow switches, independent of each other. Both default to on.
+
+EXIT_WATCH_SHADOW: log WOULD EXIT and do not sell. Set it to 0 to sell for real.
+ENTRY_WATCH_SHADOW: log WOULD BUY and do not buy. Set it to 0 to buy, and only
+on the entry_watch variant book. The main book never receives an entry from
+this process. WOULD EXIT and WOULD BUY both go to
+~/exit_shadow/exit_shadow.db (EXIT_SHADOW_DB overrides that path), outside the
+clone, so run_cycle.sh's git reset --hard does not delete it. Review with
+`python3 exit_shadow_report.py`.
 
 Deploy on the VPS (Ubuntu, user bot; trading-cycle.timer already runs the cycle).
 Do this only after the branch is on main:
@@ -20,12 +23,14 @@ Do this only after the branch is on main:
     sudo cp deploy/trading-exit-watch.service /etc/systemd/system/
     # WorkingDirectory and ExecStart must be the clone run_cycle.sh uses
     # (the directory that contains this file and data/trading.db).
-    # The unit sets EXIT_WATCH_SHADOW=1. Leave that until the report looks right.
+    # The unit sets EXIT_WATCH_SHADOW=1 and ENTRY_WATCH_SHADOW=1. Leave both
+    # until the report looks right.
     sudo systemctl daemon-reload
     sudo systemctl enable --now trading-exit-watch
     journalctl -u trading-exit-watch -f
     python3 exit_shadow_report.py
-    # then add EXIT_WATCH_SHADOW=0 to /home/bot/.trading_env and:
+    # then add EXIT_WATCH_SHADOW=0 and, when entries should fill the variant,
+    # ENTRY_WATCH_SHADOW=0 to /home/bot/.trading_env and:
     sudo systemctl restart trading-exit-watch
 
 Creating KILL in that clone stops this watcher as well as the cycle. A quiet
@@ -36,16 +41,25 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import daypot
+import entries
 import markets
 import pricesrc
 from common import KILL, LON, cfg, db, iso, log, now, usd_gbp
 from exits import book_lock, day_flat_reason, day_reason, gap_tag, risk_reason, stock_flatten_reason
-from trader import apply_sell, cost_pct, gas_gbp, history, hm, score_asset, sentiment, sget, sset
+from trader import apply_buy, apply_sell, cost_pct, gas_gbp, history, hm, score_asset, sentiment, sget, sset
 
 L = log("exit_watch")
 REST_S = 20
 QUIET_S = 45
 LIVE_S = 60
+
+
+def _flag_on(name):
+    """Unset or blank is on. 0 / false / no / off / live turns the shadow off."""
+    raw = os.environ.get(name)
+    if raw is None or not str(raw).strip():
+        return True
+    return str(raw).strip().lower() not in ("0", "false", "no", "off", "live")
 
 
 def shadow_mode():
@@ -54,10 +68,17 @@ def shadow_mode():
     Set EXIT_WATCH_SHADOW=0 (or false/off/live) after the shadow report looks
     right. That is the only switch that lets this process write a sell.
     """
-    raw = os.environ.get("EXIT_WATCH_SHADOW")
-    if raw is None or not str(raw).strip():
-        return True
-    return str(raw).strip().lower() not in ("0", "false", "no", "off", "live")
+    return _flag_on("EXIT_WATCH_SHADOW")
+
+
+def entry_shadow_mode():
+    """True: log WOULD BUY and do not buy. This is the default, and it does not
+    follow EXIT_WATCH_SHADOW.
+
+    Set ENTRY_WATCH_SHADOW=0 to buy on the entry_watch variant only. The main
+    book still only gets the WOULD BUY line.
+    """
+    return _flag_on("ENTRY_WATCH_SHADOW")
 
 
 def shadow_db_path():
@@ -91,6 +112,23 @@ def _shadow_connect():
         entry REAL,
         klass TEXT)""")
     con.execute("CREATE TABLE IF NOT EXISTS shadow_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+    con.execute("""CREATE TABLE IF NOT EXISTS would_buy (
+        id INTEGER PRIMARY KEY,
+        ts TEXT NOT NULL,
+        sleeve TEXT NOT NULL,
+        sub TEXT,
+        setup TEXT,
+        asset TEXT NOT NULL,
+        armed TEXT,
+        expires TEXT,
+        trigger TEXT NOT NULL,
+        level REAL,
+        price REAL NOT NULL,
+        size_gbp REAL,
+        stop_pct REAL,
+        target_pct REAL,
+        klass TEXT,
+        reason TEXT)""")
     con.commit()
     return con
 
@@ -114,6 +152,135 @@ def _shadow_seen(shcon, sleeve, asset, opened):
     return shcon.execute(
         "SELECT 1 FROM would_exit WHERE sleeve=? AND asset=? AND IFNULL(opened,'')=IFNULL(?,'') LIMIT 1",
         (sleeve, asset, opened)).fetchone() is not None
+
+
+def _buy_line(shadow, ts, arm, gbp):
+    head = "WOULD BUY" if shadow else "BUY"
+    vol = f" vol x{float(arm['volume_min']):g}" if arm.get("volume_min") is not None else ""
+    return (f"{head} {arm['sleeve']} {arm['asset']} at {ts} trigger £{gbp:.6g} "
+            f"(level £{float(arm['level']):.6g}{vol}) size £{float(arm['size_gbp']):.2f} "
+            f"stop -{float(arm['stop_pct']):.1f}% target +{float(arm['target_pct']):.1f}% | {arm.get('reason') or ''}")
+
+
+def _record_would_buy(shcon, ts, arm, gbp):
+    """First WOULD BUY for this armed row. A later tick does not add another."""
+    if shcon.execute(
+            "SELECT 1 FROM would_buy WHERE sleeve=? AND asset=? AND IFNULL(armed,'')=? LIMIT 1",
+            (arm["sleeve"], arm["asset"], arm.get("ts"))).fetchone():
+        return None
+    shcon.execute(
+        """INSERT INTO would_buy(ts,sleeve,sub,setup,asset,armed,expires,trigger,level,price,size_gbp,stop_pct,target_pct,klass,reason)
+           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (ts, arm["sleeve"], arm.get("sub"), arm.get("setup"), arm["asset"], arm.get("ts"), arm.get("expires"),
+         arm.get("reason") or arm.get("trigger") or "break_above", arm.get("level"), gbp, arm.get("size_gbp"),
+         arm.get("stop_pct"), arm.get("target_pct"), arm.get("klass"), arm.get("reason")))
+    shcon.commit()
+    line = _buy_line(True, ts, arm, gbp)
+    return dict(sleeve=arm["sleeve"], asset=arm["asset"], price=gbp, reason=arm.get("reason"), log=line,
+                shadow=True, ts=ts, level=arm.get("level"))
+
+
+def _stamp_open(con, arm, ts, price, snap):
+    """The same day_meta / risk_meta the cycle writes, so the next cycle sees the position."""
+    asset = arm["asset"]
+    if arm["sleeve"] == "day":
+        meta = dict(sget(con, "day_meta") or {})
+        row = dict(sub=arm.get("sub") or "momentum", tp=float(arm["target_pct"]), sl=float(arm["stop_pct"]),
+                   atr=(snap or {}).get("atr"), peak=price, opened=ts, conf=arm.get("conf"), ev=arm.get("ev"), snap=snap)
+        if arm.get("sub") == "burst" and arm.get("setup"):
+            row["kind"] = arm["setup"]
+        meta[asset] = row
+        sset(con, "day_meta", meta)
+        return
+    peaks = dict(sget(con, "risk_peaks") or {})
+    peaks[asset] = price
+    rmeta = dict(sget(con, "risk_meta") or {})
+    rmeta[asset] = dict(conf=arm.get("conf"), ev=arm.get("ev"), opened=ts,
+                        setup=arm.get("setup") or arm.get("sub"), why=arm.get("reason"), snap=snap)
+    sset(con, "risk_peaks", peaks)
+    sset(con, "risk_meta", rmeta)
+
+
+def _entry_tick(con, prices_gbp, live):
+    """Shadow-log (live False) or buy (live True) armed entries whose trigger has traded.
+
+    A missing live tick does not fire. Flatten, cash, session and the open-slot
+    checks are entries.skip_reason. The main book is only ever called with live False.
+    """
+    c = cfg()
+    t = now()
+    ts = iso(t)
+    fx = usd_gbp(con, c["fx"]["max_age_h"])
+    if not fx or fx[3]:
+        return []
+    rate = fx[0]
+    try:
+        arms = entries.load_due(con, ts)
+    except sqlite3.OperationalError:
+        return []
+    shcon = None if live else _shadow_connect()
+    out = []
+    gas = gas_gbp(con, c)
+    try:
+        for arm in arms:
+            asset = arm["asset"]
+            if asset not in prices_gbp:
+                continue
+            gbp = prices_gbp[asset]
+            if entries.skip_reason(con, c, arm, gbp, t, rate, prices_gbp):
+                continue
+            if not live:
+                rec = _record_would_buy(shcon, ts, arm, gbp)
+                if rec:
+                    L.info(rec["log"])
+                    out.append(rec)
+                continue
+            q = _quote(con, asset, arm["klass"], gbp, rate)
+            snap = entries.snap_of(arm)
+            done = apply_buy(con, c, ts, rate, gas, arm["sleeve"], asset, arm["klass"], arm["size_gbp"], gbp,
+                             arm.get("reason") or "live trigger", q, sub=arm.get("sub"), conf=arm.get("conf"), snap=snap)
+            if not done:
+                continue
+            entries.mark_filled(con, arm["sleeve"], asset, ts, gbp, "watch")
+            _stamp_open(con, arm, ts, gbp, done.get("snap"))
+            con.execute(
+                "INSERT INTO signals(ts,sleeve,asset,momentum,sentiment,combined,action,reason) VALUES(?,?,?,?,?,?,?,?)",
+                (ts, arm["sleeve"], asset, None, None, arm.get("conf"), "BUY", arm.get("reason") or "live trigger"))
+            line = _buy_line(False, ts, arm, gbp)
+            L.info(line)
+            out.append(dict(sleeve=arm["sleeve"], asset=asset, price=gbp, reason=arm.get("reason"), log=line,
+                            shadow=False, ts=ts))
+        return out
+    finally:
+        if shcon is not None:
+            shcon.close()
+
+
+def act_entries(con, prices_gbp, recv_mono=None, live=False):
+    """One entry pass. live=False never writes the book. live=True buys under that book's lock."""
+    del recv_mono
+    if KILL.exists():
+        L.info("KILL file present - watcher halted, no entries")
+        return []
+    if not live:
+        return _entry_tick(con, prices_gbp, live=False)
+    try:
+        path = con.execute("PRAGMA database_list").fetchone()[2]
+    except Exception:
+        path = None
+    try:
+        with book_lock(timeout=2, db_path=path):
+            con.execute("BEGIN IMMEDIATE")
+            try:
+                rows = _entry_tick(con, prices_gbp, live=True)
+                con.commit()
+                return rows
+            except Exception:
+                con.rollback()
+                raise
+    except TimeoutError:
+        L.info("book busy (the cycle is in it); this tick leaves the entry to that run")
+        return []
 
 
 def _would_line(ts, sleeve, asset, price, chg, peak, reason):
@@ -605,7 +772,16 @@ def _streams(rate_box, seen, deliver, stop):
             con = db(); c = cfg()
             fx = usd_gbp(con)
             rate_box["fx"] = fx[0] if fx else None
-            rows = con.execute("SELECT sleeve, asset, klass FROM positions WHERE sleeve IN ('day','risk') ORDER BY sleeve, asset").fetchall()
+            rows = entries.watched_rows(con, iso())
+            vpath = entries.variant_db_path()
+            if vpath.exists():
+                try:
+                    vcon = sqlite3.connect(f"file:{vpath}?mode=ro", uri=True)
+                    vcon.row_factory = sqlite3.Row
+                    rows = rows + entries.watched_rows(vcon, iso())
+                    vcon.close()
+                except Exception as e:
+                    L.warning("entry-watch book not readable (%s); exits keep running", e)
             plan = watch_plan(rows, pricesrc.routes_of(con))
             key = (tuple((x["asset"], x["symbol"]) for x in plan["kraken"]),
                    tuple((x["asset"], x["symbol"]) for x in plan["coinbase"]))
@@ -677,7 +853,12 @@ def serve():
         L.info("exit watcher up in shadow mode (%s). It logs WOULD EXIT and does not write trades. "
                "Set EXIT_WATCH_SHADOW=0 to sell for real.", shadow_db_path())
     else:
-        L.info("exit watcher up (live sells; Day then Risk; entries stay on the 5-min cycle)")
+        L.info("exit watcher up (live sells; Day then Risk)")
+    if entry_shadow_mode():
+        L.info("entry watcher shadow (%s). It logs WOULD BUY and does not buy. "
+               "Set ENTRY_WATCH_SHADOW=0 to buy on the entry_watch variant only.", shadow_db_path())
+    else:
+        L.info("entry watcher live on %s only. The main book still only logs WOULD BUY.", entries.variant_db_path())
     while not stop.is_set():
         if KILL.exists():
             time.sleep(5); continue
@@ -688,9 +869,22 @@ def serve():
             con = db()
             for e in evaluate(con, fresh, recv):
                 print(e["log"], flush=True)
+            # Main entries are always a shadow log, even after ENTRY_WATCH_SHADOW=0.
+            for e in act_entries(con, fresh, recv, live=False):
+                print(e["log"], flush=True)
             con.close()
+            if not entry_shadow_mode():
+                vpath = entries.variant_db_path()
+                if vpath.exists():
+                    vcon = sqlite3.connect(vpath, timeout=30)
+                    vcon.row_factory = sqlite3.Row
+                    try:
+                        for e in act_entries(vcon, fresh, recv, live=True):
+                            print(e["log"], flush=True)
+                    finally:
+                        vcon.close()
         except Exception:
-            L.exception("tick failed; the 5-min cycle still exits")
+            L.exception("tick failed; the 5-min cycle still exits and still buys")
         time.sleep(0.25)
 
 

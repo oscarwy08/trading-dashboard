@@ -826,6 +826,7 @@ BOOK_MENU = {
     "burst_runner": "Burst runner",
     "everything": "Everything combined",
     "midnight_crypto": "Midnight crypto",
+    "entry_watch": "Entry watch",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 

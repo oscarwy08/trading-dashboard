@@ -274,23 +274,33 @@ Cadence: every 5 min the fast cycle (collector `COLLECT_MODE=fast`: crypto re-pr
 CoinGecko only for coins those do not list, then stocks, gas, market proxy, sentiment ingest, trader incl. exits,
 maintenance, dashboard, push); every ~15 min the full collector (daily closes, backfills, and the top-300 screen when it
 is due). FX stays hourly. Pushes only when state changed (at most one per 5-min cycle). Health: `/home/bot/health.sh`.
-Exit watcher (separate from the timer): `exit_watch.py` runs as systemd `trading-exit-watch`
-(`deploy/trading-exit-watch.service`, `Restart=on-failure`). It watches open Day positions, then Risk,
-on Kraken and Coinbase public websockets. A coin those do not list, or a socket that goes quiet, is
-polled about every 20 seconds (CoinGecko only inside the existing daily budget). It uses the same
-stops, trails, targets, max-hold and costs as the cycle, and it does not open trades. The cycle still
-exits if the watcher or a stream is down. Both take the same book lock so a position is sold once.
-`KILL` in the clone stops the watcher as well as the cycle.
+Exit and entry watcher (one process, separate from the timer): `exit_watch.py` runs as systemd
+`trading-exit-watch` (`deploy/trading-exit-watch.service`, `Restart=on-failure`). It watches open
+Day positions, then Risk, on Kraken and Coinbase public websockets, and the same streams cover
+assets with an armed entry. A coin those do not list, or a socket that goes quiet, is polled
+about every 20 seconds (CoinGecko only inside the existing daily budget). Exits use the same
+stops, trails, targets, max-hold and costs as the cycle. The cycle still exits if the watcher
+or a stream is down. Both take the same book lock so a position is sold once. `KILL` in the
+clone stops the watcher as well as the cycle.
 
-First deploy is shadow mode. `EXIT_WATCH_SHADOW` defaults to on (the unit sets `1`). The process
-tracks open positions and appends `WOULD EXIT` lines (trigger, price, time) to its log and to
-`~/exit_shadow/exit_shadow.db` (`EXIT_SHADOW_DB` overrides the path). That directory is outside
-the clone, so `git reset --hard` in `run_cycle.sh` does not delete it. A copy left under
-`data/exit_shadow.db` (plus `-wal`, `-shm`, `-journal`) is gitignored, so `git add -A` in
-`scripts/ci_push.sh` will not commit it, and an ignored untracked file also survives
-`git reset --hard`. It does not write trades, cash, or positions, and it does not move the
-cycle's peaks. Install only after this is on main (user `bot`; point the unit at the clone
-`run_cycle.sh` uses):
+Entries stay scored on the 5-minute cycle. For a Burst, momentum, or Risk breakout/dip the cycle
+would buy, it records an armed entry (price level, optional volume multiple, size, stop, target,
+expiry about 15 minutes). The watcher fires when that level trades. On the main book this is a
+shadow log only, so the frozen book does not change. Live buys go to the `entry_watch` variant
+(`config/variants/entry_watch.yaml`, Variants tab and Book menu) and only when
+`ENTRY_WATCH_SHADOW=0`. That switch is independent of `EXIT_WATCH_SHADOW`. A buy is idempotent
+with the cycle: the position is visible on the next cycle, and a second tick does not buy again.
+The watcher re-checks session, flatten time, loss caps, cooldown, open slots, and cash before it buys.
+
+First deploy is shadow mode. `EXIT_WATCH_SHADOW` and `ENTRY_WATCH_SHADOW` both default to on
+(the unit sets both to `1`). The process appends `WOULD EXIT` and `WOULD BUY` lines (trigger,
+price, time) to its log and to `~/exit_shadow/exit_shadow.db` (`EXIT_SHADOW_DB` overrides the
+path). That directory is outside the clone, so `git reset --hard` in `run_cycle.sh` does not
+delete it. A copy left under `data/exit_shadow.db` (plus `-wal`, `-shm`, `-journal`) is
+gitignored, so `git add -A` in `scripts/ci_push.sh` will not commit it, and an ignored
+untracked file also survives `git reset --hard`. Shadow mode does not write trades, cash, or
+positions, and it does not move the cycle's peaks. Install only after this is on main (user
+`bot`; point the unit at the clone `run_cycle.sh` uses):
 
 ```
 sudo cp deploy/trading-exit-watch.service /etc/systemd/system/
@@ -306,12 +316,15 @@ python3 exit_shadow_report.py
 ```
 
 The report pairs each shadow exit with the sell the 5-minute cycle actually made for that same
-position, and prints the time difference and the price difference. When that looks right, turn
-the watcher live: add `EXIT_WATCH_SHADOW=0` to `/home/bot/.trading_env` and
-`sudo systemctl restart trading-exit-watch`. The unit sources that file (`set -a; . ~/.trading_env`)
-instead of `EnvironmentFile`, which rejects lines that start with `export`. The unit's own
-default is `EXIT_WATCH_SHADOW=1`; a value in the file replaces it. The log
-line changes from `WOULD EXIT` to `EXIT`, and sells are written to the book.
+position, and each shadow entry with the cycle's buy (or marks a move the cycle missed). It
+prints the time difference and the price difference. When the exits look right, add
+`EXIT_WATCH_SHADOW=0` to `/home/bot/.trading_env`. When the entries look right, add
+`ENTRY_WATCH_SHADOW=0` as well. Then `sudo systemctl restart trading-exit-watch`. The unit
+sources that file (`set -a; . ~/.trading_env`) instead of `EnvironmentFile`, which rejects
+lines that start with `export`. The unit's own defaults are `EXIT_WATCH_SHADOW=1` and
+`ENTRY_WATCH_SHADOW=1`; a value in the file replaces it. The log line changes from
+`WOULD EXIT` to `EXIT` for sells. Entry buys are written only on the entry_watch variant;
+the main book keeps the `WOULD BUY` line.
 CoinGecko Demo key (optional): the demo tier is 100 calls/min but only 10,000 calls/month. Prices therefore come from
 public Kraken (one Ticker call for every listed coin) and Coinbase, with KyberSwap for Monad tokens. CoinGecko is the
 fallback (one simple/price about every 15 min for whatever is left) and the top-300 screen (about every 3 hours, every
