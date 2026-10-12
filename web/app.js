@@ -1,6 +1,36 @@
 /* Paper Trader dashboard - static single-page app with hash tabs. Loads data.json (written by dashboard.py) and
    re-fetches it every 60 s. A variant book loads data_<name>.json. Hash: #day, #book=ev_exit, #book=ev_exit&day,
    #book=ev_exit&asset=BAT. Tabs: #overview #portfolio #core #day #risk #markets #sentiment #orders #variants. */
+
+// A fill marker sits on the fill itself. `fx` is pounds per dollar at that time (the same rate the candles use).
+// A single buy whose fill is the average entry therefore lands on the avg-buy line in GBP.
+function fillMarker(trade, ccy, fx) {
+  const fill = trade && trade.fill, t = trade && trade.t;
+  if (typeof fill !== 'number' || !isFinite(fill) || typeof t !== 'number' || !isFinite(t)) return null;
+  const price = ccy === 'usd' ? (fx ? fill / fx : null) : fill;
+  if (typeof price !== 'number' || !isFinite(price)) return null;
+  const buy = trade.side === 'BUY';
+  return {time: t, price: price, position: buy ? 'atPriceBottom' : 'atPriceTop', shape: buy ? 'arrowUp' : 'arrowDown'};
+}
+
+// The time scale only has a coordinate for a point on the series. A fill between hourly bars gets an
+// empty slot at that second so the arrow is not dropped and is not drawn on the bar's close.
+function seriesWithFills(bars, marks, line) {
+  const have = new Set(), out = [];
+  for (const b of bars) {
+    if (have.has(b.time)) continue;
+    have.add(b.time);
+    out.push(line ? {time: b.time, value: b.close} : {time: b.time, open: b.open, high: b.high, low: b.low, close: b.close});
+  }
+  for (const m of marks) {
+    if (!m || have.has(m.time)) continue;
+    have.add(m.time);
+    out.push({time: m.time});
+  }
+  out.sort((a, b) => a.time - b.time);
+  return out;
+}
+
 (() => {
 'use strict';
 const LC = window.LightweightCharts;
@@ -90,7 +120,11 @@ function setRange(chart, times, r) {
 }
 function dropChart(k) {
   if (charts[k]) { charts[k].remove(); charts[k] = null; }
-  if (k === 'd') { charts.dSeries = null; charts.dMarks = null; }
+  if (k === 'd') { charts.dSeries = null; charts.dMarks = null; charts.dMarkerApi = null; }
+}
+function chartSeries(ch, kind, opts) {
+  const def = kind === 'area' ? LC.AreaSeries : kind === 'candle' ? LC.CandlestickSeries : LC.LineSeries;
+  return ch.addSeries(def, opts);
 }
 function emptyMsg(id, msg) { const e = $('#' + id); e.classList.toggle('hidden', !msg); e.textContent = msg || ''; }
 function seg(id, attr, val) { $$('#' + id + ' button').forEach(b => b.classList.toggle('on', b.dataset[attr] === val)); }
@@ -280,7 +314,7 @@ function renderEquity() {
   const E = D.equity, el = $('#eq-chart');
   if (!charts.eq) {
     charts.eq = mkChart(el, {rightPriceScale: {borderVisible: false, scaleMargins: {top: .15, bottom: .08}}});
-    eqSeries = charts.eq.addAreaSeries({lineColor: C.blue, topColor: 'rgba(29,155,240,.28)', bottomColor: 'rgba(29,155,240,0)', lineWidth: 2,
+    eqSeries = chartSeries(charts.eq, 'area', {lineColor: C.blue, topColor: 'rgba(29,155,240,.28)', bottomColor: 'rgba(29,155,240,0)', lineWidth: 2,
       priceFormat: {type: 'custom', formatter: v => '£' + v.toFixed(2)}, lastValueVisible: true, priceLineVisible: false});
     const tip = $('#eq-tip');
     charts.eq.subscribeCrosshairMove(p => {
@@ -919,16 +953,19 @@ function renderPriceChart(a, p) {
   const bars = raw.map(([t, o, h, l, c]) => { const f = usd ? 1 : fxAt(t); return {time: t, open: o * f, high: h * f, low: l * f, close: c * f}; });
   emptyMsg('d-empty', bars.length ? '' : 'No price history for this asset yet.');
   if (!bars.length) return;
-  const ch = charts.d = mkChart($('#d-chart')), last = bars[bars.length - 1].close;
+  const ch = charts.d = mkChart($('#d-chart'), {rightPriceScale: {borderVisible: false, scaleMargins: {top: 0.15, bottom: 0.15}}}), last = bars[bars.length - 1].close;
   const pf = pfmt(last); const fmt = {type: 'custom', minMove: pf.minMove, formatter: v => sym + v.toFixed(pf.precision)};
-  const s = S.ptype === 'line' ? ch.addAreaSeries({lineColor: C.blue, topColor: 'rgba(29,155,240,.22)', bottomColor: 'rgba(29,155,240,0)', lineWidth: 2, priceFormat: fmt})
-    : ch.addCandlestickSeries({upColor: C.green, downColor: C.red, wickUpColor: C.green, wickDownColor: C.red, borderVisible: false, priceFormat: fmt});
-  s.setData(S.ptype === 'line' ? bars.map(b => ({time: b.time, value: b.close})) : bars);
+  const s = S.ptype === 'line' ? chartSeries(ch, 'area', {lineColor: C.blue, topColor: 'rgba(29,155,240,.22)', bottomColor: 'rgba(29,155,240,0)', lineWidth: 2, priceFormat: fmt})
+    : chartSeries(ch, 'candle', {upColor: C.green, downColor: C.red, wickUpColor: C.green, wickDownColor: C.red, borderVisible: false, priceFormat: fmt});
   const times = bars.map(b => b.time);
-  const snapT = t => { const h = t - t % 3600; let best = times[0]; for (const x of times) { if (Math.abs(x - h) < Math.abs(best - h)) best = x; } return best; };
   const t0 = times[0] - 3600, t1 = times[times.length - 1] + 3600;
   charts.dSeries = s;
-  charts.dMarks = assetFills(a).filter(t => t.t >= t0 && t.t <= t1).map(t => ({t, time: snapT(t.t), id: tradeKey(t)})).sort((x, y) => x.time - y.time || (x.t.side === 'BUY' ? -1 : 1));
+  charts.dMarks = assetFills(a).filter(t => t.t >= t0 && t.t <= t1).map(t => {
+    const spec = fillMarker(t, S.ccy, fxAt(t.t));
+    return spec && {t, id: tradeKey(t), time: spec.time, price: spec.price, position: spec.position, shape: spec.shape};
+  }).filter(Boolean).sort((x, y) => x.time - y.time || (x.t.side === 'BUY' ? -1 : 1));
+  s.setData(seriesWithFills(bars, charts.dMarks, S.ptype === 'line'));
+  charts.dMarkerApi = LC.createSeriesMarkers(s, [], {zOrder: 'top'});
   paintPriceMarkers();
   ch.subscribeClick(param => {
     if (!param) return;
@@ -936,9 +973,15 @@ function renderPriceChart(a, p) {
     const known = id => marks.some(m => m.id === id);
     let id = param.hoveredObjectId != null ? String(param.hoveredObjectId) : '';
     if (!known(id)) id = '';
-    if (!id && param.time != null) {
-      const hits = marks.filter(m => m.time === param.time);
-      if (hits.length === 1) id = hits[0].id;
+    if (!id && param.point) {
+      let best = null, bestD = 18;
+      for (const m of marks) {
+        const x = ch.timeScale().timeToCoordinate(m.time), y = s.priceToCoordinate(m.price);
+        if (x == null || y == null) continue;
+        const d = Math.hypot(param.point.x - x, param.point.y - y);
+        if (d < bestD) { best = m; bestD = d; }
+      }
+      if (best) id = best.id;
     }
     if (!id) return;
     S.trade = S.trade === id ? null : id;
@@ -953,11 +996,11 @@ function renderPriceChart(a, p) {
   $('#d-chart').ondblclick = () => { S.dRange = 'ALL'; seg('d-range', 'r', 'ALL'); ch.timeScale().fitContent(); };
 }
 function paintPriceMarkers() {
-  const s = charts.dSeries; if (!s || !charts.dMarks) return;
-  s.setMarkers(charts.dMarks.map(m => {
+  const api = charts.dMarkerApi; if (!api || !charts.dMarks) return;
+  api.setMarkers(charts.dMarks.map(m => {
     const buy = m.t.side === 'BUY', on = S.trade === m.id;
-    return {id: m.id, time: m.time, position: buy ? 'belowBar' : 'aboveBar',
-      color: on ? C.blue : (buy ? C.green : C.red), shape: buy ? 'arrowUp' : 'arrowDown', size: on ? 2 : 1,
+    return {id: m.id, time: m.time, price: m.price, position: m.position, shape: m.shape,
+      color: on ? C.blue : (buy ? C.green : C.red), size: on ? 2 : 1,
       text: buy ? `B ${fM(m.t.value)}` : `S ${isNum(m.t.pnl) ? fM(m.t.pnl, true) : ''}`};
   }));
 }
@@ -976,12 +1019,12 @@ function renderSigChart(a, A) {
   emptyMsg('d-sig-empty', h.length ? '' : 'No signal history yet.');
   if (!h.length) return;
   const ch = charts.dsig = mkChart($('#d-sig'), {rightPriceScale: {borderVisible: false, scaleMargins: {top: .1, bottom: .1}}});
-  const s = ch.addLineSeries({color: C.blue, lineWidth: 2, pointMarkersVisible: h.length < 30, priceFormat: {type: 'price', precision: 2, minMove: 0.01}});
+  const s = chartSeries(ch, 'line', {color: C.blue, lineWidth: 2, pointMarkersVisible: h.length < 30, priceFormat: {type: 'price', precision: 2, minMove: 0.01}});
   s.setData(h.map(x => ({time: x[0], value: x[1]})));
   const buy = A && A.focus ? D.risk.limits.focus_buy : D.risk.limits.buy;
   s.createPriceLine({price: buy, color: C.green, lineStyle: LC.LineStyle.Dashed, lineWidth: 1, axisLabelVisible: true, title: 'buy'});
   s.createPriceLine({price: D.risk.limits.sell, color: C.red, lineStyle: LC.LineStyle.Dashed, lineWidth: 1, axisLabelVisible: true, title: 'sell'});
-  s.setMarkers(h.filter(x => x[2] === 'BUY' || x[2] === 'SELL').map(x => ({time: x[0], position: x[2] === 'BUY' ? 'belowBar' : 'aboveBar',
+  LC.createSeriesMarkers(s, h.filter(x => x[2] === 'BUY' || x[2] === 'SELL').map(x => ({time: x[0], position: x[2] === 'BUY' ? 'belowBar' : 'aboveBar',
     color: x[2] === 'BUY' ? C.green : C.red, shape: 'circle', text: x[2] === 'BUY' ? 'Buy' : 'Sell'})));
   ch.timeScale().fitContent();
 }
@@ -1001,7 +1044,7 @@ function renderSentTimeline(a) {
   emptyMsg('d-sent-empty', rows.length ? '' : 'No sentiment for this asset yet.');
   if (!rows.length || !LC) return;
   const ch = charts.dsent = mkChart($('#d-sent'));
-  const s = ch.addLineSeries({color: C.blue, lineWidth: 2, pointMarkersVisible: true, priceFormat: {type: 'price', precision: 2, minMove: 0.01}});
+  const s = chartSeries(ch, 'line', {color: C.blue, lineWidth: 2, pointMarkersVisible: true, priceFormat: {type: 'price', precision: 2, minMove: 0.01}});
   const seen = new Map(); rows.slice().reverse().forEach(r => seen.set(r.t, r.s));
   s.setData([...seen.entries()].sort((x, y) => x[0] - y[0]).map(([t, v]) => ({time: t, value: v})));
   s.createPriceLine({price: 0, color: '#536471', lineStyle: LC.LineStyle.Dotted, lineWidth: 1, axisLabelVisible: false});
@@ -1059,7 +1102,7 @@ function renderVariants() {
   if (!charts.var) charts.var = mkChart(chartEl, {rightPriceScale: {borderVisible: false}});
   (charts.varLines || []).forEach(s => charts.var.removeSeries(s));
   charts.varLines = rows.filter(b => (b.curve || []).length).map(b => {
-    const s = charts.var.addLineSeries({color: VAR_COL[b.name] || '#aaa', lineWidth: 2, title: b.label, priceFormat: {type: 'custom', formatter: v => '£' + v.toFixed(2)}});
+    const s = chartSeries(charts.var, 'line', {color: VAR_COL[b.name] || '#aaa', lineWidth: 2, title: b.label, priceFormat: {type: 'custom', formatter: v => '£' + v.toFixed(2)}});
     s.setData(b.curve.map(p => ({time: p.t, value: p.eq})).filter(p => isNum(p.value)));
     return s;
   });
