@@ -701,7 +701,8 @@ function marketLine() {
 }
 function srcName(s) {
   const m = {kraken: 'Kraken', coinbase: 'Coinbase', kyberswap: 'KyberSwap', kyber: 'KyberSwap',
-    coingecko: 'CoinGecko', 'coingecko-live': 'CoinGecko', yahoo: 'Yahoo', 'yahoo-live': 'Yahoo'};
+    coingecko: 'CoinGecko', 'coingecko-live': 'CoinGecko', geckoterminal: 'GeckoTerminal', dexscreener: 'DexScreener',
+    yahoo: 'Yahoo', 'yahoo-live': 'Yahoo'};
   if (!s) return '';
   if (m[s]) return m[s];
   if (String(s).indexOf('daily close') === 0) return 'Daily close';
@@ -745,9 +746,11 @@ function renderMarkets() {
   });
   const l = D.risk.limits, DU = D.day_universe || {}, UR = DU.rules || {}, ex = DU.excluded || {};
   const cg = D.cg || {};
-  const cgLine = isNum(cg.today) ? `CoinGecko calls: <b>${cg.today}</b> today (budget ${cg.day_budget}), <b>${cg.month}</b> this month (budget ${cg.month_budget}). ` : '';
+  const cgPurpose = cg.purpose && typeof cg.purpose === 'object'
+    ? Object.keys(cg.purpose).sort().map(k => `${k} ${cg.purpose[k]}`).join(', ') : '';
+  const cgLine = isNum(cg.today) ? `CoinGecko calls: <b>${cg.today}</b> today (budget ${cg.day_budget}${cg.reserve_pct ? `, last ${Math.round(cg.reserve_pct * 100)}% kept for held coins` : ''}), <b>${cg.month}</b> this month (budget ${cg.month_budget}).${cgPurpose ? ` Spent on ${cgPurpose}.` : ''} ` : '';
   const uLine = isNum(DU.n) ? `<b>Day pot crypto universe:</b> the top ${DU.top_n || 15} coins by market cap plus <b>${DU.n} liquid coins</b> from the CoinGecko top ${DU.screened || 300}, refreshed every few hours (the same snapshot the Risk pot uses): market cap at least $${((UR.min_mcap_usd || 0) / 1e6).toFixed(0)}M, daily trading volume at least $${((UR.min_vol_usd || 0) / 1e6).toFixed(0)}M and at least ${((UR.min_vol_mcap || 0) * 100).toFixed(0)}% of the market cap. Never: stablecoins, wrapped/staked/bridged coins, exchange tokens or memecoins (CoinGecko meme category + a blocklist of ${DU.blocklist_n || 0})${(DU.meme_allow || []).length ? ' - except ' + DU.meme_allow.map(esc).join(', ') : ''}. Left out this cycle: ${Object.entries(ex).map(([k, v]) => `${esc(k)} ${v}`).join(' · ') || '-'}. ${Object.keys(DU.base_excluded || {}).length ? `Priced but not traded by the Day pot: ${Object.entries(DU.base_excluded).map(([k, v]) => `${esc(k)} (${esc(String(v).replace(/^excluded \((.*)\)$/, '$1'))})`).join(', ')}. ` : ''}${(DU.warming || []).length ? `${DU.warming.length} new coin${DU.warming.length === 1 ? ' is' : 's are'} still <b>warming up</b> (no Day trades until ${DU.warm_h}h of 15-minute price history exist).` : ''}<br>` : '';
-  $('#mk-note').innerHTML = `${marketLine()}<br>${cgLine}${uLine}${S.acct ? `Showing ${esc(ACC[S.acct])} assets only (${esc(ACCW[S.acct])}). ` : ''}Crypto prices come from Kraken or Coinbase when the coin is listed, KyberSwap for Monad tokens, and CoinGecko for the rest. Trades settle in the Crypto account (Monad wallet), shares in the Stocks account (Trading 212). Stocks are normal exchange shares (US tickers, London .L incl. AIM, Australia .AX), priced from Yahoo Finance; London quotes in pence are converted to £. Stock trades only happen while that exchange is open (US 14:30-21:00 UK, London 08:00-16:30 UK; no weekends/holidays) - orders decided while closed are queued for the open. ` +
+  $('#mk-note').innerHTML = `${marketLine()}<br>${cgLine}${uLine}${S.acct ? `Showing ${esc(ACC[S.acct])} assets only (${esc(ACCW[S.acct])}). ` : ''}Crypto prices come from Kraken or Coinbase when the coin is listed, KyberSwap for Monad tokens, and CoinGecko for the rest. If CoinGecko is skipped or returns nothing, a coin with no exchange route can use the most liquid GeckoTerminal or DexScreener pool. Trades settle in the Crypto account (Monad wallet), shares in the Stocks account (Trading 212). Stocks are normal exchange shares (US tickers, London .L incl. AIM, Australia .AX), priced from Yahoo Finance; London quotes in pence are converted to £. Stock trades only happen while that exchange is open (US 14:30-21:00 UK, London 08:00-16:30 UK; no weekends/holidays) - orders decided while closed are queued for the open. ` +
     `Signal = the Day pot's momentum + sentiment score (-1 to +1): it buys at ≥ ${l.buy} (≥ ${l.focus_buy} for MON, WLD, XRP) and sells at ≤ ${l.sell}. Names without a live price show the last daily close. Core score = the weekly stock ranking (Core pot tab).`;
 }
 
