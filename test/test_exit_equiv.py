@@ -5,7 +5,7 @@ on a wall-clock boundary, so two runs never match. This test copies the current
 main book, plants one fixed price path, and runs the same cycles through both
 trader.py files. The shadow watcher is off. Armed-entry rows may differ; the trades columns
 (side, asset, qty, fill, pnl, reason) and the final equity must be byte-identical.
-Only this branch's trader imports entries.py. Origin/main does not.
+Both traders import entries.py (it is already on main). The trades stay identical.
 
 The path is several UK days and is meant to fire, on assets that are not already
 in the book: a day stop, a day trailing exit (40% giveback), a burst target, a
@@ -222,12 +222,12 @@ def main():
     ok_files = files["pr"] == pr_file and files["main"] != pr_file
     # exits.py is already on main, so both traders import it. entries.py is only this branch.
     ok_uses = uses["pr"] == "1" and uses["main"] == "1"
-    ok_ent = uses_e["pr"] == "1" and uses_e["main"] == "0"
+    ok_ent = uses_e["pr"] == "1" and uses_e["main"] == "1"
     same = full["main"] == full["pr"]
     missing = [n for n in NEEDLES if n not in new["pr"]]
     print(("OK  " if ok_files else "FAIL") + " ran origin/main trader.py and this branch's trader.py")
     print(("OK  " if ok_uses else "FAIL") + " both traders import exits.py; armed entries are the only new import")
-    print(("OK  " if ok_ent else "FAIL") + " only this branch's trader imports entries.py; origin/main does not")
+    print(("OK  " if ok_ent else "FAIL") + " both traders import entries.py; the main book is unchanged")
     print(("OK  " if same else "FAIL") + " trades (side, asset, qty, fill, pnl, reason) and final equity are byte-identical")
     if missing:
         print("FAIL price path did not fire: " + ", ".join(missing))

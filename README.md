@@ -288,7 +288,13 @@ would buy, it records an armed entry (price level, optional volume multiple, siz
 expiry about 15 minutes). The watcher fires when that level trades. On the main book this is a
 shadow log only, so the frozen book does not change. Live buys go to the `entry_watch` variant
 (`config/variants/entry_watch.yaml`, Variants tab and Book menu) and only when
-`ENTRY_WATCH_SHADOW=0`. That switch is independent of `EXIT_WATCH_SHADOW`. A buy is idempotent
+`ENTRY_WATCH_SHADOW=0`. That switch is independent of `EXIT_WATCH_SHADOW`.
+Every other paper book under `data/variants/` is shadow-logged as well
+(WOULD EXIT and WOULD BUY), using that book's own rules. Those books are not
+sold or bought by the watcher. Each shadow row is tagged with the book name,
+and `exit_shadow_report.py` prints, per book, the pairs, the average time gap,
+the average price gap, and the moves the cycle missed. One price fetch per
+symbol is shared across the books. A buy is idempotent
 with the cycle: the position is visible on the next cycle, and a second tick does not buy again.
 The watcher re-checks session, flatten time, loss caps, cooldown, open slots, and cash before it buys.
 
