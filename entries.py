@@ -296,8 +296,10 @@ def skip_reason(con, c, arm, price_gbp, t, rate, live=None):
     if _state(con, "riskpot_halt"):
         return "risk drawdown halt"
     RP = c.get("riskpot") or {}
+    import variants
+    R = variants.rules_of(c)
     lx = _state(con, f"risk_exit:{arm['asset']}")
-    if lx and datetime.fromisoformat(str(lx)) > t - timedelta(hours=float(RP.get("cooldown_h", 24))):
+    if variants.risk_on_clock(R, lx, t, RP.get("cooldown_h", 24)):
         return "cooldown"
     if _open_n(con, arm) >= int(RP.get("max_open", 5)):
         return "max open positions"

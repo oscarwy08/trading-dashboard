@@ -1,0 +1,5 @@
+# At the trail arm, sell half of a Day or Risk position and leave the rest on this book's trail.
+# Buy that half back on a later dip only when a fresh expected value clears the hurdle.
+# The £1 floor applies only to that half. The £5 minimum on every other order is unchanged.
+variant_rules:
+  partial_take: true

@@ -1,0 +1,5 @@
+# Per account, f = that account's Day loss today / 15% of that account's start-of-day Day equity.
+# f is not capped at 1. Momentum threshold = its base (0.35, or 0.30 on MON, WLD, XRP) + 0.30 x f.
+# Burst uses the same f. Size x (1 - min(f, 1)). The -15% halt on the whole Day pot stays.
+variant_rules:
+  day_capital_caution: true

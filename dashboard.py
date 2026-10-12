@@ -835,6 +835,12 @@ BOOK_MENU = {
     "everything": "Everything combined",
     "midnight_crypto": "Midnight crypto",
     "entry_watch": "Entry watch",
+    "risk_giveback_15": "Risk giveback 15",
+    "day_trail_arm": "Day trail arm",
+    "day_ev_blend": "Day EV blend",
+    "no_risk_clock": "No risk clock",
+    "day_capital_caution": "Day capital caution",
+    "partial_take": "Partial take",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 

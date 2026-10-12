@@ -20,6 +20,17 @@ Three corrections on the main book. The frozen thresholds are otherwise unchange
 - **EV exit off.** `ev_now` rises as the trade falls, so it was a take-profit on winners. `ev_action` stays off until the upside is taken from the current price and the chance is recomputed. `ev_exit`, `all_combined` and `everything` are reset from the current main book; sells before that reset are not counted. The dashboard says so.
 - **Risk expected win.** The win in `setup_ev` is the gain the trail locks when it arms: `(1 + 15%) × (1 − 10%) − 1 = 3.5%`, the same on every coin. It is not the old 13.5%, and it is not scaled by ATR. The loss prior is still scaled by ATR. The 12% stop and the trail rules are unchanged.
 
+## Paper books (2026-10-12): six variants beside the frozen book
+
+None of these changes the main book. Each is its own database, shadow-logged by the exit watcher, and compared on the variants page with the same columns as the Day sub-strategy table.
+
+- **risk_giveback_15.** Arm stays at +15% net. Once armed, sell when the net gain falls to 65% of the peak net gain. The 7-day exit waits while the trail is armed. The −12% stop stays.
+- **day_trail_arm.** A Day trail arms only when 60% of the peak gain is at least the greater of 4× that trade's round-trip cost and 1× its 1-hour ATR. Stop, target, the burst 6-hour hold and the 22:00 flatten stay.
+- **day_ev_blend.** Per sub-strategy, EV = (n × measured expectancy + 10 × the model) / (n + 10). Momentum and burst are measured apart. This book keeps the older Risk win (`risk_ev_legacy_win`), not the 3.5% trail lock.
+- **no_risk_clock.** The 24-hour Risk re-entry clock is deleted. No new-high gate and no stop-out cooldown.
+- **day_capital_caution.** Per account, f = that account's Day loss today / 15% of that account's start-of-day Day equity, with no cap at 1. The hurdle rises by 0.30 × f and size is multiplied by (1 − min(f, 1)). The −15% halt on the whole Day pot stays.
+- **partial_take.** At the trail arm, sell half of a Day or Risk position and leave the rest on that book's trail. Buy the half back on a later dip only when a fresh expected value (recomputed chance, upside and downside from the current price) clears the hurdle. That half may be £1. The £5 minimum is unchanged on every other order. The sell logs the extra fee of splitting one exit into two.
+
 ## v7.8 (2026-10-10): honest costs, honest EV, and a frozen scorecard (paper only)
 
 The rule set is frozen at `rules.frozen_since` (shown on the dashboard). The next change to a threshold needs a reason that is not one day's P&L.

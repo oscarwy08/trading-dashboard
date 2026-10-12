@@ -1,0 +1,6 @@
+# Delete the 24h Risk re-entry clock. The next setup buys when its own confidence and
+# expected value clear. No new-high gate and no stop-out cooldown.
+variant_rules:
+  no_risk_clock: true
+riskpot:
+  cooldown_h: 0
