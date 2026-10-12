@@ -1,0 +1,14 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "KAIA",
+ "score": 0.4,
+ "volume": 15,
+ "confidence": 0.55,
+ "summary": "Positive catalyst: Upbit added KAIA KRW/BTC/USDT markets, sending it +40-57% with ~$130-150M volume and +58% on the week; listing pumps often fade and price has already slipped ~10% from the high.",
+ "sources": [
+  "https://x.com/coinranking/status/2108544727641358696",
+  "https://x.com/CryptoSlate/status/2108579940233093192",
+  "https://x.com/ANCrypto_/status/2108534578914746555",
+  "https://x.com/coinranking/status/2108819149761749021"
+ ]
+}

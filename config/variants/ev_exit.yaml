@@ -1,0 +1,3 @@
+# Exit a Day or Risk position when live EV turns clearly negative. See variant_rules in config.yaml.
+variant_rules:
+  ev_exit: true

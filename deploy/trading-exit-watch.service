@@ -1,0 +1,23 @@
+[Unit]
+Description=Paper exit and entry watcher (one process, Day and Risk)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bot
+# Same clone as /home/bot/run_cycle.sh. Change both paths if that script lives elsewhere.
+WorkingDirectory=/home/bot/trading-dashboard
+# systemd EnvironmentFile rejects lines that start with "export", and
+# ~/.trading_env is written that way. Source it instead. Both shadows default
+# to 1. EXIT_WATCH_SHADOW=0 sells for real. ENTRY_WATCH_SHADOW=0 buys, and only
+# on the entry_watch variant. The file can set either after the report looks right.
+Environment=PYTHONUNBUFFERED=1
+Environment=EXIT_WATCH_SHADOW=1
+Environment=ENTRY_WATCH_SHADOW=1
+ExecStart=/bin/bash -c 'set -a; if [ -f ~/.trading_env ]; then . ~/.trading_env; fi; exec python3 exit_watch.py'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

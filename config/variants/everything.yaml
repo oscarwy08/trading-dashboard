@@ -1,0 +1,9 @@
+# all_combined plus the burst runner, on one book. all_combined.yaml is unchanged.
+# The first cycle copies data/variants/_snapshot.db, the same start as the other books.
+variant_rules:
+  ev_exit: true
+  burst_stop_widen: true
+  core_fallback_half: true
+  entry_own_trend: true
+  no_day_core_same_afternoon: true
+  burst_runner: true

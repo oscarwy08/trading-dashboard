@@ -1,0 +1,386 @@
+# Paper trading config — NO real money, no wallets, no keys.
+currency: GBP                   # account currency; source prices are USD and converted with the live GBP/USD rate
+starting_balance: 200           # GBP, total paper account
+sleeve_split_pct: {core: 50, day: 30, risk: 20}   # -> £100 CORE (long holds) / £60 DAY (intraday) / £40 RISK (speculative)
+accounts:                       # v6 (2026-10-10): two real-world accounts, each pot has separate cash in both (pot x account)
+  crypto: {label: "Crypto account", where: "Monad wallet"}          # crypto trades: 0.3% fee/slippage + Monad gas
+  stocks: {label: "Stocks account", where: "Trading 212 Invest"}    # stock trades: spread + FX fee + UK stamp duty
+  funding:                      # GBP per pot x account (50/50): Crypto account £100 / Stocks account £100
+    core: {crypto: 50, stocks: 50}
+    day:  {crypto: 30, stocks: 30}
+    risk: {crypto: 20, stocks: 20}
+  # trades only use cash of the matching account; NO automatic transfers between accounts (manual: transfer_accounts.py)
+                                # separate cash + positions. v4 (2026-10-10): was 60/40; moved by TRANSFER (rebalance_pots.py), no reset
+
+fx:                             # USD->GBP rate, fetched every collector cycle (free, no key, HTTPS)
+  primary: coingecko            # derived from CoinGecko simple/price bitcoin in gbp & usd (intraday)
+  fallback: open.er-api.com     # https://open.er-api.com/v6/latest/USD (updates daily)
+  max_age_h: 24                 # if the stored rate is older than this, no new buys (exits still run)
+  refresh_min: 55               # fetch at most hourly (saves CoinGecko calls; GBP/USD moves little intraday)
+
+coingecko:                      # demo key: 100 calls/min but 10,000/month. Prices come from exchanges; this caps the fallback.
+  day_budget: 300               # UK day. About 9,000/month. Scan, charts and the FX cross-check stop once tight_pct is used.
+  month_budget: 9000
+  scan_every_min: 180           # top-300 screen (two markets calls). Slower is fine; 3 hours leaves headroom.
+  scan_every_min_tight: 360
+  fallback_every_min: 15        # one simple/price for every coin with no Kraken or Coinbase pair
+  fallback_every_min_tight: 60
+  tight_pct: 0.70               # past this fraction of the day or month budget, drop scan/charts before fallback prices
+
+crypto:
+  core_ids: [bitcoin, ethereum, ripple, worldcoin-wld, monad, solana]   # CoinGecko ids
+  watch_ids: {pax-gold: rwa, tether-gold: rwa, ondo-finance: rwa}   # always priced (Markets 'watch closely'); verified liquid 2026-10-10 (vol > $95M/day)
+  watch_themes: {rwa: "Real-world assets (tokenised)"}
+  top_n: 15                     # base set: top N by market cap (stables/wrapped excluded) - unchanged, the DAY universe adds to it
+  day_universe:                 # v7.2 (2026-10-10): wider DAY crypto universe from the SAME top-300 markets snapshot the RISK pot uses
+    enabled: true               #   (no extra price calls; intraday price + volume history builds from the 15-min snapshots)
+    min_mcap_usd: 50000000      # market cap >= $50M
+    min_vol_usd: 5000000        # 24h volume >= $5M
+    min_vol_mcap: 0.02          # 24h volume >= 2% of market cap (real liquidity)
+    max_coins: 150              # safety cap (DB / data.json size), market-cap order
+    exclude_symbols: [PAXG, XAUT]   # gold-backed tokens: CORE candidates only (core.crypto_universe), never DAY
+                                #   extra exclusions on top of crypto.exclude_symbols + riskpot.crypto exclusions (stables, wrapped/
+                                #   staked/bridged, exchange tokens BNB/OKB/LEO/CRO/...; name words usd/wrapped/staked/bridged/...)
+    meme_category: meme-token   # CoinGecko category -> memecoin exclusion set (ONE call per day, state meme_ids)
+    meme_refresh_h: 24
+    meme_blocklist: [DOGE, SHIB, PEPE, BONK, WIF, FLOKI, TRUMP, FARTCOIN, PENGU, SPX, MOG, POPCAT, BRETT, PNUT, TURBO, NEIRO,
+                     BOME, MEW, GOAT, BABYDOGE, MOODENG, CHILLGUY, DOGS, NOT, PEOPLE, MEME, ACT, BAN, AI16Z, GIGA, MELANIA,
+                     WOJAK, LADYS, SATS, MYRO, SLERF, SUNDOG, DEGEN, TOSHI, KEYCAT, SNEK, PONKE, MICHI, APU, HIPPO, USELESS]
+    meme_allow: [DOGE, PEPE]    # allowlist (user 2026-10-10): overrides the meme category + blocklist
+  warmup_h: 4                   # DAY: a coin needs this much stored price history before momentum/burst entries ('warming up')
+  exclude_symbols: [USDT, USDC, USDE, DAI, FDUSD, USDS, PYUSD, USD1, TUSD, BUSD, USDD, USDTB, BSC-USD,
+                    STETH, WSTETH, WBTC, WETH, WEETH, CBBTC, WBETH, SUSDE, SUSDS, BUIDL, RSETH, LBTC, FIGR_HELOC, JITOSOL]
+  kyberswap:                    # MON/USDC cross-check on Monad
+    token_in: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"   # native MON
+    token_out: "0x754704Bc059F8C67012fEd69BC8A327a5aafb603"  # USDC on Monad (6 dp)
+    amount_mon: 100
+
+stocks:
+  # v5 (2026-10-10): broker-agnostic NORMAL exchange tickers (Yahoo Finance symbols) instead of xStocks (tokenised stocks
+  # are not available to UK residents). US tickers plain (NVDA), London (LSE main market + AIM) with suffix .L (RPI.L),
+  # Australia .AX (LYC.AX). Yahoo quotes UK shares in GBp (pence) - collector converts every quote to USD via the
+  # currency Yahoo reports (GBp /100 -> GBP -> USD), so the prices table stays USD and the trader's GBP prices are exact.
+  # Stock paper trades only happen while the listing exchange is open (markets.py: US 09:30-16:00 New York, LSE 08:00-16:30
+  # London, ASX 10:00-16:00 Sydney; weekends/holidays closed). Re-verify the universe: python3 universe_check.py
+  watchlist: [VUSA.L, EQQQ.L, ISF.L, NVDA, TSLA, AAPL, MSTR, COIN, HOOD, CRCL, GOOGL]   # always priced intraday (DAY pot + Markets)
+  # (UK retail cannot buy US-domiciled ETFs such as SPY/QQQ (no UK KID) -> UCITS equivalents VUSA.L / EQQQ.L / ISF.L)
+  intraday_top_n: 8             # + the top N ranked universe names, the CORE picks and any held stock are priced intraday
+  daily_batch: 30               # universe daily closes (Yahoo, 1y) refreshed for at most N stale tickers per cycle (~once a day each)
+  daily_max_age_h: 20
+  costs:                        # broker-like paper costs for stocks (Trading 212-style; crypto keeps risk.fee_slippage_pct + gas)
+    spread_pct: 0.1             # per side: spread/slippage, no commission
+    fx_fee_pct: 0.15            # per side on non-GBP stocks (GBP account -> USD/AUD shares)
+    uk_stamp_duty_pct: 0.5      # UK buys only (SDRT); AIM shares and ETFs are exempt (stamp_exempt)
+    stamp_exempt: [ITM.L, SEE.L, FTC.L, AVCT.L, GHH.L, IQE.L, VUSA.L, EQQQ.L, ISF.L]   # AIM-quoted + ETFs
+  intraday_closed_refresh: true # outside market hours a stock is fetched only once after the close (no repeated calls)
+  # CORE universe by theme. watch: true = the user's 'watch closely' themes (highlighted on the dashboard). Every ticker
+  # verified 2026-10-10: >= 140 days of Yahoo daily history + liquidity (20-day average traded value >= $1M US / ~GBP 0.2M UK).
+  # Dropped on verification: AFC.L (no Yahoo data), AWE.L (delisted - bought by Qualcomm), GOLD (now Gold.com, not Barrick;
+  # Barrick = B), KSCP (< $1M/day, sub-$1), IKA.L KMK.L CPH2.L HVO.L RENX.L CLX.L NANO.L QBT.L TRCS.L ZOO.L PXEN.L SAR.L PHE.L
+  # EAAS.L POLB.L (illiquid: < GBP 0.2M/day). Not listed: Oxford Ionics (acquired by IonQ, never listed). Quantum eMotion = QNC
+  # (NYSE American; also QNC.V on TSXV). Lynas = LYC.AX (ASX; OTC ADR LYSDY not used: most UK brokers do not offer OTC).
+  universe:
+    ai_semis:      {label: "AI chips & semis",            tickers: [NVDA, AMD, AVGO, TSM, MU, ARM, ASML, MRVL, ANET, CRDO, ALAB, QCOM, LRCX, AMAT, KLAC, SMCI, INTC]}
+    ai_platforms:  {label: "AI platforms & big tech",     tickers: [PLTR, MSFT, META, GOOGL, AMZN, ORCL, CRWV, NBIS, APP]}
+    crypto_linked: {label: "Crypto-linked",               tickers: [COIN, MSTR, HOOD, CRCL, MARA, RIOT, IREN, GLXY, CORZ, BMNR, CLSK, HUT, WULF]}
+    energy_infra:  {label: "Energy, nuclear & AI power",  tickers: [CEG, GEV, VST, CCJ, OKLO, SMR, NNE, VRT, ETN, TLN, FSLR, BWXT, PWR, NEE]}
+    cloud_software: {label: "Cloud, software & cyber",    tickers: [CRWD, SNOW, NET, DDOG, NOW, PANW, SHOP, ZS, MDB, CRM, ADBE, TEAM]}
+    consumer_tech: {label: "Consumer tech & platforms",   tickers: [AAPL, TSLA, NFLX, UBER, RDDT, RBLX, DASH, ABNB, SPOT]}
+    space_defense: {label: "Space & defence tech",        tickers: [RKLB, ASTS, LUNR, KTOS, AVAV, RDW]}
+    fintech:       {label: "Fintech",                     tickers: [SOFI, AFRM, XYZ, PYPL]}
+    photonics:     {label: "Photonics & optical",          watch: true, tickers: [COHR, LITE, IPGP, AAOI, POET, LWLG, FN, CIEN, LPTH, AXTI, GHH.L, IQE.L]}
+    quantum:       {label: "Quantum computing",           watch: true, tickers: [IONQ, RGTI, QBTS, QUBT, ARQQ, LAES, INFQ, XNDU, HQ, QNC]}
+    robotics:      {label: "Robotics & automation",       watch: true, tickers: [ISRG, SYM, TER, ROK, PATH, SERV, RR, PRCT]}
+    metals_rwa:    {label: "Real assets: gold, silver & royalties", watch: true, tickers: [NEM, B, AEM, WPM, FNV, RGLD, PAAS, AG, HL, FRES.L, EDV.L, HOC.L]}
+    rare_earths:   {label: "Rare earths & critical minerals", watch: true, tickers: [MP, LYC.AX, USAR, UUUU, PRE.L, RBW.L]}
+    farmland:      {label: "Land & farmland REITs",       watch: true, tickers: [FPI, LAND]}
+    uk_early:      {label: "British early-stage (LSE/AIM)", watch: true, tickers: [RPI.L, CWR.L, ITM.L, SEE.L, FTC.L, OXIG.L, ONT.L, SSIT.L, AVCT.L, OXB.L]}
+    global_small:  {label: "Global early-stage small caps", watch: true, tickers: [SOUN, BBAI, RCAT, ACHR, JOBY, SIDU, NVTS, PL, BKSY]}
+
+rules:                          # v7.8: the rule set under test. The dashboard banner reads this. Do not bump the date to chase one day.
+  version: v7.8
+  frozen_since: "2026-10-10"
+
+strategy:                       # shared signal model (used by the DAY sleeve for entries/exits, shown on dashboard)
+  focus_assets: [MON, WLD, XRP]
+  buy_threshold: 0.35           # combined score needed to open a DAY position
+  focus_buy_threshold: 0.30
+  sell_threshold: -0.20         # combined score that closes a DAY position
+  sentiment_max_age_h: 12
+  sentiment_weight: 0.4         # scaled by confidence
+  min_history_h: 4
+
+core:                           # CORE pot: long holds, staggered entry, weekly rebalance (re-picks stocks)
+  # v6: CORE has separate money in each account (accounts.funding: crypto £50 / stocks £50) and every target is a % of the
+  # matching account's slice of the Core pot - crypto targets live inside the Crypto account, stock picks inside the Stocks
+  # account, so a crypto rally never forces a stock trade with crypto money (and vice versa).
+  targets_pct: {MON: 26, XRP: 26, WLD: 20, BTC: 16, ETH: 12}   # % of the CORE crypto money (MON/WLD/XRP emphasis = 72%)
+  # Crypto-account candidates. Not in targets_pct: the weekly rebalance ranks them with the same score as the stocks
+  # (momentum / trend quality / sentiment) and buys one only if it qualifies. No fixed share. Kept out of the Day universe.
+  crypto_universe:
+    rwa: {label: "Real-world assets (tokenised)", watch: true, tickers: [PAXG, XAUT], ids: {PAXG: pax-gold, XAUT: tether-gold}}
+  stocks_pct: 100               # % of the CORE stocks money for the picks, split equally across them
+  stock_picks_min: 1            # picks = stock budget / min_pick_gbp, clamped to min..max (~£50 -> 6 picks of ~£8.33)
+  stock_picks_max: 8
+  min_pick_gbp: 7.5             # smallest target per pick (>= risk.min_trade_size)
+  max_pick_pct: 20              # cap per pick (% of the CORE stocks money = 10% of the Core pot) if only a few are eligible
+  max_per_theme: 2              # diversification across stocks.universe themes
+  score_weights: {momentum: 0.55, quality: 0.30, sentiment: 0.15}   # composite, see stockrank.py
+  stock_exclude: [VUSA.L, EQQQ.L, ISF.L]   # index ETFs: CORE picks single stocks only (edit to allow)
+  tranches: 5                   # build each position in ~5 tranches (target/5 per tranche, >= risk.min_trade_size)
+  max_tranches_per_day: 1       # per asset per UK day
+  dip_vs_avg24_pct: 0           # tranche fires when price <= 24h average * (1 - x%) ("buy the dip") ...
+  fallback_hour_uk: 18          # ... or from this UK hour if no dip happened that day (so ~1 tranche/day)
+  sentiment_delay_score: -0.5   # delay a tranche while fresh sentiment <= this ...
+  sentiment_delay_conf: 0.5     # ... with confidence >= this (tilts timing only, never targets)
+  rebalance_weekday: 0          # 0 = Monday (UK)
+  rebalance_time_uk: "09:00"    # first cycle at/after this time; caught up later that week if missed
+  drift_band_pp: 5              # only trade an asset if |weight - target| > 5 percentage points
+  stop_loss_pct: 20             # per position, from average cost (incl. fees); no take-profit (rebalance trims)
+  # a stopped-out asset stays in cash until the next weekly rebalance, then is rebuilt in tranches
+
+riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mid-cap crypto + niche xStocks, breakout + sentiment
+  crypto:                       # screened every cycle from ONE CoinGecko markets snapshot of the top 300 (2 calls: 250 + 50)
+    top_n: 300
+    max_rank_large: 40          # skip the largest caps (rank <= this): this pot is for small/mid caps
+    min_mcap_usd: 20000000      # anti-scam floor: CoinGecko-listed + >= $20M market cap ...
+    max_mcap_usd: 5000000000    # ... and <= $5B
+    min_vol_usd: 5000000        # ... and >= $5M 24h volume
+    min_vol_mcap: 0.03          # 24h volume / market cap (real turnover)
+    exclude_symbols: [BNB, OKB, LEO, CRO, GT, KCS, BGB, HT, MX, WBT, BMX, NEXO, FTT, HTX, XAUT, PAXG, KAU, KAG, USDG, RLUSD, USDF,
+                      USDX, EURC, EURS, USTC, FRAX, LUSD, CRVUSD, GHO, RUSD, USR, USDO, USYC, OUSG, USTB, BFUSD, SYRUPUSDC, SYRUPUSDT,
+                      BNSOL, MSOL, JUPSOL, BBSOL, SOLVBTC, CLBTC, EBTC, TBTC, METH, CMETH, OSETH, RETH, ETHX, EZETH, PUFETH, SWETH, LSETH,
+                      WHYPE, KHYPE, STHYPE, WAVAX, WSOL, WTRX, WMON, SMON, GMON, SHMON, APRMON]
+    exclude_name_words: [usd, dollar, euro, wrapped, bridged, staked, restaked, "liquid staking", tokenized, xstock, astock,
+                         treasury, "t-bill", gold, fund, " clo", " etf", " bond", vault]
+    watch_n: 12                 # best breakout candidates priced intraday each cycle (+ held + recent candidates)
+    watch_hours: 48             # a candidate stays priced this long after it last screened in (builds momentum history)
+    monad:                      # bonus: Monad-ecosystem tokens (CoinGecko category) outside the top 300, only if a KyberSwap
+      category: monad-ecosystem #   route on Monad for dex_check_usd moves < max_impact_pct (liquidity check); same mcap/vol floors
+      refresh_h: 6
+      dex_check_usd: 200
+      max_impact_pct: 3
+  # RISK stock universe (v5) = the riskier 'watch closely' themes + small caps from photonics/robotics; only names with a
+  # daily breakout (or held / top-scored) are priced intraday; trades only while their exchange is open
+  stock_themes: [quantum, uk_early, rare_earths, global_small]
+  stocks: [AAOI, POET, LWLG, LPTH, AXTI, GHH.L, IQE.L, SERV, RR]   # extra small caps (photonics / robotics)
+  stock_intraday_n: 8           # + held + breakout-ok names
+  # breakout + sentiment entry: score -1..1 per candidate (see trader.risk_score), combined with fresh sentiment like DAY
+  # v7.4 Day-style decision (like the DAY burst): confidence 0-1 per setup + expected value after costs; a setup is taken only if
+  # confidence >= threshold AND EV > ev_min_pct. Hard gates that stay: real breakout, intraday trend (confirm_momentum),
+  # sentiment block, drawdown halt, market open, fresh price, cooldown, max_open.
+  confidence_weights: {breakout: 0.30, volume: 0.20, sentiment: 0.15, market: 0.15, hit_rate: 0.20, freshness: 0.15}
+                                # freshness scales the other five (1 = unchanged); it is not mixed into the average
+  volume_x: 2                   # volume component: last hour vs the average hour (2x = half way, 4x+ = full; unknown = 0.4)
+  conf_threshold: 0.55          # threshold at no drawdown ...
+  conf_threshold_at_stop: 0.85  # ... rising linearly to this as the drawdown approaches drawdown_cap_pct (30%)
+  hit_prior: 0.5                # measured hit rate of RISK closed trades (last record_days) with a Beta prior of hit_prior_n trades
+  hit_prior_n: 20
+  record_days: 30
+  ev_win_pct: 12                # only used by a paper book that sets _legacy_arm_win. The live win is the trail lock at the arm
+  ev_loss_pct: 8                #   (1.15 * 0.90 - 1 = 3.5%), the same on every coin, not scaled by ATR. This average loss is
+  ev_atr_ref_pct: 4             #   scaled by the setup's 1h ATR vs this reference. P(win) shrinks confidence toward 0.5 until
+  ev_prior_n: 10                #   ev_conf_full_n closes. The 12% stop and the trail RULES are unchanged; only the estimate moves
+  ev_conf_full_n: 30
+  ev_min_pct: 0.3               # hurdle: a modelled edge of a few tenths of a percent is not a trade
+  max_runup_7d_pct: 80          # breakout refused at or above this 7-day run, and Core will not lend into the name
+  runup_7d_penalty_from_pct: 40 # from here to the cap, the breakout score is scaled down and Core will not lend
+  sentiment_missing: 0.25       # a missing sentiment print is below neutral, not 0.5
+  conf_size_pct: 50             # size = confidence x 50% of the account's remaining RISK cash, min £5 (risk.min_trade_size),
+  max_position_pct: 20          #   max 20% of the RISK pot and max_position_gbp
+  confirm_momentum: 0.0         # BREAKOUTS only: intraday momentum (4h/24h/EMA, same model as DAY) must be >= this (needs >= 2h history)
+  min_history_h: 2
+  # Second setup (v7.7): a dip / pullback buy. A coin already in an uptrend, or with positive sentiment, that has dropped
+  # back toward a recent low or average and then turned up. A coin that is still falling is not bought. Same threshold,
+  # EV, size, stop, trail, max hold, max 5 open and borrowing rules as a breakout; its own confidence weights.
+  dip:
+    enabled: true
+    min_history_h: 30           # snapshot history required before a pullback is judged
+    trend_lookback_h: 48        # window for the leg that has to be up
+    high_lookback_h: 36         # the high the pullback is measured from
+    swing_exclude_h: 1.5        # that high is at least this old, so the dip has had time to form
+    trend_min_pct: 8            # that high is at least this far above the low before it
+    pullback_min_pct: 4         # drop from the high; less than this is noise, not a setup
+    pullback_max_pct: 18        # deeper than this is a breakdown, not a dip
+    pullback_atr_x: 1.2         # pullback bar: full marks once the drop is about this many 1h ATRs (a shallow wiggle scores low)
+    support_near_pct: 2.0       # "at support" within this % of the pullback low, the 24h average, or a short average
+    ma_bars: 6                  # short average, in snapshots (~90 min at the 15-min cycle)
+    rsi_oversold: 40            # RSI at or under this adds to the bounce bar; it is not required
+    bounce_bars: 3              # higher low: the last few bars against the few before them
+    bounce_min_pct: 0.4         # price has lifted at least this far off the low, and the last bar is up
+    volume_x: 1.2               # last hour vs the average hour counts as buying volume; unknown volume is not a fail
+    sentiment_min: 0.0          # sentiment above this counts as positive (qualifies a dip when there is no uptrend)
+    chase_24h_pct: 60           # still up more than this over 24h: the same pump a breakout will not chase
+    weights: {pullback: 0.20, support: 0.15, bounce: 0.20, sentiment: 0.15, market: 0.10, hit_rate: 0.20, freshness: 0.15}
+                                # freshness scales the other six (1 = unchanged); it is not mixed into the average
+  sentiment_block: -0.3         # no entry while fresh sentiment <= this (conf >= 0.5); exit if <= sentiment_exit (conf >= 0.6)
+  sentiment_exit: -0.5
+  max_position_gbp: 8
+  max_open: 5
+                                # (v7.4: no daily cap on new RISK trades - the confidence threshold + max_open + cash decide)
+  cooldown_h: 24                # no re-entry into the same asset within 24h of an exit
+  stop_loss_pct: 12             # from average cost (incl. fees + gas)
+  trail_after_pct: 15           # once the position has been up >= 15% (peak) ...
+  trail_pct: 10                 # ... sell if price falls 10% from its peak
+  max_hold_days: 7
+  drawdown_cap_pct: 30          # RISK equity <= start x (1 - 30%) => no new entries until reviewed (create RISK_RESUME in the repo)
+
+day:                            # DAY pot: intraday, flat overnight. v7 (2026-10-10): two sub-strategies share the pot
+  universe: all                 # all priced crypto + stocks (not the RISK-only names)
+  entry_start_uk: "08:00"       # no new entries before this UK time (keeps the book flat overnight)
+  entry_cutoff_uk: "21:00"      # no new entries at/after this UK time
+  flatten_uk: "22:00"           # force-close ALL day positions at/after this UK time (crypto); stocks 15 min before their close
+  ev_flatten_floor: 0.40        # even with hours left, this share of a Day EV is a clock exit (pays costs, keeps no target)
+  ev_flatten_full_h: 6          # hours left at which that floor applies; less time raises the clock weight toward 1
+  stock_flatten_before_close_min: 15
+  stock_entry_stop_before_close_min: 30
+  daily_loss_cap_pct: 15        # of DAY pot UK-day start equity; halts ALL new DAY entries (both sub-strategies) for the day
+                                #   (v7: raised from 5% on 2026-10-10 at the user's request; open positions keep their own stops)
+  min_move_cost_x: 4            # only trade if the target (%) >= 4 x round-trip costs (fees/spread/FX/stamp + gas both sides)
+  atr: {bars: 14, min_bars: 4}  # 1h ATR from hourly bars built from the 15-min price snapshots
+  # Each sub-strategy has a BUDGET = share_pct of the DAY money (cash + positions) in each account; it can only use what
+  # its own open positions leave free (and never more than the account's real cash).
+  momentum:                     # the original momentum + sentiment entries (strategy.buy_threshold), upgraded exits
+    share_pct: 50
+    position_pct: 50            # of the momentum budget of that account per position (>= risk.min_trade_size)
+    max_open: 3                 # whole pot
+    rsi_max: 80                 # no momentum entry at or above this hourly RSI (burst already had this gate)
+    ev_min_pct: 0.3             # same hurdle as burst: honest EV after costs, including the 22:00 flatten
+    take_profit: {min_pct: 4, atr_x: 2.5, max_pct: 12}   # target = max(4%, 2.5 x 1h ATR%), capped 12%
+    stop: {min_pct: 2, atr_x: 1.2, max_pct: 5}           # stop = max(2%, 1.2 x 1h ATR%), capped 5%
+    trail_after_pct: 3          # trailing stop arms once the position has been >= +3% (net of the sell cost) ...
+    trail_giveback_pct: 40      # ... and sells if it gives back 40% of the peak gain (peak +6% -> exit at +3.6%)
+    runner: true                # at the target: if the signal is still a buy, keep it and trail tighter instead of selling
+    runner_giveback_pct: 20
+  burst:                        # quick breakout trades with a CONFIDENCE score and a dynamic daily allowance
+    share_pct: 50
+    max_open_per_account: 3     # safety limit (concurrent positions per account); NO fixed trades-per-day cap
+    max_hold_h: 6
+    cooldown_h: 1               # no burst re-entry into an asset within 1h of any DAY exit of it
+    take_profit: {min_pct: 3, atr_x: 3.0, max_pct: 8}    # target 3-8% (ATR-scaled)
+    stop: {min_pct: 1.5, atr_x: 1.0, max_pct: 2.5}       # stop 1.5-2.5% (ATR-scaled)
+    trail_after_pct: 2
+    trail_giveback_pct: 40
+    breakout_lookback_h: 24     # price breaks the prior 24h high (crypto: also CoinGecko's high_24h) ...
+    range_lookback_h: 4         # ... or the high of a tight 4h range
+    range_max_pct: 4
+    range_min_pct: 0.3          # a 4h "range" tighter than this is stuck prints, not a coil
+    min_break_pct: 0.1
+    max_extension_pct: 3        # never chase: at most 3% above the broken high
+    volume_x: 2.0               # last-hour volume >= 2x the average hour (crypto: CoinGecko 24h-volume deltas; stocks: Yahoo 15m bars)
+    require_volume: false       # if NO volume data: only a 24h-high break may trade (volume part of the confidence = 0.4)
+    rsi_max: 80                 # hourly RSI must be below this
+    sentiment_min: -0.1         # fresh sentiment must be >= this (none = neutral, allowed)
+    market:
+      crypto: {proxy: BTC, min_1h_pct: -0.5, min_4h_pct: -1.5}
+      stocks: {proxy: {US: "^GSPC", LSE: "^FTSE", ASX: "^AXJO"}, fallback: [EQQQ.L, VUSA.L], min_1h_pct: -0.3, min_day_pct: -1.0}
+    # confidence 0-1 = weighted breakout strength, volume spike, sentiment, market regime and the setup type's measured hit
+    # rate (24h-high vs 4h-range breaks tracked separately, prior-smoothed over the last 14 days). A ranking
+    # heuristic, NOT a probability of profit. Decision per setup; caution only via capital (size / threshold below):
+    confidence_weights: {breakout: 0.25, volume: 0.25, sentiment: 0.15, market: 0.15, hit_rate: 0.20, freshness: 0.15}
+                                # freshness scales the other five (a fresh quote leaves confidence unchanged)
+    conf_threshold: 0.55        # base: take a setup only if confidence >= threshold ...
+    conf_raise_at_cap: 0.30     # ... threshold = base + 0.30 x (DAY pot loss today / start-of-day equity) / daily_loss_cap:
+                                #   capital-based caution rising gradually over the whole cap range (+0.02 per 1% lost with a
+                                #   15% cap -> 0.85 at the cap, where all DAY entries stop). Gains never lower it below the base.
+                                #   No loss-streak cooldown, no trade-count cap.
+    ev_min_pct: 0.3             # ... AND expected value after costs (% per trade) > this (burst stays rare because of this hurdle, not a switch):
+                                #   EV = p x target - (1-p) x stop - round-trip costs (p = setup hit rate), blended with the
+                                #   setup's measured expectancy as trades accumulate (weight n vs ev_prior_n)
+    ev_prior_n: 10
+    ev_conf_full_n: 30          # P(win) shrinks the confidence score toward 0.5 until this many closes of that setup
+    sentiment_missing: 0.25     # missing sentiment is below neutral, not 0.5
+    hit_prior: 0.5              # setup hit rate prior (Beta: hit_prior x hit_prior_n pseudo-trades) ...
+    hit_prior_n: 20
+    record_days: 14             # ... measured over the last 14 days per setup type (old results age out)
+    max_position_pct: 33        # size = confidence x 33% of the burst sub-strategy's CURRENT remaining cash (shrinks as losses
+                                #   deplete it); raised to risk.min_trade_size (£5) when that much cash is free
+    cash_floor_gbp: 4           # if free cash is under the £5 min trade but at least this, spend what is left (a £4.98
+                                #   budget must not skip a good setup). Below the floor, an exceptional setup (confidence
+                                #   >= loans.burst_min_conf and EV > 0) can still borrow under the inter-pot rules
+
+risk:
+  fee_slippage_pct: 0.3         # per side when market cap is unknown. A known cap uses liquidity_cost instead.
+  liquidity_cost:               # crypto per-side cost from liquidity. Stocks keep spread + FX 0.15% + stamp (below).
+    major_pct: 0.05             # deep book (large mcap): Monad pool-fee floor. 11 Oct 2026 Kyber £5/£8: BTC, ETH and MON on Monad were about 0.05% or less including gas.
+    thin_pct: 0.40              # small-cap ceiling. Same quotes: whitelisted Base/Arbitrum alts were about 0.14-0.36% pool loss, up to about 0.44% with gas. The old 1% ceiling was about double the pool loss.
+    thin_mcap_usd: 20000000
+    deep_mcap_usd: 10000000000
+    turn_thin: 0                # 0 turns the thin-turnover lift off. Stored vol24 is the venue book, not global volume, so 0.05 pinned nearly every coin on the ceiling. The mcap curve is the DEX cost.
+    turn_deep: 0.30             # volume/mcap at or above this trims it
+    impact_check_usd: 200       # a stored Kyber loss_pct is on this notional; scaled by sqrt(trade / check)
+  max_price_age_min: 45         # offline / sim: a price older than this is unusable (same gate as before)
+  price_dead_min: 180           # live: after a failed refresh, ignore a price older than this; younger prices are usable
+                                #   and the freshness score penalises them (full credit inside fresh_full_min)
+  fresh_full_min: {crypto: 10, stock: 5}   # minutes of provider-timestamp age that still score full freshness
+  min_trade_size: 5             # GBP; skip buys (and rebalance trades) smaller than this (DAY burst may use cash_floor_gbp)
+loans:                          # v7.3 (2026-10-10): temporary borrowing between pots INSIDE one account (never crypto<->stocks)
+  enabled: true                 # only for an exceptional setup that lacks cash: first CORE's uninvested cash (minus what today's
+  risk_min_score: 0.65          #   scheduled tranches / queued CORE buys need), then the other short-term pot's cash. RISK: setup
+                                #   confidence (v7.4; the breakout score before) >= 0.65 with the intraday trend agreeing;
+  burst_min_conf: 0.75          #   score >= 0.65 with the intraday trend agreeing; DAY burst: confidence >= 0.75 and EV after costs > 0
+  max_outstanding_pct: 20       # total outstanding loans per account <= 20% of that account's starting value (£20 of £100)
+  allow_multiple: false         # one open loan (= one position) per borrowing pot x account at a time
+                                # size: enough for ONE position (min trade .. that pot's max position); principal repaid to the
+                                # lender when the position closes, before anything else; P&L stays with the borrower (table loans)
+
+gas:                            # simulated Monad network fee per trade (paper), on top of fee_slippage_pct
+  rpc: https://rpc.monad.xyz    # eth_gasPrice fetched every collector cycle
+  gas_per_swap: 200000          # assumed gas units per swap
+  fallback_gbp: 0.001           # used if the RPC/MON price is unavailable or older than max_age_h
+  max_age_h: 6
+
+plans:                          # display-only 'investment plans' for bigger top-ups into the Core pot (no trading); v6: each top-up
+                                #   is deposited 50/50 into the two accounts (core funding ratio) and each half buys only its own assets
+  - {topup: 100,  max_picks: 8}
+  - {topup: 500,  max_picks: 12}
+  - {topup: 1000, max_picks: 16, max_per_theme: 3}
+
+# Parallel paper books. Every flag here is off, so the main book is unchanged. A variant turns flags on by
+# merging config/variants/<name>.yaml. The books start from one snapshot and then trade on the same prices.
+variants:
+  enabled: true
+  run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
+        risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take]
+  # These three books sold on an inverted EV. The next cycle recopies each from the current main book
+  # and the scorecard starts there, so those sells are not counted.
+  reset:
+    ev_exit: "2026-10-12-ev-off"
+    all_combined: "2026-10-12-ev-off"
+    everything: "2026-10-12-ev-off"
+variant_rules:
+  ev_exit: false
+  ev_action: false              # off: ev_now rises as the trade falls. Do not sell or tighten on it until the upside
+                                #   is taken from the current price and the chance is recomputed.
+  ev_exit_now_pct: -0.4         # sell when EV now is below this (percent) ...
+  ev_exit_below_entry_pp: 0.8   # ... and at least this many points worse than the EV stored at entry
+  ev_exit_stop_mult: 0.75       # while EV now is negative but still above ev_exit_now_pct, the stop is this fraction of the stored stop
+  burst_stop_widen: false
+  burst_stop_mult: 1.5          # burst stop distance times this, unless EV now is already below ev_exit_now_pct
+  core_fallback_half: false
+  core_ext_7d_pct: 15           # 18:00 fallback tranche is half size when the 7-day move exceeds this ...
+  core_ext_rsi: 75              # ... or RSI is above this
+  entry_own_trend: false
+  entry_trend_days: 3           # a new entry needs the coin's own price above where it was this many days ago
+  no_day_core_same_afternoon: false
+  afternoon_hour_uk: 12         # after this UK hour, Day and Core will not each buy the same coin
+  burst_runner: false           # burst at its target keeps running only on the burst_runner and everything books
+  burst_runner_giveback_pct: 20 # then the trail gives back this share of the peak gain (same 20 as momentum's runner)
+  midnight_crypto: false       # Day crypto only. Stocks keep entry_start_uk / entry_cutoff_uk / flatten_uk above.
+  midnight_entry_start_uk: "00:00"   # new Day crypto entries from midnight UK, including the cycle that just flattened
+  midnight_entry_cutoff_uk: "23:45"  # no new Day crypto entries at/after this; open crypto stays until midnight
+  midnight_flatten_uk: "00:00"       # flatten Day crypto opened on the previous UK day (not a clock that is true all day)
+  entry_watch: false              # live trigger buys are only on the entry_watch book; main only logs WOULD BUY
+  entry_watch_expiry_min: 15      # an armed entry dies after this many minutes (about three 5-min cycles)
+  risk_giveback_15: false         # paper book: after +15% net, sell at 65% of the peak net gain
+  risk_giveback_keep_pct: 65
+  day_trail_arm: false            # paper book: arm a Day trail only when 60% of the peak clears cost and ATR
+  day_trail_cost_x: 4
+  day_trail_atr_x: 1
+  day_ev_blend: false             # paper book: blend each Day sleeve's model EV with its measured expectancy
+  no_risk_clock: false            # paper book: delete the 24h Risk re-entry clock
+  day_capital_caution: false      # paper book: per-account Day loss tightens the hurdle and the size
+  day_caution_raise: 0.30
+  risk_ev_legacy_win: false       # day_ev_blend sets this so it does not inherit a later Risk-win fix
+  partial_take: false             # paper book: at the trail arm sell half; buy it back on a dip only if fresh EV clears
+  partial_min_gbp: 1              # that half may be £1. risk.min_trade_size stays £5 on every book, including this one

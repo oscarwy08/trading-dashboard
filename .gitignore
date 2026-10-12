@@ -1,0 +1,29 @@
+# secrets / box-only (never commit)
+.github_token
+.dashboard_auth
+.publish/
+dashboard_server.py
+tunnel_watchdog.sh
+# local artefacts
+logs/
+__pycache__/
+*.pyc
+*.tmp
+*.pull.*
+.bak*/
+data/*.bak*
+data/sim.db
+data/sim_mig.db
+# exit watcher shadow log. The default path is ~/exit_shadow/ (outside the clone).
+# If EXIT_SHADOW_DB points here, git add -A must not commit it. reset --hard leaves it.
+data/exit_shadow.db
+data/exit_shadow.db-wal
+data/exit_shadow.db-shm
+data/exit_shadow.db-journal
+data/variants/*.db
+data/variants/*.db-*
+data/variants/manifest.json
+data/sentiment/pushed/
+dashboard/
+docs/snapshot.png
+docs/.snapshot.tmp.png
