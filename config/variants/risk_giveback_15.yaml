@@ -1,0 +1,5 @@
+# Risk trail: arm stays at +15% net. Once armed, sell when the net gain falls to 65% of the
+# peak net gain. The -12% stop stays. At day 7, sell only if the trail is not armed.
+# Not combined with the other paper books.
+variant_rules:
+  risk_giveback_15: true

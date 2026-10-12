@@ -1,0 +1,5 @@
+# Per Day sub-strategy, EV = (n x measured expectancy + 10 x the model) / (n + 10).
+# Momentum and burst are blended apart. This book does not take a Risk win change.
+variant_rules:
+  day_ev_blend: true
+  risk_ev_legacy_win: true

@@ -340,7 +340,8 @@ plans:                          # display-only 'investment plans' for bigger top
 # merging config/variants/<name>.yaml. The books start from one snapshot and then trade on the same prices.
 variants:
   enabled: true
-  run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch]
+  run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
+        risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take]
   # These three books sold on an inverted EV. The next cycle recopies each from the current main book
   # and the scorecard starts there, so those sells are not counted.
   reset:
@@ -371,3 +372,15 @@ variant_rules:
   midnight_flatten_uk: "00:00"       # flatten Day crypto opened on the previous UK day (not a clock that is true all day)
   entry_watch: false              # live trigger buys are only on the entry_watch book; main only logs WOULD BUY
   entry_watch_expiry_min: 15      # an armed entry dies after this many minutes (about three 5-min cycles)
+  risk_giveback_15: false         # paper book: after +15% net, sell at 65% of the peak net gain
+  risk_giveback_keep_pct: 65
+  day_trail_arm: false            # paper book: arm a Day trail only when 60% of the peak clears cost and ATR
+  day_trail_cost_x: 4
+  day_trail_atr_x: 1
+  day_ev_blend: false             # paper book: blend each Day sleeve's model EV with its measured expectancy
+  no_risk_clock: false            # paper book: delete the 24h Risk re-entry clock
+  day_capital_caution: false      # paper book: per-account Day loss tightens the hurdle and the size
+  day_caution_raise: 0.30
+  risk_ev_legacy_win: false       # day_ev_blend sets this so it does not inherit a later Risk-win fix
+  partial_take: false             # paper book: at the trail arm sell half; buy it back on a dip only if fresh EV clears
+  partial_min_gbp: 1              # that half may be £1. risk.min_trade_size stays £5 on every book, including this one
