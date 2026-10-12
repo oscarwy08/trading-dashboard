@@ -340,7 +340,7 @@ plans:                          # display-only 'investment plans' for bigger top
 # merging config/variants/<name>.yaml. The books start from one snapshot and then trade on the same prices.
 variants:
   enabled: true
-  run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto]
+  run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch]
 variant_rules:
   ev_exit: false
   ev_exit_now_pct: -0.4         # sell when EV now is below this (percent) ...
@@ -361,3 +361,5 @@ variant_rules:
   midnight_entry_start_uk: "00:00"   # new Day crypto entries from midnight UK, including the cycle that just flattened
   midnight_entry_cutoff_uk: "23:45"  # no new Day crypto entries at/after this; open crypto stays until midnight
   midnight_flatten_uk: "00:00"       # flatten Day crypto opened on the previous UK day (not a clock that is true all day)
+  entry_watch: false              # live trigger buys are only on the entry_watch book; main only logs WOULD BUY
+  entry_watch_expiry_min: 15      # an armed entry dies after this many minutes (about three 5-min cycles)

@@ -111,13 +111,18 @@ def risk_reason(entry, price, peak, opened, rp, sent, now, fee_frac, stop_pct=No
 
 
 @contextmanager
-def book_lock(timeout=120):
-    """Exclusive lock for the paper book. The cycle holds it for the whole run.
+def book_lock(timeout=120, db_path=None):
+    """Exclusive lock for one paper book. The cycle holds it for the whole run.
     The watcher holds it only while it decides and writes one tick. A second
-    seller waits, then sees the position already gone."""
+    writer waits, then sees the position already open or already gone.
+
+    db_path defaults to the process book. The entry watcher passes the variant
+    file so a fill there does not take the main book's lock.
+    """
     import fcntl
     from common import DB
-    path = Path("/tmp") / ("trading-book-" + hashlib.sha1(str(Path(DB).resolve()).encode()).hexdigest()[:16] + ".lock")
+    target = Path(db_path) if db_path else Path(DB)
+    path = Path("/tmp") / ("trading-book-" + hashlib.sha1(str(target.resolve()).encode()).hexdigest()[:16] + ".lock")
     fh = open(path, "a+")
     deadline = time.time() + timeout
     while True:

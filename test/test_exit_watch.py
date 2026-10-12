@@ -230,5 +230,92 @@ if shadow_hit:
 
 os.environ["EXIT_WATCH_SHADOW"] = "0"
 
+# --- entries: own shadow flag, WOULD BUY, one live fill, no second buy ---
+import entries
+from exit_shadow_report import compare_buys, format_buys
+
+os.environ["EXIT_WATCH_SHADOW"] = "0"
+os.environ.pop("ENTRY_WATCH_SHADOW", None)
+check(exit_watch.entry_shadow_mode() is True, "entry shadow is on when ENTRY_WATCH_SHADOW is unset")
+check(exit_watch.shadow_mode() is False, "entry shadow does not follow EXIT_WATCH_SHADOW")
+os.environ["ENTRY_WATCH_SHADOW"] = "0"
+check(exit_watch.entry_shadow_mode() is False, "ENTRY_WATCH_SHADOW=0 is the live entry switch")
+os.environ["EXIT_WATCH_SHADOW"] = "1"
+check(exit_watch.entry_shadow_mode() is False and exit_watch.shadow_mode() is True,
+      "the two shadow switches are independent")
+os.environ["ENTRY_WATCH_SHADOW"] = "1"
+
+check(abs(entries.burst_strength("24h", {"min_break_pct": 0.1, "max_extension_pct": 3}) - (0.7 + 0.3 * 0.001 / 0.03)) < 1e-9,
+      "a 24h arm is scored as a break that has only just traded")
+
+con.execute("INSERT OR REPLACE INTO acct_cash VALUES(?,?,?)", ("risk", "crypto", 25.0))
+arm = dict(ts="2026-10-11T12:00:00+00:00", expires="2026-10-11T12:15:00+00:00", sleeve="risk",
+           sub="breakout", setup="breakout", asset="ARM1", account="crypto", klass="crypto",
+           trigger="break_above", level=1.0, level_max=1.2, volume_min=None, size_gbp=5.0,
+           stop_pct=12.0, target_pct=15.0, conf=0.7, ev=0.4,
+           reason="RISK breakout: price back to £1",
+           snap=dict(conf=0.7, p=0.5, target=12, loss=8, costs=0.6, ev=0.4, setup="breakout"))
+entries.upsert(con, arm)
+con.commit()
+trades_before = con.execute("SELECT COUNT(*) FROM trades").fetchone()[0]
+quiet = exit_watch.act_entries(con, {"ARM1": 0.99}, live=False)
+check(quiet == [] and con.execute("SELECT COUNT(*) FROM trades").fetchone()[0] == trades_before,
+      "a price under the level does not log a buy")
+past = exit_watch.act_entries(con, {"ARM1": 1.25}, live=False)
+check(past == [], "a price past the chase cap is not a buy")
+noted = exit_watch.act_entries(con, {"ARM1": 1.05}, live=False)
+check(len(noted) == 1 and noted[0]["log"].startswith("WOULD BUY") and noted[0].get("shadow") is True,
+      "the shadow log says WOULD BUY at the trigger")
+check("at 2026-10-11T12:00:00+00:00" in noted[0]["log"] and "level £1" in noted[0]["log"] and "size £5.00" in noted[0]["log"],
+      "the log has the time, the level and the size")
+check(con.execute("SELECT 1 FROM positions WHERE asset='ARM1'").fetchone() is None, "shadow does not open the position")
+check(con.execute("SELECT COUNT(*) FROM trades").fetchone()[0] == trades_before, "shadow writes no buy")
+again = exit_watch.act_entries(con, {"ARM1": 1.05}, live=False)
+sh = __import__("sqlite3").connect(exit_watch.shadow_db_path())
+n_buy = sh.execute("SELECT COUNT(*) FROM would_buy WHERE asset='ARM1'").fetchone()[0]
+sh.close()
+check(again == [] and n_buy == 1, "a second shadow tick does not log the same buy again")
+
+pure_sh = [dict(ts="2026-10-11T12:02:00+00:00", sleeve="day", asset="NEARX", armed="2026-10-11T12:00:00+00:00",
+                price=1.01, trigger="price breaks £1")]
+pure_buys = [dict(ts="2026-10-11T12:05:00+00:00", sleeve="day", asset="NEARX", price=1.04, reason="cycle burst"),
+             dict(ts="2026-10-11T11:00:00+00:00", sleeve="day", asset="OLD", price=1, reason="old"),
+             dict(ts="2026-10-11T12:06:00+00:00", sleeve="risk", asset="MISS", price=2, reason="dip")]
+paired, missed = compare_buys(pure_sh, pure_buys)
+check(len(paired) == 1 and paired[0]["status"] == "matched" and abs(paired[0]["dt_s"] - 180) < 1e-9
+      and abs(paired[0]["price_diff"] - 0.03) < 1e-9,
+      "the entry report's time gap is 180s and the price gap is the fill minus the trigger")
+check(len(missed) == 1 and missed[0]["asset"] == "MISS", "a later cycle buy with no shadow note is listed")
+lone = [dict(ts="2026-10-11T12:02:00+00:00", sleeve="day", asset="GONE", armed="2026-10-11T12:00:00+00:00",
+             price=1.01, trigger="price breaks £1")]
+missed_only, _ = compare_buys(lone, [])
+text = format_buys(missed_only, [])
+check(missed_only[0]["status"] == "cycle missed" and "missed this move" in text and "Moves the cycle missed" in text,
+      "a would-buy with no cycle buy is a move the cycle missed")
+
+os.environ["ENTRY_WATCH_SHADOW"] = "0"
+bought = exit_watch.act_entries(con, {"ARM1": 1.05}, live=True)
+check(len(bought) == 1 and bought[0]["log"].startswith("BUY ") and bought[0].get("shadow") is False,
+      "live mode buys when the trigger trades")
+check(con.execute("SELECT COUNT(*) FROM positions WHERE sleeve='risk' AND asset='ARM1'").fetchone()[0] == 1,
+      "the cycle can see the position")
+meta = __import__("json").loads(con.execute("SELECT value FROM state WHERE key='risk_meta'").fetchone()[0])
+check(meta.get("ARM1", {}).get("setup") == "breakout", "the fill stores the risk setup the cycle would have stored")
+n_live = con.execute("SELECT COUNT(*) FROM trades WHERE asset='ARM1' AND side='BUY'").fetchone()[0]
+second = exit_watch.act_entries(con, {"ARM1": 1.08}, live=True)
+check(second == [] and n_live == 1 and con.execute("SELECT COUNT(*) FROM trades WHERE asset='ARM1' AND side='BUY'").fetchone()[0] == 1,
+      "a second tick does not buy again")
+cash_after = con.execute("SELECT amount FROM acct_cash WHERE sleeve='risk' AND account='crypto'").fetchone()[0]
+check(cash_after < 25, "the fill spends risk cash")
+
+common._NOW = datetime(2026, 10, 11, 21, 30, tzinfo=timezone.utc)  # 22:30 UK, flatten
+entries.upsert(con, dict(arm, asset="ARM2", sleeve="day", sub="momentum", setup="momentum", ts="2026-10-11T21:20:00+00:00",
+                         expires="2026-10-11T21:40:00+00:00", reason="momentum hold"))
+con.commit()
+blocked = exit_watch.act_entries(con, {"ARM2": 1.05}, live=True)
+check(blocked == [] and con.execute("SELECT 1 FROM positions WHERE asset='ARM2'").fetchone() is None,
+      "flatten time blocks an entry even when the price has traded")
+common._NOW = datetime(2026, 10, 11, 12, 0, tzinfo=timezone.utc)
+
 print(f"\n{len(fails)} failure(s)")
 raise SystemExit(1 if fails else 0)

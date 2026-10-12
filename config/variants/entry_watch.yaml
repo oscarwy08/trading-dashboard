@@ -1,0 +1,5 @@
+# The book the live entry watcher is allowed to buy. Main stays on the cycle.
+# Buys here happen only when ENTRY_WATCH_SHADOW=0. Until then this book trades
+# like main, and the watcher only logs WOULD BUY against the main book.
+variant_rules:
+  entry_watch: true
