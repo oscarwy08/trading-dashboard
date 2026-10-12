@@ -410,11 +410,13 @@ index.html redirects to /trading-dashboard/docs/, so the URL keeps working eithe
 Repo size: the SQLite DB is committed every cycle, so (1) maintenance.py prunes it daily (15-min prices kept 3 days,
 hourly to 30 days; HOLD/SKIP signals thinned after 2 days, dropped after 7; trades/equity/sentiment/fx kept) and VACUUMs;
 (2) scripts/ci_push.sh squashes main into a single orphan commit once it has > 100 commits
-(~1 day), so old binary DB versions become unreachable. The squash force-push is allowed only when this
-cycle's parent is still the main tip just fetched. If another commit landed, the cycle is rebased onto that
-tip and pushed as a fast-forward, or skipped until the next cycle if main moves again. It never force-pushes
-a tree that is not based on that tip. Never rely on git history of main for audit - the DB itself
-holds the full trade/equity history.
+(~1 day), so old binary DB versions become unreachable. The squash is skipped while any pull request
+is open against main (GitHub API, using `GH_TOKEN` or `GITHUB_TOKEN`). If that check cannot be made,
+the cycle fast-forwards instead of force-pushing. `SQUASH_EVEN_WITH_PRS=1` squashes anyway. The squash
+force-push is allowed only when this cycle's parent is still the main tip just fetched. If another
+commit landed, the cycle is rebased onto that tip and pushed as a fast-forward, or skipped until the
+next cycle if main moves again. It never force-pushes a tree that is not based on that tip. Never rely
+on git history of main for audit - the DB itself holds the full trade/equity history.
 
 Timing: GitHub may start scheduled runs late (often 5-20 min) or skip some under load. The trader is delay-tolerant:
 DAY positions are force-closed by the first cycle at/after 22:00 UK, or by any cycle before 08:00 UK, or by the first

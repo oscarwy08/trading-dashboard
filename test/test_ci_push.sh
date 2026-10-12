@@ -149,6 +149,72 @@ else
   bad "abort still published the cycle book"
 fi
 
+# A cycle whose parent is still the leased tip, with nothing else landing. $1 is extra env.
+solo_push() {
+  local envx=$1
+  TMP=$(mktemp -d)
+  local origin=$TMP/origin.git base=$TMP/base
+  OTHER=$TMP/other
+  git init -q --bare -b main "$origin"
+  git clone -q "$origin" "$base"
+  git -C "$base" config user.email test@example.com
+  git -C "$base" config user.name test
+  mkdir -p "$base/data" "$base/docs"
+  new_db "$base/data/trading.db"
+  printf 'v1\n' > "$base/code.txt"
+  printf 'summary\n' > "$base/data/daily_summary.txt"
+  printf '<html></html>\n' > "$base/docs/index.html"
+  git -C "$base" add -A
+  git -C "$base" commit -q -m init
+  git -C "$base" push -q -u origin main
+  git clone -q "$origin" "$OTHER"
+  INIT=$(git -C "$base" rev-parse HEAD)
+  mark_db "$base/data/trading.db"
+  # No token: a missing SQUASH_OPEN_PRS must fail closed without calling GitHub.
+  if (cd "$base" && env -u GH_TOKEN -u GITHUB_TOKEN CI_PUSH_RETRY_SLEEP=0 $envx bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
+  git -C "$OTHER" fetch -q origin main
+}
+
+kept_history() {
+  [ "$RC" -eq 0 ] && git -C "$OTHER" rev-parse --verify -q origin/main^ >/dev/null \
+    && git -C "$OTHER" merge-base --is-ancestor "$INIT" origin/main \
+    && [ "$(cycle_mark "$OTHER")" = "yes" ]
+}
+
+solo_push "SQUASH_AT=1 SQUASH_OPEN_PRS=1"
+if kept_history && grep -q "skipping squash" "$TMP/push.log"; then
+  ok "open pull requests fast-forward instead of orphaning main"
+else
+  bad "open pull requests did not keep history (rc=$RC)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+
+solo_push "SQUASH_AT=1"
+if kept_history && grep -q "no GitHub token" "$TMP/push.log"; then
+  ok "a failed open-PR check fast-forwards instead of orphaning main"
+else
+  bad "a failed open-PR check still squashed (rc=$RC)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+
+solo_push "SQUASH_AT=1 SQUASH_OPEN_PRS=0"
+if [ "$RC" -eq 0 ] && ! git -C "$OTHER" rev-parse --verify -q origin/main^ >/dev/null \
+   && [ "$(cycle_mark "$OTHER")" = "yes" ] && grep -q "squashed" "$TMP/push.log"; then
+  ok "no open pull requests still squashes to an orphan"
+else
+  bad "quiet main did not squash (rc=$RC)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+
+solo_push "SQUASH_AT=1 SQUASH_OPEN_PRS=3 SQUASH_EVEN_WITH_PRS=1"
+if [ "$RC" -eq 0 ] && ! git -C "$OTHER" rev-parse --verify -q origin/main^ >/dev/null \
+   && grep -q "squashed" "$TMP/push.log"; then
+  ok "SQUASH_EVEN_WITH_PRS still squashes while pull requests are open"
+else
+  bad "SQUASH_EVEN_WITH_PRS did not squash (rc=$RC)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "0 failure(s)"; else echo "$fail failure(s)"; fi
 exit "$fail"
