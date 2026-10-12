@@ -1,20 +1,20 @@
-PAPER scorecard Mon 12 Oct 13:43 UK
-TOTAL Equity £200.37 (+0.18% since £200 start) | Day P&L £-1.53
-vs BTC buy&hold (£) +0.01% | Max DD -1.78% | Win rate 58.33% over 24 closed
-CRYPTO acct (Monad wallet) £100.34 (+0.34% vs £100) | P&L £+0.34 | day £-1.56 | cash £9.30 | invested £91.03 | realised £+0.03 | fees £1.11 (fee £1.084, gas £0.025) | by pot: CORE £49.63 (cash £-0.00, lent £0.15), DAY £29.73 (cash £8.91, lent £2.97), RISK £20.98 (cash £0.39, owes £3.12)
-STOCKS acct (Trading 212) £100.03 (+0.03% vs £100) | P&L £+0.03 | day £+0.03 | cash £91.67 | invested £8.36 | realised £+0.00 | fees £0.05 (spread £0.008, stamp £0.041) | by pot: CORE £50.03 (cash £41.67), DAY £30.00 (cash £30.00), RISK £20.00 (cash £20.00)
-CORE £99.65 (-0.35% vs £100) | day £-1.84 | realised £+0.00 | win n/a of 0 | today 1 trades (1 buys, 0 sells) | built 6/11 | open: BTC, ETH, MON, ONT.L, WLD, XRP | crypto £49.48 (cash £-0.00) / stocks £50.03 (cash £41.67)
-DAY  £59.73 (-0.45% vs £60) | day £-0.40 | realised £-0.25 | win 57.14% of 21 | today 13 trades (8 buys, 5 sells), best PYTH +£0.09 (+1.9%), peak +3.6%, worst PLUME -£0.32 (-5.5%) | entries open | open: POL, RENDER, STONK | crypto £26.76 (cash £8.91) / stocks £30.00 (cash £30.00)
-RISK £40.98 (+2.46% vs £40) | day £+0.71 | realised £+0.28 | win 66.67% of 3 | today 2 trades (1 buys, 1 sells), best CFX +£0.39 (+7.7%), peak +21.5%, worst CFX +£0.39 (+7.7%), peak +21.5% | active, dd +2.5%, 1 new today | open: CAP, GRASS, TIA, WLD | crypto £24.10 (cash £0.39) / stocks £20.00 (cash £20.00)
+PAPER scorecard Mon 12 Oct 13:48 UK
+TOTAL Equity £200.95 (+0.47% since £200 start) | Day P&L £-0.95
+vs BTC buy&hold (£) +0.21% | Max DD -1.78% | Win rate 58.33% over 24 closed
+CRYPTO acct (Monad wallet) £100.88 (+0.88% vs £100) | P&L £+0.88 | day £-1.01 | cash £9.30 | invested £91.58 | realised £+0.03 | fees £1.11 (fee £1.084, gas £0.025) | by pot: CORE £49.79 (cash £-0.00, lent £0.15), DAY £29.79 (cash £8.91, lent £2.97), RISK £21.31 (cash £0.39, owes £3.12)
+STOCKS acct (Trading 212) £100.06 (+0.06% vs £100) | P&L £+0.06 | day £+0.06 | cash £91.67 | invested £8.40 | realised £+0.00 | fees £0.05 (spread £0.008, stamp £0.041) | by pot: CORE £50.06 (cash £41.67), DAY £30.00 (cash £30.00), RISK £20.00 (cash £20.00)
+CORE £99.85 (-0.15% vs £100) | day £-1.65 | realised £+0.00 | win n/a of 0 | today 1 trades (1 buys, 0 sells) | built 6/11 | open: BTC, ETH, MON, ONT.L, WLD, XRP | crypto £49.64 (cash £-0.00) / stocks £50.06 (cash £41.67)
+DAY  £59.79 (-0.36% vs £60) | day £-0.35 | realised £-0.25 | win 57.14% of 21 | today 13 trades (8 buys, 5 sells), best PYTH +£0.09 (+1.9%), peak +3.6%, worst PLUME -£0.32 (-5.5%) | entries open | open: POL, RENDER, STONK | crypto £26.82 (cash £8.91) / stocks £30.00 (cash £30.00)
+RISK £41.31 (+3.28% vs £40) | day £+1.04 | realised £+0.28 | win 66.67% of 3 | today 2 trades (1 buys, 1 sells), best CFX +£0.39 (+7.7%), peak +21.5%, worst CFX +£0.39 (+7.7%), peak +21.5% | active, dd +3.3%, 1 new today | open: CAP, GRASS, TIA, WLD | crypto £24.43 (cash £0.39) / stocks £20.00 (cash £20.00)
 SELLS RISK CFX +£0.39 (+7.7%), peak +21.5%; DAY SYRUP -£0.09 (-1.8%); DAY RENDER +£0.06 (+1.2%), peak +2.1%; DAY ZEC -£0.13 (-2.2%); DAY PLUME -£0.32 (-5.5%); DAY PYTH +£0.09 (+1.9%), peak +3.6%
   DAY momentum all: 10 closed trades, win 50.0%, avg win +1.88%, avg loss -4.09%, PF 0.48, closed P&L £-0.64 (after its fees £0.32; + £0.03 buy fees on open positions), expectancy -1.10%/trade | today: 2 trades, P&L £-0.45
   DAY burst    all: 11 closed trades, win 63.6%, avg win +1.95%, avg loss -1.44%, PF 2.37, closed P&L £+0.40 (after its fees £0.25; + £0.01 buy fees on open positions), expectancy +0.72%/trade | today: 3 trades, P&L £+0.06
-  DAY burst threshold 0.563 (Day pot today -0.67%), 0/0 setups taken last cycle
+  DAY burst threshold 0.562 (Day pot today -0.58%), 0/1 setups taken last cycle
 RULES frozen since 2026-10-10 (v7.8). Do not retune from one day.
   SETUP momentum         closed  10  net £-0.64  fees £0.32  fee/gross n/a  win 50%  exits: flatten 3, trail 3, stop 4
   SETUP burst            closed  11  net £+0.40  fees £0.25  fee/gross 38%  win 64%  exits: stop 2, flatten 3, trail 5, target 1
   SETUP risk breakout    closed   2  net £-0.11  fees £0.15  fee/gross 356%  win 50%  exits: trail 1, stop 1
   SETUP risk dip         closed   1  net £+0.39  fees £0.06  fee/gross 13%  win 100%  exits: trail 1
 LOANS outstanding: RISK owes CORE £0.15 (crypto) for WLD; RISK owes DAY £2.97 (crypto) for WLD
-GBP/USD 1.3234 (open.er-api.com, 2026-10-12T11:52 UTC)
-VARIANTS since 2026-10-11 18:07: Main book £200.37 (P&L £-2.00, win 64%, max DD -1.6%) | EV exit £201.44 (P&L £-0.93, win 73%, max DD -1.0%) | Review leftovers £200.11 (P&L £-2.26, win 56%, max DD -1.8%) | Both together £200.64 (P&L £-1.72, win 58%, max DD -1.4%) | Burst runner £200.92 (P&L £-1.44, win 75%, max DD -1.3%) | Everything combined £200.77 (P&L £-1.60, win 60%, max DD -1.5%) | Midnight crypto £200.06 (P&L £-2.31, win 30%, max DD -1.8%) | Entry watch £200.05 (P&L £-2.31, win 29%, max DD -1.4%)
+GBP/USD 1.3234 (open.er-api.com, 2026-10-12T12:47 UTC)
+VARIANTS since 2026-10-11 18:07: Main book £200.95 (P&L £-1.42, win 64%, max DD -1.6%) | EV exit £201.99 (P&L £-0.38, win 73%, max DD -1.0%) | Review leftovers £200.69 (P&L £-1.68, win 56%, max DD -1.8%) | Both together £201.17 (P&L £-1.19, win 58%, max DD -1.4%) | Burst runner £201.49 (P&L £-0.87, win 75%, max DD -1.3%) | Everything combined £201.30 (P&L £-1.06, win 60%, max DD -1.5%) | Midnight crypto £200.62 (P&L £-1.75, win 30%, max DD -1.8%) | Entry watch £200.57 (P&L £-1.79, win 29%, max DD -1.4%)
