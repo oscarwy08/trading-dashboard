@@ -45,11 +45,12 @@ from pathlib import Path
 
 import daypot
 import entries
+import freshness
 import markets
 import pricesrc
 import variants
 from common import KILL, LON, cfg, db, iso, log, now, usd_gbp
-from exits import book_lock, day_flat_reason, day_reason, gap_tag, risk_reason, stock_flatten_reason
+from exits import book_lock, day_flat_reason, day_reason, dead_quote, gap_tag, risk_reason, stock_flatten_reason
 from trader import apply_buy, apply_sell, cost_pct, gas_gbp, history, hm, score_asset, sentiment, sget, sset
 
 L = log("exit_watch")
@@ -467,9 +468,11 @@ def _quote(con, asset, klass, gbp, rate):
 
 
 def _stored_gbp(con, asset, rate):
-    row = con.execute("""SELECT price FROM prices WHERE asset=? AND source!='backfill' AND ts<=?
+    row = con.execute("""SELECT price, source_ts, ts FROM prices WHERE asset=? AND source!='backfill' AND ts<=?
                          ORDER BY ts DESC LIMIT 1""", (asset, iso(now() + timedelta(seconds=1)))).fetchone()
-    return float(row[0]) * rate if row and rate else None
+    if not row or not rate:
+        return None, None
+    return float(row[0]) * rate, freshness.age_min(row["source_ts"] or row["ts"], now())
 
 
 def _line(sleeve, asset, price, chg, peak, lat, reason):
@@ -531,9 +534,10 @@ def shadow_evaluate(con, prices_gbp, recv_mono=None, book="main", c=None):
 def evaluate(con, prices_gbp, recv_mono=None):
     """Sell open Day positions, then Risk, at these GBP prices. No entries.
 
-    `prices_gbp` holds only fresh ticks. Flatten and max-hold may use the last
-    stored price. A stop, trail, or target waits for a fresh tick; if the
-    stream is quiet the 5-minute cycle still applies those. Returns exit records.
+    `prices_gbp` holds only fresh ticks. A stored quote older than price_dead_min
+    is unpriced: it must not stop, trail, or flatten. The first fresh tick is the
+    one that can sell. Max-hold still uses a stored quote inside that window.
+    Returns exit records.
     """
     if KILL.exists():
         L.info("KILL file present - watcher halted, no exits")
@@ -570,6 +574,7 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
     DM, DB = D["momentum"], D["burst"]
     SUBC = {"momentum": DM, "burst": DB}
     gas = gas_gbp(con, c)
+    dead_min = float(c["risk"].get("price_dead_min", 180))
     lt = t.astimezone(LON); mins = lt.hour * 60 + lt.minute; day = lt.date().isoformat()
     e0, flat = hm(D["entry_start_uk"]), hm(D["flatten_uk"])
     flat_now = mins >= flat or mins < e0
@@ -625,8 +630,13 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
             if shadow and _shadow_seen(shcon, "day", a, p.get("opened"), book):
                 continue
             live = a in prices_gbp
-            gbp = prices_gbp[a] if live else _stored_gbp(con, a, rate)
+            if live:
+                gbp, age = prices_gbp[a], 0.0
+            else:
+                gbp, age = _stored_gbp(con, a, rate)
             if gbp is None or not p["entry"]: continue
+            if not live and dead_quote(age, dead_min):
+                continue
             md = dmeta.get(a) or {}
             sub = md.get("sub", "momentum")
             tag = sub + (f" {md['kind']}" if md.get("kind") else "")
@@ -730,8 +740,13 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
                 continue
             if p["klass"] == "stock" and not markets.is_open(a, t): continue
             live = a in prices_gbp
-            gbp = prices_gbp[a] if live else _stored_gbp(con, a, rate)
+            if live:
+                gbp, age = prices_gbp[a], 0.0
+            else:
+                gbp, age = _stored_gbp(con, a, rate)
             if gbp is None or not p["entry"]: continue
+            if not live and dead_quote(age, dead_min):
+                continue
             q = _quote(con, a, p["klass"], gbp, rate)
             f_ = cost_pct(c, a, p["klass"], "SELL", q, p["qty"] * gbp)
             se = sentiment(con, a, st["sentiment_max_age_h"]) if live else None

@@ -12,6 +12,17 @@ from pathlib import Path
 import freshness
 
 
+def dead_quote(age_min, dead_min):
+    """A stored quote older than dead_min must not stop, trail, or flatten.
+
+    Unknown age is dead. The position is unpriced until a quote inside the window arrives,
+    and that first fresh print is the one that can sell.
+    """
+    if age_min is None:
+        return True
+    return float(age_min) > float(dead_min)
+
+
 def gap_tag(pts, level, cur, reason):
     """Same gap note the cycle appends when the fill jumps through a level."""
     if not pts or len(pts) < 2 or not level or not reason:

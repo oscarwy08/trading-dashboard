@@ -6,6 +6,14 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## v7.9 (2026-10-12): dead quotes, EV exit off, Risk win is the trail lock (paper only)
+
+Three corrections on the main book. The frozen thresholds are otherwise unchanged.
+
+- **Dead exit price.** A held quote older than `price_dead_min` (180 minutes live, 45 offline) does not stop, trail, or flatten. The position is marked unpriced and is sold on the first fresh print. Entries already refused a dead price.
+- **EV exit off.** `ev_now` rises as the trade falls, so it was a take-profit on winners. `ev_action` stays off until the upside is taken from the current price and the chance is recomputed. `ev_exit`, `all_combined` and `everything` are reset from the current main book; sells before that reset are not counted. The dashboard says so.
+- **Risk expected win.** The win in `setup_ev` is the gain the trail locks when it arms: `(1 + 15%) × (1 − 10%) − 1 = 3.5%`, the same on every coin. It is not the old 13.5%, and it is not scaled by ATR. The loss prior is still scaled by ATR. The 12% stop and the trail rules are unchanged.
+
 ## Stock intraday history (2026-10-12)
 
 Day and Risk stock rows were scoring RSI 50 and 4h +0.0% because Yahoo's 15-minute closes were fetched and then thrown away. Only one print per cycle was stored, so a weekend left fewer than 15 hourly closes and the score filled the gap with a neutral RSI and a zero move. The collector and the pre-trade quote now keep those 15-minute closes (USD, no duplicate timestamps). Stock momentum looks back eight calendar days so prior sessions survive the weekend. If the 4h move or the 15 hourly closes are still missing, the signal is `stale history` and the name does not score. Buy and sell thresholds are unchanged. Crypto prices still come from `pricesrc.py` (Kraken / Coinbase / Kyber / CoinGecko); that router does not carry stock bars.

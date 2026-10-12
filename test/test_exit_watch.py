@@ -370,7 +370,7 @@ con.commit()
 ev_main = exit_watch.shadow_evaluate(con, {"EVX": 0.995}, book="main", c=exit_watch.config_for("main"))
 ev_var = exit_watch.shadow_evaluate(con, {"EVX": 0.995}, book="ev_exit", c=exit_watch.config_for("ev_exit"))
 check(not any("EV exit" in (e.get("reason") or "") for e in ev_main), "main does not use the EV exit rule")
-check(any("EV exit" in (e.get("reason") or "") for e in ev_var), "ev_exit shadows a sell when live EV turns down")
+check(not any("EV exit" in (e.get("reason") or "") for e in ev_var), "ev_exit does not shadow a sell while the action is off")
 
 # One symbol shared by two books is watched once.
 os.environ["VARIANTS_DIR"] = str(_watch_tmp / "variants")
