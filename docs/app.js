@@ -211,10 +211,7 @@ function renderHeader() {
   else if (D && age > 3600) msg = `Data is ${ago(D.updated).replace(' ago', '')} old - the 15-minute update may have stalled.`;
   else if (loadErr) msg = 'Last refresh failed (' + loadErr + '); showing the previous data.';
   else if (D && D.risk.kill) msg = 'Kill switch is ON - all trading is paused.';
-  else if (D && (D.positions || []).some(p => p.unpriced)) {
-    const names = (D.positions || []).filter(p => p.unpriced).map(p => p.asset);
-    msg = names.join(', ') + (names.length === 1 ? ' is' : ' are') + ' unpriced (quote older than 180 min). A stop, trail, or flatten waits for the first fresh price.';
-  }
+  else if (D && unpricedBanner(D.positions)) msg = unpricedBanner(D.positions);
   else if (D && (D.day_overdue || []).length) msg = 'Day position still open after 22:00 UK: ' + D.day_overdue.join(', ') + '. It is force-closed at the last fresh price.';
   al.textContent = msg; al.classList.toggle('hidden', !msg);
   const ban = $('#rules-banner');
@@ -809,6 +806,27 @@ function fillCols(opts = {}) {
   );
   return cols;
 }
+function unpricedBanner(positions) {
+  const names = (positions || []).filter(p => p.unpriced && !p.market_closed).map(p => p.asset);
+  if (!names.length) return '';
+  const verb = names.length === 1 ? ' is' : ' are';
+  return names.join(', ') + verb + ' unpriced (quote older than 180 min). A stop, trail, or flatten waits for the first fresh price.';
+}
+function positionQuoteLabel(r, priceText) {
+  if (r.market_closed) return {kind: 'closed', text: 'market closed, last close ' + priceText};
+  if (r.unpriced) return {kind: 'unpriced', text: 'unpriced'};
+  return {kind: 'live', text: ''};
+}
+function positionNow(r) {
+  if (!isNum(r.now)) return dash;
+  const px = fP(r.now);
+  const label = positionQuoteLabel(r, px);
+  if (label.kind === 'closed') return `${px}<div class="muted small">${label.text}</div>`;
+  if (label.kind !== 'unpriced') return px;
+  const mins = r.klass === 'stock' && isNum(r.open_age_min) ? r.open_age_min : r.price_age_min;
+  const age = isNum(mins) ? `Quote ${Math.round(mins)} min${r.klass === 'stock' ? ' of market time' : ''} old. ` : '';
+  return `${px}<div class="muted small" title="${esc(age + 'Older than 180 min. Not used for a stop, trail, or flatten. Sold on the first fresh price.')}">unpriced</div>`;
+}
 /* Open positions: Day and Risk use this list. A target or a peak that was not stored is a dash. */
 function openPosCols() {
   return [
@@ -817,12 +835,7 @@ function openPosCols() {
     {k: 'acct', l: 'Account', asc: 1, f: r => r.acct ? acctTag(r.acct) : dash},
     {k: 'opened', l: 'Opened', f: r => isNum(r.opened) ? esc(fTs(r.opened)) : dash},
     {k: 'entry', l: 'Buy price', num: 1, f: r => isNum(r.entry) ? fP(r.entry) : dash},
-    {k: 'now', l: 'Now', num: 1, f: r => {
-      if (!isNum(r.now)) return dash;
-      if (!r.unpriced) return fP(r.now);
-      const age = isNum(r.price_age_min) ? `Quote ${Math.round(r.price_age_min)} min old. ` : '';
-      return `${fP(r.now)}<div class="muted small" title="${esc(age + 'Older than 180 min. Not used for a stop, trail, or flatten. Sold on the first fresh price.')}">unpriced</div>`;
-    }},
+    {k: 'now', l: 'Now', num: 1, f: r => positionNow(r)},
     {k: 'value', l: 'Value', num: 1, f: r => isNum(r.value) ? fM(r.value) : dash},
     {k: 'pnl', l: 'P&L', num: 1, f: r => pnlCell(r.pnl, r.pnl_pct)},
     {k: 'stop', l: 'Stop / target', num: 1, nosort: 1, f: r => {
