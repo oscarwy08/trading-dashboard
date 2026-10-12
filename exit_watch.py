@@ -490,8 +490,8 @@ def _stored_gbp(con, asset, rate):
     row = con.execute("""SELECT price, source_ts, ts FROM prices WHERE asset=? AND source!='backfill' AND ts<=?
                          ORDER BY ts DESC LIMIT 1""", (asset, iso(now() + timedelta(seconds=1)))).fetchone()
     if not row or not rate:
-        return None, None
-    return float(row[0]) * rate, freshness.age_min(row["source_ts"] or row["ts"], now())
+        return None, None, None
+    return float(row[0]) * rate, freshness.age_min(row["source_ts"] or row["ts"], now()), row["source_ts"] or row["ts"]
 
 
 def _line(sleeve, asset, price, chg, peak, lat, reason):
@@ -649,12 +649,13 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
             if shadow and _shadow_closed(shcon, "day", a, p.get("opened"), book):
                 continue
             live = a in prices_gbp
+            qts = None
             if live:
                 gbp, age = prices_gbp[a], 0.0
             else:
-                gbp, age = _stored_gbp(con, a, rate)
+                gbp, age, qts = _stored_gbp(con, a, rate)
             if gbp is None or not p["entry"]: continue
-            if not live and dead_quote(age, dead_min):
+            if not live and dead_quote(age, dead_min, klass=p["klass"], asset=a, quote_ts=qts, now=t):
                 continue
             md = dmeta.get(a) or {}
             sub = md.get("sub", "momentum")
@@ -805,12 +806,13 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
                 continue
             if p["klass"] == "stock" and not markets.is_open(a, t): continue
             live = a in prices_gbp
+            qts = None
             if live:
                 gbp, age = prices_gbp[a], 0.0
             else:
-                gbp, age = _stored_gbp(con, a, rate)
+                gbp, age, qts = _stored_gbp(con, a, rate)
             if gbp is None or not p["entry"]: continue
-            if not live and dead_quote(age, dead_min):
+            if not live and dead_quote(age, dead_min, klass=p["klass"], asset=a, quote_ts=qts, now=t):
                 continue
             q = _quote(con, a, p["klass"], gbp, rate)
             f_ = cost_pct(c, a, p["klass"], "SELL", q, p["qty"] * gbp)

@@ -20,7 +20,7 @@ Each book is marked FAIL when closed trades are under 100, max drawdown is over 
 
 Three corrections on the main book. The frozen thresholds are otherwise unchanged.
 
-- **Dead exit price.** A held quote older than `price_dead_min` (180 minutes live, 45 offline) does not stop, trail, or flatten. The position is marked unpriced and is sold on the first fresh print. Entries already refused a dead price.
+- **Dead exit price.** A held quote older than `price_dead_min` (180 minutes live, 45 offline) does not stop, trail, or flatten. The position is marked unpriced and is sold on the first fresh print. Entries already refused a dead price. For a stock, those minutes are time the exchange was open (London 08:00–16:30 UK, the US session 14:30–21:00 UK most of the year, weekdays, with the exchange holiday calendar). While that market is closed the row says the last close and is not unpriced; stops, trails, and the flatten still wait for the next open.
 - **EV exit off.** `ev_now` rises as the trade falls, so it was a take-profit on winners. `ev_action` stays off until the upside is taken from the current price and the chance is recomputed. `ev_exit`, `all_combined` and `everything` are reset from the current main book; sells before that reset are not counted. The dashboard says so.
 - **Risk expected win.** The win in `setup_ev` is the gain the trail locks when it arms: `(1 + 15%) × (1 − 10%) − 1 = 3.5%`, the same on every coin. It is not the old 13.5%, and it is not scaled by ATR. The loss prior is still scaled by ATR. The 12% stop and the trail rules are unchanged.
 
