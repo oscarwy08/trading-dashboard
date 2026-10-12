@@ -19,7 +19,7 @@ os.environ["VARIANTS_DIR"] = str(TMP / "variants")
 os.environ["VARIANTS_MAIN_DB"] = str(DB)
 os.environ.pop("TRADING_VARIANT", None)
 
-import common, trader, variants, exit_watch
+import common, riskpot, trader, variants, exit_watch
 from exits import day_reason, risk_reason
 
 fails = []
@@ -46,6 +46,12 @@ blend = common.cfg()
 os.environ.pop("TRADING_VARIANT", None)
 check(blend["variant_rules"]["risk_ev_legacy_win"] is True and not blend["variant_rules"]["day_trail_arm"],
       "the EV blend does not turn on the Day trail and opts out of a Risk-win change")
+_ss0 = dict(p=0.5, n=0, wins=0, exp=None)
+_blend_rp = dict(blend["riskpot"], _legacy_arm_win=True)
+_blend_ev = riskpot.setup_ev(_blend_rp, 0.8, 3.0, 0.6, _ss0)
+_main_ev = riskpot.setup_ev(base["riskpot"], 0.8, 3.0, 0.6, _ss0)
+check(abs(_main_ev[1] - 3.5) < 1e-9 and abs(_blend_ev[1] - 13.5 * 0.75) < 1e-6,
+      "day_ev_blend keeps the old ATR-scaled Risk win; the main book locks 3.5%")
 os.environ["TRADING_VARIANT"] = "no_risk_clock"
 clock = common.cfg()
 os.environ.pop("TRADING_VARIANT", None)

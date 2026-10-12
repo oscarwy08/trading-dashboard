@@ -83,10 +83,13 @@ check(not Path("config/variants/missing.yaml").exists() or True, "placeholder")
 R = variants.rules_of(base)
 check(variants.ev_action(-0.2, 1.0, R) is None, "EV exit does nothing while the flag is off")
 Ron = variants.rules_of(over)
-check(variants.ev_action(-0.2, 1.0, Ron) == "tighten", "EV now -0.2% only tightens the stop")
-check(variants.ev_action(-1.5, 0.4, Ron) == "exit", "EV now -1.5% and 1.9pp worse than entry is an exit")
-check(variants.ev_action(-1.5, -1.0, Ron) == "tighten", "below the line but not 0.8pp worse than entry does not exit")
-check("entry EV" in variants.ev_exit_reason(-1.5, 0.4, Ron), "exit reason names both numbers")
+check(Ron["ev_exit"] is True and Ron["ev_action"] is False, "the EV book keeps its flag and leaves the action off")
+check(variants.ev_action(-1.5, 0.4, Ron) is None, "a clearly negative EV does not sell while the action is off")
+Rlive = variants.rules_of({"variant_rules": dict(over["variant_rules"], ev_action=True)})
+check(variants.ev_action(-0.2, 1.0, Rlive) == "tighten", "EV now -0.2% only tightens the stop once the action is on")
+check(variants.ev_action(-1.5, 0.4, Rlive) == "exit", "EV now -1.5% and 1.9pp worse than entry is an exit once the action is on")
+check(variants.ev_action(-1.5, -1.0, Rlive) == "tighten", "below the line but not 0.8pp worse than entry does not exit")
+check("entry EV" in variants.ev_exit_reason(-1.5, 0.4, Rlive), "exit reason names both numbers")
 check(abs(variants.effective_stop_pct(2.0, 0.5, variants.rules_of(both), "burst") - 3.0) < 1e-9,
       "burst stop widens to 1.5x while EV is positive")
 check(abs(variants.effective_stop_pct(2.0, -1.0, variants.rules_of(both), "burst") - 2.0) < 1e-9,
@@ -188,7 +191,7 @@ trader.main()
 os.environ.pop("TRADING_VARIANT", None)
 con = common.db()
 sold = con.execute("SELECT reason FROM trades WHERE asset='TEST' AND side='SELL'").fetchone()
-check(sold is not None and "EV exit" in sold[0], "ev_exit: the same position is sold because EV now is clearly negative")
+check(sold is None, "ev_exit: the same position is not sold, because the EV action is off")
 con.close()
 
 # --- widened burst stop holds a -2.5% dip that the stored 2% stop would sell ---
@@ -320,6 +323,29 @@ common.DB = old_db
 check(book["pnl"] == 10 and book["trades"] == 1 and book["win_rate"] == 100.0,
       f"variant table measures from the snapshot (P&L £{book['pnl']}, trades {book['trades']}, win {book['win_rate']})")
 check(book["curve"] and book["curve"][0]["eq"] == 190, "the curve starts at the first equity point on or after the snapshot")
+
+# an existing book whose generation does not match is recopied from the current main book
+variants.prepare("ev_exit")
+stale = sqlite3.connect(TMP / "variants" / "ev_exit.db")
+stale.execute("INSERT OR REPLACE INTO state VALUES('variant_reset', ?)",
+              (json.dumps(dict(generation="old", ts=None, equity=None)),))
+stale.commit(); stale.close()
+late_n = sqlite3.connect(os.environ["TRADING_DB"]).execute(
+    "SELECT COUNT(*) FROM trades WHERE asset='LATER'").fetchone()[0]
+variants.prepare("ev_exit")
+evcon = sqlite3.connect(f"file:{TMP / 'variants' / 'ev_exit.db'}?mode=ro", uri=True)
+try:
+    stored = json.loads(evcon.execute("SELECT value FROM state WHERE key='variant_reset'").fetchone()[0])
+    check(stored.get("generation") == "2026-10-12-ev-off" and stored.get("ts"),
+          "a stale EV book is reset from the current main book")
+    check(evcon.execute("SELECT COUNT(*) FROM trades WHERE asset='LATER'").fetchone()[0] == late_n,
+          "the reset copy keeps the main book's trades and drops the old variant file")
+    rep = variants.report()
+    eb = next(b for b in rep["books"] if b["name"] == "ev_exit")
+    check(eb.get("reset_note") and "not counted" in eb["reset_note"], "the dashboard notes that earlier sells are not counted")
+    check(rep.get("ev_note") and "EV exit is off" in rep["ev_note"], "the variants page says the EV exit is off")
+finally:
+    evcon.close()
 
 print(f"\n{len(fails)} failure(s)")
 raise SystemExit(1 if fails else 0)

@@ -177,10 +177,10 @@ riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mi
   hit_prior: 0.5                # measured hit rate of RISK closed trades (last record_days) with a Beta prior of hit_prior_n trades
   hit_prior_n: 20
   record_days: 30
-  ev_win_pct: 12                # fallback win% when this setup has no ATR yet. Otherwise the estimate uses the trail distance
-  ev_loss_pct: 8                #   (arm +15%, give back 10% -> ~13.5% locked) and this average loss, scaled by the setup's own
-  ev_atr_ref_pct: 4             #   1h ATR vs this reference. P(win) shrinks confidence toward 0.5 until ev_conf_full_n closes
-  ev_prior_n: 10                # the 12% stop and the trail RULES are unchanged; only the EV estimate is per setup
+  ev_win_pct: 12                # only used by a paper book that sets _legacy_arm_win. The live win is the trail lock at the arm
+  ev_loss_pct: 8                #   (1.15 * 0.90 - 1 = 3.5%), the same on every coin, not scaled by ATR. This average loss is
+  ev_atr_ref_pct: 4             #   scaled by the setup's 1h ATR vs this reference. P(win) shrinks confidence toward 0.5 until
+  ev_prior_n: 10                #   ev_conf_full_n closes. The 12% stop and the trail RULES are unchanged; only the estimate moves
   ev_conf_full_n: 30
   ev_min_pct: 0.3               # hurdle: a modelled edge of a few tenths of a percent is not a trade
   max_runup_7d_pct: 80          # breakout refused at or above this 7-day run, and Core will not lend into the name
@@ -342,8 +342,16 @@ variants:
   enabled: true
   run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
         risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take]
+  # These three books sold on an inverted EV. The next cycle recopies each from the current main book
+  # and the scorecard starts there, so those sells are not counted.
+  reset:
+    ev_exit: "2026-10-12-ev-off"
+    all_combined: "2026-10-12-ev-off"
+    everything: "2026-10-12-ev-off"
 variant_rules:
   ev_exit: false
+  ev_action: false              # off: ev_now rises as the trade falls. Do not sell or tighten on it until the upside
+                                #   is taken from the current price and the chance is recomputed.
   ev_exit_now_pct: -0.4         # sell when EV now is below this (percent) ...
   ev_exit_below_entry_pp: 0.8   # ... and at least this many points worse than the EV stored at entry
   ev_exit_stop_mult: 0.75       # while EV now is negative but still above ev_exit_now_pct, the stop is this fraction of the stored stop

@@ -108,23 +108,44 @@ def confidence(R, brk, vol, sent, regime, hr, freshness=None):
     out = {k: round(v, 2) for k, v in parts.items()}; out["freshness"] = fr
     return conf, out
 
+def arm_lock_pct(R):
+    """Percent gain the trail actually locks when it first arms.
+
+    The arm is a fixed +trail_after_pct on the price (15% on every coin). The sell is trail_pct under that
+    peak price, so the locked gain is (1 + arm) * (1 - trail) - 1. At 15% and 10% that is 1.15 * 0.90 - 1 = 3.5%.
+    It is not 15 * 0.9 = 13.5, and it is not scaled by ATR.
+    """
+    arm = float(R.get("trail_after_pct", 15))
+    trail = float(R.get("trail_pct", 10))
+    # Percent points, so 15 and 10 stay exact: (100+15)*(100-10)/100 - 100 = 3.5.
+    return (100.0 + arm) * (100.0 - trail) / 100.0 - 100.0
+
 def setup_ev(R, conf, atr, rt_cost, ss):
     """Expected value in % per trade AFTER costs, for THIS setup. The stop (12%) and the trail (arm at +15%, sell 10%
-    off the peak) are unchanged; only the estimate moves. Win distance is the gain locked when the trail first arms,
-    loss distance is the prior average loss (usually cut before the full stop), both scaled by this setup's volatility
-    (1h ATR vs ev_atr_ref_pct; unknown ATR keeps the fixed priors). Hit probability is the confidence shrunk toward
-    0.5 until ev_conf_full_n closes, blended with the measured hit rate (daypot.hit_p), then with the measured
-    expectancy. Returns (ev, win%, loss%, p)."""
+    off the peak) are unchanged; only the estimate moves. The win is the executable lock at the arm (arm_lock_pct,
+    3.5% at the frozen 15/10 trail), the same on every coin, not scaled by ATR. A paper book that must not inherit
+    this fix sets _legacy_arm_win and keeps the old ATR-scaled 15 x 0.9 distance. Loss distance is the prior average
+    loss (usually cut before the full stop), scaled by this setup's volatility (1h ATR vs ev_atr_ref_pct; unknown ATR
+    keeps the fixed loss prior). Hit probability is the confidence shrunk toward 0.5 until ev_conf_full_n closes,
+    blended with the measured hit rate (daypot.hit_p), then with the measured expectancy. Returns (ev, win%, loss%, p)."""
     import daypot
     stop = float(R.get("stop_loss_pct", 12))
-    target = float(R.get("trail_after_pct", 15)) * (1 - float(R.get("trail_pct", 10)) / 100)
     win_prior, loss_prior = float(R.get("ev_win_pct", 12)), float(R.get("ev_loss_pct", 8))
     ref = float(R.get("ev_atr_ref_pct", 4)) or 4.0
-    if atr and atr > 0:
-        scale = max(0.55, min(1.8, float(atr) / ref))
-        win, loss = target * scale, min(stop, loss_prior * scale)
+    if R.get("_legacy_arm_win"):
+        target = float(R.get("trail_after_pct", 15)) * (1 - float(R.get("trail_pct", 10)) / 100)
+        if atr and atr > 0:
+            scale = max(0.55, min(1.8, float(atr) / ref))
+            win, loss = target * scale, min(stop, loss_prior * scale)
+        else:
+            win, loss = win_prior, loss_prior
     else:
-        win, loss = win_prior, loss_prior
+        win = arm_lock_pct(R)
+        if atr and atr > 0:
+            scale = max(0.55, min(1.8, float(atr) / ref))
+            loss = min(stop, loss_prior * scale)
+        else:
+            loss = loss_prior
     n = int((ss or {}).get("n") or 0)
     p = daypot.hit_p(conf, ss, float(R.get("ev_prior_n", 10)), float(R.get("ev_conf_full_n", 30)))
     ev = daypot.expected_value(dict(p=p, n=n, exp=(ss or {}).get("exp")), win, loss, rt_cost, int(R.get("ev_prior_n", 10)))

@@ -177,7 +177,11 @@ function renderHeader() {
   else if (D && age > 3600) msg = `Data is ${ago(D.updated).replace(' ago', '')} old - the 15-minute update may have stalled.`;
   else if (loadErr) msg = 'Last refresh failed (' + loadErr + '); showing the previous data.';
   else if (D && D.risk.kill) msg = 'Kill switch is ON - all trading is paused.';
-  else if (D && (D.day_overdue || []).length) msg = 'Day position still open after 22:00 UK: ' + D.day_overdue.join(', ') + '. It is force-closed at the last price on the next cycle.';
+  else if (D && (D.positions || []).some(p => p.unpriced)) {
+    const names = (D.positions || []).filter(p => p.unpriced).map(p => p.asset);
+    msg = names.join(', ') + (names.length === 1 ? ' is' : ' are') + ' unpriced (quote older than 180 min). A stop, trail, or flatten waits for the first fresh price.';
+  }
+  else if (D && (D.day_overdue || []).length) msg = 'Day position still open after 22:00 UK: ' + D.day_overdue.join(', ') + '. It is force-closed at the last fresh price.';
   al.textContent = msg; al.classList.toggle('hidden', !msg);
   const ban = $('#rules-banner');
   if (ban) {
@@ -492,7 +496,7 @@ const entryDetail = r => {
   return `<div class="at-entry"><div class="muted small">At entry</div>${head}${evMarkup(s)}</div>${now}`;
 };
 const ENTRY_TIP = 'Confidence (or the Day momentum score) and expected value after costs when the trade was bought. A dash means it was bought before confidence scoring. Open the asset for every component.';
-const EVNOW_TIP = 'Expected value from the current price: the chance of hitting times the percent still left up to the target, minus the chance of losing times the percent down to the stop or the live trail, minus the sell cost still to pay.';
+const EVNOW_TIP = 'Expected value from the current price: the chance of hitting times the percent still left up to the target, minus the chance of losing times the percent down to the stop or the live trail, minus the sell cost still to pay. This number rises when the trade falls, so it is not used to sell. The EV exit is off until the upside is taken from the current price and the chance is recomputed.';
 const subTag = s => s ? `<span class="tag ${s === 'burst' ? 'risk' : 'blue'}">${esc(SUBN[s] || s)}</span>` : '<span class="muted">-</span>';
 const lvlTxt = d => d ? `max(${d.min_pct}%, ${d.atr_x}x ATR)${d.max_pct ? `, max ${d.max_pct}%` : ''}` : '-';
 function renderDay() {
@@ -589,6 +593,7 @@ function renderRiskPot() {
     `It is bought only if confidence is at least the threshold <b>and</b> its expected value after costs is positive. The threshold starts at <b>${R.conf_threshold}</b> and rises to <b>${R.conf_at_stop}</b> as the pot's fall approaches the ${R.cap}% stop. ` +
     `Size = confidence x ${R.conf_size_pct}% of the cash the pot still has in that account (min £${R.min_trade}, max £${R.max_pos} or ${R.pos_pct}% of the pot), up to <b>${R.max_open}</b> open at a time; no daily limit on new trades. ` +
     `Exits: <b>-${R.stop}%</b> stop-loss; once a position has been up <b>+${R.trail_after}%</b> it is sold if it falls <b>${R.trail}%</b> from its peak (locks in gains); anything still held after <b>${R.hold} days</b> is sold. ` +
+    (isNum(R.ev_lock) ? `The expected win used to decide a buy is that locked gain, <b>+${R.ev_lock}%</b>, the same on every coin. It is not scaled by volatility. ` : '') +
     `If the pot falls <b>${R.cap}%</b>, new trades stop until reviewed. Only coins listed on CoinGecko with ≥ ${fUsd(R.min_mcap)} market cap and ≥ ${fUsd(R.min_vol)} daily volume (no stablecoins, wrapped or exchange tokens). Expect big swings.`;
   $('#risk-intro').insertAdjacentHTML('beforeend', loanNote('risk'));   // v7.3 open loans of this pot
   const st = D.risk.kill ? ['Paused', 'neg', 'kill switch on'] : r0.halted ? ['Paused', 'neg', `down ${fPct(r0.dd_pct)} - waiting for review`] : ['Active', 'pos', `${r0.new_today || 0} new today · no daily cap`];
@@ -775,7 +780,12 @@ function openPosCols() {
     {k: 'acct', l: 'Account', asc: 1, f: r => r.acct ? acctTag(r.acct) : dash},
     {k: 'opened', l: 'Opened', f: r => isNum(r.opened) ? esc(fTs(r.opened)) : dash},
     {k: 'entry', l: 'Buy price', num: 1, f: r => isNum(r.entry) ? fP(r.entry) : dash},
-    {k: 'now', l: 'Now', num: 1, f: r => isNum(r.now) ? fP(r.now) : dash},
+    {k: 'now', l: 'Now', num: 1, f: r => {
+      if (!isNum(r.now)) return dash;
+      if (!r.unpriced) return fP(r.now);
+      const age = isNum(r.price_age_min) ? `Quote ${Math.round(r.price_age_min)} min old. ` : '';
+      return `${fP(r.now)}<div class="muted small" title="${esc(age + 'Older than 180 min. Not used for a stop, trail, or flatten. Sold on the first fresh price.')}">unpriced</div>`;
+    }},
     {k: 'value', l: 'Value', num: 1, f: r => isNum(r.value) ? fM(r.value) : dash},
     {k: 'pnl', l: 'P&L', num: 1, f: r => pnlCell(r.pnl, r.pnl_pct)},
     {k: 'stop', l: 'Stop / target', num: 1, nosort: 1, f: r => {
@@ -1003,9 +1013,10 @@ const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c
 function renderVariants() {
   const V = (D && D.variants) || {}, books = V.books || [];
   const el = $('#var-explain');
-  if (el) el.textContent = V.since
+  if (el) el.textContent = (V.since
     ? `Same snapshot from ${fTs(Math.floor(Date.parse(V.since) / 1000))}, starting at ${fM(V.start_equity)}. P&L, trades, win rate and drawdown are the change since then. The main book keeps the frozen rules.`
-    : 'The snapshot is taken the first cycle after this is deployed. Until then there is nothing to compare.';
+    : 'The snapshot is taken the first cycle after this is deployed. Until then there is nothing to compare.')
+    + (V.ev_note ? ' ' + V.ev_note : '');
   const rows = books.filter(b => !b.error);
   table($('#var-table'), [
     {k: 'label', l: 'Book', f: r => `<b style="color:${VAR_COL[r.name] || '#e7e9ea'}">${esc(r.label)}</b><div class="muted small">${esc(r.blurb || '')}</div>`},
