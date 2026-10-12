@@ -22,11 +22,11 @@ LABELS = {
     "entry_watch": "Entry watch",
 }
 BLURB = {
-    "ev_exit": "Sells a Day or Risk position when live expected value is below -0.4% and at least 0.8 points worse than the value stored at entry. While live value is negative but still above -0.4%, the stop is three quarters of the stored stop.",
+    "ev_exit": "EV exit is off. Live expected value rises when the trade falls, so it was selling winners between about +1% and +5%. This book was reset; sells before the reset are not counted. It follows the main book until the upside is taken from the current price and the chance is recomputed.",
     "review_leftovers": "Burst stop is 1.5x wider unless live EV is already below -0.4%. Core's 18:00 fallback tranche is half size when the coin is up more than 15% over 7 days or RSI is above 75. New Day, Risk and Core entries need the coin's own 3-day trend up. After 12:00 UK, Day and Core will not each buy the same coin.",
-    "all_combined": "EV exit and the review leftovers, on one book. The burst runner is a separate book, not part of this one.",
+    "all_combined": "The review leftovers, on one book. The EV exit is off (live expected value was inverted) and this book was reset; sells before the reset are not counted. The burst runner is a separate book, not part of this one.",
     "burst_runner": "Same rules as the main book, except a Burst position that hits its target keeps running when the entry signal is still intact. The trail then gives back 20% of the peak gain. Each sell says sold at target or ran, with the extra gain and the giveback.",
-    "everything": "EV exit, the review leftovers, and the burst runner, on one book. It is copied from the same snapshot as the other books.",
+    "everything": "The review leftovers and the burst runner, on one book. The EV exit is off (live expected value was inverted) and this book was reset; sells before the reset are not counted.",
     "midnight_crypto": "Same as the main book, except Day crypto entries run until 23:45 UK and those positions flatten at 00:00 UK. New crypto entries are allowed again from 00:00, and the daily loss budget still resets then. Stocks still flatten 15 minutes before their market closes. Copied from the same snapshot as the other books.",
     "entry_watch": "Same scoring as the main book. Setups the cycle would buy are also armed with a price trigger, a size, and the same stop and target. This is the only book the live watcher is allowed to buy when that trigger trades between cycles. The main book only logs those as WOULD BUY.",
 }
@@ -36,7 +36,7 @@ MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", 
 
 def rules_of(c):
     """Flag values. Missing keys stay off, which is the main book's behaviour."""
-    d = dict(ev_exit=False, ev_exit_now_pct=-0.4, ev_exit_below_entry_pp=0.8, ev_exit_stop_mult=0.75,
+    d = dict(ev_exit=False, ev_action=False, ev_exit_now_pct=-0.4, ev_exit_below_entry_pp=0.8, ev_exit_stop_mult=0.75,
              burst_stop_widen=False, burst_stop_mult=1.5, core_fallback_half=False, core_ext_7d_pct=15.0,
              core_ext_rsi=75.0, entry_own_trend=False, entry_trend_days=3, no_day_core_same_afternoon=False,
              afternoon_hour_uk=12, burst_runner=False, burst_runner_giveback_pct=20,
@@ -84,11 +84,21 @@ def crypto_flatten_due(opened_day, today, flat_now, midnight):
     return bool(flat_now) or str(opened_day) != str(today)
 
 
+EV_NOTE = ("EV exit is off. Live expected value rises when the trade falls, because the upside is the distance "
+           "to the stored target and the chance is not recomputed, so a negative reading is a winner. "
+           "ev_exit, all_combined and everything were reset; sells before the reset are not counted. "
+           "The exit stays off until the upside is taken from the current price and the chance is recomputed.")
+
+
 def ev_action(ev_now, entry_ev, R):
     """None, 'tighten', or 'exit'. Exit when EV now is below ev_exit_now_pct and (if an entry EV was
     stored) at least ev_exit_below_entry_pp worse than that entry EV. Tighten when EV now is negative
-    but the exit line has not been crossed. Off unless ev_exit is on."""
-    if not R.get("ev_exit") or ev_now is None:
+    but the exit line has not been crossed.
+
+    Off unless both ev_exit and ev_action are on. ev_action stays off: the stored formula rises as the
+    trade falls, so it must not sell or tighten a stop until the upside is taken from the current price
+    and the chance is recomputed."""
+    if not R.get("ev_exit") or not R.get("ev_action") or ev_now is None:
         return None
     line, gap = float(R["ev_exit_now_pct"]), float(R["ev_exit_below_entry_pp"])
     worse = entry_ev is None or float(ev_now) <= float(entry_ev) - gap
@@ -264,6 +274,57 @@ def _backup(src, dst):
         d.close(); s.close()
 
 
+def reset_map(c=None):
+    """Books whose database is recopied from the current main book when the generation changes.
+
+    A missing stamp on an existing file counts as a change, so the first cycle after this
+    generation is published drops the old sells. A file created after that is copied from
+    the shared snapshot and stamped, and is not reset again.
+    """
+    c = c or cfg()
+    raw = ((c.get("variants") or {}).get("reset") or {})
+    return {str(k): str(v) for k, v in raw.items() if v}
+
+
+def _read_reset(path):
+    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        row = con.execute("SELECT value FROM state WHERE key='variant_reset'").fetchone()
+    except sqlite3.Error:
+        return None
+    finally:
+        con.close()
+    if not row or not row[0]:
+        return None
+    try:
+        import json
+        return json.loads(row[0])
+    except (TypeError, ValueError):
+        return None
+
+
+def _stamp_reset(path, generation, ts=None, equity=None):
+    import json
+    con = sqlite3.connect(path)
+    try:
+        con.execute("INSERT OR REPLACE INTO state VALUES('variant_reset',?)",
+                    (json.dumps(dict(generation=generation, ts=ts, equity=equity)),))
+        con.commit()
+    finally:
+        con.close()
+
+
+def _equity_now(path):
+    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        row = con.execute("SELECT equity FROM equity ORDER BY ts DESC LIMIT 1").fetchone()
+    except sqlite3.Error:
+        return None
+    finally:
+        con.close()
+    return None if not row else row[0]
+
+
 def ensure_snapshot(root=None):
     """Copy the main book once. Later cycles keep this file so every variant shares the start."""
     root = root or dir_path()
@@ -318,8 +379,17 @@ def prepare(name, root=None):
     root = root or dir_path()
     snap = ensure_snapshot(root)
     path = root / f"{name}.db"
+    gen = reset_map().get(name)
+    if path.exists() and gen:
+        stored = _read_reset(path) or {}
+        if stored.get("generation") != gen:
+            path.unlink()
+            _backup(main_db(), path)
+            _stamp_reset(path, gen, now().isoformat(), _equity_now(path))
     if not path.exists():
         shutil.copy(snap, path)
+        if gen:
+            _stamp_reset(path, gen, None, None)
     _sync(main_db(), path)
     return path
 
@@ -423,8 +493,15 @@ def _since(con, since, start_equity):
                 max_dd=mdd, realized=sum(x or 0 for x in sells))
 
 
-def _book(con, name, label, blurb, since, start_equity):
+def _book(con, name, label, blurb, since, start_equity, reset=None):
     from dashboard import setup_scorecard
+    note = None
+    if reset and reset.get("ts"):
+        since = reset["ts"]
+        if reset.get("equity") is not None:
+            start_equity = reset["equity"]
+        note = "Reset " + str(reset["ts"])[:16].replace("T", " ") + " UTC. Sells before this reset are not counted."
+        blurb = (blurb + " " + note).strip()
     st = _since(con, since, start_equity)
     return dict(
         name=name, label=label, blurb=blurb,
@@ -437,6 +514,7 @@ def _book(con, name, label, blurb, since, start_equity):
         realized=round(st["realized"], 2),
         scorecard=setup_scorecard(con, since),
         curve=_curve(con, since),
+        reset_note=note,
     )
 
 
@@ -470,13 +548,15 @@ def report():
         con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
         con.row_factory = sqlite3.Row
         try:
-            books.append(_book(con, name, LABELS.get(name, name), BLURB.get(name, ""), since, man.get("equity")))
+            stored = _read_reset(path)
+            books.append(_book(con, name, LABELS.get(name, name), BLURB.get(name, ""), since, man.get("equity"),
+                               stored if name in reset_map() else None))
         except Exception as e:
             books.append(dict(name=name, label=LABELS.get(name, name), error=str(e)))
         finally:
             con.close()
     return dict(enabled=bool(block.get("enabled")), since=since, start_equity=man.get("equity"),
-                books=books)
+                ev_note=EV_NOTE, books=books)
 
 
 def summary_line():

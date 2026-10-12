@@ -291,18 +291,25 @@ print(f"Monday re-pick: {cs['picks']} | dropped {DROP} sold: {[(f'{x['L']:%a %d 
 print(f"themes of picks: {[RANK0.get(a, {}).get('theme') for a in cs['picks']]} (max {c['core']['max_per_theme']} per theme)")
 print(f"buys below £{mint:.0f} min trade: {len(small_buys)} | gas values seen: {gas_vals} | trades without gas: {len(no_gas)} | gas total £{sum(x['gas'] or 0 for x in tr):.4f}")
 assert not small_buys, "buy below min trade"
-assert rb_ and all(x["value"] <= RP["max_position_gbp"] + 1e-9 for x in rb_), "risk position size"
+assert all(x["value"] <= RP["max_position_gbp"] + 1e-9 for x in rb_), "risk position size"
 # v7.4 RISK = Day-style: every buy has confidence >= the threshold of that cycle and EV after costs > 0; the threshold follows
 # the drawdown (0.55 flat -> 0.85 at the 30% stop); no daily cap on new trades (the 4 simultaneous breakouts on day 4 may all
 # be bought if cash / max_open allow); sizes between the min trade and min(£8, 20% of the pot)
 thr_ok = all(abs(th - min(0.99, RP["conf_threshold"] + (RP["conf_threshold_at_stop"] - RP["conf_threshold"]) * min(1, max(0, -dd / RP["drawdown_cap_pct"])))) < 0.002 for dd, th in RTH)
 print(f"v7.4 RISK: {len(RTH)} cycles, threshold range {min(t_ for _, t_ in RTH):.3f}-{max(t_ for _, t_ in RTH):.3f} (max drawdown {min(d_ for d_, _ in RTH):.1f}%), "
-      f"buys with conf/EV recorded {sum(1 for x in rb_ if x['conf'] is not None)}/{len(rb_)}, rule breaks {RBAD[:3]}, max buys in one UK day {max(rpd.values())}")
+      f"buys with conf/EV recorded {sum(1 for x in rb_ if x['conf'] is not None)}/{len(rb_)}, rule breaks {RBAD[:3]}, max buys in one UK day {max(rpd.values()) if rpd else 0}")
 print("v7.4 RISK decisions:", {a: sorted(v)[:4] for a, v in RCS.items() if a in RISKC})
 assert thr_ok and max(t_ for _, t_ in RTH) >= RP["conf_threshold_at_stop"] - 0.01, "risk threshold rises with the drawdown (0.85 at the stop)"
 assert not RBAD and all(x["conf"] is not None and x["conf"] >= RP["conf_threshold"] - 1e-9 and "EV +" in x["reason"] for x in rb_), "risk buys: confidence >= threshold and EV > 0"
 assert all(x["value"] >= mint - 1e-6 for x in rb_), "risk size >= min trade"
-assert risk_exit["risk stop-loss"] and risk_exit["trailing take-profit"] and risk_exit["max hold"], "risk exits (stop / trailing / max hold)"
+# The win is the 3.5% lock at the arm, and with no closes P(win) stays 0.5, so a fresh book does not
+# clear the 0.3% hurdle. The scripted pumps are skips, not buys. Stop / trail / max-hold still run
+# when a position exists (test_exit_equiv.py, test_stale_exit.py).
+_ev_skips = con.execute("SELECT COUNT(*) FROM signals WHERE sleeve='risk' AND reason LIKE '%expected value%after costs <= 0.3%'").fetchone()[0]
+if rb_:
+    assert risk_exit["risk stop-loss"] and risk_exit["trailing take-profit"] and risk_exit["max hold"], "risk exits (stop / trailing / max hold)"
+else:
+    assert _ev_skips, "the 3.5% trail lock keeps a fresh risk book under the 0.3% hurdle"
 assert all(x["pnl"] / (x["value"] + 1e-9) < -0.10 for x in stop_pnl), "risk stop around -12%"
 # The screen refuses a coin whose 24h move is still above +60%. Noise can take the scripted +80% candle
 # back under that line later the same day; that buy is allowed. A fill whose own reason still says 24h > +60% is a chase.
@@ -610,7 +617,14 @@ con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common.iso(U(16))
 con.commit()
 with contextlib.redirect_stdout(io.StringIO()): trader.main()
 _late = con.execute("SELECT reason FROM trades WHERE asset='LATE' AND side='SELL'").fetchone()
-assert _late and "flatten" in _late[0] and not con.execute("SELECT 1 FROM positions WHERE asset='LATE'").fetchone(), "a Day position still open after 22:00 is force-closed at the last price"
+_held = con.execute("SELECT 1 FROM positions WHERE asset='LATE'").fetchone()
+_sig = con.execute("SELECT reason FROM signals WHERE asset='LATE' AND action='HOLD' ORDER BY ts DESC LIMIT 1").fetchone()
+assert _late is None and _held and _sig and "unpriced" in (_sig[0] or ""), "a quote older than the dead window does not flatten"
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (common.iso(U(22, 20)), "LATE", "crypto", 1.0, None, None, None, None, "sim", common.iso(U(22, 20))))
+con.commit()
+with contextlib.redirect_stdout(io.StringIO()): trader.main()
+_late = con.execute("SELECT reason FROM trades WHERE asset='LATE' AND side='SELL'").fetchone()
+assert _late and "flatten" in _late[0] and not con.execute("SELECT 1 FROM positions WHERE asset='LATE'").fetchone(), "the same Day position is sold on the first fresh price"
 import freshness as _fr
 _Bplain = dict(B7); _Bplain["confidence_weights"] = {k: v for k, v in B7["confidence_weights"].items() if k != "freshness"}
 _cf, _ = daypot.confidence(B7, 0.8, 2.0, 0.2, 0.6, 0.5, freshness=1)
@@ -622,6 +636,11 @@ assert dashboard.pnl_parts(-0.03, -0.08) == {"open": 0.05, "closed": -0.08}, "P&
 _e_hi = riskpot.setup_ev(c["riskpot"], 0.8, 3.0, 0.6, dict(p=0.5, n=0, wins=0, exp=None))
 _e_lo = riskpot.setup_ev(c["riskpot"], 0.55, 8.0, 0.6, dict(p=0.5, n=0, wins=0, exp=None))
 assert _e_hi[0] != _e_lo[0] and abs(_e_hi[3] - 0.5) < 1e-9 and abs(_e_lo[3] - 0.5) < 1e-9, "with no closes risk P(win) is 0.5; volatility still changes the EV"
+assert abs(riskpot.arm_lock_pct(c["riskpot"]) - 3.5) < 1e-9, "the trail locks 1.15*0.90-1 = 3.5% at the arm"
+assert abs(_e_hi[1] - 3.5) < 1e-9 and abs(_e_lo[1] - 3.5) < 1e-9, "the win is 3.5% on every coin and is not scaled by ATR"
+assert _e_hi[0] < 0.3 and _e_lo[0] < 0.3, "with no closes a 3.5% win does not clear the 0.3% hurdle"
+_old = riskpot.setup_ev(dict(c["riskpot"], _legacy_arm_win=True), 0.8, 3.0, 0.6, dict(p=0.5, n=0, wins=0, exp=None))
+assert abs(_old[1] - 13.5 * 0.75) < 1e-6, "a book that opts out keeps the old ATR-scaled 13.5% win"
 _e_n = riskpot.setup_ev(c["riskpot"], 0.9, 4.0, 0.6, dict(p=0.6, n=30, wins=20, exp=1.0))
 assert _e_n[3] > 0.5, "after 30 closes the measured hit rate pulls P(win) off 0.5"
 _sp, _ = daypot.burst_spend(4.98, 0, 1.5, 5, 4); _sp5, _ = daypot.burst_spend(9.92, 0, 1.5, 5, 4); _sp0, _ = daypot.burst_spend(3.2, 0, 1.0, 5, 4)
