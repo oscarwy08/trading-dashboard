@@ -25,7 +25,9 @@ def check(cond, msg):
 base = common.cfg()
 check(all(not base["variant_rules"][k] for k in
           ("ev_exit", "burst_stop_widen", "core_fallback_half", "entry_own_trend", "no_day_core_same_afternoon",
-           "burst_runner", "midnight_crypto", "entry_watch")),
+           "burst_runner", "midnight_crypto", "entry_watch",
+           "risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock", "day_capital_caution",
+           "partial_take")),
       "main config flags are off")
 os.environ["TRADING_VARIANT"] = "ev_exit"
 over = common.cfg()
