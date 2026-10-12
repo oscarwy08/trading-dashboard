@@ -8,7 +8,9 @@ drops it keeps running; the 5-minute cycle still exits.
 
 The first deploy is shadow mode (EXIT_WATCH_SHADOW defaults to on). The watcher
 tracks open positions and logs WOULD EXIT (trigger, price, time) to
-data/exit_shadow.db. It does not write trades, cash, or positions. Review with
+~/exit_shadow/exit_shadow.db (EXIT_SHADOW_DB overrides that path). That file
+is outside the clone, so run_cycle.sh's git reset --hard does not delete it.
+It does not write trades, cash, or positions. Review with
 `python3 exit_shadow_report.py`, then set EXIT_WATCH_SHADOW=0 and restart to
 sell for real.
 
@@ -59,12 +61,15 @@ def shadow_mode():
 
 
 def shadow_db_path():
-    """Sibling of the paper book, unless EXIT_SHADOW_DB points somewhere else."""
+    """Where WOULD EXIT rows are stored. Outside the clone by default.
+
+    ~/exit_shadow/exit_shadow.db survives the cycle's `git reset --hard` (and
+    `git add -A` cannot pick it up). EXIT_SHADOW_DB overrides the path.
+    """
     override = os.environ.get("EXIT_SHADOW_DB")
-    if override:
-        return Path(override)
-    from common import DB
-    return Path(DB).resolve().parent / "exit_shadow.db"
+    if override and str(override).strip():
+        return Path(override).expanduser()
+    return Path.home() / "exit_shadow" / "exit_shadow.db"
 
 
 def _shadow_connect():
