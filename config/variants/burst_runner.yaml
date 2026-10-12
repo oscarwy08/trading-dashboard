@@ -1,0 +1,4 @@
+# Same book as main, except a Burst that hits its target can keep running.
+# Not part of all_combined. See variant_rules.burst_runner in config.yaml.
+variant_rules:
+  burst_runner: true

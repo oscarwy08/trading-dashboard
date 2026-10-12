@@ -1,0 +1,13 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "AERO",
+ "score": 0.25,
+ "volume": 8,
+ "confidence": 0.45,
+ "summary": "Mildly positive: AERO +12.6% 24h at the top of its range, Coinbase top-hour gainer, fee/revenue comparisons vs Uniswap favourable; Base DEX volume reported sluggish.",
+ "sources": [
+  "https://x.com/CaptainAltcoin/status/2108864769205715210",
+  "https://x.com/cexscan/status/2108900400128766360",
+  "https://x.com/angjo1214/status/2108870222623162752"
+ ]
+}

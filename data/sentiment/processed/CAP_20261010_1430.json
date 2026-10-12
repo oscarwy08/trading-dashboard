@@ -1,0 +1,14 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "CAP",
+ "score": 0.15,
+ "volume": 19,
+ "confidence": 0.35,
+ "summary": "Price-led pump (+26% 24h, longs dominate OI, Coinbase top-60m gainer) with little credible news; on-chain shows a dormant wallet bridging ~$1M CAP (possible sell flow) and much chatter is paid signal/listing-vote spam.",
+ "sources": [
+  "https://x.com/0Melnyk/status/2108918974322786654",
+  "https://x.com/Proxonchain/status/2108918310129881136",
+  "https://x.com/cexscan/status/2108900400128766360",
+  "https://x.com/mobee_id/status/2108502647393415476"
+ ]
+}

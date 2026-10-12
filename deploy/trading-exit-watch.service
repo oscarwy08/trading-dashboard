@@ -1,0 +1,21 @@
+[Unit]
+Description=Paper exit watcher (open Day and Risk positions only)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bot
+# Same clone as /home/bot/run_cycle.sh. Change both paths if that script lives elsewhere.
+WorkingDirectory=/home/bot/trading-dashboard
+ExecStart=/usr/bin/python3 /home/bot/trading-dashboard/exit_watch.py
+# Shadow (1) only logs WOULD EXIT. /home/bot/.trading_env can set EXIT_WATCH_SHADOW=0
+# after exit_shadow_report.py looks right; that file is applied after this line.
+Environment=PYTHONUNBUFFERED=1
+Environment=EXIT_WATCH_SHADOW=1
+EnvironmentFile=-/home/bot/.trading_env
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+{
+ "timestamp": "2026-10-10T14:30:00Z",
+ "asset": "DRV",
+ "score": 0.4,
+ "volume": 20,
+ "confidence": 0.55,
+ "summary": "Positive: Derive (on-chain options DEX) up ~46% on the week / ~178% in 30d after its V3 launch, credible coverage (Crypto Banter interview on fee buybacks/insurance fund, tulipking), new HIBT listing; extended after a big run.",
+ "sources": [
+  "https://x.com/crypto_banter/status/2108562287371956461",
+  "https://x.com/tulipking/status/2108585549317787709",
+  "https://x.com/NoorScreens/status/2108850230854865247",
+  "https://x.com/HIBTGlobal/status/2108774334030602643"
+ ]
+}
