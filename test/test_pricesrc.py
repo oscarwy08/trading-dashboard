@@ -132,16 +132,23 @@ check(not pricesrc.tight(con, c, NOW) and pricesrc.allow(con, c, NOW, "scan"), "
 pricesrc.add_calls(con, NOW, 1)
 check(pricesrc.tight(con, c, NOW) and not pricesrc.allow(con, c, NOW, "scan"), "70% stops the top-300 scan")
 check(not pricesrc.allow(con, c, NOW, "chart") and not pricesrc.allow(con, c, NOW, "fx") and not pricesrc.allow(con, c, NOW, "meta"), "charts, FX and category refreshes stop with the scan")
-check(pricesrc.allow(con, c, NOW, "fallback") and pricesrc.allow(con, c, NOW, "live"), "fallback and pre-trade quotes continue")
+check(not pricesrc.allow(con, c, NOW, "fallback"), "the general fallback cannot spend the reserved 30%")
+check(pricesrc.allow(con, c, NOW, "held") and pricesrc.allow(con, c, NOW, "live"), "held and pre-trade quotes keep the reserve")
+con.execute("DELETE FROM cg_calls"); con.execute("DELETE FROM cg_purpose")
+con.execute("DELETE FROM state WHERE key='cg_fallback_ts'"); con.commit()
 check(pricesrc.fallback_due(con, c, NOW), "no prior fallback is due")
+# Tight at 40% still leaves the reserved slice. The general fallback then waits an hour, and still may not cross the reserve.
+c_cadence = {"coingecko": dict(c["coingecko"], tight_pct=0.40)}
+pricesrc.add_calls(con, NOW, 120)
 pricesrc.mark(con, "cg_fallback_ts", NOW.isoformat())
-check(not pricesrc.fallback_due(con, c, NOW + timedelta(minutes=16)), "once tight, the fallback waits an hour")
-check(pricesrc.fallback_due(con, c, NOW + timedelta(minutes=61)), "the fallback runs again after that hour")
+check(pricesrc.tight(con, c_cadence, NOW) and pricesrc.allow(con, c_cadence, NOW, "fallback"), "tight, but the reserve is still untouched")
+check(not pricesrc.fallback_due(con, c_cadence, NOW + timedelta(minutes=16)), "once tight, the fallback waits an hour")
+check(pricesrc.fallback_due(con, c_cadence, NOW + timedelta(minutes=61)), "the fallback runs again after that hour")
 con.execute("DELETE FROM cg_calls"); con.commit()
 pricesrc.add_calls(con, NOW, 299)
-check(pricesrc.allow(con, c, NOW, "fallback") and pricesrc.allow(con, c, NOW, "live"), "one under the cap still allows a fallback")
+check(not pricesrc.allow(con, c, NOW, "fallback") and pricesrc.allow(con, c, NOW, "held") and pricesrc.allow(con, c, NOW, "live"), "one under the cap still allows a held quote, not the general fallback")
 pricesrc.add_calls(con, NOW, 1)
-check(not pricesrc.allow(con, c, NOW, "fallback") and not pricesrc.allow(con, c, NOW, "live"), "the hard daily cap blocks every CoinGecko call")
+check(not pricesrc.allow(con, c, NOW, "fallback") and not pricesrc.allow(con, c, NOW, "live") and not pricesrc.allow(con, c, NOW, "held"), "the hard daily cap blocks every CoinGecko call")
 check(not pricesrc.scan_due(con, c, NOW), "a full budget means the scan is not due")
 
 # collector.get must refuse before the socket when the budget is bound
@@ -253,6 +260,53 @@ check(row["source"] == "kraken" and abs(row["price"] - 43000) < 1e-6 and row["mc
 
 est = pricesrc.estimate({"BTC": {"src": "kraken"}, "SOL": {"src": "coinbase"}, "RARE": {"src": "coingecko"}})
 check(est["uncovered"] == 1 and est["cg_per_day"] < 300 and est["cg_per_month"] < 10000, f"the steady cadence stays inside the month ({est})")
+
+# --- reserve is only for held / armed simple-price; purpose counts are stored ---
+con.execute("DELETE FROM cg_calls"); con.execute("DELETE FROM cg_purpose"); con.commit()
+pricesrc.add_calls(con, NOW, 40, "scan")
+pricesrc.add_calls(con, NOW, 12, "fx")
+pricesrc.add_calls(con, NOW, 3, "held")
+got = pricesrc.purpose_counts(con, NOW)
+check(got == {"scan": 40, "fx": 12, "held": 3} and pricesrc.usage(con, NOW)[0] == 55, f"purpose counts add up ({got})")
+st = pricesrc.stats(con, NOW, c)
+check(st["purpose"]["scan"] == 40 and st["reserve_pct"] == 0.30, "the dashboard payload names what spent the budget")
+con.execute("INSERT INTO positions VALUES('risk','STONK','crypto',1,1,1,?,1)", (NOW.isoformat(),))
+con.execute("""INSERT INTO armed_entries(ts,expires,sleeve,sub,setup,asset,account,klass,trigger,level,size_gbp,stop_pct,target_pct,status)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (NOW.isoformat(), (NOW + timedelta(hours=1)).isoformat(), "day", "burst", "24h", "PEND", "crypto", "crypto",
+             "break_above", 1, 5, 12, 15, "armed"))
+con.commit()
+check(set(pricesrc.protected(con, NOW)) == {"STONK", "PEND"}, f"held and armed coins are protected ({pricesrc.protected(con, NOW)})")
+
+# --- pool backup: most liquid pool, rejected when it is far from the last good price ---
+ds = {"pairs": [
+    {"chainId": "ethereum", "priceUsd": "0.10", "liquidity": {"usd": 1000}, "baseToken": {"address": "0xlow", "symbol": "STONK"}},
+    {"chainId": "ethereum", "priceUsd": "0.27", "liquidity": {"usd": 90000}, "baseToken": {"address": "0xgood", "symbol": "STONK"}},
+    {"chainId": "ethereum", "priceUsd": "5", "liquidity": {"usd": 500000}, "baseToken": {"address": "0xother", "symbol": "OTHER"}},
+]}
+gt = {"data": [{"attributes": {"name": "STONK / WETH", "base_token_price_usd": "0.268", "reserve_in_usd": "150000"},
+                "relationships": {"base_token": {"data": {"id": "eth_0xstonk"}}}}]}
+picked = pricesrc._liq_pick(pricesrc.parse_ds_pairs(ds, "STONK") + pricesrc.parse_gt_pools(gt, "STONK"))
+check(picked["source"] == "geckoterminal" and abs(picked["usd"] - 0.268) < 1e-9 and picked["address"] == "0xstonk", "the most liquid STONK pool wins")
+check(pricesrc.sane_price(0.27, 0.268, 2) and not pricesrc.sane_price(2.0, 0.268, 2), "a pool many times the last good price is rejected")
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (NOW.isoformat(), "STONK", "crypto", 0.268, None, None, None, None, "coingecko", NOW.isoformat()))
+con.execute("DELETE FROM state WHERE key='dex_tokens'"); con.commit()
+calls = []
+def dex_fetch(url, params=None, headers=None, tries=1):
+    calls.append(url)
+    if "search/pools" in url: return gt
+    if url.endswith("/search"): return ds
+    return None
+rows = pricesrc.backup_quotes(con, {"dex": {"max_jump": 2, "max_per_cycle": 4}}, ["STONK", "BTC"], dex_fetch, NOW.isoformat())
+check(rows["STONK"]["source"] == "geckoterminal" and abs(rows["STONK"]["usd"] - 0.268) < 1e-9, "STONK is priced from GeckoTerminal when CoinGecko missed")
+check("BTC" not in rows or rows.get("BTC", {}).get("source") != "geckoterminal", "backup does not invent a BTC pool in this fixture")
+saved = pricesrc._dex_cache(con)
+check(saved.get("STONK", {}).get("address") == "0xstonk", "the contract is remembered for the next lookup")
+wild = {"pairs": [{"chainId": "ethereum", "priceUsd": "9", "liquidity": {"usd": 10}, "baseToken": {"address": "0xbad", "symbol": "WILD"}}]}
+con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (NOW.isoformat(), "WILD", "crypto", 1.0, None, None, None, None, "coingecko", NOW.isoformat()))
+con.commit()
+none = pricesrc.backup_quotes(con, {"dex": {"max_jump": 2, "max_per_cycle": 2}}, ["WILD"], lambda *a, **k: wild, NOW.isoformat())
+check(none == {}, "a 9x pool is not stored against the last good price")
 
 print("FAILS:", len(fails))
 if fails:

@@ -6,6 +6,10 @@
 No real money, no wallets, no private keys, no swaps. Plain Python; the only AI involvement is an external routine that
 writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100 = Monad wallet, Stocks £100 = Trading 212) and three pots: CORE £100 (50%) / DAY £60 (30%) / RISK £40 (20%), each pot split 50/50 across the accounts.
 
+## CoinGecko budget and backup prices (2026-10-12)
+
+The last 30% of the daily CoinGecko budget (`reserve_pct`) is only for `simple/price` of coins we hold and coins with an armed entry, plus a quote immediately before a fill. A top-300 scan, category refresh, chart or backfill, the FX cross-check, and the general fallback for every unlisted coin stop before that slice. When CoinGecko is skipped or returns nothing, a coin with no Kraken, Coinbase or Kyber route can take the most liquid GeckoTerminal or DexScreener pool, rejected if it is more than twice the last good price. The price row is tagged with that source. The markets page lists how many calls each purpose spent.
+
 ## v7.9 (2026-10-12): dead quotes, EV exit off, Risk win is the trail lock (paper only)
 
 Three corrections on the main book. The frozen thresholds are otherwise unchanged.

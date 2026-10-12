@@ -86,6 +86,8 @@ CREATE TABLE IF NOT EXISTS loans(id INTEGER PRIMARY KEY, ts TEXT, account TEXT, 
   amount REAL, repaid REAL DEFAULT 0, status TEXT DEFAULT 'open', repaid_ts TEXT, reason TEXT);
 -- CoinGecko HTTP calls per UK day (the demo key is 10,000/month). pricesrc.allow reads this before a call.
 CREATE TABLE IF NOT EXISTS cg_calls(day TEXT PRIMARY KEY, n INTEGER NOT NULL);
+-- CoinGecko calls split by purpose (scan, meta, chart, fx, fallback, held, live) so the dashboard can show what spent the day.
+CREATE TABLE IF NOT EXISTS cg_purpose(day TEXT, purpose TEXT, n INTEGER NOT NULL, PRIMARY KEY(day, purpose));
 -- Armed entries: the cycle records a price trigger; the watcher fires it. Rows do not move cash.
 CREATE TABLE IF NOT EXISTS armed_entries(
   id INTEGER PRIMARY KEY,
