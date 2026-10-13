@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-13T12:47:00Z",
+ "asset": "SPY",
+ "score": -0.05,
+ "volume": 20,
+ "confidence": 0.35,
+ "summary": "BlackRock downgraded US stocks to neutral (record-low equal-weight correlation, negative ERP); Fed split on AI inflation, yields at 24-year highs. Slight negative.",
+ "sources": [
+  "https://x.com/i/trending/2109836813766738322",
+  "https://x.com/i/trending/2109990093805236394"
+ ]
+}
