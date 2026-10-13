@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-13T06:47:00Z",
+ "asset": "POL",
+ "score": 0.15,
+ "volume": 15,
+ "confidence": 0.4,
+ "summary": "Polygon Q1\u2013Q3'26 fee note: ~291M POL fees vs ~166M issued (burn almost covering issuance). Price ~$0.10 with mixed funding. Mildly constructive.",
+ "sources": [
+  "https://x.com/vadim_web3/status/2109887282920517891"
+ ]
+}

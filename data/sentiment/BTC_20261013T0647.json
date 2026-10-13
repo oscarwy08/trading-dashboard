@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-13T06:47:00Z",
+ "asset": "BTC",
+ "score": 0.05,
+ "volume": 45,
+ "confidence": 0.55,
+ "summary": "Overnight mixed: US spot BTC ETF \u2212$65M on Oct 12 (BlackRock IBIT led); ~$800M liquidations and deleveraging talk; BTC ~$83k, F&G 57. Offset by MOEX retail BTC/ETH spot from Dec 1. Softer than last night's reclaim narrative.",
+ "sources": [
+  "https://x.com/i/trending/2109882687263531097",
+  "https://x.com/i/trending/2109593779678384211"
+ ]
+}

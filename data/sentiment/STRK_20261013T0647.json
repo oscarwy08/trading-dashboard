@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-13T06:47:00Z",
+ "asset": "STRK",
+ "score": -0.35,
+ "volume": 25,
+ "confidence": 0.5,
+ "summary": "Starknet unwind: reported +164% in four days then \u221231% in one session; L2 peers ARB/OP/ZK \u22129\u201310%. Clear risk-off for STRK buzz.",
+ "sources": [
+  "https://x.com/trade2spike/status/2109895676792279461",
+  "https://x.com/cexscan/status/2109846651531673849"
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-13T06:47:00Z",
+ "asset": "BAT",
+ "score": 0.2,
+ "volume": 15,
+ "confidence": 0.35,
+ "summary": "BAT topped Bybit spot gainers (~+7.9% / +2.6% bursts); no fundamental catalyst found. Momentum-led, moderate weight.",
+ "sources": [
+  "https://x.com/cexscan/status/2109846651531673849"
+ ]
+}
