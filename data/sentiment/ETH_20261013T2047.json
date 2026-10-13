@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-13T20:47:00Z",
+ "asset": "ETH",
+ "score": -0.05,
+ "volume": 25,
+ "confidence": 0.5,
+ "summary": "Holding ~$2.5k but ETH ETFs had a 10th straight outflow day (-$85M Oct 12, 7d -$542M). Social sentiment ~2:1 bullish per Santiment. Slightly negative.",
+ "sources": [
+  "https://x.com/WOLF_Crypto_X/status/2110055664487641589",
+  "https://x.com/lookonchain/status/2110000672154546397"
+ ]
+}

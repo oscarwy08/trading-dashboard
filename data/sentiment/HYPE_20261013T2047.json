@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-13T20:47:00Z",
+ "asset": "HYPE",
+ "score": 0.2,
+ "volume": 8,
+ "confidence": 0.3,
+ "summary": "SushiSwap integration on Robinhood Chain starts with HYPE (via LayerZero). Mild positive.",
+ "sources": [
+  "https://x.com/popmemecoin/status/2110072205048741936"
+ ]
+}

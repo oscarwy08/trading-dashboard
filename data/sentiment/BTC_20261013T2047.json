@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-13T20:47:00Z",
+ "asset": "BTC",
+ "score": 0.1,
+ "volume": 25,
+ "confidence": 0.5,
+ "summary": "Bounced to ~$84k then back to ~$83.1k; spot ETF outflows -$65M Oct 12 (7d -$687M), BlackRock clients selling ahead of FOMC; Moscow Exchange retail spot BTC from Dec 1; Fear & Greed 55. Slightly positive-neutral.",
+ "sources": [
+  "https://x.com/lookonchain/status/2110000672154546397",
+  "https://x.com/OnchainSignal_/status/2109993855856832804"
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-13T20:47:00Z",
+ "asset": "MON",
+ "score": 0.1,
+ "volume": 20,
+ "confidence": 0.35,
+ "summary": "Aave v3 on Monad reached ~$584M deposits / ~$260M loans (Monad Fdn incentives); BULK listed MON perps (10x). Price complaints persist and the Nov 24 unlock overhang is unchanged.",
+ "sources": [
+  "https://x.com/Asymmetric0x/status/2110035311598407899",
+  "https://x.com/bulktrade/status/2110061727916400864"
+ ]
+}

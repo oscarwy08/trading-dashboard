@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-13T20:47:00Z",
+ "asset": "XRP",
+ "score": 0.2,
+ "volume": 10,
+ "confidence": 0.4,
+ "summary": "No new XRP-specific news since 12:47Z; Santiment notes XRP holder fear (contrarian). Carry of 0.3 decayed.",
+ "sources": [
+  "https://x.com/FuturesWire/status/2110078600472891475"
+ ]
+}
