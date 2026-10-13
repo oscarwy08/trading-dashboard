@@ -1,15 +1,15 @@
-PAPER scorecard Tue 13 Oct 11:34 UK
-TOTAL Equity £194.93 (-2.53% since £200 start) | Day P&L £-0.93
-vs BTC buy&hold (£) +0.88% | Max DD -4.37% | Win rate 45.95% over 37 closed
-CRYPTO acct (Monad wallet) £96.04 (-3.96% vs £100) | P&L £-3.96 | day £-0.53 | cash £19.36 | invested £76.68 | realised £-1.95 | fees £1.42 (fee £1.385, gas £0.034) | by pot: CORE £48.49 (cash £0.15), DAY £29.08 (cash £10.22), RISK £18.47 (cash £8.99)
-STOCKS acct (Trading 212) £98.89 (-1.11% vs £100) | P&L £-1.11 | day £-0.40 | cash £42.24 | invested £56.66 | realised £+0.00 | fees £0.16 (spread £0.058, fx £0.062, stamp £0.041) | by pot: CORE £49.46 (cash £0.01), DAY £30.00 (cash £30.00), RISK £19.44 (cash £12.23)
-CORE £97.95 (-2.05% vs £100) | day £+0.17 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | built 11/11 | open: AMD, BTC, ETH, MON, MSFT, ONT.L, PLTR, TEAM, WLD, XRP, ZS | crypto £48.49 (cash £0.15) / stocks £49.46 (cash £0.01)
-DAY  £59.08 (-1.53% vs £60) | day £-0.53 | realised £-0.94 | win 46.67% of 30 | today 11 trades (7 buys, 4 sells), best VVV -£0.10 (-2.0%), worst RENDER -£0.23 (-3.2%) | entries open | open: BAT, STX, ZAMA | crypto £29.08 (cash £10.22) / stocks £30.00 (cash £30.00)
-RISK £37.91 (-5.24% vs £40) | day £-0.57 | realised £-1.01 | win 42.86% of 7 | today 1 trades (0 buys, 1 sells), best WLD -£0.66 (-13.3%), worst WLD -£0.66 (-13.3%) | active, dd -5.2%, 0 new today | open: FTC.L, INJ, KNTQ | crypto £18.47 (cash £8.99) / stocks £19.44 (cash £12.23)
+PAPER scorecard Tue 13 Oct 11:44 UK
+TOTAL Equity £194.53 (-2.74% since £200 start) | Day P&L £-1.33
+vs BTC buy&hold (£) +0.71% | Max DD -4.37% | Win rate 45.95% over 37 closed
+CRYPTO acct (Monad wallet) £95.65 (-4.35% vs £100) | P&L £-4.35 | day £-0.91 | cash £19.36 | invested £76.30 | realised £-1.95 | fees £1.42 (fee £1.385, gas £0.034) | by pot: CORE £48.33 (cash £0.15), DAY £28.89 (cash £10.22), RISK £18.44 (cash £8.99)
+STOCKS acct (Trading 212) £98.88 (-1.12% vs £100) | P&L £-1.12 | day £-0.42 | cash £42.24 | invested £56.64 | realised £+0.00 | fees £0.16 (spread £0.058, fx £0.062, stamp £0.041) | by pot: CORE £49.46 (cash £0.01), DAY £30.00 (cash £30.00), RISK £19.41 (cash £12.23)
+CORE £97.79 (-2.21% vs £100) | day £+0.02 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | built 11/11 | open: AMD, BTC, ETH, MON, MSFT, ONT.L, PLTR, TEAM, WLD, XRP, ZS | crypto £48.33 (cash £0.15) / stocks £49.46 (cash £0.01)
+DAY  £58.89 (-1.86% vs £60) | day £-0.73 | realised £-0.94 | win 46.67% of 30 | today 11 trades (7 buys, 4 sells), best VVV -£0.10 (-2.0%), worst RENDER -£0.23 (-3.2%) | entries open | open: BAT, STX, ZAMA | crypto £28.89 (cash £10.22) / stocks £30.00 (cash £30.00)
+RISK £37.85 (-5.37% vs £40) | day £-0.62 | realised £-1.01 | win 42.86% of 7 | today 1 trades (0 buys, 1 sells), best WLD -£0.66 (-13.3%), worst WLD -£0.66 (-13.3%) | active, dd -5.4%, 0 new today | open: FTC.L, INJ, KNTQ | crypto £18.44 (cash £8.99) / stocks £19.41 (cash £12.23)
 SELLS RISK WLD -£0.66 (-13.3%); DAY ZAMA -£0.12 (-2.4%); DAY XTZ -£0.11 (-2.2%); DAY VVV -£0.10 (-2.0%); DAY RENDER -£0.23 (-3.2%)
   DAY momentum all: 14 closed trades, win 42.9%, avg win +2.01%, avg loss -4.08%, PF 0.4, closed P&L £-1.16 (after its fees £0.44; + £0.03 buy fees on open positions), expectancy -1.47%/trade | today: 1 trades, P&L £-0.23
   DAY burst    all: 16 closed trades, win 50.0%, avg win +2.33%, avg loss -1.78%, PF 1.31, closed P&L £+0.22 (after its fees £0.36; + £0.01 buy fees on open positions), expectancy +0.27%/trade | today: 3 trades, P&L £-0.32
-  DAY burst threshold 0.567 (Day pot today -0.87%), 0/3 setups taken last cycle
+  DAY burst threshold 0.574 (Day pot today -1.22%), 0/1 setups taken last cycle
 RULES frozen since 2026-10-10 (v7.8). Do not retune from one day.
   SETUP momentum         closed  14  net £-1.16  fees £0.44  fee/gross n/a  win 43%  exits: flatten 4, trail 3, stop 7
   SETUP burst            closed  16  net £+0.22  fees £0.36  fee/gross 62%  win 50%  exits: stop 6, flatten 3, trail 5, target 2
@@ -17,4 +17,4 @@ RULES frozen since 2026-10-10 (v7.8). Do not retune from one day.
   SETUP risk dip         closed   4  net £-1.50  fees £0.15  fee/gross n/a  win 25%  exits: trail 1, stop 3
 LOANS repaid (24h): RISK -> CORE £0.15 (crypto) WLD; RISK -> DAY £2.97 (crypto) WLD
 GBP/USD 1.3239 (coingecko, 2026-10-13T10:04 UTC)
-VARIANTS since 2026-10-11 18:07: Main book £194.93 (P&L £-7.43, win 42%, max DD -4.2%) | EV exit £195.24 (P&L £-0.97, win 40%, max DD -1.6%) | Review leftovers £195.68 (P&L £-6.68, win 33%, max DD -4.4%) | Both together £195.24 (P&L £-0.97, win 40%, max DD -1.6%) | Burst runner £196.63 (P&L £-5.73, win 42%, max DD -3.9%) | Everything combined £195.24 (P&L £-0.97, win 40%, max DD -1.6%) | Midnight crypto £195.56 (P&L £-6.80, win 25%, max DD -4.2%) | Entry watch £195.59 (P&L £-6.77, win 19%, max DD -4.5%) | Risk giveback 15 £195.95 (P&L £-6.42, win 22%, max DD -3.6%) | Day trail arm £195.95 (P&L £-6.42, win 22%, max DD -3.6%) | Day EV blend £196.20 (P&L £-6.16, win 29%, max DD -3.6%) | No risk clock £195.95 (P&L £-6.42, win 22%, max DD -3.6%) | Day capital caution £195.95 (P&L £-6.42, win 22%, max DD -3.6%) | Partial take £195.95 (P&L £-6.42, win 22%, max DD -3.6%)
+VARIANTS since 2026-10-11 18:07: Main book £194.53 (P&L £-7.83, win 42%, max DD -4.2%) | EV exit £194.90 (P&L £-1.32, win 40%, max DD -1.6%) | Review leftovers £195.44 (P&L £-6.92, win 33%, max DD -4.4%) | Both together £194.90 (P&L £-1.32, win 40%, max DD -1.6%) | Burst runner £196.27 (P&L £-6.10, win 42%, max DD -3.9%) | Everything combined £194.90 (P&L £-1.32, win 40%, max DD -1.6%) | Midnight crypto £195.32 (P&L £-7.04, win 25%, max DD -4.2%) | Entry watch £195.35 (P&L £-7.02, win 19%, max DD -4.5%) | Risk giveback 15 £195.66 (P&L £-6.70, win 22%, max DD -3.6%) | Day trail arm £195.66 (P&L £-6.70, win 22%, max DD -3.6%) | Day EV blend £195.91 (P&L £-6.45, win 29%, max DD -3.6%) | No risk clock £195.66 (P&L £-6.70, win 22%, max DD -3.6%) | Day capital caution £195.66 (P&L £-6.70, win 22%, max DD -3.6%) | Partial take £195.66 (P&L £-6.70, win 22%, max DD -3.6%)
