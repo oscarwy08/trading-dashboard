@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS prices(ts TEXT, asset TEXT, klass TEXT, price REAL, h
   vol24 REAL, mcap REAL, source TEXT, source_ts TEXT);   -- source_ts: the provider's last-updated time (not the fetch time)
 CREATE INDEX IF NOT EXISTS ix_prices ON prices(asset, ts);
 CREATE TABLE IF NOT EXISTS sentiment(ts TEXT, asset TEXT, score REAL, volume INTEGER, confidence REAL,
-  summary TEXT, sources TEXT, file TEXT, ingested_at TEXT, UNIQUE(ts, asset));
+  summary TEXT, sources TEXT, file TEXT, ingested_at TEXT, catalyst_score REAL, buzz_change REAL, UNIQUE(ts, asset));
 CREATE TABLE IF NOT EXISTS signals(ts TEXT, sleeve TEXT, asset TEXT, momentum REAL, sentiment REAL, combined REAL,
   action TEXT, reason TEXT);
 -- account tables (trades/positions/cash/equity) are in GBP; prices table stays raw USD.
@@ -230,6 +230,18 @@ def usd_gbp(con, max_age_h=None):
     stale = max_age_h is not None and datetime.fromisoformat(r[1]) < now() - timedelta(hours=max_age_h)
     return r[0], r[1], r[2], stale
 
+def ensure_sentiment_cols(con):
+    """Optional fields from a sentiment file. NULL when the file did not carry them.
+
+    catalyst_score is a second score. buzz_change is how much the chatter moved.
+    The main book does not read them. A paper book may.
+    """
+    cols = {r[1] for r in con.execute("PRAGMA table_info(sentiment)")}
+    if "catalyst_score" not in cols:
+        con.execute("ALTER TABLE sentiment ADD COLUMN catalyst_score REAL")
+    if "buzz_change" not in cols:
+        con.execute("ALTER TABLE sentiment ADD COLUMN buzz_change REAL")
+
 def db():
     con = sqlite3.connect(DB, timeout=30)
     con.row_factory = sqlite3.Row
@@ -249,4 +261,5 @@ def db():
         if col not in tcols: con.execute(f"ALTER TABLE transfers ADD COLUMN {col} TEXT")
     pcols = {r[1] for r in con.execute("PRAGMA table_info(prices)")}
     if "source_ts" not in pcols: con.execute("ALTER TABLE prices ADD COLUMN source_ts TEXT")  # provider last-updated time
+    ensure_sentiment_cols(con)
     return con

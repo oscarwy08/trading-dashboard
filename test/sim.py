@@ -132,7 +132,7 @@ while t <= END:
         print(f"[test] {lt(t):%a %H:%M} UK: {DROP} daily closes -35% (should be dropped at the Monday rebalance)")
     for a, ts_, sc, cf in SENT:
         if ts_ <= t < ts_ + timedelta(minutes=15):
-            con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(t), a, sc, 10, cf, "sim bearish", "[]", "sim", common.iso(t)))
+            con.execute("INSERT OR REPLACE INTO sentiment(ts,asset,score,volume,confidence,summary,sources,file,ingested_at) VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(t), a, sc, 10, cf, "sim bearish", "[]", "sim", common.iso(t)))
     L = lt(t)
     if L.date().isoformat() == CAP_DAY and L.hour == 11 and L.minute == 0:   # forced loss-cap scenario
         deq = float(con.execute(f"SELECT value FROM state WHERE key='day_start:day:{CAP_DAY}'").fetchone()[0])
@@ -518,14 +518,14 @@ while _tt < U(14, 30):
     _tt += timedelta(minutes=15)
 t = START
 while t < U(7, 45): common._NOW = t; step_prices(t); t += timedelta(minutes=15)       # 30h of history, no trading
-con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(8)), "BRK_NEG", -0.6, 10, 0.8, "sim bearish", "[]", "sim", common.iso(U(8))))
-con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(15)), "BRK_HOT", -1.0, 10, 1.0, "sim: keeps momentum out", "[]", "sim", common.iso(U(15))))
-con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(15)), "SIMSTK", 0.0, 10, 0.95, "sim: neutral, keeps the momentum blend under the buy line", "[]", "sim", common.iso(U(15))))
+con.execute("INSERT OR REPLACE INTO sentiment(ts,asset,score,volume,confidence,summary,sources,file,ingested_at) VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(8)), "BRK_NEG", -0.6, 10, 0.8, "sim bearish", "[]", "sim", common.iso(U(8))))
+con.execute("INSERT OR REPLACE INTO sentiment(ts,asset,score,volume,confidence,summary,sources,file,ingested_at) VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(15)), "BRK_HOT", -1.0, 10, 1.0, "sim: keeps momentum out", "[]", "sim", common.iso(U(15))))
+con.execute("INSERT OR REPLACE INTO sentiment(ts,asset,score,volume,confidence,summary,sources,file,ingested_at) VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(15)), "SIMSTK", 0.0, 10, 0.95, "sim: neutral, keeps the momentum blend under the buy line", "[]", "sim", common.iso(U(15))))
 con.commit()
 v7 = dict(burst_open_max={a: 0 for a in common.ACCOUNTS}, flat_after=[], cands_seen={}, thr=[], neg=[])
 while t <= STOP:
     common._NOW = t; step_prices(t)
-    if t == U(14, 7): con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(14)), "BRK_NEG", -0.6, 10, 0.8, "sim bearish", "[]", "sim", common.iso(U(14))))
+    if t == U(14, 7): con.execute("INSERT OR REPLACE INTO sentiment(ts,asset,score,volume,confidence,summary,sources,file,ingested_at) VALUES(?,?,?,?,?,?,?,?,?)", (common.iso(U(14)), "BRK_NEG", -0.6, 10, 0.8, "sim bearish", "[]", "sim", common.iso(U(14))))
     con.commit()
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf): trader.main()

@@ -10,7 +10,7 @@ import os, shutil, sqlite3, subprocess, sys, time
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from common import DATA, DB, LON, ROOT, cfg, now
+from common import DATA, DB, LON, ROOT, cfg, ensure_sentiment_cols, now
 
 LABELS = {
     "ev_exit": "EV exit",
@@ -26,6 +26,7 @@ LABELS = {
     "no_risk_clock": "No risk clock",
     "day_capital_caution": "Day capital caution",
     "partial_take": "Partial take",
+    "sent_split": "Sentiment split",
 }
 BLURB = {
     "ev_exit": "EV exit is off. Live expected value rises when the trade falls, so it was selling winners between about +1% and +5%. This book was reset; sells before the reset are not counted. It follows the main book until the upside is taken from the current price and the chance is recomputed.",
@@ -41,6 +42,7 @@ BLURB = {
     "no_risk_clock": "Risk only. The 24-hour re-entry clock is deleted. The next setup buys when its own confidence and expected value clear. No new-high gate and no stop-out cooldown.",
     "day_capital_caution": "Day only, per account. f is that account's Day loss today divided by 15% of that account's start-of-day Day equity, with no cap at 1. Momentum's threshold is its base (0.35, or 0.30 on MON, WLD and XRP) plus 0.30 x f. Burst uses the same f. Size is multiplied by (1 - min(f, 1)). The -15% halt on the whole Day pot stays.",
     "partial_take": "Day and Risk. At the trail arm, sell half and leave the rest on this book's trail. Buy that half back on a later dip only when a fresh expected value clears the hurdle. The fresh value uses a recomputed chance and the percent still available from the current price, not the inverted live EV. Orders in this split may be £1. Every other book keeps the £5 minimum. The sell records the extra fee of splitting one exit into two.",
+    "sent_split": "Burst and Risk. A missing sentiment print scores 0.50, the same as a real neutral, instead of 0.25. A Risk dip needs the 48-hour uptrend; positive sentiment does not stand in for it. When price is up 15% or more over 24 hours (5% or more over 4 hours on a Day momentum entry) and sentiment is at least 0.30, or the buzz change is 3 or more, burst and Risk confidence lose 0.10 and that Day momentum entry ignores sentiment. A catalyst score, when the file has one, is used instead of the raw score. A quiet tape (buzz change under 1.2) with volume at least 2x and a confirmed breakout or bounce adds 0.05. Files without those fields score as before.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
@@ -60,7 +62,10 @@ def rules_of(c):
              no_risk_clock=False,
              day_capital_caution=False, day_caution_raise=0.30,
              risk_ev_legacy_win=False,
-             partial_take=False, partial_min_gbp=1.0)
+             partial_take=False, partial_min_gbp=1.0,
+             sent_split=False, sent_hot=0.3, sent_overheat=0.10, sent_quiet_bonus=0.05,
+             sent_runup_24h_pct=15.0, sent_runup_4h_pct=5.0, sent_buzz_hot=3.0,
+             sent_buzz_quiet=1.2, sent_quiet_vol_x=2.0)
     for k, v in ((c or {}).get("variant_rules") or {}).items():
         if k in d and v is not None:
             d[k] = v
@@ -72,11 +77,12 @@ def active(R):
                 or R.get("entry_own_trend") or R.get("no_day_core_same_afternoon") or R.get("burst_runner")
                 or R.get("midnight_crypto") or R.get("entry_watch")
                 or R.get("risk_giveback_15") or R.get("day_trail_arm") or R.get("day_ev_blend")
-                or R.get("no_risk_clock") or R.get("day_capital_caution") or R.get("partial_take"))
+                or R.get("no_risk_clock") or R.get("day_capital_caution") or R.get("partial_take")
+                or R.get("sent_split"))
 
 
 TABLE_BOOKS = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock",
-               "day_capital_caution", "partial_take")
+               "day_capital_caution", "partial_take", "sent_split")
 
 
 def blend_ev(model, n, exp, prior_n=10):
@@ -395,6 +401,118 @@ def extended_note(ret_7d, rsi, R):
     return ", ".join(bits)
 
 
+def _opt_float(row, key):
+    """A stored number, or None when the column or the value is absent."""
+    if row is None:
+        return None
+    try:
+        if hasattr(row, "keys") and key not in row.keys():
+            return None
+        v = row[key]
+    except (KeyError, IndexError, TypeError):
+        return None
+    if v is None or v == "":
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def sent_score(row, R):
+    """Sentiment score for one book.
+
+    The main book uses the raw score. sent_split uses catalyst_score when the row
+    has one, and the raw score when the file did not carry that field.
+    """
+    raw = _opt_float(row, "score")
+    if not (R or {}).get("sent_split"):
+        return raw
+    cat = _opt_float(row, "catalyst_score")
+    return raw if cat is None else cat
+
+
+def buzz_of(row):
+    """buzz_change, or None when the file did not carry it."""
+    return _opt_float(row, "buzz_change")
+
+
+def price_runup_pct(pts, hours):
+    """Percent change versus the last price at or before `hours` ago. None without that print."""
+    if not pts:
+        return None
+    t, p = pts[-1]
+    old = [x for ts, x in pts if ts <= t - timedelta(hours=float(hours))]
+    if not old or not old[-1]:
+        return None
+    return (p / old[-1] - 1) * 100
+
+
+def _hot(sent, buzz, R):
+    """True when sentiment is at least sent_hot, or buzz_change is at least sent_buzz_hot.
+
+    A missing score does not fire the sentiment half. A missing buzz does not fire the buzz half.
+    """
+    hot_sent = sent is not None and float(sent) >= float((R or {}).get("sent_hot", 0.3))
+    hot_buzz = buzz is not None and float(buzz) >= float((R or {}).get("sent_buzz_hot", 3))
+    return hot_sent or hot_buzz
+
+
+def confidence_adjust(conf, R, runup_pct, sent, buzz, volume, confirmed):
+    """(confidence, note). The main book returns the confidence unchanged.
+
+    On sent_split, a 24h run-up at or above sent_runup_24h_pct together with a hot
+    sentiment score or a hot buzz change subtracts sent_overheat. A quiet buzz
+    (below sent_buzz_quiet), volume at least sent_quiet_vol_x, and a confirmed
+    breakout or bounce adds sent_quiet_bonus. The two can both apply. The result
+    stays inside 0 to 1.
+    """
+    if conf is None or not (R or {}).get("sent_split"):
+        return conf, None
+    delta = 0.0
+    notes = []
+    line = float(R.get("sent_runup_24h_pct", 15))
+    if runup_pct is not None and float(runup_pct) >= line and _hot(sent, buzz, R):
+        cut = float(R.get("sent_overheat", 0.10))
+        delta -= cut
+        notes.append(f"overheat -{cut:.2f}")
+    quiet_line = float(R.get("sent_buzz_quiet", 1.2))
+    vol_line = float(R.get("sent_quiet_vol_x", 2))
+    if (buzz is not None and float(buzz) < quiet_line and volume is not None
+            and float(volume) >= vol_line and confirmed):
+        add = float(R.get("sent_quiet_bonus", 0.05))
+        delta += add
+        notes.append(f"quiet strength +{add:.2f}")
+    if not delta:
+        return conf, None
+    return round(max(0.0, min(1.0, float(conf) + delta)), 3), "; ".join(notes)
+
+
+def momentum_weight(weight, pts, sent, buzz, R):
+    """Day momentum sentiment weight for one entry.
+
+    The main book returns `weight`. sent_split returns 0 when the 4h run-up is at
+    least sent_runup_4h_pct and sentiment or buzz is hot.
+    """
+    if not (R or {}).get("sent_split"):
+        return weight
+    run = price_runup_pct(pts, 4)
+    if run is None or run < float(R.get("sent_runup_4h_pct", 5)):
+        return weight
+    if _hot(sent, buzz, R):
+        return 0.0
+    return weight
+
+
+def momentum_blend(momentum, weight, sent):
+    """Combined Day score. A weight of 0 leaves the momentum score alone."""
+    if momentum is None:
+        return None
+    w = float(weight or 0)
+    s = 0.0 if sent is None else float(sent)
+    return round((1.0 - w) * float(momentum) + w * s, 3)
+
+
 def dir_path():
     return Path(os.environ.get("VARIANTS_DIR") or DATA / "variants")
 
@@ -489,6 +607,7 @@ def _sync(src_path, dst_path):
     src = sqlite3.connect(f"file:{src_path}?mode=ro", uri=True)
     dst = sqlite3.connect(dst_path)
     try:
+        ensure_sentiment_cols(dst)
         for table, col in MARKET:
             scols = [r[1] for r in src.execute(f"PRAGMA table_info({table})")]
             dcols = {r[1] for r in dst.execute(f"PRAGMA table_info({table})")}

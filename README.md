@@ -34,6 +34,7 @@ None of these changes the main book. Each is its own database, shadow-logged by 
 - **no_risk_clock.** The 24-hour Risk re-entry clock is deleted. No new-high gate and no stop-out cooldown.
 - **day_capital_caution.** Per account, f = that account's Day loss today / 15% of that account's start-of-day Day equity, with no cap at 1. The hurdle rises by 0.30 × f and size is multiplied by (1 − min(f, 1)). The −15% halt on the whole Day pot stays.
 - **partial_take.** At the trail arm, sell half of a Day or Risk position and leave the rest on that book's trail. Buy the half back on a later dip only when a fresh expected value (recomputed chance, upside and downside from the current price) clears the hurdle. That half may be £1. The £5 minimum is unchanged on every other order. The sell logs the extra fee of splitting one exit into two.
+- **sent_split.** Burst and Risk only, beside the frozen book. A missing sentiment print scores 0.50 instead of 0.25. A Risk dip needs the 48-hour uptrend; positive sentiment does not replace it. A 24-hour run-up of 15% or more (4-hour run-up of 5% or more on a Day momentum entry) with sentiment at least 0.30, or a buzz change of 3 or more, subtracts 0.10 from burst and Risk confidence and sets that Day momentum entry's sentiment weight to 0. When a sentiment file carries `catalyst_score`, that score is used instead of the raw score. A quiet tape (`buzz_change` under 1.2) with volume at least 2× and a confirmed breakout or bounce adds 0.05. Files without those fields score as before.
 
 ## Stock intraday history (2026-10-12)
 

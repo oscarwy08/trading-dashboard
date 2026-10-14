@@ -14,6 +14,15 @@ def valid(d):
     assert -1 <= float(d["score"]) <= 1 and 0 <= float(d["confidence"]) <= 1
     int(d.get("volume", 0)); assert isinstance(d.get("sources", []), list)
 
+def opt_float(d, key):
+    """A number from an optional field, or None. A missing or non-numeric field does not reject the file."""
+    if not isinstance(d, dict) or key not in d or d[key] is None or d[key] == "":
+        return None
+    try:
+        return float(d[key])
+    except (TypeError, ValueError):
+        return None
+
 def id_map(con):
     """CoinGecko id -> ticker (from the DAY universe + every coin ever priced, state cgid:SYM) and the known ticker set."""
     m, known = {}, set()
@@ -42,10 +51,14 @@ def main():
                 ts = datetime.fromisoformat(d["timestamp"].replace("Z", "+00:00")).isoformat()
                 d["asset"] = norm_asset(d["asset"], m, known)
                 if d["asset"] not in known: outside.add(d["asset"])
-                con.execute("INSERT OR REPLACE INTO sentiment VALUES(?,?,?,?,?,?,?,?,?)",
-                            (ts, d["asset"], float(d["score"]), int(d.get("volume", 0)),
-                             float(d["confidence"]), str(d.get("summary", ""))[:2000],
-                             json.dumps(d.get("sources", [])), f.name, iso()))
+                con.execute(
+                    "INSERT OR REPLACE INTO sentiment"
+                    "(ts,asset,score,volume,confidence,summary,sources,file,ingested_at,catalyst_score,buzz_change)"
+                    " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                    (ts, d["asset"], float(d["score"]), int(d.get("volume", 0)),
+                     float(d["confidence"]), str(d.get("summary", ""))[:2000],
+                     json.dumps(d.get("sources", [])), f.name, iso(),
+                     opt_float(d, "catalyst_score"), opt_float(d, "buzz_change")))
                 n += 1
             con.commit(); f.rename(SENT_DIR / "processed" / f.name)
         except Exception as e:
