@@ -170,6 +170,10 @@ KAIA day
   cycle   2026-10-14T18:06:26+00:00  £0.0331993  [momentum] signal -0.582 <= -0.2 (4h -1.3%, 24h -5.6%, EMA6/24 down, RSI 45, sentiment -0.15 (conf 0.30, weight x0.34)); P&L £-0.04
   cycle was 744s later, price £-7.61212e-05 (-0.23%)
 
+PONS day
+  shadow  2026-10-14T19:43:59+00:00  £0.251699  [momentum] stop-loss -3.4% <= -3.3% (ATR-scaled)
+  cycle   no sell yet
+
 Shadow entries vs the 5-minute cycle
 
 KNTQ risk
@@ -337,7 +341,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 34 pairs, avg time gap 3117s, avg price gap -0.57%, missed moves 0
+  exits: 34 pairs, avg time gap 3117s, avg price gap -0.57%, missed moves 1
   entries: 5 pairs, avg time gap 4234s, avg price gap -0.10%, missed moves 22
 ev_exit
   exits: 21 pairs, avg time gap 4588s, avg price gap -0.65%, missed moves 1
@@ -355,7 +359,7 @@ everything
   exits: 19 pairs, avg time gap 5328s, avg price gap -0.43%, missed moves 2
   entries: 4 pairs, avg time gap 15745s, avg price gap +1.87%, missed moves 19
 midnight_crypto
-  exits: 27 pairs, avg time gap 5485s, avg price gap -0.85%, missed moves 0
+  exits: 27 pairs, avg time gap 5485s, avg price gap -0.85%, missed moves 1
   entries: 9 pairs, avg time gap 22846s, avg price gap +2.90%, missed moves 46
 entry_watch
   exits: 22 pairs, avg time gap 6238s, avg price gap -0.16%, missed moves 0
@@ -376,8 +380,8 @@ day_capital_caution
   exits: 25 pairs, avg time gap 2379s, avg price gap +0.11%, missed moves 0
   entries: 5 pairs, avg time gap 10970s, avg price gap +0.90%, missed moves 15
 partial_take
-  exits: 27 pairs, avg time gap 541s, avg price gap +0.08%, missed moves 0
+  exits: 27 pairs, avg time gap 541s, avg price gap +0.08%, missed moves 1
   entries: 4 pairs, avg time gap 4032s, avg price gap -0.80%, missed moves 10
 sent_split
-  exits: 7 pairs, avg time gap 864s, avg price gap +1.19%, missed moves 0
+  exits: 7 pairs, avg time gap 864s, avg price gap +1.19%, missed moves 1
   entries: 1 pairs, avg time gap 1972s, avg price gap -1.28%, missed moves 0

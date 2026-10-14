@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-14T19:37:59+00:00",
+  "generated": "2026-10-14T20:39:09+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 34,
         "avg_dt_s": 3117.235294117647,
         "avg_price_pct": -0.5709066765377413,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 5,
@@ -99,7 +99,7 @@
         "pairs": 27,
         "avg_dt_s": 5485.37037037037,
         "avg_price_pct": -0.8482962161744548,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 9,
@@ -204,7 +204,7 @@
         "pairs": 27,
         "avg_dt_s": 540.7037037037037,
         "avg_price_pct": 0.08492423740405437,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 4,
@@ -219,7 +219,7 @@
         "pairs": 7,
         "avg_dt_s": 864.0,
         "avg_price_pct": 1.1903111756308407,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 1,
@@ -705,6 +705,20 @@
       "dt_s": 744.0,
       "price_diff": -7.612116006000536e-05,
       "price_pct": -0.22876091241266577
+    },
+    {
+      "asset": "PONS",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T19:43:59+00:00",
+      "shadow_price": 0.2516994535,
+      "trigger": "[momentum] stop-loss -3.4% <= -3.3% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [],
