@@ -29,6 +29,9 @@ ${PY:-python} dashboard.py        || { echo "::error::dashboard failed"; fail=1;
 ${PY:-python} test/check_data.py docs/data.json || echo "::warning::dashboard figures do not reconcile (test/check_data.py)"
 ${PY:-python} daily_summary.py > data/daily_summary.txt 2>&1 || echo "::warning::daily_summary failed"
 cat data/daily_summary.txt
+# Shadow report is outside the clone. Publish a copy at most hourly so the push carries it.
+# A missing ~/exit_shadow/exit_shadow.db writes a no-data note and does not fail the cycle.
+${PY:-python} exit_shadow_report.py --write || echo "::warning::exit shadow report failed"
 if [ -s logs/trading.log ] && grep -qE " (WARNING|ERROR) " logs/trading.log; then
   echo "--- warnings/errors this cycle (logs/trading.log) ---"; grep -E " (WARNING|ERROR) " logs/trading.log | tail -40
 fi

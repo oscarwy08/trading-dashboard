@@ -65,6 +65,8 @@ setup_and_push() {
   git -C "$OTHER" push -q origin HEAD:main
   CODE=$(git -C "$OTHER" rev-parse HEAD)
   printf 'SECRET\n' > "$base/data/exit_shadow.db"
+  printf 'shadow report\n' > "$base/data/exit_shadow_report.txt"
+  printf '{}\n' > "$base/data/exit_shadow_report.json"
   mark_db "$base/data/trading.db"
   if (cd "$base" && env CI_PUSH_RETRY_SLEEP=0 $envx bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
   git -C "$OTHER" fetch -q origin main
@@ -87,6 +89,11 @@ check_kept() {
     bad "$name committed data/exit_shadow.db"
   else
     ok "$name did not commit data/exit_shadow.db"
+  fi
+  if [ "$(git -C "$OTHER" show origin/main:data/exit_shadow_report.txt 2>/dev/null || true)" = "shadow report" ]; then
+    ok "$name committed the shadow report"
+  else
+    bad "$name dropped data/exit_shadow_report.txt"
   fi
 }
 
@@ -169,6 +176,7 @@ solo_push() {
   git -C "$base" push -q -u origin main
   git clone -q "$origin" "$OTHER"
   INIT=$(git -C "$base" rev-parse HEAD)
+  printf 'shadow report\n' > "$base/data/exit_shadow_report.txt"
   mark_db "$base/data/trading.db"
   # No token: a missing SQUASH_OPEN_PRS must fail closed without calling GitHub.
   if (cd "$base" && env -u GH_TOKEN -u GITHUB_TOKEN CI_PUSH_RETRY_SLEEP=0 $envx bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
@@ -199,8 +207,9 @@ fi
 
 solo_push "SQUASH_AT=1 SQUASH_OPEN_PRS=0"
 if [ "$RC" -eq 0 ] && ! git -C "$OTHER" rev-parse --verify -q origin/main^ >/dev/null \
-   && [ "$(cycle_mark "$OTHER")" = "yes" ] && grep -q "squashed" "$TMP/push.log"; then
-  ok "no open pull requests still squashes to an orphan"
+   && [ "$(cycle_mark "$OTHER")" = "yes" ] && grep -q "squashed" "$TMP/push.log" \
+   && [ "$(git -C "$OTHER" show origin/main:data/exit_shadow_report.txt 2>/dev/null || true)" = "shadow report" ]; then
+  ok "no open pull requests still squashes to an orphan and keeps the shadow report"
 else
   bad "quiet main did not squash (rc=$RC)"
   sed -n '1,40p' "$TMP/push.log" >&2
