@@ -17,21 +17,37 @@ fi
 unset _env
 fail=0
 echo "=== cycle $(date '+%F %T %Z') ==="
+_cycle_t=$(date +%s)
+# Seconds for one step, then its exit code. The echo stays on the cycle log.
+run_step() {
+  local name="$1"
+  shift
+  local t0 rc
+  t0=$(date +%s)
+  "$@"
+  rc=$?
+  echo "[timing] ${name} $(( $(date +%s) - t0 ))s"
+  return "$rc"
+}
 # one-off migrations (migrate_v5_xstocks.py, migrate_v6_accounts.py) are NOT run any more: both are done and the great reset
 # (2026-10-10, great_reset.py) started fresh v7 accounts - re-running them could only corrupt the fresh state.
-${PY:-python} collector.py        || echo "::warning::collector failed"
-${PY:-python} ingest_sentiment.py || echo "::warning::sentiment ingest failed"
-${PY:-python} trader.py           || { echo "::error::trader failed"; fail=1; }
+run_step collector ${PY:-python} collector.py        || echo "::warning::collector failed"
+run_step ingest ${PY:-python} ingest_sentiment.py || echo "::warning::sentiment ingest failed"
+run_step trader ${PY:-python} trader.py           || { echo "::error::trader failed"; fail=1; }
 # Variant books use the prices this cycle already stored. A failure here must not fail the main book.
-${PY:-python} variants.py         || echo "::warning::variants failed"
-${PY:-python} maintenance.py      || echo "::warning::maintenance failed"
-${PY:-python} dashboard.py        || { echo "::error::dashboard failed"; fail=1; }
-${PY:-python} test/check_data.py docs/data.json || echo "::warning::dashboard figures do not reconcile (test/check_data.py)"
+run_step variants ${PY:-python} variants.py         || echo "::warning::variants failed"
+run_step maintenance ${PY:-python} maintenance.py      || echo "::warning::maintenance failed"
+run_step dashboard ${PY:-python} dashboard.py        || { echo "::error::dashboard failed"; fail=1; }
+run_step check_data ${PY:-python} test/check_data.py docs/data.json || echo "::warning::dashboard figures do not reconcile (test/check_data.py)"
+# The scorecard file must not swallow the timing line.
+_t=$(date +%s)
 ${PY:-python} daily_summary.py > data/daily_summary.txt 2>&1 || echo "::warning::daily_summary failed"
+echo "[timing] daily_summary $(( $(date +%s) - _t ))s"
 cat data/daily_summary.txt
 # Shadow report is outside the clone. Publish a copy at most hourly so the push carries it.
 # A missing ~/exit_shadow/exit_shadow.db writes a no-data note and does not fail the cycle.
-${PY:-python} exit_shadow_report.py --write || echo "::warning::exit shadow report failed"
+run_step exit_shadow ${PY:-python} exit_shadow_report.py --write || echo "::warning::exit shadow report failed"
+echo "[timing] cycle $(( $(date +%s) - _cycle_t ))s"
 if [ -s logs/trading.log ] && grep -qE " (WARNING|ERROR) " logs/trading.log; then
   echo "--- warnings/errors this cycle (logs/trading.log) ---"; grep -E " (WARNING|ERROR) " logs/trading.log | tail -40
 fi

@@ -546,49 +546,95 @@ def _trade_child(name):
     trader.main()
 
 
+def worker_count():
+    """How many variant books to trade at once.
+
+    Each book is its own database and already refuses a second price fetch
+    (TRADING_OFFLINE). VARIANTS_WORKERS overrides. The default is at most 4,
+    and never more cores than the machine has.
+    """
+    raw = os.environ.get("VARIANTS_WORKERS")
+    if raw:
+        try:
+            return max(1, int(raw))
+        except ValueError:
+            pass
+    return max(1, min(4, os.cpu_count() or 2))
+
+
+def _run_one(name):
+    """Trade one book in a child process. Returns (name, seconds, status, detail)."""
+    one = time.perf_counter()
+    env = os.environ.copy()
+    env["TRADING_VARIANT"] = name
+    env["VARIANTS_DIR"] = str(dir_path())
+    env["VARIANTS_MAIN_DB"] = str(main_db())
+    env["TRADING_OFFLINE"] = "1"   # the child reads prices the main cycle already stored
+    env.pop("TRADING_DB", None)
+    try:
+        r = subprocess.run([sys.executable, str(ROOT / "variants.py"), "--trade", name],
+                           cwd=str(ROOT), env=env, capture_output=True, text=True, timeout=180)
+    except subprocess.TimeoutExpired:
+        return name, time.perf_counter() - one, "timeout", ""
+    except Exception as e:
+        return name, time.perf_counter() - one, "error", str(e)
+    dt = time.perf_counter() - one
+    tail = [ln for ln in (r.stdout or "").splitlines() if ln.startswith("[trader")]
+    if r.returncode != 0:
+        err = (r.stderr or r.stdout or "").strip().splitlines()
+        return name, dt, "failed", (err[-1] if err else "")
+    return name, dt, "ok", (tail[-1] if tail else "")
+
+
 def run_all():
-    """After the main trader. Failures are printed and skipped. Returns total seconds."""
+    """After the main trader. Failures are printed and skipped. Returns wall-clock seconds.
+
+    Books run together, up to worker_count() at a time. The snapshot is taken
+    first so the children do not copy it at the same moment. Rules are the
+    overlay for that book, the same as a serial run.
+    """
+    from concurrent.futures import ThreadPoolExecutor
     c = cfg()
     block = c.get("variants") or {}
     names = list(block.get("run") or [])
     if not block.get("enabled") or not names:
         print("[variants] off")
         return 0.0
-    t0 = time.perf_counter()
-    parts = []
+    runnable = []
     for name in names:
         if not (ROOT / "config" / "variants" / f"{name}.yaml").exists():
             print(f"[variants] {name} has no overlay, skipped")
             continue
-        one = time.perf_counter()
-        env = os.environ.copy()
-        env["TRADING_VARIANT"] = name
-        env["VARIANTS_DIR"] = str(dir_path())
-        env["VARIANTS_MAIN_DB"] = str(main_db())
-        env["TRADING_OFFLINE"] = "1"   # the child reads prices the main cycle already stored
-        env.pop("TRADING_DB", None)
-        try:
-            r = subprocess.run([sys.executable, str(ROOT / "variants.py"), "--trade", name],
-                               cwd=str(ROOT), env=env, capture_output=True, text=True, timeout=180)
-        except subprocess.TimeoutExpired:
+        runnable.append(name)
+    if not runnable:
+        print("[variants] off")
+        return 0.0
+    ensure_snapshot()
+    t0 = time.perf_counter()
+    n_workers = min(worker_count(), len(runnable))
+    results = {}
+    with ThreadPoolExecutor(max_workers=n_workers) as ex:
+        futs = [ex.submit(_run_one, name) for name in runnable]
+        for fut in futs:
+            name, dt, status, detail = fut.result()
+            results[name] = (dt, status, detail)
+    parts = []
+    for name in runnable:
+        dt, status, detail = results[name]
+        if status == "timeout":
             print(f"[variants] {name} timed out after 180s")
             parts.append(f"{name} timeout")
-            continue
-        except Exception as e:
-            print(f"[variants] {name} failed to start: {e}")
+        elif status == "error":
+            print(f"[variants] {name} failed to start: {detail}")
             parts.append(f"{name} error")
-            continue
-        dt = time.perf_counter() - one
-        tail = [ln for ln in (r.stdout or "").splitlines() if ln.startswith("[trader")]
-        if r.returncode != 0:
-            err = (r.stderr or r.stdout or "").strip().splitlines()
-            print(f"[variants] {name} failed in {dt:.1f}s" + (f": {err[-1]}" if err else ""))
+        elif status == "failed":
+            print(f"[variants] {name} failed in {dt:.1f}s" + (f": {detail}" if detail else ""))
             parts.append(f"{name} failed {dt:.1f}s")
         else:
-            print(f"[variants] {name} {dt:.1f}s" + (f" | {tail[-1]}" if tail else ""))
+            print(f"[variants] {name} {dt:.1f}s" + (f" | {detail}" if detail else ""))
             parts.append(f"{name} {dt:.1f}s")
     total = time.perf_counter() - t0
-    print(f"[variants] total {total:.1f}s ({', '.join(parts)})")
+    print(f"[variants] total {total:.1f}s on {n_workers} workers ({', '.join(parts)})")
     return total
 
 

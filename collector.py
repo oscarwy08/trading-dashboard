@@ -29,7 +29,7 @@ def bind_budget(con, c):
     global _BUDGET_CON, _BUDGET_CFG
     _BUDGET_CON, _BUDGET_CFG = con, c
 
-def get(url, params=None, headers=None, tries=3, purpose="other"):
+def get(url, params=None, headers=None, tries=3, purpose="other", timeout=20):
     cg = str(url).startswith(CG)
     if cg:
         headers = cg_headers(headers)
@@ -45,14 +45,16 @@ def get(url, params=None, headers=None, tries=3, purpose="other"):
                 import pricesrc
                 from common import now as _now
                 pricesrc.add_calls(_BUDGET_CON, _now(), 1, purpose)
-            r = S.get(url, params=params, headers=headers, timeout=20)
+            r = S.get(url, params=params, headers=headers, timeout=timeout)
             if r.status_code == 429:
                 if tries == 1: L.warning("429 from %s", url); return None
                 wait = min(int(r.headers.get("Retry-After", 20) or 20), 30)
                 L.warning("429 from %s, sleeping %ss", url, wait); time.sleep(wait); continue
             r.raise_for_status(); return r.json()
         except Exception as e:
-            L.warning("GET %s failed (%d/%d): %s", url, i + 1, tries, e); time.sleep(2 * (i + 1))
+            L.warning("GET %s failed (%d/%d): %s", url, i + 1, tries, e)
+            if i + 1 < tries:
+                time.sleep(2 * (i + 1))
     return None
 
 def st_get(con, k, default=None):
@@ -415,10 +417,12 @@ def fxrate(con, c, ts, status):
     con.execute("INSERT INTO fx VALUES(?,?,?,?,?,?)", (ts, "USDGBP", rate, src, alt, alt_src))
     status["fx"] = f"ok (GBP/USD {1/rate:.4f} via {src}" + (f", er-api {1/er:.4f}" if alt else "") + ")"
 
-def yahoo(sym, rng="1d", interval="15m"):
+def yahoo(sym, rng="1d", interval="15m", tries=3, timeout=20):
     """Yahoo Finance chart API -> (result, [(epoch, close in the QUOTE currency)]). result['meta']['currency'] tells the
-    currency: 'GBp' (pence) for most London shares, 'GBP' for some ETFs, 'USD', 'AUD', ..."""
-    d = get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}", {"range": rng, "interval": interval})
+    currency: 'GBp' (pence) for most London shares, 'GBP' for some ETFs, 'USD', 'AUD', ...
+    Intraday quotes pass a shorter timeout. A failed quote leaves the last stored price in place."""
+    d = get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}", {"range": rng, "interval": interval},
+            tries=tries, timeout=timeout)
     r = d["chart"]["result"][0]
     return r, [(t, p) for t, p in zip(r["timestamp"], r["indicators"]["quote"][0]["close"]) if p]
 
@@ -486,7 +490,7 @@ def stock_quote(sym):
     for US, ~15 min delayed for London). The 5-day 15-minute closes come from the same call: burst volume, and the
     intraday series stored for 4h / 24h / RSI / EMA."""
     try:
-        r, bars = yahoo(sym, "5d", "15m"); return sym, r["meta"]["regularMarketPrice"], r["meta"], vol_ratio(r), bars
+        r, bars = yahoo(sym, "5d", "15m", tries=2, timeout=12); return sym, r["meta"]["regularMarketPrice"], r["meta"], vol_ratio(r), bars
     except Exception as e:
         L.error("stock %s: Yahoo quote failed: %s", sym, e); return sym, None, None, None, None
 
@@ -521,7 +525,7 @@ def market_proxy(con, c, ts, status):
     for ex, sym in P.items():
         if not markets.is_open(ex, now_): continue
         try:
-            r, pts = yahoo(sym, "5d", "15m")
+            r, pts = yahoo(sym, "5d", "15m", tries=2, timeout=12)
             tz = markets.EXCH[ex]["tz"]; today = datetime.fromtimestamp(pts[-1][0], timezone.utc).astimezone(tz).date()
             prev = [p for t_, p in pts if datetime.fromtimestamp(t_, timezone.utc).astimezone(tz).date() < today]
             last = r["meta"].get("regularMarketPrice") or pts[-1][1]
@@ -742,23 +746,31 @@ def main():
     c, con, ts, status = cfg(), db(), iso(), {}
     bind_budget(con, c)
     rows = {}; n = 0
+    t_all = time.perf_counter()
     try:
         for name, fn in (("coingecko", crypto_fast if fast else crypto), ("fx", fxrate), ("kyberswap", kyber), ("gas", gas), ("stocks", stocks), ("market_proxy", market_proxy)):
+            t1 = time.perf_counter()
             try:
                 r = fn(con, c, ts, status)
                 if name == "coingecko": rows = r or {}
             except Exception as e:
                 L.exception("%s failed", name); status[name] = f"FAILED: {e}"
             con.commit()
+            print(f"[timing] collector {name} {time.perf_counter() - t1:.1f}s", flush=True)
         if not fast:
+            t1 = time.perf_counter()
             try: daily(con, c, status)
             except Exception as e: L.exception("daily closes failed"); status["daily"] = f"FAILED: {e}"
+            print(f"[timing] collector daily {time.perf_counter() - t1:.1f}s", flush=True)
+            t1 = time.perf_counter()
             uni_only = {i for i, x in rows.items() if x.get("_rank")} - set(c["crypto"]["core_ids"]) - set((c["crypto"].get("watch_ids") or {}).keys())
             n = backfill(con, c, {i: x for i, x in rows.items() if i not in uni_only}); con.commit()   # universe coins warm up from snapshots; listed coins use exchange OHLC
+            print(f"[timing] collector backfill {time.perf_counter() - t1:.1f}s", flush=True)
         con.execute("INSERT OR REPLACE INTO state VALUES('collector_status',?)", (f"{ts} " + ("[fast] " if fast else "") + "; ".join(f"{k}: {v}" for k, v in status.items()),))
         con.commit()
     finally:
         bind_budget(None, None)
+    print(f"[timing] collector total {time.perf_counter() - t_all:.1f}s", flush=True)
     print(f"[collector {ts}{' fast' if fast else ''}]", status, f"backfilled={n}")
 
 if __name__ == "__main__":

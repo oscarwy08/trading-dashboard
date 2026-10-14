@@ -21,6 +21,20 @@ def check(cond, msg):
     print(("OK  " if cond else "FAIL") + " " + msg)
     if not cond: fails.append(msg)
 
+# --- config is parsed once; a caller's edit does not stick, and an overlay stays its own copy ---
+balance = common.cfg()["starting_balance"]
+tweaked = common.cfg()
+tweaked["starting_balance"] = -1
+check(common.cfg()["starting_balance"] == balance, "a caller's edit of config does not stick")
+os.environ["TRADING_VARIANT"] = "partial_take"
+over_cfg = common.cfg()
+os.environ.pop("TRADING_VARIANT", None)
+check(over_cfg["variant_rules"]["partial_take"] is True, "cached config still merges the partial_take overlay")
+check(common.cfg()["variant_rules"]["partial_take"] is False, "main config stays cached beside that overlay")
+os.environ["VARIANTS_WORKERS"] = "3"
+check(variants.worker_count() == 3, "VARIANTS_WORKERS sets how many books run at once")
+os.environ.pop("VARIANTS_WORKERS", None)
+
 # --- overlays leave the frozen rules alone and turn one flag on ---
 base = common.cfg()
 check(all(not base["variant_rules"][k] for k in
