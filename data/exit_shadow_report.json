@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-14T20:39:09+00:00",
+  "generated": "2026-10-14T21:41:33+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 34,
-        "avg_dt_s": 3117.235294117647,
-        "avg_price_pct": -0.5709066765377413,
-        "missed": 1
+        "pairs": 35,
+        "avg_dt_s": 3163.342857142857,
+        "avg_price_pct": -0.4937683277156953,
+        "missed": 0
       },
       "entries": {
         "pairs": 5,
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 27,
-        "avg_dt_s": 540.7037037037037,
-        "avg_price_pct": 0.08492423740405437,
+        "pairs": 28,
+        "avg_dt_s": 644.8928571428571,
+        "avg_price_pct": 0.0026410049573140247,
         "missed": 1
       },
       "entries": {
@@ -216,10 +216,10 @@
     {
       "name": "sent_split",
       "exits": {
-        "pairs": 7,
-        "avg_dt_s": 864.0,
-        "avg_price_pct": 1.1903111756308407,
-        "missed": 1
+        "pairs": 9,
+        "avg_dt_s": 1077.6666666666667,
+        "avg_price_pct": 0.8172376288125898,
+        "missed": 0
       },
       "entries": {
         "pairs": 1,
@@ -712,13 +712,13 @@
       "shadow_ts": "2026-10-14T19:43:59+00:00",
       "shadow_price": 0.2516994535,
       "trigger": "[momentum] stop-loss -3.4% <= -3.3% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-14T21:02:50+00:00",
+      "cycle_price": 0.25705797259999996,
+      "cycle_reason": "[momentum] flatten 22:00 UK (flat overnight); P&L \u00a3-0.08",
+      "dt_s": 4731.0,
+      "price_diff": 0.005358519099999959,
+      "price_pct": 2.1289355322338666
     }
   ],
   "main_exit_missed": [],
