@@ -13,8 +13,8 @@ Each WOULD BUY is paired with the cycle's buy of that same sleeve and asset
 at or after the cycle armed it. The line under the pair is the time gap and
 the price gap. A WOULD BUY with no cycle buy is a move the cycle missed.
 """
-import os, sqlite3, sys
-from datetime import datetime
+import json, os, sqlite3, sys, time
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -279,7 +279,87 @@ def format_all_books(exit_rows, buy_rows, opener):
     return "\n".join(lines).rstrip() + "\n"
 
 
-def main():
+def published_paths():
+    """Text and JSON copies committed with the cycle. Not the shadow database."""
+    from common import DATA
+    return DATA / "exit_shadow_report.txt", DATA / "exit_shadow_report.json"
+
+
+def build_report(shadow_path=None):
+    """(text, payload). A missing or unreadable shadow log is a no-data note, not an error."""
+    path = Path(shadow_path) if shadow_path is not None else shadow_db_path()
+    generated = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    if not path.exists():
+        text = f"no data\nNo shadow log yet ({path}).\n"
+        return text, {"status": "no data", "generated": generated, "path": str(path), "books": []}
+    try:
+        exit_rows = _shadow_rows(path, "would_exit", "ts, sleeve, asset, opened, trigger, price, book")
+        buy_rows = _shadow_rows(path, "would_buy", "ts, sleeve, asset, armed, trigger, price, book")
+    except sqlite3.Error as e:
+        text = f"no data\nShadow log could not be read ({path}): {e}\n"
+        return text, {"status": "no data", "generated": generated, "path": str(path), "error": str(e), "books": []}
+    book = db()
+    try:
+        compared, missed = compare_exits(for_book(exit_rows, "main"), [dict(r) for r in book.execute(
+            "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='SELL' AND sleeve IN ('day','risk') ORDER BY ts, id")])
+        buy_compared, buy_missed = compare_buys(for_book(buy_rows, "main"), [dict(r) for r in book.execute(
+            "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='BUY' AND sleeve IN ('day','risk') ORDER BY ts, id")])
+    finally:
+        book.close()
+    parts = [format_report(compared, missed).rstrip(), "", format_buys(buy_compared, buy_missed).rstrip(), "",
+             format_all_books(exit_rows, buy_rows, _trade_db).rstrip(), ""]
+    books = []
+    for name in report_names(exit_rows, buy_rows):
+        con = _trade_db(name)
+        try:
+            if con is None:
+                exits_c, buys_c = [], []
+            else:
+                exits_c, _m = compare_exits(for_book(exit_rows, name), [dict(r) for r in con.execute(
+                    "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='SELL' AND sleeve IN ('day','risk') ORDER BY ts, id")])
+                buys_c, _bm = compare_buys(for_book(buy_rows, name), [dict(r) for r in con.execute(
+                    "SELECT ts, sleeve, asset, price, reason FROM trades WHERE side='BUY' AND sleeve IN ('day','risk') ORDER BY ts, id")])
+        finally:
+            if con is not None:
+                con.close()
+        books.append(dict(name=name, exits=pair_stats(exits_c), entries=pair_stats(buys_c)))
+    payload = dict(status="ok", generated=generated, path=str(path), books=books,
+                   main_exits=compared, main_exit_missed=[dict(s) for s in missed],
+                   main_entries=buy_compared, main_entry_missed=[dict(s) for s in buy_missed])
+    return "\n".join(parts).rstrip() + "\n", payload
+
+
+def write_published(max_age_s=3600, shadow_path=None, dest_dir=None):
+    """Write the text and JSON reports. Skip when the text file is younger than max_age_s.
+
+    Returns True when it wrote. A missing shadow database still writes a no-data note.
+    `dest_dir` overrides data/ for tests.
+    """
+    if dest_dir is None:
+        txt, js = published_paths()
+    else:
+        dest = Path(dest_dir)
+        txt, js = dest / "exit_shadow_report.txt", dest / "exit_shadow_report.json"
+    if max_age_s and txt.exists() and js.exists():
+        if time.time() - txt.stat().st_mtime < float(max_age_s):
+            return False
+    text, payload = build_report(shadow_path)
+    txt.parent.mkdir(parents=True, exist_ok=True)
+    tmp_txt, tmp_js = txt.with_suffix(".txt.tmp"), js.with_suffix(".json.tmp")
+    tmp_txt.write_text(text)
+    tmp_js.write_text(json.dumps(payload, indent=2) + "\n")
+    tmp_txt.replace(txt)
+    tmp_js.replace(js)
+    return True
+
+
+def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if "--write" in argv:
+        wrote = write_published()
+        txt, _js = published_paths()
+        print("wrote" if wrote else "fresh", txt)
+        return 0
     path = shadow_db_path()
     if not path.exists():
         print(f"No shadow log yet ({path}).")

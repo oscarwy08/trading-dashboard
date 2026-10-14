@@ -354,6 +354,12 @@ Review, from that clone:
 python3 exit_shadow_report.py
 ```
 
+Each cycle also runs `exit_shadow_report.py --write` at most once an hour and commits
+`data/exit_shadow_report.txt` plus `data/exit_shadow_report.json` with the usual state push.
+If `~/exit_shadow/exit_shadow.db` is missing, those files say `no data` and the cycle still
+pushes. The shadow database itself stays gitignored. A history squash keeps the report,
+because it is part of the committed tree under `data/`.
+
 The report pairs each shadow exit with the sell the 5-minute cycle actually made for that same
 position, and each shadow entry with the cycle's buy (or marks a move the cycle missed). It
 prints the time difference and the price difference. When the exits look right, add
@@ -390,6 +396,7 @@ main
 ├── data/trading.db               STATE (SQLite) - committed every cycle
 ├── data/sentiment/*.json         new sentiment files (pushed from the box) -> processed/ | rejected/ after ingest
 ├── data/daily_summary.txt        latest scorecard (every cycle)
+├── data/exit_shadow_report.txt   watcher shadow report (hourly; .json beside it)
 ├── docs/                         PUBLISHED SITE (index.html, app.js, styles.css, data.json, .nojekyll) - GitHub Pages
 ├── index.html + .nojekyll        redirect to docs/ (only used while Pages still serves the repo root)
 ├── KILL                          (create to halt all trading)       RISK_RESUME (create to resume the RISK pot after review)
