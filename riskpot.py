@@ -198,14 +198,16 @@ def dip_confidence(R, pullback, support, bounce, sent, regime, hr, freshness=Non
     out = {k: round(v, 2) for k, v in parts.items()}; out["freshness"] = fr
     return conf, out
 
-def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=None):
+def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=None, require_trend=False):
     """A pullback buy on snapshot prices [(ts, price), ...]. Shows a row once the drop from a recent high is large
-    enough to be a dip. It is tradable only when that dip follows an uptrend or positive sentiment, stays shallower
-    than a breakdown, is not still a one-day pump, and has turned up (higher low or a short average reclaimed, last
-    bar up, off the low). A steady rise is not a dip. Returns show, ok, why (one sentence), trend_ok, conf, parts."""
+    enough to be a dip. It is tradable only when that dip follows an uptrend or, unless require_trend, positive
+    sentiment, stays shallower than a breakdown, is not still a one-day pump, and has turned up (higher low or a
+    short average reclaimed, last bar up, off the low). require_trend is the sent_split book: positive sentiment
+    does not replace the 48h uptrend. A steady rise is not a dip. Returns show, ok, why (one sentence), trend_ok,
+    bounce, conf, parts."""
     from datetime import timedelta
     D = R.get("dip") or {}
-    blank = dict(show=False, ok=False, why="", trend_ok=False, pullback=None, conf=None, parts=None, rsi=None)
+    blank = dict(show=False, ok=False, why="", trend_ok=False, bounce=False, pullback=None, conf=None, parts=None, rsi=None)
     if not D.get("enabled", True) or not pts or len(pts) < 8:
         return blank
     t, price = pts[-1]
@@ -231,6 +233,7 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
     swing = min(before) if before else high_px
     trend_ok = bool(before) and swing > 0 and high_px / swing - 1 >= float(D.get("trend_min_pct", 8)) / 100 and swing < high_px
     sent_pos = sent is not None and float(sent) > float(D.get("sentiment_min", 0))
+    trend_gate = bool(trend_ok) if require_trend else bool(trend_ok or sent_pos)
     prices = [p for _, p in pts]
     last_up = prices[-1] > prices[-2]
     nb = max(2, int(D.get("bounce_bars", 3)))
@@ -278,8 +281,11 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
         why = f"Still a one-day pump: up {r24:.0f}% over 24 hours, so this dip is not bought."
     elif too_deep:
         why = f"Still falling: down {pullback:.1f}% from the recent high, too deep to be a dip."
-    elif not trend_ok and not sent_pos:
-        why = f"Pulled back {pullback:.1f}%, but there is no uptrend and sentiment is not positive."
+    elif not trend_gate:
+        if require_trend and not trend_ok:
+            why = f"Pulled back {pullback:.1f}%, but there is no 48h uptrend."
+        else:
+            why = f"Pulled back {pullback:.1f}%, but there is no uptrend and sentiment is not positive."
     elif not confirmed:
         why = f"Still falling: pulled back {pullback:.1f}% and the last bars have not turned up."
     else:
@@ -290,9 +296,9 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
         else: loc = ""
         rsi_bit = f" RSI {rsi:.0f} was oversold." if rsi is not None and rsi <= float(D.get("rsi_oversold", 40)) else ""
         why = f"{lead}, pulled back {pullback:.1f}%{loc}, and the last bars turned up.{rsi_bit}"
-    ok = bool(confirmed and (trend_ok or sent_pos) and not too_deep and not chasing)
+    ok = bool(confirmed and trend_gate and not too_deep and not chasing)
     conf, parts = dip_confidence(R, pb_s, sup_s, b_s, sent, regime, hr, freshness)
     # USD price that confirms the bounce. The entry watcher arms this when the dip has not turned up yet.
     level = low_px * (1 + lift / 100.0)
-    return dict(show=True, ok=ok, why=why, trend_ok=trend_ok, pullback=round(pullback, 2), conf=conf, parts=parts,
-                rsi=round(rsi, 1) if rsi is not None else None, level=level)
+    return dict(show=True, ok=ok, why=why, trend_ok=trend_ok, bounce=bool(confirmed), pullback=round(pullback, 2),
+                conf=conf, parts=parts, rsi=round(rsi, 1) if rsi is not None else None, level=level)

@@ -28,9 +28,9 @@ def check(cond, msg):
     if not cond:
         fails.append(msg)
 
-NAMES = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock", "day_capital_caution", "partial_take")
+NAMES = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock", "day_capital_caution", "partial_take", "sent_split")
 base = common.cfg()
-check(all(not base["variant_rules"][k] for k in NAMES), "main leaves the five paper flags off")
+check(all(not base["variant_rules"][k] for k in NAMES), "main leaves the paper flags off")
 check(base["rules"]["frozen_since"] == common.cfg()["rules"]["frozen_since"], "freeze date is the config's own")
 for name in NAMES:
     os.environ["TRADING_VARIANT"] = name

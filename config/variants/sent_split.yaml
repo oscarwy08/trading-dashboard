@@ -1,0 +1,13 @@
+# Sentiment versus hype. The main book is unchanged.
+# A missing print is neutral. A Risk dip needs the 48h uptrend.
+# A hot run-up cuts burst and Risk confidence and drops the Day momentum sentiment weight.
+# catalyst_score and buzz_change are used when a sentiment file carries them.
+variant_rules:
+  sent_split: true
+day:
+  burst:
+    sentiment_missing: 0.5    # neutral, not the main book's 0.25
+riskpot:
+  sentiment_missing: 0.5
+  dip:
+    sentiment_missing: 0.5

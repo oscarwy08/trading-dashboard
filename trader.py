@@ -107,8 +107,18 @@ def latest_prices(con, max_age_min, rate, rk=None):
     return out
 
 def sentiment(con, asset, max_age_h):
-    return con.execute("SELECT score, confidence, ts FROM sentiment WHERE asset=? AND ts>=? AND ts<=? ORDER BY ts DESC LIMIT 1",
-                       (asset, iso(now() - timedelta(hours=max_age_h)), iso(now() + timedelta(seconds=1)))).fetchone()
+    """Latest sentiment row inside the age window.
+
+    catalyst_score and buzz_change are selected when the table has them. A file
+    that did not carry those fields leaves them NULL. Callers that only read
+    score, confidence and ts are unchanged.
+    """
+    since, until = iso(now() - timedelta(hours=max_age_h)), iso(now() + timedelta(seconds=1))
+    have = {r[1] for r in con.execute("PRAGMA table_info(sentiment)")}
+    extra = "".join(", " + col for col in ("catalyst_score", "buzz_change") if col in have)
+    return con.execute(
+        f"SELECT score, confidence, ts{extra} FROM sentiment WHERE asset=? AND ts>=? AND ts<=? ORDER BY ts DESC LIMIT 1",
+        (asset, since, until)).fetchone()
 
 def hm(s):
     h, m = str(s).split(":"); return int(h) * 60 + int(m)
@@ -487,11 +497,23 @@ def _cycle():
         return f"unpriced: quote {float(age):.0f} min old, older than {dead_min():.0f} min; {what} waits for a fresh price"
     def tag_gap(a, level, cur, reason):
         return gap_tag(hist.get(a) or [], level, cur, reason)
+    def sent_score_of(se):
+        """Score this book uses. sent_split prefers catalyst_score when the row stored one."""
+        if not se:
+            return None
+        if R.get("sent_split"):
+            return variants.sent_score(se, R)
+        return se["score"]
     def sent_in(se):
-        """Sentiment fed to a confidence score: decayed toward 0 (neutral) as it ages. None stays None. Hard gates use se['score']."""
-        if not se: return None
+        """Sentiment fed to a confidence score: decayed toward 0 (neutral) as it ages. None stays None.
+        Hard gates use sent_score_of, which is the raw score on the main book."""
+        if not se:
+            return None
+        score = sent_score_of(se)
+        if score is None:
+            return None
         fac = freshness.sentiment_factor((t - datetime.fromisoformat(se["ts"])).total_seconds() / 3600, st["sentiment_max_age_h"])
-        return se["score"] * fac
+        return float(score) * fac
     def fr_of(a, q, se):
         gaps = freshness.history_gaps(hist.get(a) or [], t)
         sfac = None
@@ -1088,6 +1110,31 @@ def _cycle():
                   conf=conf, ev=ev, reason=reason, snap=snap))
 
     # ---- momentum: original score entries, ATR-scaled levels ----
+    # Exits above used the raw blend. sent_split recomputes the entry score only:
+    # catalyst_score replaces the raw score when the file has one, and a hot 4h
+    # run-up sets the sentiment weight to 0 for that entry.
+    if R.get("sent_split"):
+        adj_scores = {}
+        for a, (m, s, comb, info) in scores.items():
+            if m is None:
+                adj_scores[a] = (m, s, comb, info)
+                continue
+            se_m = sentiment(con, a, st["sentiment_max_age_h"])
+            pref = variants.sent_score(se_m, R) if se_m else None
+            buzz = variants.buzz_of(se_m)
+            fac = 0.0
+            if se_m and se_m["ts"]:
+                fac = freshness.sentiment_factor((t - datetime.fromisoformat(se_m["ts"])).total_seconds() / 3600, st["sentiment_max_age_h"])
+            w = st["sentiment_weight"] * float(se_m["confidence"]) * fac if se_m else 0.0
+            w2 = variants.momentum_weight(w, hist.get(a) or [], pref, buzz, R)
+            comb2 = variants.momentum_blend(m, w2, pref if se_m else None)
+            info2 = info or ""
+            if w2 == 0.0 and w > 0:
+                info2 += "; sentiment weight 0 (4h run-up)"
+            elif se_m and pref is not None and se_m["score"] is not None and abs(float(pref) - float(se_m["score"])) > 1e-9:
+                info2 += f", catalyst {float(pref):+.2f}"
+            adj_scores[a] = (m, pref if se_m else s, comb2, info2)
+        scores = adj_scores
     nmom = sum(1 for (sl, x) in pos if sl == "day" and sub_of(x) == "momentum")
     ss_mom = daypot.sell_record(con, "day", "momentum", t, float(DM.get("record_days", 14)))
     refresh([a for a, (m, s, comb, info) in scores.items() if comb is not None and comb >= thr_of(a) and ("day", a) not in pos])
@@ -1163,13 +1210,21 @@ def _cycle():
         at_ = atr_of(a); tp_, sl_ = daypot.levels(DB["take_profit"], DB["stop"], at_)
         ss = sstats.get(brk["kind"]) or dict(p=0.5, n=0, wins=0, exp=None)
         fr = fr_of(a, q, se)
+        sscore = sent_score_of(se)
         conf, parts = daypot.confidence(DB, brk["strength"], vol, sent_in(se), reg, ss["p"], freshness=fr)
+        buzz = variants.buzz_of(se) if R.get("sent_split") else None
+        run24 = variants.price_runup_pct(pts, 24) if R.get("sent_split") else None
+        adj = None
+        if R.get("sent_split"):
+            conf, adj = variants.confidence_adjust(conf, R, run24, sscore, buzz, vol, bool(brk.get("kind")))
         size0 = max(daypot.conf_size(DB, conf, free("burst", acct_of(q["klass"]))), mint)
         rtc = rt_cost(a, size0)
         p_ev = daypot.hit_p(conf, ss, int(DB.get("ev_prior_n", 10)), int(DB.get("ev_conf_full_n", 30)))
         ev = blend_burst(daypot.day_ev(p_ev, tp_, sl_, rtc, clock_p(a, DB.get("max_hold_h"))))
-        d.update(kind=brk.get("kind"), ev=ev, rt_cost=round(rtc, 3), hit=round(p_ev, 3), hit_n=ss["n"], vol=round(vol, 2) if vol is not None else None, rsi=round(r_) if r_ is not None else None, sent=se["score"] if se else None,
+        d.update(kind=brk.get("kind"), ev=ev, rt_cost=round(rtc, 3), hit=round(p_ev, 3), hit_n=ss["n"], vol=round(vol, 2) if vol is not None else None, rsi=round(r_) if r_ is not None else None, sent=sscore,
                  market=minfo, atr=round(at_, 2) if at_ else None, tp=round(tp_, 2), sl=round(sl_, 2), conf=conf, parts=parts)
+        if adj:
+            d["info"] = ((d.get("info") or "") + "; " + adj).lstrip("; ")
         vx = float(DB["volume_x"])
         lx = sget(con, f"day_exit:{a}")
         d["block"] = (brk["info"] if not brk["kind"] else
@@ -1178,13 +1233,14 @@ def _cycle():
                       f"volume x{vol:.1f} < {vx:g}x average" if vol is not None and vol < vx else
                       "no volume data (only a 24h-high break may trade without it)" if vol is None and (DB.get("require_volume") or brk["kind"] != "24h") else
                       f"RSI {r_:.0f} >= {DB['rsi_max']} (overbought)" if r_ is not None and r_ >= float(DB["rsi_max"]) else
-                      f"sentiment {se['score']:+.2f} < {DB['sentiment_min']}" if se and se["score"] < float(DB["sentiment_min"]) else
+                      f"sentiment {sscore:+.2f} < {DB['sentiment_min']}" if se and sscore is not None and sscore < float(DB["sentiment_min"]) else
                       f"market falling ({minfo})" if not mok else None)
         if d["block"] and fr < 0.999 and "freshness" not in (d["block"] or ""):
             age = q.get("age_min")
             d["block"] += f"; data freshness {fr:.0%}" + (f" (price {age:.0f} min)" if age is not None else "")
         arm_meta[a] = dict(pending=brk.get("pending_kind"), trig=brk.get("level"), cap=brk.get("cap"),
-                           range_frac=brk.get("range_frac"), mok=mok, reg=reg, fr=fr, sent=sent_in(se), raw_sent=None if not se else se["score"])
+                           range_frac=brk.get("range_frac"), mok=mok, reg=reg, fr=fr, sent=sent_in(se), raw_sent=sscore,
+                           buzz=buzz, run24=run24)
         if pending:
             pending_rows.append(d)   # armed for the watcher; not a row on the setups list
             continue
@@ -1219,6 +1275,9 @@ def _cycle():
         ss = sstats.get(kind) or dict(p=0.5, n=0, wins=0, exp=None)
         strength = entries.burst_strength(kind, DB, meta.get("range_frac"))
         conf, parts = daypot.confidence(DB, strength, vol, meta.get("sent"), meta.get("reg"), ss["p"], freshness=meta.get("fr"))
+        if R.get("sent_split"):
+            # Not a confirmed breakout yet: the quiet-strength bonus waits until the level trades.
+            conf, _adj = variants.confidence_adjust(conf, R, meta.get("run24"), meta.get("raw_sent"), meta.get("buzz"), vol, False)
         if conf < thr_burst(ac):
             return
         q = px[a]
@@ -1347,7 +1406,7 @@ def _cycle():
         return dict(a=a, kind=kind, setup=setup, acct=acc(a), score=bscore, mom=m, ok=ok, why=why, plain=plain,
                     conf=conf, parts=parts, ev=ev, rt_cost=round(rtc, 3), ev_win=ev_w, ev_loss=ev_l, ev_p=ev_p,
                     atr=round(at_, 2) if at_ else None, hit=round(ss["p"], 3), hit_n=ss["n"],
-                    vol=round(vol, 2) if vol is not None else None, sent=se["score"] if se else None,
+                    vol=round(vol, 2) if vol is not None else None, sent=sent_score_of(se),
                     market=mkinfo, size=round(size0, 2), cap=cap0, block=block, minfo=minfo, trend_ok=bool(trend_ok))
 
     def _prev_high(asset):
@@ -1406,9 +1465,9 @@ def _cycle():
         se = sentiment(con, a, st["sentiment_max_age_h"])
         vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
         mok, reg, mkinfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
-        at_ = atr_of(a); fr = fr_of(a, q, se); sin = sent_in(se)
+        at_ = atr_of(a); fr = fr_of(a, q, se); sin = sent_in(se); sscore = sent_score_of(se)
         last_exit = sget(con, f"risk_exit:{a}")
-        shared = (f"sentiment {se['score']:+.2f} blocks entry" if se and se["score"] <= RP["sentiment_block"] and se["confidence"] >= 0.5 else
+        shared = (f"sentiment {sscore:+.2f} blocks entry" if se and sscore is not None and sscore <= RP["sentiment_block"] and se["confidence"] >= 0.5 else
                   "drawdown cap: entries halted until review" if halt else
                   closed_msg(a) if not mopen(a) else
                   f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= 15 else
@@ -1432,9 +1491,21 @@ def _cycle():
             brk_plain += f" 7d +{float(c7):.0f}% scales the breakout score (Core will not lend)."
         brk_hard = note(brk_spec)
         conf, parts = riskpot.confidence(RP, (bscore or 0) * run_scale, vol, sin, reg, rss["p"], freshness=fr)
+        run24 = variants.price_runup_pct(pts, 24) if R.get("sent_split") else None
+        buzz = variants.buzz_of(se) if R.get("sent_split") else None
+        if R.get("sent_split"):
+            conf, adj = variants.confidence_adjust(conf, R, run24, sscore, buzz, vol, bool(ok))
+            if adj:
+                brk_plain += " " + adj + "."
         brk = pack(a, kind, "breakout", brk_plain, bscore, ok, why, m, minfo, conf, parts, rss, vol, se, mkinfo, at_, brk_hard)
         brk["no_core_loan"] = bool(no_loan)
-        dip_r = riskpot.dip(pts, RP, sent=sin, regime=reg, hr=dss["p"], freshness=fr, vol=vol, atr=at_) if (RP.get("dip") or {}).get("enabled", True) else None
+        dip_r = riskpot.dip(pts, RP, sent=sin, regime=reg, hr=dss["p"], freshness=fr, vol=vol, atr=at_,
+                            require_trend=bool(R.get("sent_split"))) if (RP.get("dip") or {}).get("enabled", True) else None
+        if dip_r and R.get("sent_split") and dip_r.get("conf") is not None:
+            dconf, dadj = variants.confidence_adjust(dip_r["conf"], R, run24, sscore, buzz, vol, bool(dip_r.get("bounce")))
+            dip_r = dict(dip_r, conf=dconf)
+            if dadj:
+                dip_r["why"] = ((dip_r.get("why") or "").rstrip() + " " + dadj + ".").strip()
         chosen = brk
         if dip_r and dip_r.get("show"):
             dip_hard = note(None if dip_r["ok"] else dip_r["why"])
