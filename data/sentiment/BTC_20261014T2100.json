@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "BTC",
+ "score": 0.12,
+ "volume": 45,
+ "confidence": 0.55,
+ "summary": "Below $82k after ~$770M liquidations; Standard Chartered UAE BTC/ETH trading launched 14 Oct; White House talk of growing the Strategic Bitcoin Reserve (no action yet); Aave V4 native-BTC collateral proposal. Mixed, mild positive.",
+ "sources": [
+  "https://x.com/i/trending/2110289679698313358",
+  "https://x.com/i/trending/2110470993693319241",
+  "https://x.com/i/trending/2110407520074273053"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Standard Chartered launched direct BTC/ETH trading for UAE clients (14 Oct)",
+ "buzz_level": 10502,
+ "buzz_change": 1.01,
+ "price_runup_24h_pct": -1.74,
+ "carried_over": false
+}

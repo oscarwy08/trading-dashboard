@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "PYTH",
+ "score": 0.35,
+ "volume": 15,
+ "confidence": 0.5,
+ "summary": "Fundamental print (Q3 ARR +86%, buyback rule) while buzz is flat vs its 3-day average and price +9.4% 24h - quiet strength rather than hype.",
+ "sources": [
+  "https://x.com/i/trending/2110041642795429916"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Q3 report: ARR $11.49M (+86% QoQ), 94% of RWA perp volume priced; 100% revenue to PYTH buybacks",
+ "buzz_level": 167,
+ "buzz_change": 1.03,
+ "price_runup_24h_pct": 9.38,
+ "carried_over": false
+}

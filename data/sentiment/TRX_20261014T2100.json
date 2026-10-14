@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "TRX",
+ "score": 0.15,
+ "volume": 10,
+ "confidence": 0.35,
+ "summary": "TRON stablecoin market cap +$555M in a week, ahead of the next nine chains combined; buzz ~1.2x average. Steady mild positive, no dated event.",
+ "sources": [
+  "https://x.com/i/trending/2110452547395916036"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "buzz_level": 339,
+ "buzz_change": 1.24,
+ "price_runup_24h_pct": 1.22,
+ "carried_over": false
+}

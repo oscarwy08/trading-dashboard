@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "ONDO",
+ "score": 0.15,
+ "volume": 10,
+ "confidence": 0.35,
+ "summary": "Milestone: ~$3B tokenized Treasuries plus $1.3B tokenized stocks/ETFs; buzz below average. Mild positive.",
+ "sources": [
+  "https://x.com/i/trending/2110415224029446415"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Ondo reported $4B tokenized assets (14 Oct)",
+ "buzz_level": 339,
+ "buzz_change": 0.79,
+ "price_runup_24h_pct": -4.62,
+ "carried_over": false
+}

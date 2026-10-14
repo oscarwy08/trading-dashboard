@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "PONS",
+ "score": -0.1,
+ "volume": 15,
+ "confidence": 0.35,
+ "summary": "X story: PONS ~70% below its Sept peak as Robinhood Chain fees/activity slid; big holder pushing back. Price +16% 24h bounce and buzz rising ~1.7x vs 3-day avg - buzz up on a coin that already ran today. Mild negative.",
+ "sources": [
+  "https://x.com/i/trending/2110384957151670574"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "buzz_level": 1787,
+ "buzz_change": 1.65,
+ "price_runup_24h_pct": 16.01,
+ "carried_over": false
+}

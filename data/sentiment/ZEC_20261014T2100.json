@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "ZEC",
+ "score": -0.15,
+ "volume": 20,
+ "confidence": 0.4,
+ "summary": "Zcash slid from >$1,300 to ~$1,140-1,170 after drops on 8 and 12 Oct; traders split between bottom calls and head-and-shoulders targets $700-900. Mild negative.",
+ "sources": [
+  "https://x.com/i/trending/2109823116188975242"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "buzz_level": 1842,
+ "buzz_change": 1.25,
+ "price_runup_24h_pct": -7.04,
+ "carried_over": false
+}

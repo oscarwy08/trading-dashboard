@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "CARDS",
+ "score": 0.0,
+ "volume": 10,
+ "confidence": 0.2,
+ "summary": "Mostly copy-paste 'show up for the listing vote' shill posts plus one popular long-form bull article; overall mentions below 3-day average. No verifiable catalyst; neutral, low confidence.",
+ "sources": [
+  "https://x.com/lesabrefomo/status/2110411959418155457"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "buzz_level": 155,
+ "buzz_change": 0.67,
+ "price_runup_24h_pct": 4.73,
+ "carried_over": false
+}

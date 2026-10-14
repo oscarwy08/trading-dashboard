@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "HYPE",
+ "score": 0.2,
+ "volume": 15,
+ "confidence": 0.4,
+ "summary": "Hyperliquid led 30-day holder revenue ($71.7M, mostly HYPE buybacks); EQX share-backed stock tokens coming to its order book. Buzz normal. Mild positive.",
+ "sources": [
+  "https://x.com/i/trending/2110296125911797902",
+  "https://x.com/i/trending/2110415222959984864"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "EQX tokenized US stocks (HIP-1) announced on Hyperliquid (14 Oct)",
+ "buzz_level": 1013,
+ "buzz_change": 1.06,
+ "price_runup_24h_pct": -0.52,
+ "carried_over": false
+}

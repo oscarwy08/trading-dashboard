@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "INJ",
+ "score": 0.25,
+ "volume": 12,
+ "confidence": 0.4,
+ "summary": "Two dated positives: IIP-709 fixed gas fees vote already over quorum, Gulf Labs institutional validator. Price still -7.6% 24h; buzz roughly normal. Mild positive for the Risk hold.",
+ "sources": [
+  "https://x.com/i/trending/2110366823069958498",
+  "https://x.com/i/trending/2110259474930057357"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "IIP-709 fixed-gas governance vote passing quorum (ends 17 Oct); Gulf Labs (Thailand GULF Group) joined as validator",
+ "buzz_level": 1414,
+ "buzz_change": 1.15,
+ "price_runup_24h_pct": -7.58,
+ "carried_over": false
+}

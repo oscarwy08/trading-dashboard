@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "ETH",
+ "score": 0.05,
+ "volume": 30,
+ "confidence": 0.5,
+ "summary": "ETH -3.4% 24h with sharp losses in the slide; Standard Chartered UAE spot ETH access; Devcon 8 in Mumbai 3-6 Nov. Buzz below its 3-day average. Flat-to-mild positive.",
+ "sources": [
+  "https://x.com/i/trending/2110289679698313358",
+  "https://x.com/i/trending/2110048867299491876"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Standard Chartered UAE ETH trading launch (14 Oct); Devcon 8 3-6 Nov",
+ "buzz_level": 3911,
+ "buzz_change": 0.77,
+ "price_runup_24h_pct": -3.43,
+ "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "WAL",
+ "score": 0.1,
+ "volume": 40,
+ "confidence": 0.4,
+ "summary": "+57% 24h. Real catalyst (Sui Foundation $30M DATA Network migration, Console product) but X mentions spiked ~20x vs its 3-day average with 'EXPLODING' posts and talk of whales shorting via lending. Classic buzz-after-run-up; kept only mildly positive.",
+ "sources": [
+  "https://x.com/SuiInsights/status/2110287220527730932",
+  "https://x.com/cryptolevier/status/2110253793321332927",
+  "https://x.com/MrBreadSmith/status/2110423634959622352"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Data Foundation moving AI-data network to Walrus with $30M Sui Foundation backing (12 Oct); Walrus Console launch",
+ "buzz_level": 704,
+ "buzz_change": 19.74,
+ "price_runup_24h_pct": 57.54,
+ "carried_over": false
+}

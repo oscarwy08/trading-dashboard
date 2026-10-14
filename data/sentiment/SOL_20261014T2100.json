@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "SOL",
+ "score": 0.2,
+ "volume": 30,
+ "confidence": 0.45,
+ "summary": "Dated upgrade next week; buzz below its 3-day average, so not overheated. Mild positive.",
+ "sources": [
+  "https://x.com/i/trending/2110038331765776702"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Alpenglow consensus upgrade activates on mainnet 21 Oct ~14:50 UTC (finality 12.8s to ~150ms)",
+ "buzz_level": 7033,
+ "buzz_change": 0.85,
+ "price_runup_24h_pct": -2.95,
+ "carried_over": false
+}

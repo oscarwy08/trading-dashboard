@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-14T21:00:00Z",
+ "asset": "AAVE",
+ "score": 0.15,
+ "volume": 10,
+ "confidence": 0.35,
+ "summary": "Proposal shared by Aave founder; would add trustless BTC vault collateral. Governance not yet passed. Buzz normal. Mild positive.",
+ "sources": [
+  "https://x.com/i/trending/2110444479811665988"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Babylon proposal for native BTC collateral on Aave V4 (14 Oct, needs governance)",
+ "buzz_level": 201,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": -3.92,
+ "carried_over": false
+}
