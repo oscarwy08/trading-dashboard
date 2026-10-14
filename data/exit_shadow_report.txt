@@ -1,0 +1,351 @@
+Shadow exits vs the 5-minute cycle
+
+PYTH day
+  shadow  2026-10-12T11:24:44+00:00  £0.066395  [burst 24h] trailing stop +1.9% (peak +3.6%, gives back 40% of the gain)
+  cycle   2026-10-12T11:27:15+00:00  £0.0664101  [burst 24h] trailing stop +1.9% (peak +3.6%, gives back 40% of the gain); P&L £+0.09
+  cycle was 151s later, price £+1.51121e-05 (+0.02%)
+
+CAP risk
+  shadow  2026-10-12T13:15:47+00:00  £0.0825385  trailing take-profit: -10.2% from peak (peak +30.4%), now +17.1%
+  cycle   2026-10-12T13:22:18+00:00  £0.0757214  trailing take-profit: -15.9% from peak (peak +27.9%), now +7.5% [gap fill]; P&L £+0.60
+  cycle was 391s later, price £-0.00681707 (-8.26%)
+
+POL day
+  shadow  2026-10-12T13:32:47+00:00  £0.0786207  [burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)
+  cycle   2026-10-12T14:42:17+00:00  £0.0782278  [burst 24h] stop-loss -2.0% <= -1.5% (ATR-scaled); P&L £-0.10
+  cycle was 4170s later, price £-0.000392915 (-0.50%)
+
+RENDER day
+  shadow  2026-10-12T14:24:25+00:00  £1.54521  [momentum] stop-loss -2.0% <= -2.0% (ATR-scaled)
+  cycle   2026-10-12T14:27:04+00:00  £1.54295  [momentum] stop-loss -2.2% <= -2.0% (ATR-scaled); P&L £-0.12
+  cycle was 159s later, price £-0.00226682 (-0.15%)
+
+CAP day
+  shadow  2026-10-12T15:08:25+00:00  £0.0710616  [momentum] stop-loss -5.1% <= -5.0% (ATR-scaled)
+  cycle   2026-10-12T15:12:06+00:00  £0.0698557  [momentum] stop-loss -6.8% <= -5.0% (ATR-scaled) [gap fill]; P&L £-0.36
+  cycle was 221s later, price £-0.00120595 (-1.70%)
+
+GRASS risk
+  shadow  2026-10-12T15:56:34+00:00  £0.564966  risk stop-loss -12.1% <= -12%
+  cycle   2026-10-12T15:57:16+00:00  £0.56557  risk stop-loss -12.0% <= -12%; P&L £-0.60
+  cycle was 42s later, price £+0.000604484 (+0.11%)
+
+STX day
+  shadow  2026-10-12T16:58:45+00:00  £0.302469  [burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)
+  cycle   2026-10-12T19:17:59+00:00  £0.322417  [burst 24h] take-profit 5.0% >= 4.1% (ATR-scaled); P&L £+0.25
+  cycle was 8354s later, price £+0.019948 (+6.60%)
+
+STONK day
+  shadow  2026-10-12T21:00:00+00:00  £0.122698  [momentum] flatten 22:00 UK (flat overnight)
+  cycle   2026-10-12T21:02:17+00:00  £0.122698  [momentum] flatten 22:00 UK (flat overnight); P&L £+0.20
+  cycle was 137s later, price £+0 (+0.00%)
+
+TIA risk
+  shadow  2026-10-12T21:35:42+00:00  £0.408178  risk stop-loss -12.2% <= -12%
+  cycle   2026-10-12T21:42:19+00:00  £0.407422  risk stop-loss -12.4% <= -12%; P&L £-0.62
+  cycle was 397s later, price £-0.000755605 (-0.19%)
+
+WLD risk
+  shadow  2026-10-13T00:47:18+00:00  £0.366316  risk stop-loss -12.0% <= -12%
+  cycle   2026-10-13T00:52:07+00:00  £0.361016  risk stop-loss -13.3% <= -12% [gap fill]; P&L £-0.66
+  cycle was 289s later, price £-0.00530015 (-1.45%)
+
+ZAMA day
+  shadow  2026-10-13T08:05:10+00:00  £0.0615612  [burst 24h] stop-loss -2.0% <= -2.0% (ATR-scaled)
+  cycle   2026-10-13T08:22:16+00:00  £0.0613723  [burst 24h] stop-loss -2.3% <= -2.0% (ATR-scaled); P&L £-0.12
+  cycle was 1026s later, price £-0.000188931 (-0.31%)
+
+XTZ day
+  shadow  2026-10-13T09:00:15+00:00  £0.251361  [burst 24h] stop-loss -1.9% <= -1.8% (ATR-scaled)
+  cycle   2026-10-13T09:02:31+00:00  £0.250568  [burst 24h] stop-loss -2.2% <= -1.8% (ATR-scaled); P&L £-0.11
+  cycle was 136s later, price £-0.00079342 (-0.32%)
+
+VVV day
+  shadow  2026-10-13T09:00:52+00:00  £17.3061  [burst 4h] stop-loss -1.7% <= -1.6% (ATR-scaled)
+  cycle   2026-10-13T09:02:31+00:00  £17.2613  [burst 4h] stop-loss -2.0% <= -1.6% (ATR-scaled); P&L £-0.10
+  cycle was 99s later, price £-0.0447326 (-0.26%)
+
+RENDER day
+  shadow  2026-10-13T09:54:07+00:00  £1.58734  [momentum] stop-loss -3.1% <= -3.0% (ATR-scaled)
+  cycle   2026-10-13T10:24:53+00:00  £1.5847  [momentum] stop-loss -3.2% <= -3.0% (ATR-scaled); P&L £-0.23
+  cycle was 1846s later, price £-0.00264485 (-0.17%)
+
+ZAMA day
+  shadow  2026-10-13T10:36:54+00:00  £0.0615072  [burst 4h] stop-loss -2.2% <= -2.1% (ATR-scaled)
+  cycle   2026-10-13T10:55:31+00:00  £0.0612277  [burst 4h] stop-loss -2.7% <= -2.1% (ATR-scaled); P&L £-0.13
+  cycle was 1117s later, price £-0.000279475 (-0.45%)
+
+BAT day
+  shadow  2026-10-13T10:53:25+00:00  £0.129918  [momentum] stop-loss -4.0% <= -3.8% (ATR-scaled)
+  cycle   2026-10-13T10:55:31+00:00  £0.129805  [momentum] stop-loss -4.1% <= -3.8% (ATR-scaled); P&L £-0.28
+  cycle was 126s later, price £-0.000113301 (-0.09%)
+
+KNTQ risk
+  shadow  2026-10-13T10:54:05+00:00  £0.236572  risk stop-loss -12.0% <= -12%
+  cycle   2026-10-13T10:55:31+00:00  £0.236572  risk stop-loss -12.0% <= -12%; P&L £-0.60
+  cycle was 86s later, price £+0 (+0.00%)
+
+TRAC day
+  shadow  2026-10-13T10:56:46+00:00  £0.33114  [momentum] stop-loss -3.1% <= -3.0% (ATR-scaled)
+  cycle   2026-10-13T11:37:40+00:00  £0.345637  [momentum] trailing stop +1.1% (peak +3.2%, gives back 40% of the gain); P&L £+0.07
+  cycle was 2454s later, price £+0.0144971 (+4.38%)
+
+TRAC day
+  shadow  2026-10-13T12:30:38+00:00  £0.317745  [momentum] stop-loss -3.9% <= -3.6% (ATR-scaled)
+  cycle   2026-10-13T13:29:25+00:00  £0.314736  [momentum] stop-loss -4.8% <= -3.6% (ATR-scaled) [gap fill]; P&L £-0.32
+  cycle was 3527s later, price £-0.00300837 (-0.95%)
+
+OP day
+  shadow  2026-10-13T13:55:41+00:00  £0.105189  [burst 24h] stop-loss -1.9% <= -1.6% (ATR-scaled)
+  cycle   2026-10-13T14:01:17+00:00  £0.105416  [burst 24h] stop-loss -1.7% <= -1.6% (ATR-scaled); P&L £-0.08
+  cycle was 336s later, price £+0.000226538 (+0.22%)
+
+ZK day
+  shadow  2026-10-13T13:55:50+00:00  £0.0120594  [burst 24h] stop-loss -2.8% <= -2.3% (ATR-scaled)
+  cycle   2026-10-13T14:01:17+00:00  £0.0118781  [burst 24h] stop-loss -4.2% <= -2.3% (ATR-scaled) [gap fill]; P&L £-0.21
+  cycle was 327s later, price £-0.00018123 (-1.50%)
+
+LDO day
+  shadow  2026-10-13T14:57:50+00:00  £0.320166  [burst 24h] stop-loss -1.6% <= -1.6% (ATR-scaled)
+  cycle   2026-10-13T15:05:58+00:00  £0.320166  [burst 24h] stop-loss -1.6% <= -1.6% (ATR-scaled); P&L £-0.08
+  cycle was 488s later, price £+0 (+0.00%)
+
+FTC.L risk
+  shadow  2026-10-13T15:03:40+00:00  £2.655  risk stop-loss -12.1% <= -12%
+  cycle   2026-10-14T07:37:00+00:00  £2.64  risk stop-loss -12.6% <= -12%; P&L £-0.98
+  cycle was 59600s later, price £-0.015 (-0.56%)
+
+STX day
+  shadow  2026-10-13T20:24:55+00:00  £0.319972  [momentum] signal -0.238 <= -0.2 (4h -1.2%, 24h -8.1%, EMA6/24 up, RSI 47, sentiment +0.40 (conf 0.55, weight x0.36))
+  cycle   2026-10-13T20:25:06+00:00  £0.320124  [momentum] signal -0.234 <= -0.2 (4h -1.2%, 24h -8.1%, EMA6/24 up, RSI 47, sentiment +0.40 (conf 0.55, weight x0.36)); P&L £-0.03
+  cycle was 11s later, price £+0.000151323 (+0.05%)
+
+TRAC day
+  shadow  2026-10-13T21:00:01+00:00  £0.306883  [momentum] flatten 22:00 UK (flat overnight)
+  cycle   2026-10-13T21:08:39+00:00  £0.306883  [momentum] flatten 22:00 UK (flat overnight); P&L £-0.19
+  cycle was 518s later, price £+0 (+0.00%)
+
+VVV day
+  shadow  2026-10-14T08:41:57+00:00  £17.5188  [burst 24h] stop-loss -1.7% <= -1.5% (ATR-scaled)
+  cycle   2026-10-14T08:46:29+00:00  £17.4832  [burst 24h] stop-loss -1.9% <= -1.5% (ATR-scaled); P&L £-0.10
+  cycle was 272s later, price £-0.0356054 (-0.20%)
+
+BTW day
+  shadow  2026-10-14T09:13:28+00:00  £1.89289  [momentum] stop-loss -4.6% <= -4.6% (ATR-scaled)
+  cycle   2026-10-14T09:23:18+00:00  £1.8778  [momentum] stop-loss -5.4% <= -4.6% (ATR-scaled) [gap fill]; P&L £-0.35
+  cycle was 590s later, price £-0.0150828 (-0.80%)
+
+BAT day
+  shadow  2026-10-14T10:29:06+00:00  £0.140905  [momentum] stop-loss -4.5% <= -4.5% (ATR-scaled)
+  cycle   2026-10-14T10:36:24+00:00  £0.140649  [momentum] stop-loss -4.7% <= -4.5% (ATR-scaled); P&L £-0.31
+  cycle was 438s later, price £-0.000256301 (-0.18%)
+
+BTW day
+  shadow  2026-10-14T12:19:54+00:00  £1.8698  [momentum] stop-loss -5.5% <= -5.0% (ATR-scaled)
+  cycle   2026-10-14T12:22:27+00:00  £1.78686  [momentum] stop-loss -9.7% <= -5.0% (ATR-scaled) [gap fill]; P&L £-0.61
+  cycle was 153s later, price £-0.0829345 (-4.44%)
+
+PYTH day
+  shadow  2026-10-14T12:20:22+00:00  £0.0631358  [burst 24h] stop-loss -1.8% <= -1.8% (ATR-scaled)
+  cycle   2026-10-14T12:34:09+00:00  £0.0626382  [burst 24h] stop-loss -2.6% <= -1.8% (ATR-scaled); P&L £-0.13
+  cycle was 827s later, price £-0.000497607 (-0.79%)
+
+TRAC day
+  shadow  2026-10-14T12:41:13+00:00  £0.344932  [momentum] trailing stop +1.7% (peak +3.0%, gives back 40% of the gain)
+  cycle   no sell yet
+
+WAL day
+  shadow  2026-10-14T13:45:40+00:00  £0.0399409  [momentum] trailing stop +2.8% (peak +4.9%, gives back 40% of the gain)
+  cycle   no sell yet
+
+Shadow entries vs the 5-minute cycle
+
+KNTQ risk
+  shadow  2026-10-12T13:22:23+00:00  £0.266751  RISK dip: price holds £0.266751
+  cycle   2026-10-12T13:27:19+00:00  £0.26728  RISK dip (crypto): Uptrend, pulled back 7.5% toward the recent low, and the last bars turned up. RSI 24 was oversold. Confidence 0.73 >= 0.55, EV +2.07% after costs; 4h -2.9%, 24h -2.0%, EMA6/24 up, RSI 24; BTC 1h -0.77%, 4h -1.10%
+  cycle was 296s later, price £+0.000528924 (+0.20%)
+
+ZRO risk
+  shadow  2026-10-12T13:23:44+00:00  £1.81194  RISK dip: price holds £1.81043
+  cycle   no buy — the cycle missed this move
+
+LDO risk
+  shadow  2026-10-12T13:24:01+00:00  £0.326421  RISK dip: price holds £0.326421
+  cycle   no buy — the cycle missed this move
+
+PLUME risk
+  shadow  2026-10-12T13:24:01+00:00  £0.0164117  RISK dip: price lifts through £0.0163712
+  cycle   no buy — the cycle missed this move
+
+RAY risk
+  shadow  2026-10-12T13:24:32+00:00  £1.69482  RISK dip: price lifts through £1.69477
+  cycle   no buy — the cycle missed this move
+
+APT risk
+  shadow  2026-10-12T13:24:59+00:00  £0.656847  RISK dip: price lifts through £0.655682
+  cycle   no buy — the cycle missed this move
+
+STX day
+  shadow  2026-10-12T16:35:55+00:00  £0.305491  [burst 24h] price breaks £0.305192; volume x2
+  cycle   2026-10-12T16:37:16+00:00  £0.305869  [burst 24h] 24h-high break +0.32% (high $0.4035); vol x6.2, RSI 65, BTC 1h +0.14%, 4h +0.14%; confidence 0.66 >= 0.58, EV +0.40% after costs; target +4.1% / stop -1.5% / max 6h
+  cycle was 81s later, price £+0.000377803 (+0.12%)
+
+SYRUP day
+  shadow  2026-10-13T07:06:47+00:00  £0.1953  [burst 24h] price breaks £0.19511; volume x2
+  cycle   no buy — the cycle missed this move
+
+INJ day
+  shadow  2026-10-13T07:10:09+00:00  £6.08433  [burst 24h] price breaks £6.08057; volume x2
+  cycle   no buy — the cycle missed this move
+
+INJ day
+  shadow  2026-10-13T07:12:00+00:00  £6.09718  [burst 24h] price breaks £6.09268; volume x2
+  cycle   no buy — the cycle missed this move
+
+INJ day
+  shadow  2026-10-13T07:22:11+00:00  £6.11004  [burst 24h] price breaks £6.10782; volume x2
+  cycle   no buy — the cycle missed this move
+
+INJ day
+  shadow  2026-10-13T07:47:49+00:00  £6.11911  [burst 24h] price breaks £6.11842; volume x2
+  cycle   no buy — the cycle missed this move
+
+XTZ day
+  shadow  2026-10-13T08:03:35+00:00  £0.251414  [burst 24h] price breaks £0.251408; volume x2
+  cycle   2026-10-13T08:12:11+00:00  £0.254883  [burst 24h] 24h-high break +1.39% (high $0.33263); vol x3.0, RSI 70, BTC 1h +0.45%, 4h +0.90%; confidence 0.67 >= 0.55, EV +1.11% after costs; target +5.4% / stop -1.8% / max 6h
+  cycle was 516s later, price £+0.00346877 (+1.38%)
+
+XTZ day
+  shadow  2026-10-13T11:39:40+00:00  £0.25202  [momentum] price holds £0.251846; score 0.498 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+JST day
+  shadow  2026-10-14T10:36:34+00:00  £0.106124  [momentum] price holds £0.106124; score 0.415 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+PENDLE day
+  shadow  2026-10-14T10:36:34+00:00  £1.65164  [momentum] price holds £1.64636; score 0.514 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+STX day
+  shadow  2026-10-14T10:36:34+00:00  £0.328669  [momentum] price holds £0.327839; score 0.4 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+ZK day
+  shadow  2026-10-14T10:36:34+00:00  £0.0120085  [momentum] price holds £0.0119859; score 0.363 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+PONS day
+  shadow  2026-10-14T10:37:31+00:00  £0.251929  [momentum] price holds £0.251552; score 0.62 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+WAL day
+  shadow  2026-10-14T12:22:38+00:00  £0.040751  [momentum] price holds £0.0406832; score 0.75 >= 0.35
+  cycle   2026-10-14T13:19:16+00:00  £0.0386208  [momentum] DAY score 0.723 >= 0.35; target +12.0% / stop -5.0% (ATR 4.80%); EV +0.75%; 4h +3.8%, 24h +33.3%, EMA6/24 up, RSI 79, sentiment +0.35 (conf 0.45, weight x0.96)
+  cycle was 3398s later, price £-0.00213018 (-5.23%)
+
+ZEC day
+  shadow  2026-10-14T12:23:32+00:00  £939.723  [momentum] price holds £939.362; score 0.418 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+XCN day
+  shadow  2026-10-14T12:23:38+00:00  £0.00332492  [momentum] price holds £0.00332492; score 0.359 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+ALGO day
+  shadow  2026-10-14T12:24:49+00:00  £0.0917557  [momentum] price holds £0.0917482; score 0.469 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+PONS day
+  shadow  2026-10-14T13:54:22+00:00  £0.262359  [burst 24h] price breaks £0.26179; volume x2
+  cycle   no buy — the cycle missed this move
+
+Moves the cycle missed
+  ZRO risk  2026-10-12T13:23:44+00:00  £1.81194  RISK dip: price holds £1.81043
+  LDO risk  2026-10-12T13:24:01+00:00  £0.326421  RISK dip: price holds £0.326421
+  PLUME risk  2026-10-12T13:24:01+00:00  £0.0164117  RISK dip: price lifts through £0.0163712
+  RAY risk  2026-10-12T13:24:32+00:00  £1.69482  RISK dip: price lifts through £1.69477
+  APT risk  2026-10-12T13:24:59+00:00  £0.656847  RISK dip: price lifts through £0.655682
+  SYRUP day  2026-10-13T07:06:47+00:00  £0.1953  [burst 24h] price breaks £0.19511; volume x2
+  INJ day  2026-10-13T07:10:09+00:00  £6.08433  [burst 24h] price breaks £6.08057; volume x2
+  INJ day  2026-10-13T07:12:00+00:00  £6.09718  [burst 24h] price breaks £6.09268; volume x2
+  INJ day  2026-10-13T07:22:11+00:00  £6.11004  [burst 24h] price breaks £6.10782; volume x2
+  INJ day  2026-10-13T07:47:49+00:00  £6.11911  [burst 24h] price breaks £6.11842; volume x2
+  XTZ day  2026-10-13T11:39:40+00:00  £0.25202  [momentum] price holds £0.251846; score 0.498 >= 0.35
+  JST day  2026-10-14T10:36:34+00:00  £0.106124  [momentum] price holds £0.106124; score 0.415 >= 0.35
+  PENDLE day  2026-10-14T10:36:34+00:00  £1.65164  [momentum] price holds £1.64636; score 0.514 >= 0.35
+  STX day  2026-10-14T10:36:34+00:00  £0.328669  [momentum] price holds £0.327839; score 0.4 >= 0.35
+  ZK day  2026-10-14T10:36:34+00:00  £0.0120085  [momentum] price holds £0.0119859; score 0.363 >= 0.35
+  PONS day  2026-10-14T10:37:31+00:00  £0.251929  [momentum] price holds £0.251552; score 0.62 >= 0.35
+  ZEC day  2026-10-14T12:23:32+00:00  £939.723  [momentum] price holds £939.362; score 0.418 >= 0.35
+  XCN day  2026-10-14T12:23:38+00:00  £0.00332492  [momentum] price holds £0.00332492; score 0.359 >= 0.35
+  ALGO day  2026-10-14T12:24:49+00:00  £0.0917557  [momentum] price holds £0.0917482; score 0.469 >= 0.35
+  PONS day  2026-10-14T13:54:22+00:00  £0.262359  [burst 24h] price breaks £0.26179; volume x2
+
+Cycle buys with no shadow entry
+  CAP day  2026-10-12T14:27:04+00:00  £0.0744807  [momentum] DAY score 0.766 >= 0.35; target +11.7% / stop -5.0% (ATR 4.69%); EV +1.66%; 4h +6.7%, 24h +5.5%, EMA6/24 up, RSI 55, sentiment +0.00 (conf 0.15, weight x0.48)
+  FTC.L risk  2026-10-12T14:42:17+00:00  £3.01495  RISK dip (stock): Positive sentiment, pulled back 8.6% toward the recent low, and the last bars turned up. Confidence 0.78 >= 0.56, EV +3.02% after costs; 4h -2.7%, 24h -6.1%, EMA6/24 down, RSI 50; ^FTSE 1h +0.09%, day +0.75%
+  INJ risk  2026-10-12T15:57:16+00:00  £5.94359  RISK dip (crypto): Uptrend, pulled back 5.3% toward the recent low, and the last bars turned up. Confidence 0.76 >= 0.57, EV +0.71% after costs; 4h -0.8%, 24h +1.8%, EMA6/24 up, RSI 49; BTC 1h +0.18%, 4h -0.84%
+  STX day  2026-10-13T07:00:26+00:00  £0.320435  [momentum] DAY score 0.794 >= 0.35; target +9.5% / stop -4.6% (ATR 3.79%); EV +1.37%; 4h +4.9%, 24h +9.6%, EMA6/24 up, RSI 57, sentiment +0.30 (conf 0.45, weight x0.98)
+  RENDER day  2026-10-13T07:00:26+00:00  £1.63166  [momentum] DAY score 0.775 >= 0.35; target +6.3% / stop -3.0% (ATR 2.52%); EV +0.79%; 4h +3.1%, 24h +7.5%, EMA6/24 up, RSI 67, sentiment +0.35 (conf 0.50, weight x0.98)
+  ZAMA day  2026-10-13T07:41:28+00:00  £0.0625067  [burst 24h] 24h-high break +0.98% (high $0.08187); vol x17.5, RSI 65, BTC 1h +0.34%, 4h +0.84%; confidence 0.73 >= 0.55, EV +1.25% after costs; target +5.9% / stop -2.0% / max 6h
+  VVV day  2026-10-13T08:22:16+00:00  £17.5434  [burst 4h] 4h-range break +0.25% (range 2.2%); vol x250.5, RSI 50, BTC 1h +0.23%, 4h +0.85%; confidence 0.62 >= 0.55, EV +0.44% after costs; target +4.8% / stop -1.6% / max 6h
+  ZAMA day  2026-10-13T09:43:25+00:00  £0.0625569  [burst 4h] 4h-range break +0.16% (range 3.6%); vol x3.7, RSI 61, BTC 1h -0.11%, 4h +0.01%; confidence 0.57 >= 0.56, EV +0.30% after costs; target +6.2% / stop -2.1% / max 6h
+  BAT day  2026-10-13T10:24:53+00:00  £0.134669  [momentum] DAY score 0.484 >= 0.35; target +7.9% / stop -3.8% (ATR 3.17%); EV +0.40%; 4h -0.3%, 24h +23.7%, EMA6/24 up, RSI 71, sentiment +0.20 (conf 0.35, weight x0.70)
+  TRAC day  2026-10-13T10:55:31+00:00  £0.339902  [momentum] DAY score 0.779 >= 0.35; target +6.3% / stop -3.0% (ATR 2.50%); EV +0.39%; 4h +11.7%, 24h +15.5%, EMA6/24 up, RSI 80, sentiment +0.00 (conf 0.10, weight x0.65)
+  TRAC day  2026-10-13T11:57:35+00:00  £0.328722  [momentum] DAY score 0.88 >= 0.35; target +7.5% / stop -3.6% (ATR 3.01%); EV +0.89%; 4h +6.5%, 24h +9.9%, EMA6/24 up, RSI 73, sentiment +0.00 (conf 0.10, weight x0.57)
+  TRAC day  2026-10-13T13:29:25+00:00  £0.31451  [momentum] DAY score 0.714 >= 0.35; target +9.7% / stop -4.6% (ATR 3.86%); EV +0.86%; 4h +4.5%, 24h +5.4%, EMA6/24 up, RSI 63, sentiment +0.15 (conf 0.30, weight x0.94)
+  OP day  2026-10-13T13:29:25+00:00  £0.106699  [burst 24h] 24h-high break +0.64% (high $0.1404); vol x4.1, RSI 69, BTC 1h +0.05%, 4h -0.12%; confidence 0.66 >= 0.60, EV +0.78% after costs; target +5.0% / stop -1.6% / max 6h
+  ZK day  2026-10-13T13:39:54+00:00  £0.0123312  [burst 24h] 24h-high break +2.96% (high $0.01586); vol x2.4, RSI 72, BTC 1h +0.35%, 4h +0.21%; confidence 0.60 >= 0.60, EV +1.15% after costs; target +6.9% / stop -2.3% / max 6h
+  LDO day  2026-10-13T14:33:46+00:00  £0.323941  [burst 24h] 24h-high break +0.46% (high $0.431); vol x2448.6, RSI 79, BTC 1h +0.25%, 4h +0.12%; confidence 0.66 >= 0.61, EV +0.62% after costs; target +4.9% / stop -1.6% / max 6h
+  BTW day  2026-10-14T07:02:22+00:00  £1.98163  [momentum] DAY score 0.8 >= 0.35; target +9.5% / stop -4.6% (ATR 3.80%); EV +1.16%; 4h +13.6%, 24h +47.9%, EMA6/24 up, RSI 79, no fresh sentiment
+  BAT day  2026-10-14T07:02:22+00:00  £0.146807  [momentum] DAY score 0.77 >= 0.35; target +9.3% / stop -4.5% (ATR 3.74%); EV +0.72%; 4h +3.9%, 24h +5.3%, EMA6/24 up, RSI 57, sentiment +0.20 (conf 0.35, weight x0.15)
+  VVV day  2026-10-14T08:11:23+00:00  £17.7578  [burst 24h] 24h-high break +0.17% (high $23.592); vol x3.2, RSI 76, BTC 1h +0.69%, 4h +0.34%; confidence 0.60 >= 0.56, EV +0.43% after costs; target +4.1% / stop -1.5% / max 6h
+  TRAC day  2026-10-14T09:23:18+00:00  £0.337251  [momentum] DAY score 0.9 >= 0.35; target +7.3% / stop -3.5% (ATR 2.94%); EV +0.52%; 4h +7.5%, 24h +12.2%, EMA6/24 up, RSI 69, no fresh sentiment
+  BTW day  2026-10-14T11:35:49+00:00  £1.97485  [momentum] DAY score 0.403 >= 0.35; target +11.3% / stop -5.0% (ATR 4.51%); EV +0.34%; 4h -1.1%, 24h +38.7%, EMA6/24 up, RSI 72, sentiment +0.30 (conf 0.35, weight x0.88)
+  PYTH day  2026-10-14T12:10:36+00:00  £0.064033  [burst 24h] 24h-high break +1.14% (high $0.08389); vol x2846.1, RSI 69, BTC 1h +0.39%, 4h +0.21%; confidence 0.68 >= 0.57, EV +0.67% after costs; target +5.4% / stop -1.8% / max 6h
+
+Per book
+
+main
+  exits: 30 pairs, avg time gap 2943s, avg price gap -0.40%, missed moves 2
+  entries: 4 pairs, avg time gap 1073s, avg price gap -0.88%, missed moves 20
+ev_exit
+  exits: 17 pairs, avg time gap 4542s, avg price gap -0.49%, missed moves 3
+  entries: 4 pairs, avg time gap 15709s, avg price gap +1.87%, missed moves 37
+review_leftovers
+  exits: 17 pairs, avg time gap 7720s, avg price gap +0.18%, missed moves 2
+  entries: 3 pairs, avg time gap 46272s, avg price gap +13.13%, missed moves 20
+all_combined
+  exits: 16 pairs, avg time gap 5105s, avg price gap -0.18%, missed moves 4
+  entries: 4 pairs, avg time gap 15728s, avg price gap +1.87%, missed moves 33
+burst_runner
+  exits: 23 pairs, avg time gap 5791s, avg price gap +0.04%, missed moves 2
+  entries: 5 pairs, avg time gap 16857s, avg price gap +1.32%, missed moves 27
+everything
+  exits: 16 pairs, avg time gap 5123s, avg price gap -0.18%, missed moves 4
+  entries: 4 pairs, avg time gap 15745s, avg price gap +1.87%, missed moves 19
+midnight_crypto
+  exits: 23 pairs, avg time gap 5772s, avg price gap -0.76%, missed moves 2
+  entries: 7 pairs, avg time gap 21857s, avg price gap +3.23%, missed moves 45
+entry_watch
+  exits: 19 pairs, avg time gap 6736s, avg price gap -0.08%, missed moves 2
+  entries: 4 pairs, avg time gap 30537s, avg price gap +7.27%, missed moves 26
+risk_giveback_15
+  exits: 19 pairs, avg time gap 1838s, avg price gap +0.18%, missed moves 2
+  entries: 4 pairs, avg time gap 7874s, avg price gap +0.05%, missed moves 15
+day_trail_arm
+  exits: 16 pairs, avg time gap 1947s, avg price gap -0.32%, missed moves 0
+  entries: 3 pairs, avg time gap 9804s, avg price gap +2.24%, missed moves 12
+day_ev_blend
+  exits: 16 pairs, avg time gap 4550s, avg price gap +0.10%, missed moves 2
+  entries: 3 pairs, avg time gap 30617s, avg price gap -2.19%, missed moves 11
+no_risk_clock
+  exits: 19 pairs, avg time gap 1823s, avg price gap +0.18%, missed moves 2
+  entries: 4 pairs, avg time gap 7892s, avg price gap +0.05%, missed moves 15
+day_capital_caution
+  exits: 20 pairs, avg time gap 1739s, avg price gap +0.17%, missed moves 2
+  entries: 4 pairs, avg time gap 7899s, avg price gap +0.05%, missed moves 15
+partial_take
+  exits: 24 pairs, avg time gap 725s, avg price gap -0.00%, missed moves 0
+  entries: 2 pairs, avg time gap 5650s, avg price gap +1.24%, missed moves 10

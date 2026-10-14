@@ -1,0 +1,1155 @@
+{
+  "status": "ok",
+  "generated": "2026-10-14T14:17:26+00:00",
+  "path": "/home/bot/exit_shadow/exit_shadow.db",
+  "books": [
+    {
+      "name": "main",
+      "exits": {
+        "pairs": 30,
+        "avg_dt_s": 2942.9333333333334,
+        "avg_price_pct": -0.395958534179797,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 4,
+        "avg_dt_s": 1072.75,
+        "avg_price_pct": -0.8814123880886761,
+        "missed": 20
+      }
+    },
+    {
+      "name": "ev_exit",
+      "exits": {
+        "pairs": 17,
+        "avg_dt_s": 4541.882352941177,
+        "avg_price_pct": -0.4868446501337914,
+        "missed": 3
+      },
+      "entries": {
+        "pairs": 4,
+        "avg_dt_s": 15709.0,
+        "avg_price_pct": 1.8667582696575442,
+        "missed": 37
+      }
+    },
+    {
+      "name": "review_leftovers",
+      "exits": {
+        "pairs": 17,
+        "avg_dt_s": 7719.764705882353,
+        "avg_price_pct": 0.18134714911258445,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 3,
+        "avg_dt_s": 46272.0,
+        "avg_price_pct": 13.131849623599159,
+        "missed": 20
+      }
+    },
+    {
+      "name": "all_combined",
+      "exits": {
+        "pairs": 16,
+        "avg_dt_s": 5105.0,
+        "avg_price_pct": -0.1766470536109764,
+        "missed": 4
+      },
+      "entries": {
+        "pairs": 4,
+        "avg_dt_s": 15727.5,
+        "avg_price_pct": 1.8667582696575442,
+        "missed": 33
+      }
+    },
+    {
+      "name": "burst_runner",
+      "exits": {
+        "pairs": 23,
+        "avg_dt_s": 5791.0,
+        "avg_price_pct": 0.04376311053220859,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 5,
+        "avg_dt_s": 16857.4,
+        "avg_price_pct": 1.3210259756512324,
+        "missed": 27
+      }
+    },
+    {
+      "name": "everything",
+      "exits": {
+        "pairs": 16,
+        "avg_dt_s": 5123.25,
+        "avg_price_pct": -0.1766470536109764,
+        "missed": 4
+      },
+      "entries": {
+        "pairs": 4,
+        "avg_dt_s": 15745.25,
+        "avg_price_pct": 1.8667582696575442,
+        "missed": 19
+      }
+    },
+    {
+      "name": "midnight_crypto",
+      "exits": {
+        "pairs": 23,
+        "avg_dt_s": 5771.782608695652,
+        "avg_price_pct": -0.7623937675737205,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 7,
+        "avg_dt_s": 21856.571428571428,
+        "avg_price_pct": 3.2332154560927817,
+        "missed": 45
+      }
+    },
+    {
+      "name": "entry_watch",
+      "exits": {
+        "pairs": 19,
+        "avg_dt_s": 6735.8421052631575,
+        "avg_price_pct": -0.08438268216402542,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 4,
+        "avg_dt_s": 30537.0,
+        "avg_price_pct": 7.2687879300711895,
+        "missed": 26
+      }
+    },
+    {
+      "name": "risk_giveback_15",
+      "exits": {
+        "pairs": 19,
+        "avg_dt_s": 1838.2105263157894,
+        "avg_price_pct": 0.1827269150422095,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 4,
+        "avg_dt_s": 7874.25,
+        "avg_price_pct": 0.0465575156264558,
+        "missed": 15
+      }
+    },
+    {
+      "name": "day_trail_arm",
+      "exits": {
+        "pairs": 16,
+        "avg_dt_s": 1947.25,
+        "avg_price_pct": -0.3166822177708742,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 3,
+        "avg_dt_s": 9804.333333333334,
+        "avg_price_pct": 2.241767155936461,
+        "missed": 12
+      }
+    },
+    {
+      "name": "day_ev_blend",
+      "exits": {
+        "pairs": 16,
+        "avg_dt_s": 4549.875,
+        "avg_price_pct": 0.10205638575735158,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 3,
+        "avg_dt_s": 30616.666666666668,
+        "avg_price_pct": -2.1895093177757454,
+        "missed": 11
+      }
+    },
+    {
+      "name": "no_risk_clock",
+      "exits": {
+        "pairs": 19,
+        "avg_dt_s": 1823.4736842105262,
+        "avg_price_pct": 0.1765145001522934,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 4,
+        "avg_dt_s": 7892.0,
+        "avg_price_pct": 0.0465575156264558,
+        "missed": 15
+      }
+    },
+    {
+      "name": "day_capital_caution",
+      "exits": {
+        "pairs": 20,
+        "avg_dt_s": 1739.25,
+        "avg_price_pct": 0.16533195673700726,
+        "missed": 2
+      },
+      "entries": {
+        "pairs": 4,
+        "avg_dt_s": 7898.75,
+        "avg_price_pct": 0.0465575156264558,
+        "missed": 15
+      }
+    },
+    {
+      "name": "partial_take",
+      "exits": {
+        "pairs": 24,
+        "avg_dt_s": 724.875,
+        "avg_price_pct": -0.003841159039571083,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 2,
+        "avg_dt_s": 5650.5,
+        "avg_price_pct": 1.2374854684205672,
+        "missed": 10
+      }
+    }
+  ],
+  "main_exits": [
+    {
+      "asset": "PYTH",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-12T11:24:44+00:00",
+      "shadow_price": 0.06639501135,
+      "trigger": "[burst 24h] trailing stop +1.9% (peak +3.6%, gives back 40% of the gain)",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T11:27:15+00:00",
+      "cycle_price": 0.06641012345,
+      "cycle_reason": "[burst 24h] trailing stop +1.9% (peak +3.6%, gives back 40% of the gain); P&L \u00a3+0.09",
+      "dt_s": 151.0,
+      "price_diff": 1.5112099999992079e-05,
+      "price_pct": 0.022760896779321176
+    },
+    {
+      "asset": "CAP",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T13:15:47+00:00",
+      "shadow_price": 0.082538512175,
+      "trigger": "trailing take-profit: -10.2% from peak (peak +30.4%), now +17.1%",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T13:22:18+00:00",
+      "cycle_price": 0.07572144386499999,
+      "cycle_reason": "trailing take-profit: -15.9% from peak (peak +27.9%), now +7.5% [gap fill]; P&L \u00a3+0.60",
+      "dt_s": 391.0,
+      "price_diff": -0.006817068310000007,
+      "price_pct": -8.259257563967601
+    },
+    {
+      "asset": "POL",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-12T13:32:47+00:00",
+      "shadow_price": 0.07862070025,
+      "trigger": "[burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T14:42:17+00:00",
+      "cycle_price": 0.07822778564999999,
+      "cycle_reason": "[burst 24h] stop-loss -2.0% <= -1.5% (ATR-scaled); P&L \u00a3-0.10",
+      "dt_s": 4170.0,
+      "price_diff": -0.0003929146000000022,
+      "price_pct": -0.4997597308986093
+    },
+    {
+      "asset": "RENDER",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-12T14:24:25+00:00",
+      "shadow_price": 1.545212225,
+      "trigger": "[momentum] stop-loss -2.0% <= -2.0% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T14:27:04+00:00",
+      "cycle_price": 1.5429454099999997,
+      "cycle_reason": "[momentum] stop-loss -2.2% <= -2.0% (ATR-scaled); P&L \u00a3-0.12",
+      "dt_s": 159.0,
+      "price_diff": -0.002266815000000255,
+      "price_pct": -0.14669926650368398
+    },
+    {
+      "asset": "CAP",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-12T15:08:25+00:00",
+      "shadow_price": 0.07106162783,
+      "trigger": "[momentum] stop-loss -5.1% <= -5.0% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T15:12:06+00:00",
+      "cycle_price": 0.06985568225,
+      "cycle_reason": "[momentum] stop-loss -6.8% <= -5.0% (ATR-scaled) [gap fill]; P&L \u00a3-0.36",
+      "dt_s": 221.0,
+      "price_diff": -0.0012059455800000063,
+      "price_pct": -1.6970418731259258
+    },
+    {
+      "asset": "GRASS",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T15:56:34+00:00",
+      "shadow_price": 0.5649658585,
+      "trigger": "risk stop-loss -12.1% <= -12%",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T15:57:16+00:00",
+      "cycle_price": 0.5655703425,
+      "cycle_reason": "risk stop-loss -12.0% <= -12%; P&L \u00a3-0.60",
+      "dt_s": 42.0,
+      "price_diff": 0.0006044840000000162,
+      "price_pct": 0.10699478400428267
+    },
+    {
+      "asset": "STX",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-12T16:58:45+00:00",
+      "shadow_price": 0.3024686815,
+      "trigger": "[burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T19:17:59+00:00",
+      "cycle_price": 0.3224166535,
+      "cycle_reason": "[burst 24h] take-profit 5.0% >= 4.1% (ATR-scaled); P&L \u00a3+0.25",
+      "dt_s": 8354.0,
+      "price_diff": 0.01994797199999998,
+      "price_pct": 6.595053709717705
+    },
+    {
+      "asset": "STONK",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-12T21:00:00+00:00",
+      "shadow_price": 0.1226977595069745,
+      "trigger": "[momentum] flatten 22:00 UK (flat overnight)",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T21:02:17+00:00",
+      "cycle_price": 0.1226977595069745,
+      "cycle_reason": "[momentum] flatten 22:00 UK (flat overnight); P&L \u00a3+0.20",
+      "dt_s": 137.0,
+      "price_diff": 0.0,
+      "price_pct": 0.0
+    },
+    {
+      "asset": "TIA",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T21:35:42+00:00",
+      "shadow_price": 0.408177821,
+      "trigger": "risk stop-loss -12.2% <= -12%",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T21:42:19+00:00",
+      "cycle_price": 0.407422216,
+      "cycle_reason": "risk stop-loss -12.4% <= -12%; P&L \u00a3-0.62",
+      "dt_s": 397.0,
+      "price_diff": -0.0007556049999999925,
+      "price_pct": -0.185116623472786
+    },
+    {
+      "asset": "WLD",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-13T00:47:18+00:00",
+      "shadow_price": 0.36631598639037993,
+      "trigger": "risk stop-loss -12.0% <= -12%",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T00:52:07+00:00",
+      "cycle_price": 0.3610158377654674,
+      "cycle_reason": "risk stop-loss -13.3% <= -12% [gap fill]; P&L \u00a3-0.66",
+      "dt_s": 289.0,
+      "price_diff": -0.005300148624912515,
+      "price_pct": -1.4468788755684252
+    },
+    {
+      "asset": "ZAMA",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T08:05:10+00:00",
+      "shadow_price": 0.06156122567791657,
+      "trigger": "[burst 24h] stop-loss -2.0% <= -2.0% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T08:22:16+00:00",
+      "cycle_price": 0.061372294835546334,
+      "cycle_reason": "[burst 24h] stop-loss -2.3% <= -2.0% (ATR-scaled); P&L \u00a3-0.12",
+      "dt_s": 1026.0,
+      "price_diff": -0.00018893084237023294,
+      "price_pct": -0.3068990915786896
+    },
+    {
+      "asset": "XTZ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T09:00:15+00:00",
+      "shadow_price": 0.2513611499230522,
+      "trigger": "[burst 24h] stop-loss -1.9% <= -1.8% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T09:02:31+00:00",
+      "cycle_price": 0.2505677300547364,
+      "cycle_reason": "[burst 24h] stop-loss -2.2% <= -1.8% (ATR-scaled); P&L \u00a3-0.11",
+      "dt_s": 136.0,
+      "price_diff": -0.00079341986831577,
+      "price_pct": -0.3156493629022048
+    },
+    {
+      "asset": "VVV",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T09:00:52+00:00",
+      "shadow_price": 17.3060651611133,
+      "trigger": "[burst 4h] stop-loss -1.7% <= -1.6% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T09:02:31+00:00",
+      "cycle_price": 17.261332514881843,
+      "cycle_reason": "[burst 4h] stop-loss -2.0% <= -1.6% (ATR-scaled); P&L \u00a3-0.10",
+      "dt_s": 99.0,
+      "price_diff": -0.044732646231455675,
+      "price_pct": -0.25847958975660085
+    },
+    {
+      "asset": "RENDER",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T09:54:07+00:00",
+      "shadow_price": 1.5873444922207185,
+      "trigger": "[momentum] stop-loss -3.1% <= -3.0% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T10:24:53+00:00",
+      "cycle_price": 1.584699645712644,
+      "cycle_reason": "[momentum] stop-loss -3.2% <= -3.0% (ATR-scaled); P&L \u00a3-0.23",
+      "dt_s": 1846.0,
+      "price_diff": -0.0026448465080743944,
+      "price_pct": -0.16662082623124957
+    },
+    {
+      "asset": "ZAMA",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T10:36:54+00:00",
+      "shadow_price": 0.061507193589313926,
+      "trigger": "[burst 4h] stop-loss -2.2% <= -2.1% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T10:55:31+00:00",
+      "cycle_price": 0.0612277184373055,
+      "cycle_reason": "[burst 4h] stop-loss -2.7% <= -2.1% (ATR-scaled); P&L \u00a3-0.13",
+      "dt_s": 1117.0,
+      "price_diff": -0.00027947515200842793,
+      "price_pct": -0.45437799336854
+    },
+    {
+      "asset": "BAT",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T10:53:25+00:00",
+      "shadow_price": 0.12991817877148465,
+      "trigger": "[momentum] stop-loss -4.0% <= -3.8% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T10:55:31+00:00",
+      "cycle_price": 0.12980487803418395,
+      "cycle_reason": "[momentum] stop-loss -4.1% <= -3.8% (ATR-scaled); P&L \u00a3-0.28",
+      "dt_s": 126.0,
+      "price_diff": -0.00011330073730070334,
+      "price_pct": -0.08720930232557368
+    },
+    {
+      "asset": "KNTQ",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-13T10:54:05+00:00",
+      "shadow_price": 0.2365719394838895,
+      "trigger": "risk stop-loss -12.0% <= -12%",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T10:55:31+00:00",
+      "cycle_price": 0.2365719394838895,
+      "cycle_reason": "risk stop-loss -12.0% <= -12%; P&L \u00a3-0.60",
+      "dt_s": 86.0,
+      "price_diff": 0.0,
+      "price_pct": 0.0
+    },
+    {
+      "asset": "TRAC",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T10:56:46+00:00",
+      "shadow_price": 0.3311402882175516,
+      "trigger": "[momentum] stop-loss -3.1% <= -3.0% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T11:37:40+00:00",
+      "cycle_price": 0.34563740074113286,
+      "cycle_reason": "[momentum] trailing stop +1.1% (peak +3.2%, gives back 40% of the gain); P&L \u00a3+0.07",
+      "dt_s": 2454.0,
+      "price_diff": 0.014497112523581268,
+      "price_pct": 4.377936795796045
+    },
+    {
+      "asset": "TRAC",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T12:30:38+00:00",
+      "shadow_price": 0.31774473054971464,
+      "trigger": "[momentum] stop-loss -3.9% <= -3.6% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T13:29:25+00:00",
+      "cycle_price": 0.314736355760901,
+      "cycle_reason": "[momentum] stop-loss -4.8% <= -3.6% (ATR-scaled) [gap fill]; P&L \u00a3-0.32",
+      "dt_s": 3527.0,
+      "price_diff": -0.0030083747888136614,
+      "price_pct": -0.9467898283030592
+    },
+    {
+      "asset": "OP",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T13:55:41+00:00",
+      "shadow_price": 0.10518899797863125,
+      "trigger": "[burst 24h] stop-loss -1.9% <= -1.6% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T14:01:17+00:00",
+      "cycle_price": 0.10541553566272019,
+      "cycle_reason": "[burst 24h] stop-loss -1.7% <= -1.6% (ATR-scaled); P&L \u00a3-0.08",
+      "dt_s": 336.0,
+      "price_diff": 0.00022653768408893715,
+      "price_pct": 0.2153625269203129
+    },
+    {
+      "asset": "ZK",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T13:55:50+00:00",
+      "shadow_price": 0.01205935604966792,
+      "trigger": "[burst 24h] stop-loss -2.8% <= -2.3% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T14:01:17+00:00",
+      "cycle_price": 0.011878125902396766,
+      "cycle_reason": "[burst 24h] stop-loss -4.2% <= -2.3% (ATR-scaled) [gap fill]; P&L \u00a3-0.21",
+      "dt_s": 327.0,
+      "price_diff": -0.00018123014727115284,
+      "price_pct": -1.502817783343775
+    },
+    {
+      "asset": "LDO",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T14:57:50+00:00",
+      "shadow_price": 0.3201655449907791,
+      "trigger": "[burst 24h] stop-loss -1.6% <= -1.6% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T15:05:58+00:00",
+      "cycle_price": 0.3201655449907791,
+      "cycle_reason": "[burst 24h] stop-loss -1.6% <= -1.6% (ATR-scaled); P&L \u00a3-0.08",
+      "dt_s": 488.0,
+      "price_diff": 0.0,
+      "price_pct": 0.0
+    },
+    {
+      "asset": "FTC.L",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-13T15:03:40+00:00",
+      "shadow_price": 2.655,
+      "trigger": "risk stop-loss -12.1% <= -12%",
+      "status": "matched",
+      "cycle_ts": "2026-10-14T07:37:00+00:00",
+      "cycle_price": 2.64,
+      "cycle_reason": "risk stop-loss -12.6% <= -12%; P&L \u00a3-0.98",
+      "dt_s": 59600.0,
+      "price_diff": -0.01499999999999968,
+      "price_pct": -0.5649717514124174
+    },
+    {
+      "asset": "STX",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T20:24:55+00:00",
+      "shadow_price": 0.3199724835,
+      "trigger": "[momentum] signal -0.238 <= -0.2 (4h -1.2%, 24h -8.1%, EMA6/24 up, RSI 47, sentiment +0.40 (conf 0.55, weight x0.36))",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T20:25:06+00:00",
+      "cycle_price": 0.3201238065,
+      "cycle_reason": "[momentum] signal -0.234 <= -0.2 (4h -1.2%, 24h -8.1%, EMA6/24 up, RSI 47, sentiment +0.40 (conf 0.55, weight x0.36)); P&L \u00a3-0.03",
+      "dt_s": 11.0,
+      "price_diff": 0.000151322999999981,
+      "price_pct": 0.04729250413808817
+    },
+    {
+      "asset": "TRAC",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T21:00:01+00:00",
+      "shadow_price": 0.30688304400000005,
+      "trigger": "[momentum] flatten 22:00 UK (flat overnight)",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T21:08:39+00:00",
+      "cycle_price": 0.30688304400000005,
+      "cycle_reason": "[momentum] flatten 22:00 UK (flat overnight); P&L \u00a3-0.19",
+      "dt_s": 518.0,
+      "price_diff": 0.0,
+      "price_pct": 0.0
+    },
+    {
+      "asset": "VVV",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T08:41:57+00:00",
+      "shadow_price": 17.518797754695708,
+      "trigger": "[burst 24h] stop-loss -1.7% <= -1.5% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-14T08:46:29+00:00",
+      "cycle_price": 17.48319231322873,
+      "cycle_reason": "[burst 24h] stop-loss -1.9% <= -1.5% (ATR-scaled); P&L \u00a3-0.10",
+      "dt_s": 272.0,
+      "price_diff": -0.035605441466977084,
+      "price_pct": -0.20324135232072912
+    },
+    {
+      "asset": "BTW",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T09:13:28+00:00",
+      "shadow_price": 1.892887577371527,
+      "trigger": "[momentum] stop-loss -4.6% <= -4.6% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-14T09:23:18+00:00",
+      "cycle_price": 1.8778048078307186,
+      "cycle_reason": "[momentum] stop-loss -5.4% <= -4.6% (ATR-scaled) [gap fill]; P&L \u00a3-0.35",
+      "dt_s": 590.0,
+      "price_diff": -0.01508276954080845,
+      "price_pct": -0.7968127490039559
+    },
+    {
+      "asset": "BAT",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T10:29:06+00:00",
+      "shadow_price": 0.1409053955960699,
+      "trigger": "[momentum] stop-loss -4.5% <= -4.5% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-14T10:36:24+00:00",
+      "cycle_price": 0.14064909432010872,
+      "cycle_reason": "[momentum] stop-loss -4.7% <= -4.5% (ATR-scaled); P&L \u00a3-0.31",
+      "dt_s": 438.0,
+      "price_diff": -0.0002563012759611849,
+      "price_pct": -0.18189599828804115
+    },
+    {
+      "asset": "BTW",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T12:19:54+00:00",
+      "shadow_price": 1.8697964370489366,
+      "trigger": "[momentum] stop-loss -5.5% <= -5.0% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-14T12:22:27+00:00",
+      "cycle_price": 1.7868619176637017,
+      "cycle_reason": "[momentum] stop-loss -9.7% <= -5.0% (ATR-scaled) [gap fill]; P&L \u00a3-0.61",
+      "dt_s": 153.0,
+      "price_diff": -0.08293451938523488,
+      "price_pct": -4.435483870967731
+    },
+    {
+      "asset": "PYTH",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T12:20:22+00:00",
+      "shadow_price": 0.06313578775745078,
+      "trigger": "[burst 24h] stop-loss -1.8% <= -1.8% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-14T12:34:09+00:00",
+      "cycle_price": 0.06263818064113938,
+      "cycle_reason": "[burst 24h] stop-loss -2.6% <= -1.8% (ATR-scaled); P&L \u00a3-0.13",
+      "dt_s": 827.0,
+      "price_diff": -0.0004976071163114021,
+      "price_pct": -0.7881538094100655
+    },
+    {
+      "asset": "TRAC",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T12:41:13+00:00",
+      "shadow_price": 0.3449322056249551,
+      "trigger": "[momentum] trailing stop +1.7% (peak +3.0%, gives back 40% of the gain)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "WAL",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T13:45:40+00:00",
+      "shadow_price": 0.03994093613118869,
+      "trigger": "[momentum] trailing stop +2.8% (peak +4.9%, gives back 40% of the gain)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    }
+  ],
+  "main_exit_missed": [],
+  "main_entries": [
+    {
+      "asset": "KNTQ",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T13:22:23+00:00",
+      "shadow_price": 0.26675123315,
+      "trigger": "RISK dip: price holds \u00a30.266751",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T13:27:19+00:00",
+      "cycle_price": 0.26728015665,
+      "cycle_reason": "RISK dip (crypto): Uptrend, pulled back 7.5% toward the recent low, and the last bars turned up. RSI 24 was oversold. Confidence 0.73 >= 0.55, EV +2.07% after costs; 4h -2.9%, 24h -2.0%, EMA6/24 up, RSI 24; BTC 1h -0.77%, 4h -1.10%",
+      "dt_s": 296.0,
+      "price_diff": 0.0005289235000000003,
+      "price_pct": 0.19828343200294607
+    },
+    {
+      "asset": "ZRO",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T13:23:44+00:00",
+      "shadow_price": 1.81194079,
+      "trigger": "RISK dip: price holds \u00a31.81043",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "LDO",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T13:24:01+00:00",
+      "shadow_price": 0.32642136,
+      "trigger": "RISK dip: price holds \u00a30.326421",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "PLUME",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T13:24:01+00:00",
+      "shadow_price": 0.0164117406,
+      "trigger": "RISK dip: price lifts through \u00a30.0163712",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "RAY",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T13:24:32+00:00",
+      "shadow_price": 1.6948220149999997,
+      "trigger": "RISK dip: price lifts through \u00a31.69477",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "APT",
+      "sleeve": "risk",
+      "shadow_ts": "2026-10-12T13:24:59+00:00",
+      "shadow_price": 0.6568474264999999,
+      "trigger": "RISK dip: price lifts through \u00a30.655682",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "STX",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-12T16:35:55+00:00",
+      "shadow_price": 0.3054911015,
+      "trigger": "[burst 24h] price breaks \u00a30.305192; volume x2",
+      "status": "matched",
+      "cycle_ts": "2026-10-12T16:37:16+00:00",
+      "cycle_price": 0.305868904,
+      "cycle_reason": "[burst 24h] 24h-high break +0.32% (high $0.4035); vol x6.2, RSI 65, BTC 1h +0.14%, 4h +0.14%; confidence 0.66 >= 0.58, EV +0.40% after costs; target +4.1% / stop -1.5% / max 6h",
+      "dt_s": 81.0,
+      "price_diff": 0.000377802500000024,
+      "price_pct": 0.12367054167698042
+    },
+    {
+      "asset": "SYRUP",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T07:06:47+00:00",
+      "shadow_price": 0.1953003763350935,
+      "trigger": "[burst 24h] price breaks \u00a30.19511; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "INJ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T07:10:09+00:00",
+      "shadow_price": 6.0843287974003015,
+      "trigger": "[burst 24h] price breaks \u00a36.08057; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "INJ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T07:12:00+00:00",
+      "shadow_price": 6.097182480705359,
+      "trigger": "[burst 24h] price breaks \u00a36.09268; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "INJ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T07:22:11+00:00",
+      "shadow_price": 6.110036164010417,
+      "trigger": "[burst 24h] price breaks \u00a36.10782; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "INJ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T07:47:49+00:00",
+      "shadow_price": 6.1191093522257525,
+      "trigger": "[burst 24h] price breaks \u00a36.11842; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "XTZ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T08:03:35+00:00",
+      "shadow_price": 0.2514140505589158,
+      "trigger": "[burst 24h] price breaks \u00a30.251408; volume x2",
+      "status": "matched",
+      "cycle_ts": "2026-10-13T08:12:11+00:00",
+      "cycle_price": 0.2548828208248333,
+      "cycle_reason": "[burst 24h] 24h-high break +1.39% (high $0.33263); vol x3.0, RSI 70, BTC 1h +0.45%, 4h +0.90%; confidence 0.67 >= 0.55, EV +1.11% after costs; target +5.4% / stop -1.8% / max 6h",
+      "dt_s": 516.0,
+      "price_diff": 0.00346877026591752,
+      "price_pct": 1.3797042202717529
+    },
+    {
+      "asset": "XTZ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-13T11:39:40+00:00",
+      "shadow_price": 0.25202003440974063,
+      "trigger": "[momentum] price holds \u00a30.251846; score 0.498 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "JST",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T10:36:34+00:00",
+      "shadow_price": 0.10612380479357329,
+      "trigger": "[momentum] price holds \u00a30.106124; score 0.415 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "PENDLE",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T10:36:34+00:00",
+      "shadow_price": 1.6516355753851333,
+      "trigger": "[momentum] price holds \u00a31.64636; score 0.514 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "STX",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T10:36:34+00:00",
+      "shadow_price": 0.3286686950561014,
+      "trigger": "[momentum] price holds \u00a30.327839; score 0.4 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "ZK",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T10:36:34+00:00",
+      "shadow_price": 0.012008468606063522,
+      "trigger": "[momentum] price holds \u00a30.0119859; score 0.363 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "PONS",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T10:37:31+00:00",
+      "shadow_price": 0.25192907772419515,
+      "trigger": "[momentum] price holds \u00a30.251552; score 0.62 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "WAL",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T12:22:38+00:00",
+      "shadow_price": 0.04075100702519961,
+      "trigger": "[momentum] price holds \u00a30.0406832; score 0.75 >= 0.35",
+      "status": "matched",
+      "cycle_ts": "2026-10-14T13:19:16+00:00",
+      "cycle_price": 0.038620826478273494,
+      "cycle_reason": "[momentum] DAY score 0.723 >= 0.35; target +12.0% / stop -5.0% (ATR 4.80%); EV +0.75%; 4h +3.8%, 24h +33.3%, EMA6/24 up, RSI 79, sentiment +0.35 (conf 0.45, weight x0.96)",
+      "dt_s": 3398.0,
+      "price_diff": -0.002130180546926118,
+      "price_pct": -5.2273077463063835
+    },
+    {
+      "asset": "ZEC",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T12:23:32+00:00",
+      "shadow_price": 939.7234996523366,
+      "trigger": "[momentum] price holds \u00a3939.362; score 0.418 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "XCN",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T12:23:38+00:00",
+      "shadow_price": 0.003324920277171698,
+      "trigger": "[momentum] price holds \u00a30.00332492; score 0.359 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "ALGO",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T12:24:49+00:00",
+      "shadow_price": 0.0917557364471192,
+      "trigger": "[momentum] price holds \u00a30.0917482; score 0.469 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "PONS",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-14T13:54:22+00:00",
+      "shadow_price": 0.2623586149892003,
+      "trigger": "[burst 24h] price breaks \u00a30.26179; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    }
+  ],
+  "main_entry_missed": [
+    {
+      "ts": "2026-10-12T14:27:04+00:00",
+      "sleeve": "day",
+      "asset": "CAP",
+      "price": 0.074480740455,
+      "reason": "[momentum] DAY score 0.766 >= 0.35; target +11.7% / stop -5.0% (ATR 4.69%); EV +1.66%; 4h +6.7%, 24h +5.5%, EMA6/24 up, RSI 55, sentiment +0.00 (conf 0.15, weight x0.48)"
+    },
+    {
+      "ts": "2026-10-12T14:42:17+00:00",
+      "sleeve": "risk",
+      "asset": "FTC.L",
+      "price": 3.0149500000000002,
+      "reason": "RISK dip (stock): Positive sentiment, pulled back 8.6% toward the recent low, and the last bars turned up. Confidence 0.78 >= 0.56, EV +3.02% after costs; 4h -2.7%, 24h -6.1%, EMA6/24 down, RSI 50; ^FTSE 1h +0.09%, day +0.75%"
+    },
+    {
+      "ts": "2026-10-12T15:57:16+00:00",
+      "sleeve": "risk",
+      "asset": "INJ",
+      "price": 5.94358893,
+      "reason": "RISK dip (crypto): Uptrend, pulled back 5.3% toward the recent low, and the last bars turned up. Confidence 0.76 >= 0.57, EV +0.71% after costs; 4h -0.8%, 24h +1.8%, EMA6/24 up, RSI 49; BTC 1h +0.18%, 4h -0.84%"
+    },
+    {
+      "ts": "2026-10-13T07:00:26+00:00",
+      "sleeve": "day",
+      "asset": "STX",
+      "price": 0.32043476380492697,
+      "reason": "[momentum] DAY score 0.794 >= 0.35; target +9.5% / stop -4.6% (ATR 3.79%); EV +1.37%; 4h +4.9%, 24h +9.6%, EMA6/24 up, RSI 57, sentiment +0.30 (conf 0.45, weight x0.98)"
+    },
+    {
+      "ts": "2026-10-13T07:00:26+00:00",
+      "sleeve": "day",
+      "asset": "RENDER",
+      "price": 1.6316616807244748,
+      "reason": "[momentum] DAY score 0.775 >= 0.35; target +6.3% / stop -3.0% (ATR 2.52%); EV +0.79%; 4h +3.1%, 24h +7.5%, EMA6/24 up, RSI 67, sentiment +0.35 (conf 0.50, weight x0.98)"
+    },
+    {
+      "ts": "2026-10-13T07:41:28+00:00",
+      "sleeve": "day",
+      "asset": "ZAMA",
+      "price": 0.06250670581348115,
+      "reason": "[burst 24h] 24h-high break +0.98% (high $0.08187); vol x17.5, RSI 65, BTC 1h +0.34%, 4h +0.84%; confidence 0.73 >= 0.55, EV +1.25% after costs; target +5.9% / stop -2.0% / max 6h"
+    },
+    {
+      "ts": "2026-10-13T08:22:16+00:00",
+      "sleeve": "day",
+      "asset": "VVV",
+      "price": 17.54336229913031,
+      "reason": "[burst 4h] 4h-range break +0.25% (range 2.2%); vol x250.5, RSI 50, BTC 1h +0.23%, 4h +0.85%; confidence 0.62 >= 0.55, EV +0.44% after costs; target +4.8% / stop -1.6% / max 6h"
+    },
+    {
+      "ts": "2026-10-13T09:43:25+00:00",
+      "sleeve": "day",
+      "asset": "ZAMA",
+      "price": 0.06255693667580937,
+      "reason": "[burst 4h] 4h-range break +0.16% (range 3.6%); vol x3.7, RSI 61, BTC 1h -0.11%, 4h +0.01%; confidence 0.57 >= 0.56, EV +0.30% after costs; target +6.2% / stop -2.1% / max 6h"
+    },
+    {
+      "ts": "2026-10-13T10:24:53+00:00",
+      "sleeve": "day",
+      "asset": "BAT",
+      "price": 0.1346692563556279,
+      "reason": "[momentum] DAY score 0.484 >= 0.35; target +7.9% / stop -3.8% (ATR 3.17%); EV +0.40%; 4h -0.3%, 24h +23.7%, EMA6/24 up, RSI 71, sentiment +0.20 (conf 0.35, weight x0.70)"
+    },
+    {
+      "ts": "2026-10-13T10:55:31+00:00",
+      "sleeve": "day",
+      "asset": "TRAC",
+      "price": 0.3399022119021401,
+      "reason": "[momentum] DAY score 0.779 >= 0.35; target +6.3% / stop -3.0% (ATR 2.50%); EV +0.39%; 4h +11.7%, 24h +15.5%, EMA6/24 up, RSI 80, sentiment +0.00 (conf 0.10, weight x0.65)"
+    },
+    {
+      "ts": "2026-10-13T11:57:35+00:00",
+      "sleeve": "day",
+      "asset": "TRAC",
+      "price": 0.32872178401270513,
+      "reason": "[momentum] DAY score 0.88 >= 0.35; target +7.5% / stop -3.6% (ATR 3.01%); EV +0.89%; 4h +6.5%, 24h +9.9%, EMA6/24 up, RSI 73, sentiment +0.00 (conf 0.10, weight x0.57)"
+    },
+    {
+      "ts": "2026-10-13T13:29:25+00:00",
+      "sleeve": "day",
+      "asset": "TRAC",
+      "price": 0.314509818076812,
+      "reason": "[momentum] DAY score 0.714 >= 0.35; target +9.7% / stop -4.6% (ATR 3.86%); EV +0.86%; 4h +4.5%, 24h +5.4%, EMA6/24 up, RSI 63, sentiment +0.15 (conf 0.30, weight x0.94)"
+    },
+    {
+      "ts": "2026-10-13T13:29:25+00:00",
+      "sleeve": "day",
+      "asset": "OP",
+      "price": 0.10669924920589086,
+      "reason": "[burst 24h] 24h-high break +0.64% (high $0.1404); vol x4.1, RSI 69, BTC 1h +0.05%, 4h -0.12%; confidence 0.66 >= 0.60, EV +0.78% after costs; target +5.0% / stop -1.6% / max 6h"
+    },
+    {
+      "ts": "2026-10-13T13:39:54+00:00",
+      "sleeve": "day",
+      "asset": "ZK",
+      "price": 0.012331201270574648,
+      "reason": "[burst 24h] 24h-high break +2.96% (high $0.01586); vol x2.4, RSI 72, BTC 1h +0.35%, 4h +0.21%; confidence 0.60 >= 0.60, EV +1.15% after costs; target +6.9% / stop -2.3% / max 6h"
+    },
+    {
+      "ts": "2026-10-13T14:33:46+00:00",
+      "sleeve": "day",
+      "asset": "LDO",
+      "price": 0.3239410820779345,
+      "reason": "[burst 24h] 24h-high break +0.46% (high $0.431); vol x2448.6, RSI 79, BTC 1h +0.25%, 4h +0.12%; confidence 0.66 >= 0.61, EV +0.62% after costs; target +4.9% / stop -1.6% / max 6h"
+    },
+    {
+      "ts": "2026-10-14T07:02:22+00:00",
+      "sleeve": "day",
+      "asset": "BTW",
+      "price": 1.9816321635042096,
+      "reason": "[momentum] DAY score 0.8 >= 0.35; target +9.5% / stop -4.6% (ATR 3.80%); EV +1.16%; 4h +13.6%, 24h +47.9%, EMA6/24 up, RSI 79, no fresh sentiment"
+    },
+    {
+      "ts": "2026-10-14T07:02:22+00:00",
+      "sleeve": "day",
+      "asset": "BAT",
+      "price": 0.14680654400652482,
+      "reason": "[momentum] DAY score 0.77 >= 0.35; target +9.3% / stop -4.5% (ATR 3.74%); EV +0.72%; 4h +3.9%, 24h +5.3%, EMA6/24 up, RSI 57, sentiment +0.20 (conf 0.35, weight x0.15)"
+    },
+    {
+      "ts": "2026-10-14T08:11:23+00:00",
+      "sleeve": "day",
+      "asset": "VVV",
+      "price": 17.757830978482502,
+      "reason": "[burst 24h] 24h-high break +0.17% (high $23.592); vol x3.2, RSI 76, BTC 1h +0.69%, 4h +0.34%; confidence 0.60 >= 0.56, EV +0.43% after costs; target +4.1% / stop -1.5% / max 6h"
+    },
+    {
+      "ts": "2026-10-14T09:23:18+00:00",
+      "sleeve": "day",
+      "asset": "TRAC",
+      "price": 0.3372507269324888,
+      "reason": "[momentum] DAY score 0.9 >= 0.35; target +7.3% / stop -3.5% (ATR 2.94%); EV +0.52%; 4h +7.5%, 24h +12.2%, EMA6/24 up, RSI 69, no fresh sentiment"
+    },
+    {
+      "ts": "2026-10-14T11:35:49+00:00",
+      "sleeve": "day",
+      "asset": "BTW",
+      "price": 1.9748495649564959,
+      "reason": "[momentum] DAY score 0.403 >= 0.35; target +11.3% / stop -5.0% (ATR 4.51%); EV +0.34%; 4h -1.1%, 24h +38.7%, EMA6/24 up, RSI 72, sentiment +0.30 (conf 0.35, weight x0.88)"
+    },
+    {
+      "ts": "2026-10-14T12:10:36+00:00",
+      "sleeve": "day",
+      "asset": "PYTH",
+      "price": 0.06403298846716378,
+      "reason": "[burst 24h] 24h-high break +1.14% (high $0.08389); vol x2846.1, RSI 69, BTC 1h +0.39%, 4h +0.21%; confidence 0.68 >= 0.57, EV +0.67% after costs; target +5.4% / stop -1.8% / max 6h"
+    }
+  ]
+}
