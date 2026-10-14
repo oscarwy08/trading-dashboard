@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T12:47:00Z",
+ "asset": "EQQQ.L",
+ "score": -0.1,
+ "volume": 12,
+ "confidence": 0.4,
+ "summary": "Nasdaq proxy soft on hotter US CPI 3.7% and AI/semi risk-off into US cash open.",
+ "sources": [
+  "https://apnews.com/article/cpi-inflation-consumer-prices-affordability-3985019a54c82421e6112fb57baba048"
+ ]
+}

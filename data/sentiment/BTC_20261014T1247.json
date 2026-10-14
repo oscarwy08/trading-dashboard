@@ -1,0 +1,13 @@
+{
+ "timestamp": "2026-10-14T12:47:00Z",
+ "asset": "BTC",
+ "score": 0.22,
+ "volume": 45,
+ "confidence": 0.6,
+ "summary": "Spot BTC ETFs +$176M Oct 13 (FBTC/IBIT); whales bought ~1k BTC; CPI hot 3.7% caps risk appetite; ~$83.4k.",
+ "sources": [
+  "https://x.com/i/trending/2110259473352921369",
+  "https://apnews.com/article/cpi-inflation-consumer-prices-affordability-3985019a54c82421e6112fb57baba048",
+  "https://www.coindesk.com/markets/2026/10/14/bitcoin-holds-above-usd83-000-ahead-of-u-s-inflation-data-as-altcoins-lag"
+ ]
+}

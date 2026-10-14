@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T12:47:00Z",
+ "asset": "MON",
+ "score": 0.0,
+ "volume": 12,
+ "confidence": 0.35,
+ "summary": "Stablecoin flow note: Monad \u2212$59M USDC 24h amid SOL inflows; no fresh protocol catalyst; flat carry.",
+ "sources": [
+  "https://x.com/chaincast_/status/2110271924647391302"
+ ]
+}

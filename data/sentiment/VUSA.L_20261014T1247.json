@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T12:47:00Z",
+ "asset": "VUSA.L",
+ "score": -0.1,
+ "volume": 10,
+ "confidence": 0.35,
+ "summary": "S&P 500 UCITS: same macro \u2014 CPI hotter than expected; slight negative vs morning flat.",
+ "sources": [
+  "https://apnews.com/article/cpi-inflation-consumer-prices-affordability-3985019a54c82421e6112fb57baba048"
+ ]
+}
