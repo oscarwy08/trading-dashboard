@@ -2,7 +2,7 @@
 (dashboard/index.html + app.js + styles.css, templates in web/). No AI, no network: pure SQLite -> JSON.
 The page loads data.json client-side and re-fetches it every 60 s (works on GitHub Pages).
 Each variant database that exists is also written to data_<name>.json, read-only, for the Book menu."""
-import hashlib, json, os, re, sqlite3
+import hashlib, json, os, re, sqlite3, time
 from bisect import bisect_right
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -288,7 +288,7 @@ def pnl_parts(headline, closed):
     h = int(round(float(headline or 0) * 100)); c = int(round(float(closed or 0) * 100))
     return {"open": round((h - c) / 100.0, 2), "closed": round(c / 100.0, 2)}
 
-def build(con):
+def build(con, variant_report=None):
     c = cfg(); st, rk, K, DY = c["strategy"], c["risk"], c["core"], c["day"]
     base = acct_start(con, c); sc = {s_: sum(base[s_].values()) for s_ in SLEEVES}
     start = float(c["starting_balance"]); focus = list(st["focus_assets"])
@@ -821,7 +821,8 @@ def build(con):
         mon_check=dict(cg=sig(mon["MON"]), dex=sig(mon["MON.DEX"]), diff=round((mon["MON.DEX"] / mon["MON"] - 1) * 100, 2))
                   if len(mon) == 2 else None,
         equity=equity, positions=positions, trades=trades, assets=assets, prices=prices, fx_hist=fx_hourly,
-        signals=sig_hist, reasons=reasons, sentiment=sentiment, variants=_variant_report())
+        signals=sig_hist, reasons=reasons, sentiment=sentiment,
+        variants=variant_report if variant_report is not None else _variant_report())
 
 def _variant_report():
     try:
@@ -892,8 +893,12 @@ def write_book_files(out, payloads):
             p.unlink()
     return catalog
 
-def _variant_payloads(payloads):
-    """Fill payloads with one build() per existing variant database. A failure skips that book."""
+def _variant_payloads(payloads, variant_report=None):
+    """Fill payloads with one build() per existing variant database. A failure skips that book.
+
+    variant_report is the comparison already computed for this cycle. Building it again
+    inside every book reopened all thirteen databases and re-parsed config each time.
+    """
     import variants
     root = variants.dir_path()
     for name in list((cfg().get("variants") or {}).get("run") or []):
@@ -908,7 +913,7 @@ def _variant_payloads(payloads):
         con = None
         try:
             con = open_ro(path)
-            payloads[name] = build(con)
+            payloads[name] = build(con, variant_report)
         except Exception as e:
             print(f"[dashboard] {name} export skipped: {e}")
             payloads.pop(name, None)
@@ -920,9 +925,13 @@ def write_atomic(path, data):
     tmp = path.with_suffix(path.suffix + ".tmp"); tmp.write_bytes(data); os.replace(tmp, path)
 
 def main():
+    t0 = time.perf_counter()
     OUT.mkdir(exist_ok=True)
-    payloads = {"main": build(db())}
-    _variant_payloads(payloads)
+    t_report = time.perf_counter()
+    report = _variant_report()
+    print(f"[timing] dashboard report {time.perf_counter() - t_report:.1f}s", flush=True)
+    payloads = {"main": build(db(), report)}
+    _variant_payloads(payloads, report)
     catalog = write_book_files(OUT, payloads)
     (OUT / ".nojekyll").touch()
     # static assets: copy templates, cache-bust js/css by content hash in index.html
@@ -935,7 +944,7 @@ def main():
     if not (OUT / "index.html").exists() or (OUT / "index.html").read_text(encoding="utf-8") != page:
         write_atomic(OUT / "index.html", page.encode())
     bits = ", ".join(f"{r['file']} ({(OUT / r['file']).stat().st_size // 1024} KB)" for r in catalog)
-    print(f"[dashboard] wrote {bits} + index.html/app.js/styles.css")
+    print(f"[dashboard] wrote {bits} + index.html/app.js/styles.css in {time.perf_counter() - t0:.1f}s")
 
 if __name__ == "__main__":
     main()

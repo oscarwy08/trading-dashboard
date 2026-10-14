@@ -575,12 +575,35 @@ def _last_usd(con, sym):
     return float(row[0]) if row and row[0] else None
 
 
+def _backup_fetch(sym, known, fetch):
+    """GeckoTerminal and DexScreener candidates for one symbol. No database access, so it can run alongside others."""
+    headers = {"Accept": "application/json;version=20230302"}
+    cands = []
+    if known and known.get("address"):
+        net = GT_NET.get(str(known.get("chain") or "").lower(), known.get("chain"))
+        addr = known["address"]
+        if net:
+            gt = fetch(f"{GT}/networks/{net}/tokens/{addr}/pools", None, headers, 1)
+            cands += parse_gt_pools(gt)
+        ds = fetch(f"{DS}/latest/dex/tokens/{addr}", None, None, 1)
+        cands += parse_ds_pairs(ds, sym)
+    else:
+        gt = fetch(f"{GT}/search/pools", {"query": sym}, headers, 1)
+        cands += parse_gt_pools(gt, sym)
+        ds = fetch(f"{DS}/latest/dex/search", {"q": sym}, None, 1)
+        cands += parse_ds_pairs(ds, sym)
+    return cands
+
+
 def backup_quotes(con, c, symbols, fetch, now_iso, limit=None):
     """USD rows for CoinGecko-only coins, from GeckoTerminal then DexScreener.
 
     fetch(url, params, headers, tries) is collector.get. The most liquid pool wins.
     A price outside dex.max_jump of the last good price is rejected. Held symbols are first.
+    The pool lookups for this cycle's symbols run together (at most 4 at once). The price
+    that is kept is the same one a serial lookup would keep.
     Returns {sym: price row} with source geckoterminal or dexscreener."""
+    from concurrent.futures import ThreadPoolExecutor
     D = (c or {}).get("dex") or {}
     jump = float(D.get("max_jump", 2))
     cap = int(D.get("max_per_cycle", 8) if limit is None else limit)
@@ -588,25 +611,20 @@ def backup_quotes(con, c, symbols, fetch, now_iso, limit=None):
     protected_set = set(protected(con))
     ordered = sorted({(s or "").upper() for s in symbols if s}, key=lambda s: (s not in protected_set, s))[:cap]
     cache = _dex_cache(con)
-    headers = {"Accept": "application/json;version=20230302"}
-    out = {}
+    jobs = []
     for sym in ordered:
-        last = _last_usd(con, sym)
         known = cache.get(sym) if isinstance(cache.get(sym), dict) else None
-        cands = []
-        if known and known.get("address"):
-            net = GT_NET.get(str(known.get("chain") or "").lower(), known.get("chain"))
-            addr = known["address"]
-            if net:
-                gt = fetch(f"{GT}/networks/{net}/tokens/{addr}/pools", None, headers, 1)
-                cands += parse_gt_pools(gt)
-            ds = fetch(f"{DS}/latest/dex/tokens/{addr}", None, None, 1)
-            cands += parse_ds_pairs(ds, sym)
-        else:
-            gt = fetch(f"{GT}/search/pools", {"query": sym}, headers, 1)
-            cands += parse_gt_pools(gt, sym)
-            ds = fetch(f"{DS}/latest/dex/search", {"q": sym}, None, 1)
-            cands += parse_ds_pairs(ds, sym)
+        jobs.append((sym, _last_usd(con, sym), known))
+    def one(job):
+        sym, last, known = job
+        return sym, last, _backup_fetch(sym, known, fetch)
+    if len(jobs) == 1:
+        fetched = [one(jobs[0])]
+    else:
+        with ThreadPoolExecutor(max_workers=min(4, len(jobs))) as ex:
+            fetched = list(ex.map(one, jobs))
+    out = {}
+    for sym, last, cands in fetched:
         pick = _liq_pick([c for c in cands if sane_price(c.get("usd"), last, jump)])
         if not pick: continue
         if pick.get("address"):

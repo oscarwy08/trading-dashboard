@@ -1,5 +1,5 @@
 """Shared helpers: paths, config, SQLite schema, logging."""
-import logging, os, sqlite3, yaml
+import copy, logging, os, sqlite3, threading, yaml
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -41,15 +41,38 @@ def _merge(base, over):
             out[k] = v
     return out
 
+_CFG_CACHE = {}
+_CFG_LOCK = threading.Lock()
+
+def _mtime_ns(path):
+    try:
+        return path.stat().st_mtime_ns
+    except OSError:
+        return None
+
 def cfg():
-    """config.yaml, plus config/variants/<name>.yaml when TRADING_VARIANT is set (variant books only)."""
-    base = yaml.safe_load((ROOT / "config.yaml").read_text())
-    name = os.environ.get("TRADING_VARIANT")
-    if not name:
-        return base
-    path = ROOT / "config" / "variants" / f"{name}.yaml"
-    over = yaml.safe_load(path.read_text()) if path.exists() else {}
-    return _merge(base, over or {})
+    """config.yaml, plus config/variants/<name>.yaml when TRADING_VARIANT is set (variant books only).
+
+    The files are parsed once per version. The exit watcher used to re-parse the whole
+    file for every book on every tick, which kept a small VPS busy and stretched the
+    cycle. A caller may edit the dict it is given; the next call still returns the file.
+    A long-running process sees a new file when its mtime changes, so the watcher does
+    not need a restart to pick up a config edit."""
+    name = os.environ.get("TRADING_VARIANT") or ""
+    base_path = ROOT / "config.yaml"
+    over_path = (ROOT / "config" / "variants" / f"{name}.yaml") if name else None
+    key = (name, _mtime_ns(base_path), _mtime_ns(over_path) if over_path else None)
+    with _CFG_LOCK:
+        hit = _CFG_CACHE.get(key)
+        if hit is None:
+            base = yaml.safe_load(base_path.read_text()) or {}
+            if over_path is not None and over_path.exists():
+                base = _merge(base, yaml.safe_load(over_path.read_text()) or {})
+            if len(_CFG_CACHE) > 32:
+                _CFG_CACHE.clear()
+            _CFG_CACHE[key] = base
+            hit = base
+        return copy.deepcopy(hit)
 def now(): return _NOW or datetime.now(timezone.utc).replace(microsecond=0)
 def iso(dt=None): return (dt or now()).isoformat()
 

@@ -115,8 +115,10 @@ push_ff() {
   return 1
 }
 
+_t=$(date +%s)
 integrate
 rc=$?
+echo "[timing] ci_push integrate $(( $(date +%s) - _t ))s"
 if [ "$rc" -eq 2 ]; then exit 0; fi
 [ "$rc" -eq 0 ] || exit 1
 
@@ -183,5 +185,8 @@ if [ "$n" -gt "$SQUASH_AT" ] && [ "$TIP" = "$BASE_BEFORE" ]; then
     exit 0
   fi
 fi
+_t=$(date +%s)
 push_ff
-exit $?
+rc=$?
+echo "[timing] ci_push push $(( $(date +%s) - _t ))s"
+exit $rc

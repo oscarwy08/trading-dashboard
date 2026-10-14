@@ -7,7 +7,7 @@ UK day (state 'last_prune'), then VACUUMs:
   state    : stale per-day keys (day_start:*, day_halt:*, risk_exit:*) older than 14 days
 Trades, positions, cash, equity, transfers, sentiment, fx and daily closes are never pruned.
 Usage: python3 maintenance.py [--force]"""
-import sys
+import sys, time
 from datetime import timedelta
 from common import LON, db, iso, now
 
@@ -28,13 +28,16 @@ def prune(con):
     return n
 
 def main():
+    t0 = time.perf_counter()
     con = db(); day = now().astimezone(LON).date().isoformat()
     last = (con.execute("SELECT value FROM state WHERE key='last_prune'").fetchone() or [""])[0]
-    if last == day and "--force" not in sys.argv: return
+    if last == day and "--force" not in sys.argv:
+        print(f"[timing] maintenance skip {time.perf_counter() - t0:.1f}s")
+        return
     n = prune(con)
     con.execute("INSERT OR REPLACE INTO state VALUES('last_prune',?)", (day,)); con.commit()
     con.execute("VACUUM"); con.close()
-    print("[maintenance] pruned", n)
+    print("[maintenance] pruned", n, f"in {time.perf_counter() - t0:.1f}s")
 
 if __name__ == "__main__":
     main()
