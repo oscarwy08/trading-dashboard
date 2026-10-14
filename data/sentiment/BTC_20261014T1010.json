@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "BTC",
+ "score": 0.2,
+ "volume": 30,
+ "confidence": 0.55,
+ "summary": "Rebound above $83.4k toward $85k resistance; shorts liquidated ($25M) ahead of US CPI today. Cautiously positive, CPI event risk.",
+ "sources": [
+  "https://www.fxstreet.com/cryptocurrencies/news/top-3-price-predictions-bitcoin-ethereum-ripple-btc-eyes-85-000-eth-holds-support-xrp-stabilizes-202610140415",
+  "https://www.cryptotimes.io/2026/10/14/bitcoin-ethereum-short-liquidations-hit-58m-as-btc-holds-83-5k-ahead-of-us-cpi/"
+ ]
+}

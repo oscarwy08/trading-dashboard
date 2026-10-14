@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "WLD",
+ "score": 0.0,
+ "volume": 15,
+ "confidence": 0.3,
+ "summary": "~$0.52, -6.8% 7d, below 20DMA; Solana/SwissBorg access positive but wash-trading concerns. Neutral.",
+ "sources": [
+  "https://coinstats.app/ai/a/latest-news-for-worldcoin-wld"
+ ]
+}

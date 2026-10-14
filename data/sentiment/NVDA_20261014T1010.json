@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "NVDA",
+ "score": 0.2,
+ "volume": 15,
+ "confidence": 0.4,
+ "summary": "+1% to $228.5; ASML supply warning mixed for AI hardware.",
+ "sources": [
+  "https://exa.ai/library/markets/stock/NVDA"
+ ]
+}

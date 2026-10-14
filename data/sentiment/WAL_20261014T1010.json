@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "WAL",
+ "score": 0.3,
+ "volume": 8,
+ "confidence": 0.3,
+ "summary": "Walrus +31% 24h on $54M volume.",
+ "sources": [
+  "https://www.coingecko.com/en/crypto-gainers-losers"
+ ]
+}

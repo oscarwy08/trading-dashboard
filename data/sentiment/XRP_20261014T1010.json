@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "volume": 12,
+ "confidence": 0.4,
+ "summary": "Flat ~$1.37 below 50/200-day EMA cluster; bearish near-term bias, sentiment turned bearish per CryptoTimes.",
+ "sources": [
+  "https://www.fxstreet.com/cryptocurrencies/news/top-3-price-predictions-bitcoin-ethereum-ripple-btc-eyes-85-000-eth-holds-support-xrp-stabilizes-202610140415"
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "ZRO",
+ "score": 0.1,
+ "volume": 20,
+ "confidence": 0.4,
+ "summary": "Carried over (no new news): Mixed: Zero L1 thesis and SushiSwap launching on Robinhood Chain via LayerZero, but ZRO among CryptoSlate's top 24h losers (~-13%) after +24% on the week.",
+ "sources": [
+  "https://x.com/CryptoSlate/status/2110035140567326768",
+  "https://x.com/RobinhoodCrypto/status/2110071311016047014"
+ ]
+}

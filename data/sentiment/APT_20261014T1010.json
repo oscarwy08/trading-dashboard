@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "APT",
+ "score": 0.25,
+ "volume": 8,
+ "confidence": 0.35,
+ "summary": "Carried over (no new news): APT +51% in four weeks after the unlock schedule completed; BlackRock BUIDL has ~$157M on Aptos. Mild positive.",
+ "sources": [
+  "https://x.com/FuturesWire/status/2110091957875732795",
+  "https://x.com/RWAFoundation_/status/2109970287639060969"
+ ]
+}

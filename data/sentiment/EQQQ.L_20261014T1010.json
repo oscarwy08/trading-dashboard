@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "EQQQ.L",
+ "score": -0.05,
+ "volume": 10,
+ "confidence": 0.3,
+ "summary": "Nasdaq futures pulled back at EMA50 after ASML; CPI today.",
+ "sources": [
+  "https://www.xtb.com/en/market-analysis/morning-wrap-wall-street-looks-to-rebound-ahead-of-us-cpi-as-asml-results-weigh-on-sentiment-14-10-2026"
+ ]
+}

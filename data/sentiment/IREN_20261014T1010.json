@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "IREN",
+ "score": -0.15,
+ "volume": 5,
+ "confidence": 0.35,
+ "summary": "-3.3% to $33.65 as unconfirmed Anthropic cloud-contract report faded.",
+ "sources": [
+  "https://exa.ai/library/markets/stock/IREN"
+ ]
+}

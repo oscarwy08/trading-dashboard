@@ -1,0 +1,12 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "MON",
+ "score": 0.05,
+ "volume": 18,
+ "confidence": 0.35,
+ "summary": "Ecosystem positives (Private Settlement design, Robinhood listing, Plume vaults) offset by large 24 Nov team unlock overhang.",
+ "sources": [
+  "https://cryptoticker.io/en/monad-mon-unlock-lock-up-expiry/",
+  "https://coinmarketcap.com/cmc-ai/monad/latest-updates/"
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "STRK",
+ "score": -0.2,
+ "volume": 5,
+ "confidence": 0.35,
+ "summary": "Carried over (no new news): Starknet on this week's token-unlock list; 24h about -10% on the bot's data. Mildly negative.",
+ "sources": [
+  "https://x.com/ETH_Daily/status/2109919920645681313"
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "MSFT",
+ "score": 0.35,
+ "volume": 25,
+ "confidence": 0.5,
+ "summary": "First record high in a year, +54% from June low.",
+ "sources": [
+  "https://www.businesstimes.com.sg/companies-markets/microsoft-hits-first-record-year-after-us1-4-trillion-rally-shares-soar-54-june-low"
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "timestamp": "2026-10-14T10:10:00Z",
+ "asset": "ETH",
+ "score": 0.1,
+ "volume": 25,
+ "confidence": 0.5,
+ "summary": "Holding above 50-day EMA ~$2,501 after $2,400 support; short liquidations; CPI risk. Mildly positive.",
+ "sources": [
+  "https://www.fxstreet.com/cryptocurrencies/news/top-3-price-predictions-bitcoin-ethereum-ripple-btc-eyes-85-000-eth-holds-support-xrp-stabilizes-202610140415"
+ ]
+}
