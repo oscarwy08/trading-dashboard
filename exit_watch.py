@@ -523,7 +523,7 @@ def _burst_keep(con, c, asset, klass, gbp, t):
     DB = D["burst"]
     pts = history(con, asset)
     brk = daypot.breakout(con, asset, pts, DB)
-    vol = daypot.crypto_vol_ratio(con, asset, t) if klass != "stock" else daypot.stock_vol_ratio(con, asset, t, sget)
+    vol, rejected = daypot.volume_for_entry(con, asset, t, klass, sget)
     r_ = daypot.rsi_h(pts)
     se = sentiment(con, asset, st["sentiment_max_age_h"])
     hist = {asset: pts}
@@ -536,7 +536,7 @@ def _burst_keep(con, c, asset, klass, gbp, t):
     conf, _parts = daypot.confidence(DB, brk.get("strength") or 0, vol, sent, reg, ss["p"], freshness=1)
     thr = daypot.threshold(DB, 0.0, D["daily_loss_cap_pct"])
     vx = float(DB["volume_x"])
-    vol_ok = not ((vol is not None and vol < vx) or (vol is None and (DB.get("require_volume") or kind != "24h")))
+    vol_ok = daypot.entry_volume_block(vol, rejected, vx, DB.get("require_volume"), kind) is None
     sent_ok = not (se and se["score"] < float(DB["sentiment_min"]))
     return variants.burst_target_action(bool(kind), vol_ok, r_, DB["rsi_max"], sent_ok, bool(mok), conf, thr)
 

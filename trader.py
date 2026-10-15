@@ -654,7 +654,7 @@ def _cycle():
         """Re-score the burst entry signal for an open position that has just hit its target."""
         pts = hist.get(a) or []
         brk = daypot.breakout(con, a, pts, DB)
-        vol = daypot.crypto_vol_ratio(con, a, t) if (q_.get("klass") or "crypto") != "stock" else daypot.stock_vol_ratio(con, a, t, sget)
+        vol, rejected = daypot.volume_for_entry(con, a, t, q_.get("klass") or "crypto", sget)
         r_ = daypot.rsi_h(pts)
         se = sentiment(con, a, st["sentiment_max_age_h"])
         mok, reg, _minfo = daypot.market_regime(con, q_.get("klass") or "crypto", a, hist, t, DB, sget, markets.exchange)
@@ -666,7 +666,7 @@ def _cycle():
         pnl_ = sleeve_eq("day") / base_ - 1 if base_ else 0.0
         thr = daypot.threshold(DB, pnl_, D["daily_loss_cap_pct"])
         vx = float(DB["volume_x"])
-        vol_ok = not ((vol is not None and vol < vx) or (vol is None and (DB.get("require_volume") or kind != "24h")))
+        vol_ok = daypot.entry_volume_block(vol, rejected, vx, DB.get("require_volume"), kind) is None
         sent_ok = not (se and se["score"] < float(DB["sentiment_min"]))
         return variants.burst_target_action(bool(kind), vol_ok, r_, DB["rsi_max"], sent_ok, bool(mok), conf, thr)
     for (sl, a), p in list(pos.items()):
@@ -1204,7 +1204,7 @@ def _cycle():
             pending = bool(lvl and last_usd < lvl and last_usd >= lvl * (1 - 0.015))
         if not brk["kind"] and "broken" not in (brk.get("info") or "") and not pending: continue      # only actual / near breakouts are listed
         ac = acct_of(q["klass"]); d = dict(a=a, acct=ac, brk=brk.get("kind"), info=brk.get("info"))
-        vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
+        vol, rejected = daypot.volume_for_entry(con, a, t, q["klass"], sget)
         r_ = daypot.rsi_h(pts);         se = sentiment(con, a, st["sentiment_max_age_h"])
         mok, reg, minfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
         at_ = atr_of(a); tp_, sl_ = daypot.levels(DB["take_profit"], DB["stop"], at_)
@@ -1227,11 +1227,12 @@ def _cycle():
             d["info"] = ((d.get("info") or "") + "; " + adj).lstrip("; ")
         vx = float(DB["volume_x"])
         lx = sget(con, f"day_exit:{a}")
+        vol_block = daypot.entry_volume_block(vol, rejected, vx, DB.get("require_volume"), brk["kind"])
+        d["vol_rejected"] = rejected
         d["block"] = (brk["info"] if not brk["kind"] else
                       warming(a) if warming(a) else
                       f"cooldown {DB['cooldown_h']}h after exit {lx[11:16]}Z" if lx and datetime.fromisoformat(lx) > t - timedelta(hours=float(DB["cooldown_h"])) else
-                      f"volume x{vol:.1f} < {vx:g}x average" if vol is not None and vol < vx else
-                      "no volume data (only a 24h-high break may trade without it)" if vol is None and (DB.get("require_volume") or brk["kind"] != "24h") else
+                      vol_block if vol_block else
                       f"RSI {r_:.0f} >= {DB['rsi_max']} (overbought)" if r_ is not None and r_ >= float(DB["rsi_max"]) else
                       f"sentiment {sscore:+.2f} < {DB['sentiment_min']}" if se and sscore is not None and sscore < float(DB["sentiment_min"]) else
                       f"market falling ({minfo})" if not mok else None)
@@ -1261,9 +1262,7 @@ def _cycle():
             return
         vol = d.get("vol")
         vx = float(DB["volume_x"])
-        if vol is None and (DB.get("require_volume") or kind != "24h"):
-            return
-        if vol is not None and vol < vx:
+        if daypot.entry_volume_block(vol, d.get("vol_rejected"), vx, DB.get("require_volume"), kind):
             return
         if d.get("rsi") is not None and d["rsi"] >= float(DB["rsi_max"]):
             return
@@ -1463,11 +1462,12 @@ def _cycle():
         mom_pts = history(con, a, STOCK_MOM_H) if q["klass"] == "stock" else pts
         m, minfo, _rs7 = momentum(mom_pts, RP.get("min_history_h", 2))
         se = sentiment(con, a, st["sentiment_max_age_h"])
-        vol = daypot.crypto_vol_ratio(con, a, t) if q["klass"] == "crypto" else daypot.stock_vol_ratio(con, a, t, sget)
+        vol, rejected = daypot.volume_for_entry(con, a, t, q["klass"], sget)
         mok, reg, mkinfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
         at_ = atr_of(a); fr = fr_of(a, q, se); sin = sent_in(se); sscore = sent_score_of(se)
         last_exit = sget(con, f"risk_exit:{a}")
-        shared = (f"sentiment {sscore:+.2f} blocks entry" if se and sscore is not None and sscore <= RP["sentiment_block"] and se["confidence"] >= 0.5 else
+        shared = ("volume reading rejected" if rejected else
+                  f"sentiment {sscore:+.2f} blocks entry" if se and sscore is not None and sscore <= RP["sentiment_block"] and se["confidence"] >= 0.5 else
                   "drawdown cap: entries halted until review" if halt else
                   closed_msg(a) if not mopen(a) else
                   f"too close to the {markets.exchange(a)} close" if (mclose_in(a) or 0) <= 15 else

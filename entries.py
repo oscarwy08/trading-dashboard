@@ -201,16 +201,25 @@ def _open_n(con, arm):
     return n
 
 
-def _volume_ok(con, arm, t):
-    if arm.get("volume_min") is None:
-        return True
+def _volume_why(con, arm, t):
+    """None when volume allows this fill. A rejected print blocks even if the arm has no volume minimum."""
     import daypot
-    if arm["klass"] == "stock":
+    klass = arm.get("klass") or "crypto"
+    sget = None
+    if klass == "stock":
         from trader import sget
-        vol = daypot.stock_vol_ratio(con, arm["asset"], t, sget)
-    else:
-        vol = daypot.crypto_vol_ratio(con, arm["asset"], t)
-    return vol is not None and float(vol) + 1e-9 >= float(arm["volume_min"])
+    vol, rejected = daypot.volume_for_entry(con, arm["asset"], t, klass, sget)
+    if rejected:
+        return "volume reading rejected"
+    if arm.get("volume_min") is None:
+        return None
+    if vol is None or float(vol) + 1e-9 < float(arm["volume_min"]):
+        return "volume condition not met"
+    return None
+
+
+def _volume_ok(con, arm, t):
+    return _volume_why(con, arm, t) is None
 
 
 def skip_reason(con, c, arm, price_gbp, t, rate, live=None):
@@ -228,8 +237,9 @@ def skip_reason(con, c, arm, price_gbp, t, rate, live=None):
     cap = arm.get("level_max")
     if cap is not None and float(price_gbp) > float(cap) + 1e-9:
         return "past the chase cap"
-    if not _volume_ok(con, arm, t):
-        return "volume condition not met"
+    vol_why = _volume_why(con, arm, t)
+    if vol_why:
+        return vol_why
     if con.execute("SELECT 1 FROM positions WHERE sleeve=? AND asset=?", (arm["sleeve"], arm["asset"])).fetchone():
         return "already held"
     fx = usd_gbp(con, (c.get("fx") or {}).get("max_age_h"))
