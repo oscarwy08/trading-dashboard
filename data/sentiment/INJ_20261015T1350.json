@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "INJ",
+ "score": -0.2,
+ "confidence": 0.5,
+ "summary": "INJ -12.3% 24h ~$7.13 (RISK dip position), gave back breakout above $8. Fundamentals (ETF filing, institutional validator) unchanged; price action weak. Buzz near avg. Bearish tilt.",
+ "sources": [
+  "https://www.tokenpost.com/news/investing/32511"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Fell ~10% after brief move >$8; staked-INJ ETF proposal and gov votes in background",
+ "volume": 1175,
+ "buzz_level": 1175,
+ "buzz_change": 0.89,
+ "price_runup_24h_pct": -12.28,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "HYPE",
+ "score": 0.0,
+ "confidence": 0.5,
+ "summary": "HYPE -4.5% 24h, holding better than alts. Regulatory engagement and product expansion supportive. Neutral.",
+ "sources": [
+  "https://www.coindesk.com/policy/2026/10/15/hyperliquid-founder-wants-u-s-oversight-of-trading-platforms-not-his-blockchain"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Founder Jeff Yan urges US oversight of deployers not chain; tokenized-stock expansion",
+ "volume": 981,
+ "buzz_level": 981,
+ "buzz_change": 1.01,
+ "price_runup_24h_pct": -4.51,
+ "carried_over": false
+}

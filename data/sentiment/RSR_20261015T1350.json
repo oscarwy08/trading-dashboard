@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "RSR",
+ "score": -0.15,
+ "confidence": 0.4,
+ "summary": "RSR -8% 24h; buzz well below its spike. Mildly bearish.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Prior buzz spike (12 Oct) faded; no fresh catalyst",
+ "volume": 119,
+ "buzz_level": 119,
+ "buzz_change": 0.33,
+ "price_runup_24h_pct": -7.98,
+ "carried_over": false
+}

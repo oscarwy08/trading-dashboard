@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "STRK",
+ "score": -0.2,
+ "confidence": 0.45,
+ "summary": "STRK -9.9% 24h; buzz has collapsed from prior spike. Bearish momentum.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No Starknet-specific news; among larger 24h losers",
+ "volume": 736,
+ "buzz_level": 736,
+ "buzz_change": 0.79,
+ "price_runup_24h_pct": -9.91,
+ "carried_over": false
+}

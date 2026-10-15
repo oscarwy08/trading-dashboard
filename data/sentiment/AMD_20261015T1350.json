@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "AMD",
+ "score": -0.3,
+ "confidence": 0.6,
+ "summary": "AMD -11% over 24h in global AI selloff (SK Hynix -10%, ASML -5%). No company-specific negative, but sector funding worries dominant. Bearish. Macro: hot US CPI -> Dec Fed hike odds ~70%, AI/tech rout (Kospi -8%), ~$876M crypto long liquidations.",
+ "sources": [
+  "https://www.cnbc.com/2026/10/15/sk-hynix-samsung-softbank-stocks-asia-tech-rout-ai-funding-worries.html"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "AI chip rout: AMD -5-6% as rate fears hit AI capex funding; semis 6th straight down day",
+ "volume": 1581,
+ "buzz_level": 1581,
+ "buzz_change": 0.8,
+ "price_runup_24h_pct": -11.37,
+ "carried_over": false
+}

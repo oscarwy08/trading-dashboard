@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "SNOW",
+ "score": -0.2,
+ "confidence": 0.5,
+ "summary": "SNOW -10% over 24h, technical selling with software. Bearish near term.",
+ "sources": [
+  "https://beststocks.com/stocks/snow/what-changed"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "SNOW -6.3% to $335, no company catalyst (technical); consensus PT $418",
+ "volume": 314,
+ "buzz_level": 314,
+ "buzz_change": 0.97,
+ "price_runup_24h_pct": -10.25,
+ "carried_over": false
+}

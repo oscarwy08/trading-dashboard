@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "WAL",
+ "score": 0.2,
+ "confidence": 0.5,
+ "summary": "WAL +38% 24h (+60% at peak) on a real integration, but futures-led (perp vol 12x spot), X buzz ~10x avg -> price likely inflated; negative funding. Catalyst genuine, entry risky. Mild positive.",
+ "sources": [
+  "https://asksurf.ai/pulse/en/walrus-ai-data-integration"
+ ],
+ "catalyst_score": 0.4,
+ "catalyst_note": "DATA Network moving to Sui with Walrus as default AI-data storage (Sui $30M into DATA, not WAL); 32.7M WAL unlock 26 Oct",
+ "volume": 527,
+ "buzz_level": 527,
+ "buzz_change": 2.03,
+ "price_runup_24h_pct": 38.47,
+ "carried_over": false
+}

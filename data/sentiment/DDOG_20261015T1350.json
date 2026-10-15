@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "DDOG",
+ "score": -0.15,
+ "confidence": 0.45,
+ "summary": "DDOG -7.2% 24h; customer-usage concern plus software selloff. Mildly bearish.",
+ "sources": [
+  "https://firstpositiondance.com/article/saaspocalypse-ai-vs-software-stocks-the-debate-continues"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "Reduced usage from a major AI customer noted",
+ "volume": 169,
+ "buzz_level": 169,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": -7.16,
+ "carried_over": false
+}

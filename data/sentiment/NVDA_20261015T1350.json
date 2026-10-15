@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "NVDA",
+ "score": -0.2,
+ "confidence": 0.6,
+ "summary": "NVDA -3% today, below 50d. Sector-wide pressure from rates/AI debt fears. Bearish.",
+ "sources": [
+  "https://www.cnbc.com/2026/10/15/sk-hynix-samsung-softbank-stocks-asia-tech-rout-ai-funding-worries.html"
+ ],
+ "catalyst_score": -0.25,
+ "catalyst_note": "Nvidia -3% in AI rout; $1T shed by top AI/semis this week",
+ "volume": 3950,
+ "buzz_level": 3950,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": -6.24,
+ "carried_over": false
+}

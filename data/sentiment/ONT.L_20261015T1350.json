@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "ONT.L",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "ONT.L flat; UK market firmer (FTSE +1%). No catalyst. Neutral.",
+ "sources": [
+  "https://shareprices.com/lse/ont/"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No new RNS; ~211p after 208.6p close",
+ "volume": 0,
+ "price_runup_24h_pct": -0.22,
+ "carried_over": false
+}

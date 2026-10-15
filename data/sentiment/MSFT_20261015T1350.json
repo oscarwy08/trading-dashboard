@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "MSFT",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "MSFT -1.7%, holding up better than chips. Buzz falling. Near neutral.",
+ "sources": [
+  "https://www.investing.com/news/stock-market-news/nasdaq-futures-dive-1-as-ai-rout-deepens-on-debt-concerns-4950779"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "Hyperscalers sold with AI trade; no MSFT-specific news",
+ "volume": 1034,
+ "buzz_level": 1034,
+ "buzz_change": 0.56,
+ "price_runup_24h_pct": -1.7,
+ "carried_over": false
+}

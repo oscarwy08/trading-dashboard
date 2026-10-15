@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "ETH",
+ "score": -0.3,
+ "confidence": 0.6,
+ "summary": "ETH -6.4% 24h ~$2,337, lowest since 20 Aug, underperforming BTC on rising yields. Leads liquidation tally. Buzz falling. Bearish.",
+ "sources": [
+  "https://www.coindesk.com/business/2026/10/15/live-updates-bitcoin-back-under-usd81-000-as-ai-selloff-worsens"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "ETH hit 2-month low $2,314; higher yields weigh on DeFi; largest liquidations",
+ "volume": 4319,
+ "buzz_level": 4319,
+ "buzz_change": 0.91,
+ "price_runup_24h_pct": -6.38,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "ZEC",
+ "score": -0.25,
+ "confidence": 0.5,
+ "summary": "ZEC -10.4% 24h, biggest large-cap loser. Buzz steady. Bearish.",
+ "sources": [
+  "https://www.coindesk.com/business/2026/10/15/live-updates-bitcoin-back-under-usd81-000-as-ai-selloff-worsens"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "ZEC led crypto losses -11% to ~$1,100",
+ "volume": 1507,
+ "buzz_level": 1507,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": -10.35,
+ "carried_over": false
+}

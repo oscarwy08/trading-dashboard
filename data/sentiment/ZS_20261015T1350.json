@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "ZS",
+ "score": 0.15,
+ "confidence": 0.55,
+ "summary": "ZS -4.5% with software but fresh analyst upgrade on spending. Positive fundamentals vs weak tape.",
+ "sources": [
+  "https://stocktwits.com/news-articles/markets/equity/cybersecurity-stocks-retreat-from-record-highs-citi-raises-crwd-panw-zs-targets-on-improving-spending-momentum/cZxWHQMRBAr"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Citi raises ZS target to $260 (Buy) on improving cyber spending momentum",
+ "volume": 172,
+ "buzz_level": 172,
+ "buzz_change": 0.93,
+ "price_runup_24h_pct": -4.46,
+ "carried_over": false
+}

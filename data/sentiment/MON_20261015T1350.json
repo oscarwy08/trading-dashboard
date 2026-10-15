@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "MON",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "MON -8.9% 24h ~$0.022. Ecosystem news decent (Robinhood, xStocks 1,100 equities, Private Settlement design) but large Nov 24 team unlock looms. Buzz low. Mildly bearish.",
+ "sources": [
+  "https://cryptoticker.io/en/monad-mon-unlock-lock-up-expiry/"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "Team unlock ~10.7bn MON (~90% of circ.) from 24 Nov overhangs; Robinhood listing/xStocks positive",
+ "volume": 112,
+ "buzz_level": 112,
+ "buzz_change": 0.71,
+ "price_runup_24h_pct": -8.93,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "XRP -5.5% 24h with market. Steady stream of Ripple institutional partnerships (Meritz, DriveWealth, RWA perps) offsets macro. Buzz declining. Neutral-slight positive on fundamentals.",
+ "sources": [
+  "https://ripple.com/press-releases/"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Ripple: institutional RWA perp access (15 Oct); Meritz Korea custody + DriveWealth RLUSD deals",
+ "volume": 3800,
+ "buzz_level": 3800,
+ "buzz_change": 0.8,
+ "price_runup_24h_pct": -5.45,
+ "carried_over": false
+}

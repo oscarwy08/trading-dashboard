@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "ZK",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "ZK flat-to-up on 24h after a +44% week; buzz spiking today vs avg -> likely inflated. Momentum strong but hype-driven. Slight positive.",
+ "sources": [
+  "https://coincodex.com/article/93676/daily-market-update-for-october-15-2026/"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "ZKsync +12.5% top gainer per CoinCodex daily (15 Oct); no fundamental news",
+ "volume": 317,
+ "buzz_level": 317,
+ "buzz_change": 2.1,
+ "price_runup_24h_pct": 0.68,
+ "carried_over": false
+}

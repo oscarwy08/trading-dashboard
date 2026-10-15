@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "CRV",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "CRV roughly flat/up in a red market, showing relative strength. Buzz modest. Slight positive.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No specific news; top 24h gainer on GoldBloom movers map",
+ "volume": 122,
+ "buzz_level": 122,
+ "buzz_change": 1.35,
+ "price_runup_24h_pct": 0.22,
+ "carried_over": false
+}

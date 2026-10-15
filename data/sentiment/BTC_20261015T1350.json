@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "BTC",
+ "score": -0.15,
+ "confidence": 0.6,
+ "summary": "BTC ~$80.2k, -3.5% 24h, testing $80.4k floor defended twice since last Thu. Hot CPI, ETF outflows, $876M long liquidations (leverage flushed). Buzz below avg. Mildly bearish. Macro: hot US CPI -> Dec Fed hike odds ~70%, AI/tech rout (Kospi -8%), ~$876M crypto long liquidations.",
+ "sources": [
+  "https://www.coindesk.com/business/2026/10/15/live-updates-bitcoin-back-under-usd81-000-as-ai-selloff-worsens"
+ ],
+ "catalyst_score": -0.25,
+ "catalyst_note": "Hot US CPI lifts Fed hike odds; spot BTC ETFs -$261M outflow 14 Oct",
+ "volume": 10534,
+ "buzz_level": 10534,
+ "buzz_change": 0.98,
+ "price_runup_24h_pct": -3.51,
+ "carried_over": false
+}

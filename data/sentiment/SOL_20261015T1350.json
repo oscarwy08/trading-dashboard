@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "SOL",
+ "score": -0.15,
+ "confidence": 0.55,
+ "summary": "SOL -5.1% 24h ~$101. Buzz below avg. Mildly bearish with market.",
+ "sources": [
+  "https://www.investing.com/news/cryptocurrency-news/bitcoin-slides-below-81k-as-hot-us-cpi-spurs-rate-hike-bets-4950559"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Market-wide risk-off; no SOL-specific catalyst",
+ "volume": 8853,
+ "buzz_level": 8853,
+ "buzz_change": 0.99,
+ "price_runup_24h_pct": -5.12,
+ "carried_over": false
+}

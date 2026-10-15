@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "WLD",
+ "score": 0.0,
+ "confidence": 0.5,
+ "summary": "WLD -9.2% 24h ~$0.47, lost $0.51 support. Locked strategic raise is supportive but demand heavily Korea-retail concentrated (risk with Kospi rout). Buzz below avg. Neutral.",
+ "sources": [
+  "https://coinmarketcap.com/cmc-ai/worldcoin-org/latest-updates/"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "World $52.5M strategic WLD sale (Pantera lead, 12m lockup); Korean retail interest high",
+ "volume": 160,
+ "buzz_level": 160,
+ "buzz_change": 0.82,
+ "price_runup_24h_pct": -9.22,
+ "carried_over": false
+}

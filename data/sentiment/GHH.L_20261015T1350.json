@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "GHH.L",
+ "score": 0.0,
+ "confidence": 0.6,
+ "summary": "GHH.L is being acquired; price pinned to offer and shares suspend 16 Oct. No upside left; exclude from new buys. Neutral.",
+ "sources": [
+  "https://www.investegate.co.uk/announcement/rns/gooch-housego--ghh/court-sanction-of-the-scheme-of-arrangement/9822891"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Takeover scheme court-sanctioned; AIM trading suspended from 16 Oct",
+ "volume": 0,
+ "price_runup_24h_pct": -0.17,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "TEAM",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "TEAM -1.9%, top of stock rank (0.73). Fundamentals solid; sector AI-disruption debate a headwind. Slight positive.",
+ "sources": [
+  "https://firstpositiondance.com/article/saaspocalypse-ai-vs-software-stocks-the-debate-continues"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Strong recent results cited in AI-vs-SaaS debate",
+ "volume": 166,
+ "buzz_level": 166,
+ "buzz_change": 1.09,
+ "price_runup_24h_pct": -1.94,
+ "carried_over": false
+}

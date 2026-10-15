@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "NOW",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "NOW +2% 24h, relative strength in software. Slight positive.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No specific news; holding up",
+ "volume": 425,
+ "buzz_level": 425,
+ "buzz_change": 0.88,
+ "price_runup_24h_pct": 1.99,
+ "carried_over": false
+}

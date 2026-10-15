@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "SHOP",
+ "score": -0.1,
+ "confidence": 0.4,
+ "summary": "SHOP -4.7% with growth tech. Mildly bearish.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No specific news; growth-tech selloff",
+ "volume": 228,
+ "buzz_level": 228,
+ "buzz_change": 0.79,
+ "price_runup_24h_pct": -4.69,
+ "carried_over": false
+}

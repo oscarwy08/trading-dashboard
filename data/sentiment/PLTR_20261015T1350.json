@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "PLTR",
+ "score": -0.15,
+ "confidence": 0.55,
+ "summary": "PLTR down with AI names plus insider sales; analyst targets elevated, earnings 2 Nov. Mildly bearish.",
+ "sources": [
+  "https://www.defenseworld.net/2026/10/15/palantir-technologies-nasdaqpltr-stock-price-down-3-7-following-insider-selling.html"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "PLTR -3.7% amid tech selloff and insider selling; Q3 results 2 Nov",
+ "volume": 1361,
+ "buzz_level": 1361,
+ "buzz_change": 0.89,
+ "price_runup_24h_pct": -6.25,
+ "carried_over": false
+}

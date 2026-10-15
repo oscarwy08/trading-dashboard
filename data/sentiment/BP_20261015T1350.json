@@ -1,0 +1,13 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "BP",
+ "score": -0.1,
+ "confidence": 0.3,
+ "summary": "BP -11.4% 24h (DAY position exited 13:30 UTC). No identifiable news; X ticker too ambiguous to count. Mildly bearish, low confidence.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No news found; micro-cap Solana token",
+ "volume": 0,
+ "price_runup_24h_pct": -11.38,
+ "carried_over": false
+}

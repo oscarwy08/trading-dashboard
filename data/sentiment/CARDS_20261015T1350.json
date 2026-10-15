@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-15T13:50:00Z",
+ "asset": "CARDS",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "CARDS +6.8% 24h vs a falling market (DAY momentum position). No news found; chatter modest. Neutral, low confidence.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No identifiable catalyst; small-cap Solana token bucking the tape",
+ "volume": 187,
+ "buzz_level": 187,
+ "buzz_change": 0.86,
+ "price_runup_24h_pct": 6.82,
+ "carried_over": false
+}
