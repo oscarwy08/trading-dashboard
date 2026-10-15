@@ -31,6 +31,13 @@ logging.basicConfig(filename=os.environ.get("TRADING_LOG") or ROOT / "logs" / "t
 _NOW = None   # simulations set common._NOW to a UTC datetime to fake the clock
 
 def log(name): return logging.getLogger(name)
+
+def prefilter_reject(setup, asset, reason, book=None):
+    """One line per name dropped before it can become a setup. Book is the paper book, or main."""
+    if not setup or not asset or not reason:
+        return
+    b = book or os.environ.get("TRADING_VARIANT") or "main"
+    log("prefilter").info("book=%s setup=%s asset=%s reason=%s", b, setup, asset, reason)
 def _merge(base, over):
     """Deep-merge a variant overlay onto config. Nested dicts combine; everything else is replaced."""
     out = dict(base or {})

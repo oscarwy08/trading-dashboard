@@ -14,6 +14,10 @@ The last 30% of the daily CoinGecko budget (`reserve_pct`) is only for `simple/p
 
 A last-hour volume above 50 times the average hour, or a rolling 24h total that jumps more than 5 times inside the ratio window, is rejected. It is not a spike and it is not missing data, so it cannot open a Day or Risk entry on the main book, any paper book, or the watcher. The 2x volume gate is unchanged. The 13 Oct 2026 LDO print (about 2,449x, from one Kraken vol24 that reverted on the next quote) is the case this catches.
 
+## Stock clocks and hit rates (2026-10-15)
+
+Day and Risk hit rates are counted separately for crypto and for stocks. A crypto loss no longer moves a stock's chance or its expected value, and a stock loss no longer moves the crypto number. Stock momentum, breakouts and dips measure 4h, 24h, 36h and 48h in regular-session time (London, New York or Sydney hours, including holidays), not in wall-clock time across the overnight close. Crypto still uses wall-clock hours. Names dropped before they become a setup are logged as `book=… setup=… asset=… reason=…`.
+
 ## Backtest (report only)
 
 `python3 backtest.py` replays the stored prices in `data/trading.db` through the main book and each name in `variants.run`. It uses the live trader, so fees and slippage are the ones the cycle charges. It writes a temporary copy only. It does not change the frozen rules or the live database.

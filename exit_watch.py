@@ -52,7 +52,7 @@ import pricesrc
 import variants
 from common import KILL, LON, cfg, db, iso, log, now, usd_gbp
 from exits import book_lock, day_flat_reason, day_reason, dead_quote, gap_tag, risk_reason, stock_flatten_reason
-from trader import apply_buy, apply_sell, cost_pct, gas_gbp, history, hm, score_asset, sentiment, sget, sset
+from trader import STOCK_SETUP_H, apply_buy, apply_sell, cost_pct, gas_gbp, history, hm, score_asset, sentiment, sget, sset
 
 L = log("exit_watch")
 REST_S = 20
@@ -521,8 +521,8 @@ def _burst_keep(con, c, asset, klass, gbp, t):
     """Same gates as a new burst entry, used when a burst_runner book hits its target."""
     D, st = c["day"], c["strategy"]
     DB = D["burst"]
-    pts = history(con, asset)
-    brk = daypot.breakout(con, asset, pts, DB)
+    pts = history(con, asset, STOCK_SETUP_H if klass == "stock" else 72)
+    brk = daypot.breakout(con, asset, pts, DB, klass=klass)
     vol, rejected = daypot.volume_for_entry(con, asset, t, klass, sget)
     r_ = daypot.rsi_h(pts)
     se = sentiment(con, asset, st["sentiment_max_age_h"])
@@ -531,7 +531,7 @@ def _burst_keep(con, c, asset, klass, gbp, t):
         hist["BTC"] = history(con, "BTC")
     mok, reg, _info = daypot.market_regime(con, klass, asset, hist, t, DB, sget, markets.exchange)
     kind = brk.get("kind")
-    ss = daypot.setup_stats(con, kind or "24h", DB, t)
+    ss = daypot.setup_stats(con, kind or "24h", DB, t, klass=klass)
     sent = None if not se else se["score"]
     conf, _parts = daypot.confidence(DB, brk.get("strength") or 0, vol, sent, reg, ss["p"], freshness=1)
     thr = daypot.threshold(DB, 0.0, D["daily_loss_cap_pct"])
@@ -758,7 +758,7 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
             part = md.get("partial") or {}
             if shadow and not reason and live and R.get("partial_take") and part and not part.get("bought"):
                 subc = SUBC[md["sub"]]
-                ss = daypot.sell_record(con, "day", md.get("sub") or "momentum", t, float(subc.get("record_days", 14)))
+                ss = daypot.sell_record(con, "day", md.get("sub") or "momentum", t, float(subc.get("record_days", 14)), klass=p["klass"])
                 p_ = daypot.hit_p(md.get("conf", md.get("score")), ss, int(subc.get("ev_prior_n", 10)), int(subc.get("ev_conf_full_n", 30)))
                 if p["klass"] == "stock":
                     mleft = markets.mins_to_close(a, t)
@@ -850,7 +850,7 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
             part = (rmeta.get(a) or {}).get("partial") or {}
             if shadow and not reason and live and R.get("partial_take") and part and not part.get("bought"):
                 meta = rmeta.get(a) or {}
-                ss = riskpot.setup_stats(con, RP, t, sub=meta.get("setup"))
+                ss = riskpot.setup_stats(con, RP, t, sub=meta.get("setup"), klass=p["klass"])
                 p_ = daypot.hit_p(meta.get("conf"), ss, int(RP.get("ev_prior_n", 10)), int(RP.get("ev_conf_full_n", 30)))
                 notion = float(part["qty"]) * gbp
                 rt = (cost_pct(c, a, p["klass"], "BUY", q, notion) + cost_pct(c, a, p["klass"], "SELL", q, notion)) * 100
