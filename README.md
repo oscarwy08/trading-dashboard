@@ -14,7 +14,7 @@ The last 30% of the daily CoinGecko budget (`reserve_pct`) is only for `simple/p
 
 `python3 backtest.py` replays the stored prices in `data/trading.db` through the main book and each name in `variants.run`. It uses the live trader, so fees and slippage are the ones the cycle charges. It writes a temporary copy only. It does not change the frozen rules or the live database.
 
-Each book is marked FAIL when closed trades are under 100, max drawdown is over 20%, profit factor is under 1.1, or net P&L does not beat buying and holding BTC over the same window (one buy and one sell at `fee_slippage_pct`). Daily closes and the stored Risk screen are not rewound with the clock, so Core picks and Risk crypto can see later information. Day entries and exits only see prices up to the clock.
+Each book is marked FAIL when closed trades are under 100, max drawdown is over 20%, profit factor is under 1.1, or net P&L does not beat buying and holding BTC over the same window (one buy and one sell at `fee_slippage_pct`). The clock steps every 5 minutes (`--step` changes it). Before each step, a daily close dated that UTC day or later is hidden, and the stored Risk screen is hidden until its own timestamp, so Core picks and Risk crypto cannot see later bars. The report also buckets the probability stored at entry against whether the later sell made money after costs.
 
 ## v7.9 (2026-10-12): dead quotes, EV exit off, Risk win is the trail lock (paper only)
 
