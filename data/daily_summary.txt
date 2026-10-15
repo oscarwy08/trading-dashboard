@@ -1,18 +1,18 @@
-PAPER scorecard Thu 15 Oct 02:46 UK
-TOTAL Equity £189.04 (-5.48% since £200 start) | Day P&L £-0.24
-vs BTC buy&hold (£) -1.16% | Max DD -6.88% | Win rate 34.48% over 58 closed
-CRYPTO acct (Monad wallet) £91.90 (-8.10% vs £100) | P&L £-8.10 | day £-0.28 | cash £40.11 | invested £51.79 | realised £-5.04 | fees £1.91 (fee £1.866, gas £0.047) | by pot: CORE £47.09 (cash £0.15), DAY £26.57 (cash £26.57), RISK £18.23 (cash £13.39)
+PAPER scorecard Thu 15 Oct 03:01 UK
+TOTAL Equity £188.92 (-5.54% since £200 start) | Day P&L £-0.36
+vs BTC buy&hold (£) -1.37% | Max DD -6.88% | Win rate 34.48% over 58 closed
+CRYPTO acct (Monad wallet) £91.77 (-8.23% vs £100) | P&L £-8.23 | day £-0.40 | cash £40.11 | invested £51.67 | realised £-5.04 | fees £1.91 (fee £1.866, gas £0.047) | by pot: CORE £47.00 (cash £0.15), DAY £26.57 (cash £26.57), RISK £18.20 (cash £13.39)
 STOCKS acct (Trading 212) £97.14 (-2.86% vs £100) | P&L £-2.86 | day £+0.03 | cash £49.03 | invested £48.12 | realised £-0.98 | fees £0.17 (spread £0.064, fx £0.062, stamp £0.041) | by pot: CORE £48.12 (cash £0.01), DAY £30.00 (cash £30.00), RISK £19.02 (cash £19.02)
-CORE £95.22 (-4.78% vs £100) | day £-0.24 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | built 11/11 | open: AMD, BTC, ETH, MON, MSFT, ONT.L, PLTR, TEAM, WLD, XRP, ZS | crypto £47.09 (cash £0.15) / stocks £48.12 (cash £0.01)
+CORE £95.12 (-4.88% vs £100) | day £-0.34 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | built 11/11 | open: AMD, BTC, ETH, MON, MSFT, ONT.L, PLTR, TEAM, WLD, XRP, ZS | crypto £47.00 (cash £0.15) / stocks £48.12 (cash £0.01)
 DAY  £56.57 (-5.71% vs £60) | day £+0.00 | realised £-3.43 | win 34.69% of 49 | today 0 trades (0 buys, 0 sells) | entries closed | open: none | crypto £26.57 (cash £26.57) / stocks £30.00 (cash £30.00)
-RISK £37.25 (-6.87% vs £40) | day £-0.00 | realised £-2.59 | win 33.33% of 9 | today 0 trades (0 buys, 0 sells) | active, dd -6.9%, 0 new today | open: INJ | crypto £18.23 (cash £13.39) / stocks £19.02 (cash £19.02)
+RISK £37.22 (-6.94% vs £40) | day £-0.03 | realised £-2.59 | win 33.33% of 9 | today 0 trades (0 buys, 0 sells) | active, dd -6.9%, 0 new today | open: INJ | crypto £18.20 (cash £13.39) / stocks £19.02 (cash £19.02)
   DAY momentum all: 27 closed trades, win 33.3%, avg win +2.70%, avg loss -3.95%, PF 0.34, closed P&L £-2.91 (after its fees £0.83; + £0.00 buy fees on open positions), expectancy -1.73%/trade | today: 0 trades, P&L £+0.00
   DAY burst    all: 22 closed trades, win 36.4%, avg win +2.33%, avg loss -2.07%, PF 0.64, closed P&L £-0.52 (after its fees £0.50; + £0.00 buy fees on open positions), expectancy -0.47%/trade | today: 0 trades, P&L £+0.00
-  DAY burst threshold 0.55 (Day pot today +0.00%), 0/4 setups taken last cycle
+  DAY burst threshold 0.55 (Day pot today +0.00%), 0/1 setups taken last cycle
 RULES frozen since 2026-10-10 (v7.8). Do not retune from one day.
   SETUP momentum         closed  27  net £-2.91  fees £0.83  fee/gross n/a  win 33%  exits: flatten 6, trail 6, stop 13, signal 2
   SETUP burst            closed  22  net £-0.52  fees £0.50  fee/gross n/a  win 36%  exits: stop 12, flatten 3, trail 5, target 2
   SETUP risk breakout    closed   3  net £+0.49  fees £0.20  fee/gross 29%  win 67%  exits: trail 2, stop 1
   SETUP risk dip         closed   6  net £-3.08  fees £0.19  fee/gross n/a  win 17%  exits: trail 1, stop 5
 GBP/USD 1.3240 (coingecko, 2026-10-15T01:32 UTC)
-VARIANTS since 2026-10-11 18:07: Main book £189.04 (P&L £-13.33, win 29%, max DD -6.7%) | EV exit £191.09 (P&L £-5.12, win 30%, max DD -3.2%) | Review leftovers £193.87 (P&L £-8.50, win 45%, max DD -4.4%) | Both together £191.57 (P&L £-4.64, win 39%, max DD -2.9%) | Burst runner £193.95 (P&L £-8.41, win 43%, max DD -4.3%) | Everything combined £191.57 (P&L £-4.64, win 39%, max DD -2.9%) | Midnight crypto £191.64 (P&L £-10.72, win 38%, max DD -5.4%) | Entry watch £192.02 (P&L £-10.34, win 28%, max DD -5.2%) | Risk giveback 15 £191.04 (P&L £-11.32, win 32%, max DD -5.7%) | Day trail arm £190.47 (P&L £-11.90, win 15%, max DD -6.0%) | Day EV blend £190.87 (P&L £-11.50, win 36%, max DD -5.7%) | No risk clock £191.04 (P&L £-11.32, win 32%, max DD -5.7%) | Day capital caution £191.09 (P&L £-11.28, win 32%, max DD -5.7%) | Partial take £190.05 (P&L £-12.32, win 43%, max DD -6.3%) | Sentiment split £193.47 (P&L £-8.89, win 36%, max DD -4.6%)
+VARIANTS since 2026-10-11 18:07: Main book £188.92 (P&L £-13.45, win 29%, max DD -6.7%) | EV exit £190.97 (P&L £-5.24, win 30%, max DD -3.2%) | Review leftovers £193.78 (P&L £-8.59, win 45%, max DD -4.4%) | Both together £191.45 (P&L £-4.76, win 39%, max DD -2.9%) | Burst runner £193.86 (P&L £-8.51, win 43%, max DD -4.3%) | Everything combined £191.45 (P&L £-4.76, win 39%, max DD -2.9%) | Midnight crypto £191.46 (P&L £-10.91, win 38%, max DD -5.4%) | Entry watch £191.93 (P&L £-10.43, win 28%, max DD -5.2%) | Risk giveback 15 £190.95 (P&L £-11.41, win 32%, max DD -5.7%) | Day trail arm £190.38 (P&L £-11.99, win 15%, max DD -6.0%) | Day EV blend £190.71 (P&L £-11.65, win 36%, max DD -5.8%) | No risk clock £190.95 (P&L £-11.41, win 32%, max DD -5.7%) | Day capital caution £191.00 (P&L £-11.37, win 32%, max DD -5.7%) | Partial take £189.96 (P&L £-12.41, win 43%, max DD -6.3%) | Sentiment split £193.35 (P&L £-9.01, win 36%, max DD -4.6%)
