@@ -531,7 +531,9 @@ def _burst_keep(con, c, asset, klass, gbp, t):
         hist["BTC"] = history(con, "BTC")
     mok, reg, _info = daypot.market_regime(con, klass, asset, hist, t, DB, sget, markets.exchange)
     kind = brk.get("kind")
-    ss = daypot.setup_stats(con, kind or "24h", DB, t)
+    Rv = variants.rules_of(c)
+    Bk = dict(DB, hit_prior=float(Rv.get("stock_hit_prior", 0.45)), hit_prior_n=float(Rv.get("stock_hit_prior_n", 12))) if Rv.get("stock_calibrated") and klass == "stock" else DB
+    ss = daypot.setup_stats(con, kind or "24h", Bk, t, klass="stock" if Bk is not DB else None)
     sent = None if not se else se["score"]
     conf, _parts = daypot.confidence(DB, brk.get("strength") or 0, vol, sent, reg, ss["p"], freshness=1)
     thr = daypot.threshold(DB, 0.0, D["daily_loss_cap_pct"])

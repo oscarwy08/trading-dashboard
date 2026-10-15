@@ -210,15 +210,18 @@ def market_regime(con, klass, a, hist, t, B, sget, exchange):
     reg = clip(0.5 + r1 / 0.6 * 0.3 + (rd or 0) / 2.0 * 0.2)
     return ok, reg, f"{name} 1h {r1:+.2f}%" + (f", day {rd:+.2f}%" if rd is not None else "")
 
-def setup_stats(con, kind, B=None, t=None):
+def setup_stats(con, kind, B=None, t=None, klass=None):
     """Measured record of one burst setup type ('24h' | '4h') over the last record_days: hit rate with a Beta prior
     (hit_prior x hit_prior_n pseudo-trades: (wins + p0*n0) / (n + n0)) and the observed expectancy in % per trade (net of
     all fees). The time window lets an old bad patch age out (no permanent lock-out after a few early losses).
     Sell reasons carry '[burst <kind>]'."""
     B = B or {}; p0, n0 = float(B.get("hit_prior", 0.5)), float(B.get("hit_prior_n", 20))
     since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(B.get("record_days", 14)))).isoformat()
-    rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve='day' AND sub='burst' AND side='SELL' AND reason LIKE ? "
-                       "AND ts>=? ORDER BY id DESC", (f"[burst {kind}]%", since)).fetchall()
+    sql = "SELECT value, gas, pnl FROM trades WHERE sleeve='day' AND sub='burst' AND side='SELL' AND reason LIKE ? AND ts>=?"
+    args = [f"[burst {kind}]%", since]
+    if klass:
+        sql += " AND klass=?"; args.append(klass)
+    rows = con.execute(sql + " ORDER BY id DESC", args).fetchall()
     pcts = []
     for v, g, pnl in rows:
         basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)
@@ -262,17 +265,19 @@ def sent_part(sent, missing=0.25):
     if sent is None: return max(0.0, min(1.0, float(missing)))
     return clip((float(sent) + 1) / 2)
 
-def sell_record(con, sleeve, sub, t=None, days=14):
+def sell_record(con, sleeve, sub, t=None, days=14, klass=None):
     """Closed sells for one sleeve/sub over the last `days`: n, wins, expectancy % (net of fees). sub None = any."""
     since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(days))).isoformat()
+    ksql, kargs = (" AND klass=?", [klass]) if klass else ("", [])
     if sub == "momentum":
-        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=? AND (sub IS NULL OR sub='momentum')",
-                           (sleeve, since)).fetchall()
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=? AND (sub IS NULL OR sub='momentum')" + ksql,
+                           (sleeve, since, *kargs)).fetchall()
     elif sub:
-        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND sub=? AND side='SELL' AND ts>=?",
-                           (sleeve, sub, since)).fetchall()
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND sub=? AND side='SELL' AND ts>=?" + ksql,
+                           (sleeve, sub, since, *kargs)).fetchall()
     else:
-        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=?", (sleeve, since)).fetchall()
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=?" + ksql,
+                           (sleeve, since, *kargs)).fetchall()
     pcts = []
     for v, g, pnl in rows:
         basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)

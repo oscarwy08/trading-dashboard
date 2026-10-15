@@ -1068,7 +1068,7 @@ function renderSentTimeline(a) {
 }
 
 /* ---------- variant books ---------- */
-const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880', everything: '#2dd4bf', midnight_crypto: '#6366f1', risk_giveback_15: '#e8b931', day_trail_arm: '#2dd4bf', day_ev_blend: '#c084fc', no_risk_clock: '#fb7185', day_capital_caution: '#38bdf8', partial_take: '#f97316', sent_split: '#a3e635'};
+const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880', everything: '#2dd4bf', midnight_crypto: '#6366f1', risk_giveback_15: '#e8b931', day_trail_arm: '#2dd4bf', day_ev_blend: '#c084fc', no_risk_clock: '#fb7185', day_capital_caution: '#38bdf8', partial_take: '#f97316', sent_split: '#a3e635', stock_calibrated: '#fbbf24'};
 function renderVariants() {
   const V = (D && D.variants) || {}, books = V.books || [];
   const el = $('#var-explain');
@@ -1128,7 +1128,7 @@ function renderVariants() {
 }
 
 /* ---------- book switch ---------- */
-const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch', risk_giveback_15: 'Risk giveback 15', day_trail_arm: 'Day trail arm', day_ev_blend: 'Day EV blend', no_risk_clock: 'No risk clock', day_capital_caution: 'Day capital caution', partial_take: 'Partial take', sent_split: 'Sentiment split'};
+const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch', risk_giveback_15: 'Risk giveback 15', day_trail_arm: 'Day trail arm', day_ev_blend: 'Day EV blend', no_risk_clock: 'No risk clock', day_capital_caution: 'Day capital caution', partial_take: 'Partial take', sent_split: 'Sentiment split', stock_calibrated: 'Stock calibrated'};
 const bookLabel = (name, fallback) => BOOK_LABEL[name] || fallback || name;
 const bookFile = name => (!name || name === 'main') ? 'data.json' : (/^[a-z0-9_]+$/.test(name) ? 'data_' + name + '.json' : null);
 let menu = [{name: 'main', label: 'Main (frozen)', file: 'data.json', variant: false}];

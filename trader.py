@@ -55,7 +55,7 @@ def history(con, asset, hours=72):
         "SELECT ts, price FROM prices WHERE asset=? AND ts>=? AND ts<=? AND source!='kyberswap' ORDER BY ts",
         (asset, since, until))]
 
-def momentum(pts, min_h):
+def momentum(pts, min_h, atr_norm=None):
     """Returns (score, info, rsi) or (None, reason, None).
 
     A 4h move that is not in the series, or fewer than 15 hourly closes, is stale history. It is not scored
@@ -75,8 +75,14 @@ def momentum(pts, min_h):
     cross = 1 if ema(hourly, 6) > ema(hourly, 24) else -1
     rs = rsi(hourly)
     rsi_term = -1 if rs > 75 else 0.5 if rs < 25 else 0
-    score = 0.35 * clip(r4 / 0.03) + 0.35 * clip((r24 if r24 is not None else r4) / 0.08) \
-        + 0.2 * cross + 0.1 * rsi_term
+    if atr_norm:
+        atr_pct, x4, x24 = atr_norm
+        unit = max(float(atr_pct or 0) / 100.0, 0.002)
+        score = 0.35 * clip(r4 / (unit * float(x4))) + 0.35 * clip((r24 if r24 is not None else r4) / (unit * float(x24))) \
+            + 0.2 * cross + 0.1 * rsi_term
+    else:
+        score = 0.35 * clip(r4 / 0.03) + 0.35 * clip((r24 if r24 is not None else r4) / 0.08) \
+            + 0.2 * cross + 0.1 * rsi_term
     fmt = lambda r: "n/a" if r is None else f"{r*100:+.1f}%"
     return round(score, 3), f"4h {fmt(r4)}, 24h {fmt(r24)}, EMA6/24 {'up' if cross > 0 else 'down'}, RSI {rs:.0f}", rs
 
@@ -239,7 +245,11 @@ def score_asset(con, asset, st, t, klass=None):
         row = con.execute("SELECT klass FROM prices WHERE asset=? ORDER BY ts DESC LIMIT 1", (asset,)).fetchone()
         klass = row[0] if row else None
     mom = history(con, asset, STOCK_MOM_H) if klass == "stock" else pts
-    m, info, rs_ = momentum(mom, st["min_history_h"])
+    atr_norm = None
+    if klass == "stock" and variants.rules_of(cfg()).get("stock_calibrated"):
+        Rv = variants.rules_of(cfg())
+        atr_norm = (daypot.atr_pct(mom) or 0, float(Rv.get("stock_mom_atr_4h", 1)), float(Rv.get("stock_mom_atr_24h", 2)))
+    m, info, rs_ = momentum(mom, st["min_history_h"], atr_norm=atr_norm)
     if m is None:
         return None, None, None, info, None, pts
     s = sentiment(con, asset, st["sentiment_max_age_h"])
@@ -544,18 +554,23 @@ def _cycle():
             h = max(0.0, (hm(D["flatten_uk"]) - mins) / 60.0)
         if max_hold_h is not None:
             h = min(h, float(max_hold_h))
-        return daypot.flatten_p(h, float(D.get("ev_flatten_floor", 0.40)), float(D.get("ev_flatten_full_h", 6)))
+        mleft = mclose_in(a) if klass == "stock" else None
+        floor = variants.stock_flatten_floor(R, klass, mleft, float(D.get("ev_flatten_floor", 0.40)))
+        return daypot.flatten_p(h, floor, float(D.get("ev_flatten_full_h", 6)))
 
     def day_fresh_ev(a, q, sub, conf, tp, sl, notional):
         subc = DB0 if sub == "burst" else DM0
-        ss = daypot.sell_record(con, "day", sub, t, float(subc.get("record_days", 14)))
-        p_ = daypot.hit_p(conf, ss, int(subc.get("ev_prior_n", 10)), int(subc.get("ev_conf_full_n", 30)))
+        kls = (q or {}).get("klass") or "crypto"
+        ss = daypot.sell_record(con, "day", sub, t, float(subc.get("record_days", 14)), klass="stock" if R.get("stock_calibrated") and kls == "stock" else None)
+        p_ = daypot.hit_p(conf, ss, variants.stock_prior_n(R, kls, subc.get("ev_prior_n", 10)), int(subc.get("ev_conf_full_n", 30)))
         hold = float(subc["max_hold_h"]) if sub == "burst" and subc.get("max_hold_h") else None
         return daypot.day_ev(p_, tp, sl, round_trip_pct(a, q, notional), flatten_wt(a, (q or {}).get("klass") or "crypto", hold))
 
     def risk_fresh_ev(a, q, conf, notional, setup):
-        ss = riskpot.setup_stats(con, RP, t, sub=setup)
-        p_ = daypot.hit_p(conf, ss, int(RP.get("ev_prior_n", 10)), int(RP.get("ev_conf_full_n", 30)))
+        kls = (q or {}).get("klass") or "crypto"
+        rp_stats = dict(RP, hit_prior=float(R.get("stock_hit_prior", 0.45)), hit_prior_n=float(R.get("stock_hit_prior_n", 12))) if R.get("stock_calibrated") and kls == "stock" else RP
+        ss = riskpot.setup_stats(con, rp_stats, t, sub=setup, klass="stock" if rp_stats is not RP else None)
+        p_ = daypot.hit_p(conf, ss, variants.stock_prior_n(R, kls, RP.get("ev_prior_n", 10)), int(RP.get("ev_conf_full_n", 30)))
         return variants.fresh_ev(p_, variants.risk_lock_pct(RP), float(RP.get("stop_loss_pct", 12)),
                                  round_trip_pct(a, q, notional))
 
@@ -659,7 +674,8 @@ def _cycle():
         se = sentiment(con, a, st["sentiment_max_age_h"])
         mok, reg, _minfo = daypot.market_regime(con, q_.get("klass") or "crypto", a, hist, t, DB, sget, markets.exchange)
         kind = brk.get("kind")
-        ss = daypot.setup_stats(con, kind or "24h", DB, t)
+        Bk = dict(DB, hit_prior=float(R.get("stock_hit_prior", 0.45)), hit_prior_n=float(R.get("stock_hit_prior_n", 12))) if R.get("stock_calibrated") and (q_.get("klass") or "crypto") == "stock" else DB
+        ss = daypot.setup_stats(con, kind or "24h", Bk, t, klass="stock" if Bk is not DB else None)
         conf, _parts = daypot.confidence(DB, brk.get("strength") or 0, vol, sent_in(se), reg, ss["p"], freshness=fr_of(a, q_, se))
         row = con.execute("SELECT value FROM state WHERE key=?", (f"day_start:day:{day}",)).fetchone()
         base_ = float(row[0]) if row else sleeve_eq("day")
@@ -707,7 +723,7 @@ def _cycle():
             continue
         md = dmeta.get(a)
         if not md:     # pre-v7 position: becomes a momentum trade with ATR levels computed now
-            at_ = atr_of(a); tp_, sl_ = daypot.levels(DM["take_profit"], DM["stop"], at_)
+            at_ = atr_of(a); tp_, sl_ = variants.stock_tp_sl(*daypot.levels(DM["take_profit"], DM["stop"], at_), at_, R, DM["take_profit"], DM["stop"], p["klass"])
             md = dmeta[a] = dict(sub="momentum", tp=round(tp_, 3), sl=round(sl_, 3), atr=round(at_, 3) if at_ else None,
                                  peak=max(q["price"], p["entry"]), opened=p["opened"], legacy=True)
         C = SUBC[md["sub"]]; f_ = fsell(a)
@@ -1137,6 +1153,7 @@ def _cycle():
         scores = adj_scores
     nmom = sum(1 for (sl, x) in pos if sl == "day" and sub_of(x) == "momentum")
     ss_mom = daypot.sell_record(con, "day", "momentum", t, float(DM.get("record_days", 14)))
+    ss_mom_stock = daypot.sell_record(con, "day", "momentum", t, float(DM.get("record_days", 14)), klass="stock") if R.get("stock_calibrated") else None
     refresh([a for a, (m, s, comb, info) in scores.items() if comb is not None and comb >= thr_of(a) and ("day", a) not in pos])
     for a, (m, s, comb, info) in sorted(scores.items(), key=lambda kv: -(kv[1][2] or -9)):
         if ("day", a) in pos or a in risk_only or a in day_x: continue
@@ -1146,7 +1163,7 @@ def _cycle():
             thr = variants.caution_threshold(thr, acct_f.get(ac, 0.0), float(R.get("day_caution_raise", 0.30)))
         if comb is None or warming(a): sig("day", a, m, s, comb, "SKIP", warming(a) or info); continue
         if comb < thr: sig("day", a, m, s, comb, "HOLD", f"score {comb} < {thr}; {info}"); continue
-        at_ = atr_of(a); tp_, sl_ = daypot.levels(DM["take_profit"], DM["stop"], at_)
+        at_ = atr_of(a); tp_, sl_ = variants.stock_tp_sl(*daypot.levels(DM["take_profit"], DM["stop"], at_), at_, R, DM["take_profit"], DM["stop"], q["klass"])
         scale = variants.caution_size_scale(acct_f.get(ac, 0.0)) if R.get("day_capital_caution") else 1.0
         raw_m = budget("momentum", ac) * float(DM["position_pct"]) / 100 * scale
         value = 0.0 if scale <= 0 else min(max(raw_m, mint), free("momentum", ac) - gas_of(q["klass"]))
@@ -1157,10 +1174,11 @@ def _cycle():
         rs_m = rsi_at.get(a)
         if not why and rs_m is not None and rs_m >= float(DM.get("rsi_max", 80)):
             why = f"RSI {rs_m:.0f} >= {float(DM.get('rsi_max', 80)):g} (overbought)"
-        p_m = daypot.hit_p(comb, ss_mom, int(DM.get("ev_prior_n", 10)), int(DM.get("ev_conf_full_n", 30)))
+        ss_m = ss_mom_stock if q["klass"] == "stock" and ss_mom_stock is not None else ss_mom
+        p_m = daypot.hit_p(comb, ss_m, variants.stock_prior_n(R, q["klass"], DM.get("ev_prior_n", 10)), int(DM.get("ev_conf_full_n", 30)))
         rtc_m = rt_cost(a, max(value, mint)); ev_m = daypot.day_ev(p_m, tp_, sl_, rtc_m, clock_p(a))
         if R.get("day_ev_blend"):
-            ev_m = variants.blend_ev(ev_m, ss_mom.get("n"), ss_mom.get("exp"), int(DM.get("ev_prior_n", 10)))
+            ev_m = variants.blend_ev(ev_m, ss_m.get("n"), ss_m.get("exp"), variants.stock_prior_n(R, q["klass"], DM.get("ev_prior_n", 10)))
         evmin_m = float(DM.get("ev_min_pct", 0.3))
         if not why and ev_m <= evmin_m: why = f"expected value {ev_m:+.2f}% after costs <= {evmin_m:g}%"
         if why:
@@ -1179,6 +1197,10 @@ def _cycle():
 
     # ---- burst: breakout + volume + RSI + sentiment + market regime, confidence-scored, EV after costs, capital-based threshold + sizing ----
     sstats = {k: daypot.setup_stats(con, k, DB, t) for k in ("24h", "4h")}
+    sstats_stock = None
+    if R.get("stock_calibrated"):
+        Bs = dict(DB, hit_prior=float(R.get("stock_hit_prior", 0.45)), hit_prior_n=float(R.get("stock_hit_prior_n", 12)))
+        sstats_stock = {k: daypot.setup_stats(con, k, Bs, t, klass="stock") for k in ("24h", "4h")}
     thr_b, evmin = daypot.threshold(DB, day_pnl, D["daily_loss_cap_pct"]), float(DB.get("ev_min_pct", 0))
     ss_burst = daypot.sell_record(con, "day", "burst", t, float(DB.get("record_days", 14))) if R.get("day_ev_blend") else None
     def thr_burst(ac):
@@ -1207,8 +1229,9 @@ def _cycle():
         vol, rejected = daypot.volume_for_entry(con, a, t, q["klass"], sget)
         r_ = daypot.rsi_h(pts);         se = sentiment(con, a, st["sentiment_max_age_h"])
         mok, reg, minfo = daypot.market_regime(con, q["klass"], a, hist, t, DB, sget, markets.exchange)
-        at_ = atr_of(a); tp_, sl_ = daypot.levels(DB["take_profit"], DB["stop"], at_)
-        ss = sstats.get(brk["kind"]) or dict(p=0.5, n=0, wins=0, exp=None)
+        at_ = atr_of(a); tp_, sl_ = variants.stock_tp_sl(*daypot.levels(DB["take_profit"], DB["stop"], at_), at_, R, DB["take_profit"], DB["stop"], q["klass"])
+        ss_book = sstats_stock if q["klass"] == "stock" and sstats_stock else sstats
+        ss = ss_book.get(brk["kind"]) or dict(p=0.5, n=0, wins=0, exp=None)
         fr = fr_of(a, q, se)
         sscore = sent_score_of(se)
         conf, parts = daypot.confidence(DB, brk["strength"], vol, sent_in(se), reg, ss["p"], freshness=fr)
@@ -1219,7 +1242,7 @@ def _cycle():
             conf, adj = variants.confidence_adjust(conf, R, run24, sscore, buzz, vol, bool(brk.get("kind")))
         size0 = max(daypot.conf_size(DB, conf, free("burst", acct_of(q["klass"]))), mint)
         rtc = rt_cost(a, size0)
-        p_ev = daypot.hit_p(conf, ss, int(DB.get("ev_prior_n", 10)), int(DB.get("ev_conf_full_n", 30)))
+        p_ev = daypot.hit_p(conf, ss, variants.stock_prior_n(R, q["klass"], DB.get("ev_prior_n", 10)), int(DB.get("ev_conf_full_n", 30)))
         ev = blend_burst(daypot.day_ev(p_ev, tp_, sl_, rtc, clock_p(a, DB.get("max_hold_h"))))
         d.update(kind=brk.get("kind"), ev=ev, rt_cost=round(rtc, 3), hit=round(p_ev, 3), hit_n=ss["n"], vol=round(vol, 2) if vol is not None else None, rsi=round(r_) if r_ is not None else None, sent=sscore,
                  market=minfo, atr=round(at_, 2) if at_ else None, tp=round(tp_, 2), sl=round(sl_, 2), conf=conf, parts=parts)
@@ -1271,7 +1294,8 @@ def _cycle():
         if not meta.get("mok"):
             return
         ac = d["acct"]
-        ss = sstats.get(kind) or dict(p=0.5, n=0, wins=0, exp=None)
+        ss_book = sstats_stock if px[a]["klass"] == "stock" and sstats_stock else sstats
+        ss = ss_book.get(kind) or dict(p=0.5, n=0, wins=0, exp=None)
         strength = entries.burst_strength(kind, DB, meta.get("range_frac"))
         conf, parts = daypot.confidence(DB, strength, vol, meta.get("sent"), meta.get("reg"), ss["p"], freshness=meta.get("fr"))
         if R.get("sent_split"):
@@ -1282,7 +1306,7 @@ def _cycle():
         q = px[a]
         size0 = max(daypot.conf_size(DB, conf, free("burst", ac)), mint)
         rtc = rt_cost(a, size0)
-        p_ev = daypot.hit_p(conf, ss, int(DB.get("ev_prior_n", 10)), int(DB.get("ev_conf_full_n", 30)))
+        p_ev = daypot.hit_p(conf, ss, variants.stock_prior_n(R, px[a]["klass"], DB.get("ev_prior_n", 10)), int(DB.get("ev_conf_full_n", 30)))
         ev = blend_burst(daypot.day_ev(p_ev, d["tp"], d["sl"], rtc, clock_p(a, DB.get("max_hold_h"))))
         if ev <= evmin:
             return
@@ -1388,6 +1412,11 @@ def _cycle():
     # Size = confidence x conf_size_pct% of the account's remaining RISK cash (min £5, max £8 / 20% of the pot).
     rss_all = riskpot.setup_stats(con, RP, t)
     rss = riskpot.setup_stats(con, RP, t, sub="breakout"); dss = riskpot.setup_stats(con, RP, t, sub="dip")
+    rss_stock = dss_stock = None
+    if R.get("stock_calibrated"):
+        RPs = dict(RP, hit_prior=float(R.get("stock_hit_prior", 0.45)), hit_prior_n=float(R.get("stock_hit_prior_n", 12)))
+        rss_stock = riskpot.setup_stats(con, RPs, t, sub="breakout", klass="stock")
+        dss_stock = riskpot.setup_stats(con, RPs, t, sub="dip", klass="stock")
     thr_r = riskpot.threshold(RP, dd); evmin_r = float(RP.get("ev_min_pct", 0.0))
     raw_c = []
     rs = sget(con, "risk_screen") or {}
@@ -1442,7 +1471,7 @@ def _cycle():
         if conf2 < thr_r or q.get("price_usd") is None or float(q["price_usd"]) >= float(dip_r["level"]):
             return
         ev2, ev_w, ev_l, ev_p = riskpot.setup_ev(dict(RP, _legacy_arm_win=True) if R.get("risk_ev_legacy_win") else RP,
-                                                conf2, at_, chosen["rt_cost"], dss)
+                                                conf2, at_, chosen["rt_cost"], dss_stock if q["klass"] == "stock" and dss_stock is not None else dss)
         if ev2 <= evmin_r:
             return
         size, _cap = riskpot.size(RP, conf2, max(0.0, cash_for("risk", a) - gas_of(q["klass"])), req, mint)
@@ -1490,16 +1519,19 @@ def _cycle():
         elif run_scale < 0.999 and ok:
             brk_plain += f" 7d +{float(c7):.0f}% scales the breakout score (Core will not lend)."
         brk_hard = note(brk_spec)
-        conf, parts = riskpot.confidence(RP, (bscore or 0) * run_scale, vol, sin, reg, rss["p"], freshness=fr)
+        rss_use = rss_stock if kind == "stock" and rss_stock is not None else rss
+        dss_use = dss_stock if kind == "stock" and dss_stock is not None else dss
+        conf, parts = riskpot.confidence(RP, (bscore or 0) * run_scale, vol, sin, reg, rss_use["p"], freshness=fr)
         run24 = variants.price_runup_pct(pts, 24) if R.get("sent_split") else None
         buzz = variants.buzz_of(se) if R.get("sent_split") else None
         if R.get("sent_split"):
             conf, adj = variants.confidence_adjust(conf, R, run24, sscore, buzz, vol, bool(ok))
             if adj:
                 brk_plain += " " + adj + "."
-        brk = pack(a, kind, "breakout", brk_plain, bscore, ok, why, m, minfo, conf, parts, rss, vol, se, mkinfo, at_, brk_hard)
+        brk = pack(a, kind, "breakout", brk_plain, bscore, ok, why, m, minfo, conf, parts, rss_use, vol, se, mkinfo, at_, brk_hard)
         brk["no_core_loan"] = bool(no_loan)
-        dip_r = riskpot.dip(pts, RP, sent=sin, regime=reg, hr=dss["p"], freshness=fr, vol=vol, atr=at_,
+        Rp = variants.stock_dip_rules(RP, R, at_, sin, kind)
+        dip_r = riskpot.dip(pts, Rp, sent=sin, regime=reg, hr=dss_use["p"], freshness=fr, vol=vol, atr=at_,
                             require_trend=bool(R.get("sent_split"))) if (RP.get("dip") or {}).get("enabled", True) else None
         if dip_r and R.get("sent_split") and dip_r.get("conf") is not None:
             dconf, dadj = variants.confidence_adjust(dip_r["conf"], R, run24, sscore, buzz, vol, bool(dip_r.get("bounce")))
@@ -1510,7 +1542,7 @@ def _cycle():
         if dip_r and dip_r.get("show"):
             dip_hard = note(None if dip_r["ok"] else dip_r["why"])
             if dip_hard is None: dip_hard = note(shared)
-            dip_row = pack(a, kind, "dip", dip_r["why"], bscore, ok, why, m, minfo, dip_r["conf"], dip_r["parts"], dss, vol, se, mkinfo, at_, dip_hard, dip_r["trend_ok"])
+            dip_row = pack(a, kind, "dip", dip_r["why"], bscore, ok, why, m, minfo, dip_r["conf"], dip_r["parts"], dss_use, vol, se, mkinfo, at_, dip_hard, dip_r["trend_ok"])
             brk_open, dip_open = brk["block"] is None, dip_row["block"] is None
             if dip_open and not brk_open: chosen = dip_row
             elif brk_open and dip_open and dip_row["conf"] > brk["conf"]: chosen = dip_row

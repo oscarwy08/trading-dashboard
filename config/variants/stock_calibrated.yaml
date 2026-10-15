@@ -1,0 +1,11 @@
+# Stocks only. Crypto on this book keeps the frozen rules.
+# Momentum is scaled by the 1-hour ATR. Day target and stop floors are ATR multiples.
+# The 0.40 clock-exit floor is off while more than 4 hours remain until that stock's close.
+# Hit rates use stock closes only, with this prior. A Risk dip uptrend is 2x ATR when a
+# sentiment print exists; with no print the plain 48-hour uptrend is enough on its own.
+# The Risk list is every watch theme, wider than the frozen four.
+variant_rules:
+  stock_calibrated: true
+
+riskpot:
+  stock_themes: [photonics, quantum, robotics, metals_rwa, rare_earths, farmland, uk_early, global_small]
