@@ -348,7 +348,7 @@ variants:
   enabled: true
   run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
         risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take,
-        sent_split]
+        sent_split, stock_calibrated]
   # These three books sold on an inverted EV. The next cycle recopies each from the current main book
   # and the scorecard starts there, so those sells are not counted.
   reset:
@@ -400,3 +400,12 @@ variant_rules:
   sent_buzz_hot: 3                # buzz_change at or above this, with the run-up, is the same overheat
   sent_buzz_quiet: 1.2            # buzz_change below this can earn the quiet-strength bonus
   sent_quiet_vol_x: 2             # last hour versus the average hour
+  stock_calibrated: false         # paper book: stock momentum, stops and dip uptrend are scaled by ATR
+  stock_mom_atr_4h: 1             # a 4h move of this many 1h ATRs fills that part of the stock momentum score
+  stock_mom_atr_24h: 2            # same for the 24h move
+  stock_tp_atr: 2                 # Day stock target floor, in 1h ATRs (the frozen percent floor does not apply)
+  stock_sl_atr: 1                 # Day stock stop floor, in 1h ATRs
+  stock_flatten_open_h: 4         # while more than this remains until the stock's own close, the 0.40 clock floor is off
+  stock_hit_prior: 0.45           # stock-only hit rate prior (crypto on this book keeps the frozen prior)
+  stock_hit_prior_n: 12
+  stock_dip_atr_x: 2              # with a sentiment print, the Risk dip uptrend must be this many 1h ATRs

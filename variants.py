@@ -27,6 +27,7 @@ LABELS = {
     "day_capital_caution": "Day capital caution",
     "partial_take": "Partial take",
     "sent_split": "Sentiment split",
+    "stock_calibrated": "Stock calibrated",
 }
 BLURB = {
     "ev_exit": "EV exit is off. Live expected value rises when the trade falls, so it was selling winners between about +1% and +5%. This book was reset; sells before the reset are not counted. It follows the main book until the upside is taken from the current price and the chance is recomputed.",
@@ -43,6 +44,7 @@ BLURB = {
     "day_capital_caution": "Day only, per account. f is that account's Day loss today divided by 15% of that account's start-of-day Day equity, with no cap at 1. Momentum's threshold is its base (0.35, or 0.30 on MON, WLD and XRP) plus 0.30 x f. Burst uses the same f. Size is multiplied by (1 - min(f, 1)). The -15% halt on the whole Day pot stays.",
     "partial_take": "Day and Risk. At the trail arm, sell half and leave the rest on this book's trail. Buy that half back on a later dip only when a fresh expected value clears the hurdle. The fresh value uses a recomputed chance and the percent still available from the current price, not the inverted live EV. Orders in this split may be £1. Every other book keeps the £5 minimum. The sell records the extra fee of splitting one exit into two.",
     "sent_split": "Burst and Risk. A missing sentiment print scores 0.50, the same as a real neutral, instead of 0.25. A Risk dip needs the 48-hour uptrend; positive sentiment does not stand in for it. When price is up 15% or more over 24 hours (5% or more over 4 hours on a Day momentum entry) and sentiment is at least 0.30, or the buzz change is 3 or more, burst and Risk confidence lose 0.10 and that Day momentum entry ignores sentiment. A catalyst score, when the file has one, is used instead of the raw score. A quiet tape (buzz change under 1.2) with volume at least 2x and a confirmed breakout or bounce adds 0.05. Files without those fields score as before.",
+    "stock_calibrated": "Stocks only. The momentum score is scaled by the 1-hour ATR instead of a fixed 3% and 8%. Day target and stop floors are ATR multiples, not the frozen percent floors. While more than 4 hours remain until that stock's own close, the 0.40 clock-exit floor is not applied. Stock hit rates use this book's own prior and only stock closes. A Risk dip's uptrend is a multiple of ATR when a sentiment print exists; with no print the plain 48-hour uptrend is enough on its own. The Risk stock list is the watch themes, wider than the frozen four.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
@@ -65,7 +67,10 @@ def rules_of(c):
              partial_take=False, partial_min_gbp=1.0,
              sent_split=False, sent_hot=0.3, sent_overheat=0.10, sent_quiet_bonus=0.05,
              sent_runup_24h_pct=15.0, sent_runup_4h_pct=5.0, sent_buzz_hot=3.0,
-             sent_buzz_quiet=1.2, sent_quiet_vol_x=2.0)
+             sent_buzz_quiet=1.2, sent_quiet_vol_x=2.0,
+             stock_calibrated=False, stock_mom_atr_4h=1.0, stock_mom_atr_24h=2.0,
+             stock_tp_atr=2.0, stock_sl_atr=1.0, stock_flatten_open_h=4.0,
+             stock_hit_prior=0.45, stock_hit_prior_n=12, stock_dip_atr_x=2.0)
     for k, v in ((c or {}).get("variant_rules") or {}).items():
         if k in d and v is not None:
             d[k] = v
@@ -78,11 +83,58 @@ def active(R):
                 or R.get("midnight_crypto") or R.get("entry_watch")
                 or R.get("risk_giveback_15") or R.get("day_trail_arm") or R.get("day_ev_blend")
                 or R.get("no_risk_clock") or R.get("day_capital_caution") or R.get("partial_take")
-                or R.get("sent_split"))
+                or R.get("sent_split") or R.get("stock_calibrated"))
 
 
 TABLE_BOOKS = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock",
-               "day_capital_caution", "partial_take", "sent_split")
+               "day_capital_caution", "partial_take", "sent_split", "stock_calibrated")
+
+
+def stock_flatten_floor(R, klass, mins_to_close, default_floor):
+    """The 0.40 clock floor, or 0 while more than stock_flatten_open_h remains until this stock's close.
+
+    Crypto and the main book always get default_floor.
+    """
+    if not (R or {}).get("stock_calibrated") or klass != "stock" or mins_to_close is None:
+        return float(default_floor)
+    if float(mins_to_close) / 60.0 > float(R.get("stock_flatten_open_h", 4)):
+        return 0.0
+    return float(default_floor)
+
+
+def stock_tp_sl(tp, sl, atr, R, tp_cfg, sl_cfg, klass):
+    """Day target and stop for one entry. Stocks on this book use ATR floors instead of the frozen percent floors."""
+    if not (R or {}).get("stock_calibrated") or klass != "stock":
+        return tp, sl
+    a = float(atr or 0)
+    if a <= 0:
+        return tp, sl
+    tp_floor = float(R.get("stock_tp_atr", 2)) * a
+    sl_floor = float(R.get("stock_sl_atr", 1)) * a
+    tp = min(float((tp_cfg or {}).get("max_pct", 99)), max(tp_floor, float((tp_cfg or {}).get("atr_x", 0)) * a))
+    sl = min(float((sl_cfg or {}).get("max_pct", 99)), max(sl_floor, float((sl_cfg or {}).get("atr_x", 0)) * a))
+    return round(tp, 3), round(sl, 3)
+
+
+def stock_dip_rules(RP, R, atr, sent, klass):
+    """Risk dip config. With a sentiment print the uptrend bar is stock_dip_atr_x times the 1-hour ATR.
+
+    With no print the frozen 48-hour percent uptrend is left as it is, and a missing print is not a fail.
+    """
+    if not (R or {}).get("stock_calibrated") or klass != "stock" or sent is None:
+        return RP
+    a = float(atr or 0)
+    if a <= 0:
+        return RP
+    D = dict((RP or {}).get("dip") or {})
+    D["trend_min_pct"] = float(R.get("stock_dip_atr_x", 2)) * a
+    return dict(RP, dip=D)
+
+
+def stock_prior_n(R, klass, default):
+    if (R or {}).get("stock_calibrated") and klass == "stock":
+        return int(R.get("stock_hit_prior_n", 12))
+    return int(default)
 
 
 def blend_ev(model, n, exp, prior_n=10):

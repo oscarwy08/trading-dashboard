@@ -74,7 +74,7 @@ def stock_score(con, sym, price_usd=None):
 # ---------------- v7.4: Day-style decision for the RISK pot (confidence + EV after costs + capital-based threshold) ----------------
 def clip01(v): return max(0.0, min(1.0, v))
 
-def setup_stats(con, R, t=None, sub=None):
+def setup_stats(con, R, t=None, sub=None, klass=None):
     """Measured record of the RISK pot's closed trades over the last record_days: hit rate with a Beta prior
     ((wins + p0*n0) / (n + n0)) and the observed expectancy in % per trade after all fees (same model as the DAY burst).
     sub='dip' counts only dip sells; sub='breakout' counts breakout sells and older rows with no setup tag.
@@ -83,8 +83,11 @@ def setup_stats(con, R, t=None, sub=None):
     p0, n0 = float(R.get("hit_prior", 0.5)), float(R.get("hit_prior_n", 20))
     since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(R.get("record_days", 30)))).isoformat()
     pcts = []
-    for v, g, pnl, sb in con.execute(
-            "SELECT value, gas, pnl, sub FROM trades WHERE sleeve='risk' AND side='SELL' AND ts>=? ORDER BY id DESC", (since,)):
+    sql = "SELECT value, gas, pnl, sub FROM trades WHERE sleeve='risk' AND side='SELL' AND ts>=?"
+    args = [since]
+    if klass:
+        sql += " AND klass=?"; args.append(klass)
+    for v, g, pnl, sb in con.execute(sql + " ORDER BY id DESC", args):
         if sub == "dip" and sb != "dip": continue
         if sub == "breakout" and sb not in (None, "", "breakout"): continue
         basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)
