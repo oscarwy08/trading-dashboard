@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-15T10:17:38+00:00",
+  "generated": "2026-10-15T11:21:41+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 37,
-        "avg_dt_s": 3079.2972972972975,
-        "avg_price_pct": -0.5823614600364319,
-        "missed": 1
+        "pairs": 38,
+        "avg_dt_s": 3030.684210526316,
+        "avg_price_pct": -0.5789599416344524,
+        "missed": 0
       },
       "entries": {
         "pairs": 7,
@@ -141,16 +141,16 @@
     {
       "name": "day_trail_arm",
       "exits": {
-        "pairs": 20,
-        "avg_dt_s": 1863.95,
-        "avg_price_pct": -0.2601985870886972,
+        "pairs": 21,
+        "avg_dt_s": 1781.5714285714287,
+        "avg_price_pct": -0.2873019608129015,
         "missed": 0
       },
       "entries": {
-        "pairs": 3,
-        "avg_dt_s": 9804.333333333334,
-        "avg_price_pct": 2.241767155936461,
-        "missed": 20
+        "pairs": 4,
+        "avg_dt_s": 8538.75,
+        "avg_price_pct": 2.4898349223310214,
+        "missed": 21
       }
     },
     {
@@ -754,13 +754,13 @@
       "shadow_ts": "2026-10-15T10:03:20+00:00",
       "shadow_price": 0.06655244864784986,
       "trigger": "[burst 24h] trailing stop +1.2% (peak +2.2%, gives back 40% of the gain)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-15T10:23:52+00:00",
+      "cycle_price": 0.06625089700014777,
+      "cycle_reason": "[burst 24h] trailing stop +0.7% (peak +2.6%, gives back 40% of the gain) [gap fill]; P&L \u00a3+0.04",
+      "dt_s": 1232.0,
+      "price_diff": -0.00030155164770208354,
+      "price_pct": -0.45310376076121417
     }
   ],
   "main_exit_missed": [],

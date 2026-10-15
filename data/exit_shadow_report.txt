@@ -187,7 +187,8 @@ ZK day
 
 STRK day
   shadow  2026-10-15T10:03:20+00:00  £0.0665524  [burst 24h] trailing stop +1.2% (peak +2.2%, gives back 40% of the gain)
-  cycle   no sell yet
+  cycle   2026-10-15T10:23:52+00:00  £0.0662509  [burst 24h] trailing stop +0.7% (peak +2.6%, gives back 40% of the gain) [gap fill]; P&L £+0.04
+  cycle was 1232s later, price £-0.000301552 (-0.45%)
 
 Shadow entries vs the 5-minute cycle
 
@@ -365,7 +366,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 37 pairs, avg time gap 3079s, avg price gap -0.58%, missed moves 1
+  exits: 38 pairs, avg time gap 3031s, avg price gap -0.58%, missed moves 0
   entries: 7 pairs, avg time gap 13937s, avg price gap +1.42%, missed moves 21
 ev_exit
   exits: 24 pairs, avg time gap 4154s, avg price gap -0.81%, missed moves 1
@@ -392,8 +393,8 @@ risk_giveback_15
   exits: 27 pairs, avg time gap 2330s, avg price gap -0.11%, missed moves 0
   entries: 5 pairs, avg time gap 10945s, avg price gap +0.90%, missed moves 16
 day_trail_arm
-  exits: 20 pairs, avg time gap 1864s, avg price gap -0.26%, missed moves 0
-  entries: 3 pairs, avg time gap 9804s, avg price gap +2.24%, missed moves 20
+  exits: 21 pairs, avg time gap 1782s, avg price gap -0.29%, missed moves 0
+  entries: 4 pairs, avg time gap 8539s, avg price gap +2.49%, missed moves 21
 day_ev_blend
   exits: 23 pairs, avg time gap 4817s, avg price gap -0.27%, missed moves 0
   entries: 4 pairs, avg time gap 69494s, avg price gap +1.11%, missed moves 11
