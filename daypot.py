@@ -48,7 +48,24 @@ def rsi_h(pts, n=14):
     up, dn = sum(x for x in d if x > 0), -sum(x for x in d if x < 0)
     return 100.0 if dn == 0 else 100 - 100 / (1 + up / dn)
 
-def breakout(con, a, pts, B):
+def _session_age_h(asset, ts, end):
+    """Regular-session hours from ts to end, or None if the clock cannot be read."""
+    import markets
+    mins = markets.open_minutes(asset, ts, end)
+    return None if mins is None else mins / 60.0
+
+def _price_session_ago(asset, pts, t, hours):
+    """Last (ts, price) at least `hours` of regular-session time before t."""
+    found = None
+    for ts, x in pts:
+        if ts > t:
+            continue
+        age = _session_age_h(asset, ts, t)
+        if age is not None and age + 1e-9 >= float(hours):
+            found = (ts, x)
+    return found
+
+def breakout(con, a, pts, B, klass=None):
     """Breakout check on USD points. Returns dict(kind '24h'|'4h'|None, strength 0-1, info, ext_pct).
 
     Also sets level/cap (USD prices) and pending_kind when price has not broken a level yet.
@@ -58,13 +75,21 @@ def breakout(con, a, pts, B):
     t, p = pts[-1]
     lb, rl = float(B.get("breakout_lookback_h", 24)), float(B.get("range_lookback_h", 4))
     mb, mx = float(B.get("min_break_pct", 0.1)) / 100, float(B.get("max_extension_pct", 3)) / 100
-    prior24 = [x for ts, x in pts if t - timedelta(hours=lb) <= ts < t]
-    cover = (t - min(ts for ts, _ in pts if ts >= t - timedelta(hours=lb))).total_seconds() / 3600
+    if klass == "stock":
+        prior24_pts = [(ts, x) for ts, x in pts if ts < t and (_session_age_h(a, ts, t) or 1e9) <= lb]
+        cover = _session_age_h(a, prior24_pts[0][0], t) if prior24_pts else 0
+        prior24 = [x for _, x in prior24_pts]
+    else:
+        prior24 = [x for ts, x in pts if t - timedelta(hours=lb) <= ts < t]
+        cover = (t - min(ts for ts, _ in pts if ts >= t - timedelta(hours=lb))).total_seconds() / 3600 if any(ts >= t - timedelta(hours=lb) for ts, _ in pts) else 0
     hi24 = max(prior24) if prior24 and cover >= lb * 0.75 else None
     r = con.execute("SELECT high24 FROM prices WHERE asset=? AND ts<? AND high24 IS NOT NULL ORDER BY ts DESC LIMIT 1",
                     (a, t.isoformat())).fetchone()       # CoinGecko 24h high of the previous snapshot (crypto)
     if r and r[0]: hi24 = max(hi24 or 0, r[0])
-    prior4 = [x for ts, x in pts if t - timedelta(hours=rl) <= ts < t]
+    if klass == "stock":
+        prior4 = [x for ts, x in pts if ts < t and (_session_age_h(a, ts, t) or 1e9) <= rl]
+    else:
+        prior4 = [x for ts, x in pts if t - timedelta(hours=rl) <= ts < t]
     out = dict(kind=None, strength=0.0, hi24=hi24, ext_pct=None, level=None, cap=None, pending_kind=None, range_frac=None)
     if hi24:
         out["level"] = hi24 * (1 + mb)
@@ -210,15 +235,19 @@ def market_regime(con, klass, a, hist, t, B, sget, exchange):
     reg = clip(0.5 + r1 / 0.6 * 0.3 + (rd or 0) / 2.0 * 0.2)
     return ok, reg, f"{name} 1h {r1:+.2f}%" + (f", day {rd:+.2f}%" if rd is not None else "")
 
-def setup_stats(con, kind, B=None, t=None):
+def setup_stats(con, kind, B=None, t=None, klass=None):
     """Measured record of one burst setup type ('24h' | '4h') over the last record_days: hit rate with a Beta prior
     (hit_prior x hit_prior_n pseudo-trades: (wins + p0*n0) / (n + n0)) and the observed expectancy in % per trade (net of
     all fees). The time window lets an old bad patch age out (no permanent lock-out after a few early losses).
-    Sell reasons carry '[burst <kind>]'."""
+    Sell reasons carry '[burst <kind>]'. klass='stock' or 'crypto' keeps the other market out of the hit rate.
+    Omit klass only for a caller that still wants the pooled record."""
     B = B or {}; p0, n0 = float(B.get("hit_prior", 0.5)), float(B.get("hit_prior_n", 20))
     since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(B.get("record_days", 14)))).isoformat()
-    rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve='day' AND sub='burst' AND side='SELL' AND reason LIKE ? "
-                       "AND ts>=? ORDER BY id DESC", (f"[burst {kind}]%", since)).fetchall()
+    sql = "SELECT value, gas, pnl FROM trades WHERE sleeve='day' AND sub='burst' AND side='SELL' AND reason LIKE ? AND ts>=?"
+    args = [f"[burst {kind}]%", since]
+    if klass:
+        sql += " AND klass=?"; args.append(klass)
+    rows = con.execute(sql + " ORDER BY id DESC", args).fetchall()
     pcts = []
     for v, g, pnl in rows:
         basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)
@@ -262,17 +291,20 @@ def sent_part(sent, missing=0.25):
     if sent is None: return max(0.0, min(1.0, float(missing)))
     return clip((float(sent) + 1) / 2)
 
-def sell_record(con, sleeve, sub, t=None, days=14):
-    """Closed sells for one sleeve/sub over the last `days`: n, wins, expectancy % (net of fees). sub None = any."""
+def sell_record(con, sleeve, sub, t=None, days=14, klass=None):
+    """Closed sells for one sleeve/sub over the last `days`: n, wins, expectancy % (net of fees). sub None = any.
+    klass='stock' or 'crypto' keeps the other market out of the hit rate. Omit klass only for a pooled record."""
     since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(days))).isoformat()
+    ksql, kargs = (" AND klass=?", [klass]) if klass else ("", [])
     if sub == "momentum":
-        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=? AND (sub IS NULL OR sub='momentum')",
-                           (sleeve, since)).fetchall()
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=? AND (sub IS NULL OR sub='momentum')" + ksql,
+                           (sleeve, since, *kargs)).fetchall()
     elif sub:
-        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND sub=? AND side='SELL' AND ts>=?",
-                           (sleeve, sub, since)).fetchall()
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND sub=? AND side='SELL' AND ts>=?" + ksql,
+                           (sleeve, sub, since, *kargs)).fetchall()
     else:
-        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=?", (sleeve, since)).fetchall()
+        rows = con.execute("SELECT value, gas, pnl FROM trades WHERE sleeve=? AND side='SELL' AND ts>=?" + ksql,
+                           (sleeve, since, *kargs)).fetchall()
     pcts = []
     for v, g, pnl in rows:
         basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)

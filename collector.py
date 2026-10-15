@@ -177,7 +177,10 @@ def day_universe(con, c, top, ts):
         if not why and v < float(U.get("min_vol_usd", 5e6)): why = "24h volume < floor"
         if not why and (not mc or v / mc < float(U.get("min_vol_mcap", 0.02))): why = "volume/market cap < floor"
         if not why and sym in seen: why = "duplicate symbol"
-        if why: k = why.split(" (")[0]; why_n[k] = why_n.get(k, 0) + 1; continue
+        if why:
+            from common import prefilter_reject
+            prefilter_reject("day", sym, why)
+            k = why.split(" (")[0]; why_n[k] = why_n.get(k, 0) + 1; continue
         seen.add(sym); keep.append(dict(x, _rank=i + 1))
     keep = keep[:int(U.get("max_coins", 150))]
     st_set(con, "day_universe", dict(ts=ts, n=len(keep), screened=len(top), excluded=why_n, memes_known=len(memes), meme_allow=sorted(allow),

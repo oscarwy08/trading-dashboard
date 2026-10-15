@@ -50,7 +50,10 @@ def screen(rows, c, monad_extra=()):
         if not why_not and vol < float(R.get("min_vol_usd", 5e6)): why_not = "24h volume too low"
         if not why_not and vol / (mcap or 1) < float(R.get("min_vol_mcap", 0.03)): why_not = "turnover too low"
         if not why_not and is_monad and not x.get("_dex_ok"): why_not = "no KyberSwap liquidity on Monad"
-        if why_not: continue
+        if why_not:
+            from common import prefilter_reject
+            prefilter_reject("risk-breakout", sym, why_not)
+            continue
         sc, ok, why = crypto_score(x)
         out.append(dict(id=x["id"], a=sym, name=x.get("name"), rank=rank, mcap=mcap, vol=vol, usd=x.get("current_price"),
                         c1=x.get("price_change_percentage_1h_in_currency"), c24=x.get("price_change_percentage_24h_in_currency"),
@@ -74,17 +77,21 @@ def stock_score(con, sym, price_usd=None):
 # ---------------- v7.4: Day-style decision for the RISK pot (confidence + EV after costs + capital-based threshold) ----------------
 def clip01(v): return max(0.0, min(1.0, v))
 
-def setup_stats(con, R, t=None, sub=None):
+def setup_stats(con, R, t=None, sub=None, klass=None):
     """Measured record of the RISK pot's closed trades over the last record_days: hit rate with a Beta prior
     ((wins + p0*n0) / (n + n0)) and the observed expectancy in % per trade after all fees (same model as the DAY burst).
     sub='dip' counts only dip sells; sub='breakout' counts breakout sells and older rows with no setup tag.
-    sub=None counts every RISK sell (the pot's own record)."""
+    sub=None counts every RISK sell (the pot's own record). klass='stock' or 'crypto' keeps the other
+    market out of that hit rate. Omit klass only for the pooled pot record."""
     from datetime import datetime, timedelta, timezone
     p0, n0 = float(R.get("hit_prior", 0.5)), float(R.get("hit_prior_n", 20))
     since = ((t or datetime.now(timezone.utc)) - timedelta(days=float(R.get("record_days", 30)))).isoformat()
     pcts = []
-    for v, g, pnl, sb in con.execute(
-            "SELECT value, gas, pnl, sub FROM trades WHERE sleeve='risk' AND side='SELL' AND ts>=? ORDER BY id DESC", (since,)):
+    sql = "SELECT value, gas, pnl, sub FROM trades WHERE sleeve='risk' AND side='SELL' AND ts>=?"
+    args = [since]
+    if klass:
+        sql += " AND klass=?"; args.append(klass)
+    for v, g, pnl, sb in con.execute(sql + " ORDER BY id DESC", args):
         if sub == "dip" and sb != "dip": continue
         if sub == "breakout" and sb not in (None, "", "breakout"): continue
         basis = (v or 0) - (g or 0) - (pnl or 0); pcts.append((pnl or 0) / basis * 100 if basis > 0 else 0)
@@ -198,7 +205,7 @@ def dip_confidence(R, pullback, support, bounce, sent, regime, hr, freshness=Non
     out = {k: round(v, 2) for k, v in parts.items()}; out["freshness"] = fr
     return conf, out
 
-def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=None, require_trend=False):
+def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=None, require_trend=False, klass=None, asset=None):
     """A pullback buy on snapshot prices [(ts, price), ...]. Shows a row once the drop from a recent high is large
     enough to be a dip. It is tradable only when that dip follows an uptrend or, unless require_trend, positive
     sentiment, stays shallower than a breakdown, is not still a one-day pump, and has turned up (higher low or a
@@ -211,11 +218,22 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
     if not D.get("enabled", True) or not pts or len(pts) < 8:
         return blank
     t, price = pts[-1]
-    span_h = (t - pts[0][0]).total_seconds() / 3600
+    stock = klass == "stock" and bool(asset)
+    if stock:
+        import daypot
+        def sess_age(ts, end):
+            return daypot._session_age_h(asset, ts, end)
+        span = sess_age(pts[0][0], t)
+        span_h = 0 if span is None else span
+        excl_h = float(D.get("swing_exclude_h", 1.5))
+        hi_h = float(D.get("high_lookback_h", 36))
+        window = [(ts, p) for ts, p in pts if (sess_age(ts, t) or -1) >= excl_h and (sess_age(ts, t) or 1e9) <= hi_h]
+    else:
+        span_h = (t - pts[0][0]).total_seconds() / 3600
+        excl = timedelta(hours=float(D.get("swing_exclude_h", 1.5)))
+        window = [(ts, p) for ts, p in pts if t - timedelta(hours=float(D.get("high_lookback_h", 36))) <= ts <= t - excl]
     if span_h < float(D.get("min_history_h", 30)):
         return blank
-    excl = timedelta(hours=float(D.get("swing_exclude_h", 1.5)))
-    window = [(ts, p) for ts, p in pts if t - timedelta(hours=float(D.get("high_lookback_h", 36))) <= ts <= t - excl]
     if len(window) < 4:
         return blank
     high_px = max(p for _, p in window)
@@ -229,7 +247,11 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
     hi_max = float(D.get("pullback_max_pct", 18))
     if pullback < lo_min:
         return blank                                   # still rising, or only a wiggle: leave the breakout row in charge
-    before = [p for ts, p in pts if t - timedelta(hours=float(D.get("trend_lookback_h", 48))) <= ts <= high_ts]
+    if stock:
+        tr_h = float(D.get("trend_lookback_h", 48))
+        before = [p for ts, p in pts if ts <= high_ts and sess_age(ts, high_ts) is not None and sess_age(ts, high_ts) <= tr_h]
+    else:
+        before = [p for ts, p in pts if t - timedelta(hours=float(D.get("trend_lookback_h", 48))) <= ts <= high_ts]
     swing = min(before) if before else high_px
     trend_ok = bool(before) and swing > 0 and high_px / swing - 1 >= float(D.get("trend_min_pct", 8)) / 100 and swing < high_px
     sent_pos = sent is not None and float(sent) > float(D.get("sentiment_min", 0))
@@ -241,7 +263,10 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
     ma_n = max(2, int(D.get("ma_bars", 6)))
     ma = sum(prices[-ma_n:]) / ma_n if len(prices) >= ma_n else None
     reclaimed = ma is not None and price >= ma
-    day = [p for ts, p in pts if ts >= t - timedelta(hours=24)]
+    if stock:
+        day = [p for ts, p in pts if sess_age(ts, t) is not None and sess_age(ts, t) <= 24]
+    else:
+        day = [p for ts, p in pts if ts >= t - timedelta(hours=24)]
     avg = sum(day) / len(day) if day else None
     slow_n = max(ma_n * 4, 16)
     slow = sum(prices[-slow_n:]) / slow_n if len(prices) >= slow_n else None
@@ -273,7 +298,10 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
     else:
         if lifted: b_s += 0.25
         if last_up: b_s += 0.15
-    old = [p for ts, p in pts if ts <= t - timedelta(hours=24)]
+    if stock:
+        old = [p for ts, p in pts if sess_age(ts, t) is not None and sess_age(ts, t) >= 24]
+    else:
+        old = [p for ts, p in pts if ts <= t - timedelta(hours=24)]
     r24 = (price / old[-1] - 1) * 100 if old and old[-1] else None
     chasing = r24 is not None and r24 > float(D.get("chase_24h_pct", 60))
     too_deep = pullback > hi_max
