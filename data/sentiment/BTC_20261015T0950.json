@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T09:50:00Z",
+ "asset": "BTC",
+ "score": 0.0,
+ "volume": 45,
+ "confidence": 0.55,
+ "summary": "BTC -2.4% 24h near $80k. Bitcoin ETFs saw $261M net outflows on 14 Oct (FBTC $153M, IBIT $111M), reversing the prior day's inflow. 'Uptober' fading chatter is price recap, not news. Buzz slightly below 3-day average. Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2110642940771217833"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "US spot Bitcoin ETF net outflows $261.4M on 14 Oct",
+ "buzz_level": 3902,
+ "buzz_change": 0.88,
+ "price_runup_24h_pct": -2.36,
+ "carried_over": false
+}

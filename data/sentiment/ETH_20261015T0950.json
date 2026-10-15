@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-15T09:50:00Z",
+ "asset": "ETH",
+ "score": -0.05,
+ "volume": 30,
+ "confidence": 0.5,
+ "summary": "ETH -5.2% 24h. Ethereum ETFs saw $129.5M outflows on 14 Oct, mostly BlackRock ETHA ($110M). Devcon 8 3-6 Nov still ahead. Buzz below 3-day average. Mild negative.",
+ "sources": [
+  "https://x.com/i/trending/2110642940771217833"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "US spot Ether ETF net outflows $129.5M on 14 Oct",
+ "buzz_level": 1786,
+ "buzz_change": 0.92,
+ "price_runup_24h_pct": -5.19,
+ "carried_over": false
+}
