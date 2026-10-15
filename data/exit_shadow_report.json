@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-15T06:07:12+00:00",
+  "generated": "2026-10-15T07:07:14+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -24,7 +24,7 @@
         "pairs": 21,
         "avg_dt_s": 4588.142857142857,
         "avg_price_pct": -0.645719828588158,
-        "missed": 1
+        "missed": 2
       },
       "entries": {
         "pairs": 4,
@@ -39,13 +39,13 @@
         "pairs": 20,
         "avg_dt_s": 7519.8,
         "avg_price_pct": -0.11004279065814633,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
-        "pairs": 3,
-        "avg_dt_s": 46272.0,
-        "avg_price_pct": 13.131849623599159,
-        "missed": 20
+        "pairs": 4,
+        "avg_dt_s": 72090.75,
+        "avg_price_pct": 12.72018119654433,
+        "missed": 19
       }
     },
     {
@@ -54,7 +54,7 @@
         "pairs": 19,
         "avg_dt_s": 5309.789473684211,
         "avg_price_pct": -0.42684790557118346,
-        "missed": 2
+        "missed": 3
       },
       "entries": {
         "pairs": 4,
@@ -69,7 +69,7 @@
         "pairs": 27,
         "avg_dt_s": 5800.962962962963,
         "avg_price_pct": 0.0583264980898958,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 6,
@@ -84,7 +84,7 @@
         "pairs": 19,
         "avg_dt_s": 5328.105263157895,
         "avg_price_pct": -0.42684790557118346,
-        "missed": 2
+        "missed": 3
       },
       "entries": {
         "pairs": 4,
@@ -102,10 +102,10 @@
         "missed": 0
       },
       "entries": {
-        "pairs": 11,
-        "avg_dt_s": 24186.18181818182,
-        "avg_price_pct": 3.130312640642677,
-        "missed": 53
+        "pairs": 12,
+        "avg_dt_s": 23568.583333333332,
+        "avg_price_pct": 2.8431089634276314,
+        "missed": 52
       }
     },
     {
@@ -129,7 +129,7 @@
         "pairs": 24,
         "avg_dt_s": 2477.7916666666665,
         "avg_price_pct": 0.11721391937696428,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 5,
@@ -174,7 +174,7 @@
         "pairs": 24,
         "avg_dt_s": 2472.0833333333335,
         "avg_price_pct": 0.11229575758911399,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 5,
@@ -189,7 +189,7 @@
         "pairs": 25,
         "avg_dt_s": 2379.24,
         "avg_price_pct": 0.10591847255941227,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 5,
@@ -204,7 +204,7 @@
         "pairs": 29,
         "avg_dt_s": 880.3793103448276,
         "avg_price_pct": 0.011983403013630099,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 4,
@@ -219,7 +219,7 @@
         "pairs": 10,
         "avg_dt_s": 985.8,
         "avg_price_pct": 0.7272562276158889,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 1,
@@ -1263,6 +1263,13 @@
       "asset": "KAIA",
       "price": 0.03326838847398,
       "reason": "[momentum] DAY score 0.855 >= 0.35; target +12.0% / stop -5.0% (ATR 5.40%); EV +0.50%; 4h +19.0%, 24h +14.4%, EMA6/24 up, RSI 74, sentiment -0.15 (conf 0.30, weight x0.36)"
+    },
+    {
+      "ts": "2026-10-15T07:02:17+00:00",
+      "sleeve": "day",
+      "asset": "PYTH",
+      "price": 0.06511800991563017,
+      "reason": "[momentum] DAY score 0.882 >= 0.35; target +7.4% / stop -3.6% (ATR 2.97%); EV +0.55%; 4h +3.3%, 24h +8.2%, EMA6/24 up, RSI 61, sentiment +0.35 (conf 0.50, weight x0.16)"
     }
   ]
 }
