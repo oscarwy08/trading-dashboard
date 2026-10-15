@@ -10,6 +10,10 @@ writes sentiment JSON files. GBP £200 paper money in two accounts (Crypto £100
 
 The last 30% of the daily CoinGecko budget (`reserve_pct`) is only for `simple/price` of coins we hold and coins with an armed entry, plus a quote immediately before a fill. A top-300 scan, category refresh, chart or backfill, the FX cross-check, and the general fallback for every unlisted coin stop before that slice. When CoinGecko is skipped or returns nothing, a coin with no Kraken, Coinbase or Kyber route can take the most liquid GeckoTerminal or DexScreener pool, rejected if it is more than twice the last good price. The price row is tagged with that source. The markets page lists how many calls each purpose spent.
 
+## Volume sanity (2026-10-15)
+
+A last-hour volume above 50 times the average hour, or a rolling 24h total that jumps more than 5 times inside the ratio window, is rejected. It is not a spike and it is not missing data, so it cannot open a Day or Risk entry on the main book, any paper book, or the watcher. The 2x volume gate is unchanged. The 13 Oct 2026 LDO print (about 2,449x, from one Kraken vol24 that reverted on the next quote) is the case this catches.
+
 ## Backtest (report only)
 
 `python3 backtest.py` replays the stored prices in `data/trading.db` through the main book and each name in `variants.run`. It uses the live trader, so fees and slippage are the ones the cycle charges. It writes a temporary copy only. It does not change the frozen rules or the live database.

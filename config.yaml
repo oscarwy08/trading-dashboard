@@ -177,7 +177,7 @@ riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mi
   # sentiment block, drawdown halt, market open, fresh price, cooldown, max_open.
   confidence_weights: {breakout: 0.30, volume: 0.20, sentiment: 0.15, market: 0.15, hit_rate: 0.20, freshness: 0.15}
                                 # freshness scales the other five (1 = unchanged); it is not mixed into the average
-  volume_x: 2                   # volume component: last hour vs the average hour (2x = half way, 4x+ = full; unknown = 0.4)
+  volume_x: 2                   # volume component: last hour vs the average hour (2x = half way, 4x+ = full; unknown = 0.4). A print above 50x, or a 24h total that jumps more than 5x inside the window, is rejected in daypot and cannot open the entry.
   conf_threshold: 0.55          # threshold at no drawdown ...
   conf_threshold_at_stop: 0.85  # ... rising linearly to this as the drawdown approaches drawdown_cap_pct (30%)
   hit_prior: 0.5                # measured hit rate of RISK closed trades (last record_days) with a Beta prior of hit_prior_n trades
@@ -214,7 +214,7 @@ riskpot:                        # RISK pot (sleeve 'risk'): speculative small/mi
     rsi_oversold: 40            # RSI at or under this adds to the bounce bar; it is not required
     bounce_bars: 3              # higher low: the last few bars against the few before them
     bounce_min_pct: 0.4         # price has lifted at least this far off the low, and the last bar is up
-    volume_x: 1.2               # last hour vs the average hour counts as buying volume; unknown volume is not a fail
+    volume_x: 1.2               # last hour vs the average hour counts as buying volume; unknown volume is not a fail. A rejected print (see day.burst.volume_x) is not buying volume.
     sentiment_min: 0.0          # sentiment above this counts as positive (qualifies a dip when there is no uptrend)
     chase_24h_pct: 60           # still up more than this over 24h: the same pump a breakout will not chase
     weights: {pullback: 0.20, support: 0.15, bounce: 0.20, sentiment: 0.15, market: 0.10, hit_rate: 0.20, freshness: 0.15}
@@ -273,8 +273,8 @@ day:                            # DAY pot: intraday, flat overnight. v7 (2026-10
     range_min_pct: 0.3          # a 4h "range" tighter than this is stuck prints, not a coil
     min_break_pct: 0.1
     max_extension_pct: 3        # never chase: at most 3% above the broken high
-    volume_x: 2.0               # last-hour volume >= 2x the average hour (crypto: CoinGecko 24h-volume deltas; stocks: Yahoo 15m bars)
-    require_volume: false       # if NO volume data: only a 24h-high break may trade (volume part of the confidence = 0.4)
+    volume_x: 2.0               # last-hour volume >= 2x the average hour (crypto: CoinGecko 24h-volume deltas; stocks: Yahoo 15m bars). Impossible prints (above 50x, or a 24h total up more than 5x in the window) are rejected and cannot open the trade.
+    require_volume: false       # if NO volume data: only a 24h-high break may trade (volume part of the confidence = 0.4). A rejected print is not "no data".
     rsi_max: 80                 # hourly RSI must be below this
     sentiment_min: -0.1         # fresh sentiment must be >= this (none = neutral, allowed)
     market:

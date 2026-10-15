@@ -10,6 +10,7 @@
 Data granularity: prices are 15-minute snapshots (cycle cadence), so hourly bars/ATR are built from ~4 points per hour
 (true ranges are under-estimated) and exits react at most every 15 minutes (a stop can fill beyond its level)."""
 import json
+import math
 from datetime import datetime, timedelta, timezone
 
 clip = lambda x, lo=0.0, hi=1.0: max(lo, min(hi, x))
@@ -100,24 +101,91 @@ def breakout(con, a, pts, B):
     out["info"] = f"no breakout (24h high {'$%.5g' % hi24 if hi24 else 'n/a'}, now ${p:.5g})"
     return out
 
-def crypto_vol_ratio(con, a, t):
-    """Last-hour volume vs the average hour, from CoinGecko rolling 24h total_volume deltas:
-    v_dt ~= dV + V_prev*dt/24h (the slice that dropped out ~ an average slice) -> ratio = 1 + dV / (V_prev*dt/24h)."""
+# A rolling 24h total cannot multiply several times inside this window, and an hourly
+# ratio of tens of times the average hour is not a burst. On 13 Oct 2026 at 15:33 UK,
+# LDO's Kraken vol24 went from 719,748 to 66,476,205 in 54 minutes (about 92x). The
+# formula reported 2,449x an average hour, the cycle bought it, and the next print 18s
+# later was back to about 824,000. 5x on the 24h total, or 50x on the hourly ratio, is
+# rejected. A real 2x-10x hour is about 1.1x-1.4x on the 24h total and still passes.
+# volume_x (the 2x entry line) is unchanged.
+VOL24_JUMP_MAX = 5.0
+VOL_RATIO_MAX = 50.0
+
+def sane_vol_ratio(ratio):
+    """A usable last-hour vs average-hour ratio, or None when the print cannot be traded on."""
+    try:
+        r = float(ratio)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(r) or r < 0 or r > VOL_RATIO_MAX:
+        return None
+    return r
+
+def _crypto_vol(con, a, t):
+    """('missing'|'ok'|'rejected', ratio or None).
+
+    Missing means there is nothing to score (the 24h-high exception can still apply).
+    Rejected means a print exists and it is impossible, so it must not open a trade.
+    """
     rows = con.execute("SELECT ts, vol24 FROM prices WHERE asset=? AND vol24>0 AND ts>=? AND ts<=? ORDER BY ts",
                        (a, (t - timedelta(hours=2)).isoformat(), (t + timedelta(seconds=1)).isoformat())).fetchall()
-    if len(rows) < 2: return None
-    tn, vn = datetime.fromisoformat(rows[-1][0]), rows[-1][1]
+    if len(rows) < 2: return "missing", None
+    tn, vn = datetime.fromisoformat(rows[-1][0]), float(rows[-1][1])
     prev = [r for r in rows if datetime.fromisoformat(r[0]) <= tn - timedelta(minutes=45)]
-    if not prev: return None
-    tp_, vp = datetime.fromisoformat(prev[-1][0]), prev[-1][1]
+    if not prev: return "missing", None
+    tp_, vp = datetime.fromisoformat(prev[-1][0]), float(prev[-1][1])
     dt_h = (tn - tp_).total_seconds() / 3600
-    if dt_h <= 0 or dt_h > 1.75 or tn < t - timedelta(minutes=45): return None
-    return max(0.0, 1 + (vn - vp) / (vp * dt_h / 24))
+    if dt_h <= 0 or dt_h > 1.75 or tn < t - timedelta(minutes=45) or vp <= 0: return "missing", None
+    if vn > vp * VOL24_JUMP_MAX: return "rejected", None
+    ratio = 1 + (vn - vp) / (vp * dt_h / 24)
+    if sane_vol_ratio(ratio) is None: return "rejected", None
+    return "ok", max(0.0, ratio)
+
+def crypto_vol_ratio(con, a, t):
+    """Last-hour volume vs the average hour, from CoinGecko rolling 24h total_volume deltas:
+    v_dt ~= dV + V_prev*dt/24h (the slice that dropped out ~ an average slice) -> ratio = 1 + dV / (V_prev*dt/24h).
+    An impossible print returns None. Callers that open trades must also check crypto_volume_rejected:
+    None from a rejected print is not the same as missing data."""
+    return _crypto_vol(con, a, t)[1]
+
+def crypto_volume_rejected(con, a, t):
+    """True when the latest vol24 pair is impossible (LDO 13 Oct 2026), not merely absent."""
+    return _crypto_vol(con, a, t)[0] == "rejected"
+
+def _stock_vol(con, a, t, sget):
+    v = (sget(con, "stock_vol") or {}).get(a) if sget else None
+    if not v or not v.get("ratio") or datetime.fromisoformat(v["ts"]) < t - timedelta(minutes=40):
+        return "missing", None
+    sane = sane_vol_ratio(v.get("ratio"))
+    if sane is None: return "rejected", None
+    return "ok", sane
 
 def stock_vol_ratio(con, a, t, sget):
-    v = (sget(con, "stock_vol") or {}).get(a)
-    if not v or not v.get("ratio") or datetime.fromisoformat(v["ts"]) < t - timedelta(minutes=40): return None
-    return float(v["ratio"])
+    return _stock_vol(con, a, t, sget)[1]
+
+def stock_volume_rejected(con, a, t, sget):
+    return _stock_vol(con, a, t, sget)[0] == "rejected"
+
+def volume_for_entry(con, a, t, klass, sget=None):
+    """(ratio or None, rejected) for one entry decision. Crypto and stocks share the cap."""
+    if klass == "stock":
+        return stock_vol_ratio(con, a, t, sget), stock_volume_rejected(con, a, t, sget)
+    return crypto_vol_ratio(con, a, t), crypto_volume_rejected(con, a, t)
+
+def entry_volume_block(vol, rejected, volume_x, require_volume, kind):
+    """Why this reading must not open the trade, or None when volume allows it.
+
+    A rejected print is not missing data. The 24h-high exception does not apply to it,
+    on the main book, a paper book, or the watcher.
+    """
+    if rejected:
+        return "volume reading rejected"
+    vx = float(volume_x)
+    if vol is not None and float(vol) < vx:
+        return f"volume x{float(vol):.1f} < {vx:g}x average"
+    if vol is None and (require_volume or kind != "24h"):
+        return "no volume data (only a 24h-high break may trade without it)"
+    return None
 
 def market_regime(con, klass, a, hist, t, B, sget, exchange):
     """(ok, regime 0-1, info). crypto: BTC 1h/4h; stocks: index proxy of the listing exchange (state market_proxy, from the
