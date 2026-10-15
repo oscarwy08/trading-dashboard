@@ -1,14 +1,14 @@
 {
   "status": "ok",
-  "generated": "2026-10-15T17:34:49+00:00",
+  "generated": "2026-10-15T18:39:44+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 49,
-        "avg_dt_s": 2556.3061224489797,
-        "avg_price_pct": -0.4737566496023147,
+        "pairs": 50,
+        "avg_dt_s": 2514.1,
+        "avg_price_pct": -0.4682419126498722,
         "missed": 2
       },
       "entries": {
@@ -30,7 +30,7 @@
         "pairs": 4,
         "avg_dt_s": 15709.0,
         "avg_price_pct": 1.8667582696575442,
-        "missed": 60
+        "missed": 64
       }
     },
     {
@@ -45,7 +45,7 @@
         "pairs": 5,
         "avg_dt_s": 57933.0,
         "avg_price_pct": 10.397121738660609,
-        "missed": 45
+        "missed": 48
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 5,
         "avg_dt_s": 12847.6,
         "avg_price_pct": 1.71438339715118,
-        "missed": 60
+        "missed": 64
       }
     },
     {
@@ -75,7 +75,7 @@
         "pairs": 6,
         "avg_dt_s": 17937.166666666668,
         "avg_price_pct": 1.7977239756091716,
-        "missed": 44
+        "missed": 47
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 5,
         "avg_dt_s": 12867.6,
         "avg_price_pct": 1.71438339715118,
-        "missed": 46
+        "missed": 50
       }
     },
     {
@@ -105,7 +105,7 @@
         "pairs": 19,
         "avg_dt_s": 26114.21052631579,
         "avg_price_pct": 2.781530600495359,
-        "missed": 93
+        "missed": 105
       }
     },
     {
@@ -129,7 +129,7 @@
         "pairs": 32,
         "avg_dt_s": 2319.875,
         "avg_price_pct": -0.017584501824750617,
-        "missed": 2
+        "missed": 3
       },
       "entries": {
         "pairs": 5,
@@ -174,7 +174,7 @@
         "pairs": 32,
         "avg_dt_s": 2325.25,
         "avg_price_pct": -0.021273123165638324,
-        "missed": 2
+        "missed": 3
       },
       "entries": {
         "pairs": 5,
@@ -189,7 +189,7 @@
         "pairs": 33,
         "avg_dt_s": 2183.878787878788,
         "avg_price_pct": -0.17974564557235292,
-        "missed": 1
+        "missed": 2
       },
       "entries": {
         "pairs": 7,
@@ -204,7 +204,7 @@
         "pairs": 39,
         "avg_dt_s": 690.1025641025641,
         "avg_price_pct": -0.07676109285329621,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 5,
@@ -943,6 +943,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "CVX",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-15T18:14:11+00:00",
+      "shadow_price": 1.5274533,
+      "trigger": "[burst 24h] trailing stop +1.8% (peak +3.0%, gives back 40% of the gain)",
+      "status": "matched",
+      "cycle_ts": "2026-10-15T18:21:37+00:00",
+      "cycle_price": 1.52442864,
+      "cycle_reason": "[burst 24h] trailing stop +1.6% (peak +2.9%, gives back 40% of the gain); P&L \u00a3+0.07",
+      "dt_s": 446.0,
+      "price_diff": -0.0030246599999999013,
+      "price_pct": -0.19801980198019156
     }
   ],
   "main_exit_missed": [],
