@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "PENDLE",
+ "score": -0.05,
+ "confidence": 0.45,
+ "summary": "+13% 24h, elevated Day momentum. Still quiet on dated catalysts \u2014 mild runup caution vs morning neutral.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst",
+ "volume": 320,
+ "buzz_level": 320,
+ "buzz_change": 3.3,
+ "price_runup_24h_pct": 12.79,
+ "carried_over": false
+}

@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "BAT",
+ "score": -0.08,
+ "confidence": 0.4,
+ "summary": "+14% 24h with no dated catalyst. Runup caution.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst",
+ "volume": 220,
+ "buzz_level": 220,
+ "buzz_change": 3.0,
+ "price_runup_24h_pct": 13.58,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "WLD",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "WLD +16.6% 24h with still-modest dedicated news; mostly gainer-list chatter. No dated listing/unlock/ruling \u2014 treat runup as caution, not bullish.",
+ "sources": [
+  "https://x.com/stobixcom/status/2111077513661133261"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst; runup-driven mentions",
+ "volume": 400,
+ "buzz_level": 400,
+ "buzz_change": 2.9,
+ "price_runup_24h_pct": 16.59,
+ "carried_over": false
+}

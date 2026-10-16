@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "GRASS",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "+8% 24h; Day momentum strong earlier. No new news \u2014 mild caution on runup.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst",
+ "volume": 200,
+ "buzz_level": 200,
+ "buzz_change": 3.05,
+ "price_runup_24h_pct": 8.01,
+ "carried_over": false
+}

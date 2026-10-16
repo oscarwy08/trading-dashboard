@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "ZS",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "Zscaler remains eligible Core pick; flat overnight. Prior sentiment was constructive. Mildly positive carry of quality, low fresh news.",
+ "sources": [
+  "https://x.com/i/trending/2110478242939650279"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 190,
+ "buzz_level": 190,
+ "buzz_change": 1.55,
+ "price_runup_24h_pct": -0.16,
+ "carried_over": true
+}

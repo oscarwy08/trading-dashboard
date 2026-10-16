@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "AMD",
+ "score": -0.2,
+ "confidence": 0.6,
+ "summary": "Still caught in memory/semis supply-fear rout (CXMT/China DRAM headlines). No AMD-specific positive catalyst midday. Core hold \u2014 cautious into US open.",
+ "sources": [
+  "https://x.com/i/trending/2110894838711570502"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Sector: China DRAM oversupply fears weighing semis",
+ "volume": 1600,
+ "buzz_level": 1600,
+ "buzz_change": 1.45,
+ "price_runup_24h_pct": -1.5,
+ "carried_over": false
+}

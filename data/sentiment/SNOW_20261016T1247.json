@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "SNOW",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "Still eligible but prior AI-rout overhang; flat overnight. Mildly cautious.",
+ "sources": [
+  "https://x.com/i/trending/2110822119743410229"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 320,
+ "buzz_level": 320,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": true
+}

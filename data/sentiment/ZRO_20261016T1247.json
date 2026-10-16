@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "ZRO",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "+20% 24h on Risk screens; no new dated LayerZero catalyst midday. Runup caution.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst",
+ "volume": 550,
+ "buzz_level": 550,
+ "buzz_change": 3.04,
+ "price_runup_24h_pct": 20.25,
+ "carried_over": false
+}

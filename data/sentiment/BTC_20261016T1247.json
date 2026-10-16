@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "BTC",
+ "score": 0.28,
+ "confidence": 0.7,
+ "summary": "Schwab completed retail BTC/ETH trading for ~40M clients; Deutsche Bank weeks from BTC/ETH custody (Reuters). Mid/large BTC wallets hit ATH 20,338. Spot BTC ETFs thin +$5M inflow after PPI scare; price holds ~$82.2k. Constructive TradFi access catalysts \u2014 not a price-chase.",
+ "sources": [
+  "https://news.bitcoin.com/finance/charles-schwab-ceo-sees-crypto-new-revenue-engine/",
+  "https://live.euronext.com/en/financial-news/deutsche-bank-prepares-crypto-custody-launch-targets-asia-growth",
+  "https://www.coindesk.com/markets/2026/10/16/live-updates-bitcoin-back-above-usd82-000-zec-jumps-11-as-etf-outflows-continue",
+  "https://x.com/i/trending/2111074172860579928"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "Schwab retail BTC live; Deutsche Bank custody weeks away; whale wallets ATH",
+ "volume": 41000,
+ "buzz_level": 41000,
+ "buzz_change": 1.58,
+ "price_runup_24h_pct": 1.96,
+ "carried_over": false
+}

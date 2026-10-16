@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "SHOP",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "Strong 1m rank (+33%); overnight print +3%. No earnings catalyst today. Mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2110478242939650279"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 250,
+ "buzz_level": 250,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": 5.61,
+ "carried_over": true
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "PYTH",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "Polymarket short-term ETH/SOL/XRP markets (Pyth often cited as oracle stack) still relevant; +8% 24h. Mild positive, not a frenzy.",
+ "sources": [
+  "https://x.com/i/trending/2110894837520277650"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Polymarket crypto short-term markets (Pyth-adjacent)",
+ "volume": 260,
+ "buzz_level": 260,
+ "buzz_change": 1.25,
+ "price_runup_24h_pct": 8.19,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "ARB",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "+16% 24h on gainer lists; no dated ARB-specific catalyst midday. Mild runup caution.",
+ "sources": [
+  "https://x.com/stobixcom/status/2111077513661133261"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst",
+ "volume": 800,
+ "buzz_level": 800,
+ "buzz_change": 3.24,
+ "price_runup_24h_pct": 16.41,
+ "carried_over": false
+}

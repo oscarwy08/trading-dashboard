@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "AERO",
+ "score": -0.05,
+ "confidence": 0.45,
+ "summary": "+9% 24h breakout tape; no dated midday catalyst. Mild runup caution unchanged.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst",
+ "volume": 300,
+ "buzz_level": 300,
+ "buzz_change": 0.97,
+ "price_runup_24h_pct": 9.31,
+ "carried_over": false
+}

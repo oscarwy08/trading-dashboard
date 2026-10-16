@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "ZAMA",
+ "score": -0.05,
+ "confidence": 0.45,
+ "summary": "+5% 24h after prior Day activity. No fresh catalyst; mild caution.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst",
+ "volume": 160,
+ "buzz_level": 160,
+ "buzz_change": 2.12,
+ "price_runup_24h_pct": 5.15,
+ "carried_over": false
+}

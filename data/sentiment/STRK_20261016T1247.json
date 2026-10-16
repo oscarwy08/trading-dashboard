@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "STRK",
+ "score": 0.12,
+ "confidence": 0.6,
+ "summary": "Starknet non-binding poll on exploring independent post-quantum L1 still open (through ~22 Oct); >99.9% early support. Price -4% 24h after prior spike \u2014 catalyst real but vote non-binding.",
+ "sources": [
+  "https://x.com/i/trending/2110641018152321467"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Starknet post-quantum L1 research poll (opened 15 Oct)",
+ "volume": 900,
+ "buzz_level": 900,
+ "buzz_change": 1.56,
+ "price_runup_24h_pct": -4.11,
+ "carried_over": false
+}

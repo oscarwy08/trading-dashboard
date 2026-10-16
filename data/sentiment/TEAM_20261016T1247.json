@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "TEAM",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "Atlassian still top Core stock rank (strong 6m/3m); price +6% vs prior close in overnight print. Quiet-ish buzz. Mildly constructive.",
+ "sources": [
+  "https://x.com/i/trending/2110478242939650279"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated TEAM-specific catalyst",
+ "volume": 180,
+ "buzz_level": 180,
+ "buzz_change": 1.55,
+ "price_runup_24h_pct": 6.09,
+ "carried_over": true
+}

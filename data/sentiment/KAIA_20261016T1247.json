@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "KAIA",
+ "score": -0.15,
+ "confidence": 0.6,
+ "summary": "Day pot open; signal shows ~+27% 24h / RSI 96. Still no dated verifiable catalyst midday \u2014 pure momentum/hype after inflate. Bearish bias on sentiment weight.",
+ "sources": [
+  "https://x.com/stobixcom/status/2111077513661133261"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst; price-run only",
+ "volume": 500,
+ "buzz_level": 500,
+ "buzz_change": 3.52,
+ "price_runup_24h_pct": 27.0,
+ "carried_over": false
+}

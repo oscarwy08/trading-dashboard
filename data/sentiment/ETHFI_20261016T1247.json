@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "ETHFI",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "Day already stopped out ETHFI this morning (-1.6%). Still +16% 24h on tape with no new dated catalyst \u2014 runup caution.",
+ "sources": [
+  "https://x.com/stobixcom/status/2111077513661133261"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated catalyst",
+ "volume": 350,
+ "buzz_level": 350,
+ "buzz_change": 1.35,
+ "price_runup_24h_pct": 16.19,
+ "carried_over": false
+}

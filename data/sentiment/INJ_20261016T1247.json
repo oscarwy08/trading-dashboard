@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "INJ",
+ "score": -0.05,
+ "confidence": 0.7,
+ "summary": "CAUTION: still +27% 24h with elevated X buzz after CEO White House/SEC/CFTC meetings + GULF validator news. Real catalyst already priced into a huge run \u2014 buzz-after-inflate risk per house view. Risk pot open +15%.",
+ "sources": [
+  "https://x.com/CoinMarketCap/status/2111077210928926894",
+  "https://x.com/i/trending/2110683247256752437"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "Prior: CEO US regulatory meetings; GULF Group validator \u2014 already in price",
+ "volume": 4500,
+ "buzz_level": 4500,
+ "buzz_change": 1.44,
+ "price_runup_24h_pct": 26.84,
+ "carried_over": false
+}

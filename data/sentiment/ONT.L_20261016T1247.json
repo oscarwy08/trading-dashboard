@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "ONT.L",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "Oxford Nanopore still ranked strong on UK list (+30% 1m in rank why). Thin news overnight; London not open yet. Mildly positive structural, low confidence.",
+ "sources": [
+  "https://www.coindesk.com/markets/2026/10/16/bitcoin-buyers-snap-up-a-brief-drop-below-usd80-000-as-asian-stocks-rebound"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 40,
+ "buzz_level": 40,
+ "buzz_change": 2.67,
+ "price_runup_24h_pct": -1.72,
+ "carried_over": true
+}

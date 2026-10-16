@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "ZEC",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "ZEC ~+13% 24h / CoinDesk noted strength, but ZEC ETF still seeing outflows (~$15M). Privacy-coin bounce with ETF bleed \u2014 mixed, not a clean catalyst.",
+ "sources": [
+  "https://www.coindesk.com/markets/2026/10/16/live-updates-bitcoin-back-above-usd82-000-zec-jumps-11-as-etf-outflows-continue",
+  "https://x.com/i/trending/2110908927390990701"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No new dated product/listing; ETF outflows continue",
+ "volume": 1800,
+ "buzz_level": 1800,
+ "buzz_change": 1.09,
+ "price_runup_24h_pct": 12.86,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "TIA",
+ "score": -0.15,
+ "confidence": 0.6,
+ "summary": "CAUTION: +32% 24h tops gainer lists with no fresh listing/unlock/ruling found midday. Classic buzz-after-inflate \u2014 do not treat gainer recaps as bullish.",
+ "sources": [
+  "https://x.com/stobixcom/status/2111077513661133261"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst; price-chase only",
+ "volume": 1100,
+ "buzz_level": 1100,
+ "buzz_change": 3.66,
+ "price_runup_24h_pct": 32.37,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "HYPE",
+ "score": 0.1,
+ "confidence": 0.55,
+ "summary": "Hyperliquid founder Jeff Yan Bloomberg Odd Lots (15 Oct) on neutral L1 regulation still the dated item; price +4%. Mild positive, not a frenzy.",
+ "sources": [
+  "https://x.com/i/trending/2110683247256752437"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Jeff Yan Bloomberg Odd Lots 15 Oct \u2014 regulatory positioning",
+ "volume": 1100,
+ "buzz_level": 1100,
+ "buzz_change": 1.08,
+ "price_runup_24h_pct": 4.35,
+ "carried_over": false
+}

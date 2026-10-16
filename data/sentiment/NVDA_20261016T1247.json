@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "NVDA",
+ "score": -0.15,
+ "confidence": 0.65,
+ "summary": "Mercedes\u2013NVIDIA automated-driving partnership expanded (16 Oct) is a real catalyst, but semis still in multi-day losing streak / AI valuation fatigue. Net still mildly/moderately cautious into US open.",
+ "sources": [
+  "https://x.com/i/trending/2111060088169406489",
+  "https://x.com/i/trending/2110850865909137646"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "NVIDIA x Mercedes ADAS expansion 16 Oct; GPU rental highs offset by sector selloff",
+ "volume": 3800,
+ "buzz_level": 3800,
+ "buzz_change": 1.4,
+ "price_runup_24h_pct": -1.84,
+ "carried_over": false
+}

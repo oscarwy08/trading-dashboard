@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "DDOG",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "Eligible software name; weak prior sentiment and soft overnight print. Mildly cautious.",
+ "sources": [
+  "https://x.com/i/trending/2110478242939650279"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 180,
+ "buzz_level": 180,
+ "buzz_change": 1.03,
+ "price_runup_24h_pct": -2.06,
+ "carried_over": true
+}

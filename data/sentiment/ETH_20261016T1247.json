@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "ETH",
+ "score": 0.12,
+ "confidence": 0.65,
+ "summary": "Same Schwab/DB custody catalysts as BTC, but ETH spot ETFs still bleeding (~$60M outflow 15 Oct). Price ~$2,470 (+5% 24h) on bounce. Mildly positive on access, capped by ETF outflows.",
+ "sources": [
+  "https://news.bitcoin.com/finance/charles-schwab-ceo-sees-crypto-new-revenue-engine/",
+  "https://x.com/i/trending/2111001893988130891",
+  "https://www.coindesk.com/markets/2026/10/16/live-updates-bitcoin-back-above-usd82-000-zec-jumps-11-as-etf-outflows-continue"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "Schwab ETH trading live; DB custody planned; ETF outflows continue",
+ "volume": 12000,
+ "buzz_level": 12000,
+ "buzz_change": 1.6,
+ "price_runup_24h_pct": 5.21,
+ "carried_over": false
+}

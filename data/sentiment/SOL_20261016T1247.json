@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-16T12:47:00Z",
+ "asset": "SOL",
+ "score": 0.08,
+ "confidence": 0.55,
+ "summary": "Jupiter YOLO 1000x beta (gambling-adjacent, unaudited) plus Alpenglow upgrade due 21 Oct. SOL ETF outflows continue; price ~$106 (+4.5%). Mildly positive on upgrade, not on YOLO hype.",
+ "sources": [
+  "https://x.com/i/trending/2110847206471205311",
+  "https://x.com/i/trending/2111058412717109478",
+  "https://www.coindesk.com/markets/2026/10/16/live-updates-bitcoin-back-above-usd82-000-zec-jumps-11-as-etf-outflows-continue"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Alpenglow upgrade dated 21 Oct; Jupiter YOLO is product not fundamental",
+ "volume": 7800,
+ "buzz_level": 7800,
+ "buzz_change": 0.93,
+ "price_runup_24h_pct": 4.56,
+ "carried_over": false
+}
