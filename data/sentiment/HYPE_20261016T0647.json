@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "HYPE",
+ "score": 0.1,
+ "confidence": 0.55,
+ "summary": "Hyperliquid co-founder Jeff Yan on Bloomberg Odd Lots pitching neutral financial rails; buybacks narrative. Price flat-ish +1.8%. Mildly constructive.",
+ "sources": [
+  "https://x.com/i/trending/2110683247256752437"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Odd Lots interview / institutional rails narrative (15 Oct)",
+ "volume": 1050,
+ "buzz_level": 1050,
+ "buzz_change": 1.07,
+ "price_runup_24h_pct": 1.77,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "GHH.L",
+ "score": 0.0,
+ "confidence": 0.35,
+ "summary": "Thin UK mid-cap; ranked eligible previously. No overnight news. Neutral before London open.",
+ "sources": [
+  "https://www.coindesk.com/markets/2026/10/16/bitcoin-buyers-snap-up-a-brief-drop-below-usd80-000-as-asian-stocks-rebound"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 20,
+ "buzz_level": 20,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

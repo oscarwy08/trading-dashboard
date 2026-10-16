@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "ETHFI",
+ "score": -0.05,
+ "confidence": 0.45,
+ "summary": "+15% 24h without dated catalyst \u2014 price-chase caution.",
+ "sources": [
+  "https://www.benzinga.com/crypto/cryptocurrency/26/10/62402641/bitcoin-ethereum-xrp-dogecoin-inflation-producer-prices-rate-hike"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 260,
+ "buzz_level": 260,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 14.61,
+ "carried_over": false
+}

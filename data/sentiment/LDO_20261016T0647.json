@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "LDO",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "+7% with ETH bounce; no separate LDO catalyst. Slightly positive via ETH beta only.",
+ "sources": [
+  "https://x.com/i/trending/2110836660141224264"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No LDO-specific dated catalyst",
+ "volume": 340,
+ "buzz_level": 340,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 7.05,
+ "carried_over": false
+}

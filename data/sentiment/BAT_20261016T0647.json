@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "BAT",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "+16% 24h with no dated catalyst. Runup caution.",
+ "sources": [
+  "https://www.benzinga.com/crypto/cryptocurrency/26/10/62402641/bitcoin-ethereum-xrp-dogecoin-inflation-producer-prices-rate-hike"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 200,
+ "buzz_level": 200,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 16.16,
+ "carried_over": false
+}

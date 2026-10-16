@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "BTC",
+ "score": 0.15,
+ "confidence": 0.65,
+ "summary": "BTC reclaimed ~$82k after brief sub-$80k dip; buyers defended quickly. Fed officials cooled Oct hike odds (futures ~32% from 54%). Spot ETF still seeing outflows. Mildly bullish bounce, not a fresh catalyst breakout.",
+ "sources": [
+  "https://www.coindesk.com/markets/2026/10/16/bitcoin-buyers-snap-up-a-brief-drop-below-usd80-000-as-asian-stocks-rebound",
+  "https://www.blockhead.co/2026/10/16/bitcoin-holds-near-82-000-as-fed-officials-cool-october-hike-bets/"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Fed officials cool Oct hike odds; bounce from <$80k defended",
+ "volume": 63555,
+ "buzz_level": 63555,
+ "buzz_change": 6.03,
+ "price_runup_24h_pct": 1.61,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "AMD",
+ "score": -0.2,
+ "confidence": 0.65,
+ "summary": "Caught in semis 8-day losing streak / AI funding worries. Core hold. Mildly/moderately bearish tape.",
+ "sources": [
+  "https://x.com/i/trending/2110822119743410229"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Sector correction (PHLX semis); no AMD-specific catalyst today",
+ "volume": 1700,
+ "buzz_level": 1700,
+ "buzz_change": 1.08,
+ "price_runup_24h_pct": -1.5,
+ "carried_over": false
+}

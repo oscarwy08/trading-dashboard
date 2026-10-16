@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "INJ",
+ "score": 0.05,
+ "confidence": 0.7,
+ "summary": "WARNING: +29% 24h already with CEO White House/SEC/CFTC meetings on tokenization \u2014 real catalyst but classic buzz-on-runup risk (user view: hype after inflate tends to fade). Score near flat despite news; do not chase.",
+ "sources": [
+  "https://x.com/i/trending/2110814505865535774"
+ ],
+ "catalyst_score": 0.4,
+ "catalyst_note": "Injective CEO meetings White House/SEC/CFTC on regulated RWA tokenization",
+ "volume": 6780,
+ "buzz_level": 6780,
+ "buzz_change": 5.77,
+ "price_runup_24h_pct": 29.49,
+ "carried_over": false
+}

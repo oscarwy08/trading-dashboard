@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "MSFT",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "Mega-cap relatively steadier than semis; +1% overnight print. No earnings today. Neutral-slightly positive.",
+ "sources": [
+  "https://x.com/i/trending/2110478242939650279"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated MSFT-specific catalyst",
+ "volume": 1100,
+ "buzz_level": 1100,
+ "buzz_change": 1.06,
+ "price_runup_24h_pct": 1.08,
+ "carried_over": false
+}

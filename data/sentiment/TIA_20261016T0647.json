@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "TIA",
+ "score": -0.1,
+ "confidence": 0.55,
+ "summary": "+25% 24h, top Risk/Day momentum. No fresh listing/unlock/ruling overnight \u2014 price-chase. Mildly bearish on runup+buzz pattern.",
+ "sources": [
+  "https://www.benzinga.com/crypto/cryptocurrency/26/10/62402641/bitcoin-ethereum-xrp-dogecoin-inflation-producer-prices-rate-hike"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 890,
+ "buzz_level": 890,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 24.98,
+ "carried_over": false
+}

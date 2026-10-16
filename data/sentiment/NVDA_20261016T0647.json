@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "NVDA",
+ "score": -0.25,
+ "confidence": 0.7,
+ "summary": "NVDA ~-12% from recent peak into correction; semis longest losing streak in ~16 years. GPU rental demand still strong (mixed). Bearish near-term vs AI-spend/rate fears.",
+ "sources": [
+  "https://x.com/i/trending/2110833262075478078",
+  "https://x.com/i/trending/2110822119743410229"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "Continuation of AI/semis correction post hot CPI; no company-specific upgrade",
+ "volume": 4200,
+ "buzz_level": 4200,
+ "buzz_change": 1.06,
+ "price_runup_24h_pct": -1.84,
+ "carried_over": false
+}

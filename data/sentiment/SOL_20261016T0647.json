@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "SOL",
+ "score": 0.05,
+ "confidence": 0.55,
+ "summary": "Jupiter YOLO 1000x product launched (gambling-adjacent, mixed). Price +4%. Mildly positive ecosystem activity, not a clean bullish catalyst.",
+ "sources": [
+  "https://x.com/i/trending/2110847206471205311"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Jupiter Labs YOLO beta launch (high-leverage product)",
+ "volume": 9200,
+ "buzz_level": 9200,
+ "buzz_change": 1.04,
+ "price_runup_24h_pct": 4.22,
+ "carried_over": false
+}

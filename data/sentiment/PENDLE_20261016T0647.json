@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "PENDLE",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "+11% 24h, elevated Day momentum. Quiet on catalysts overnight. Neutral.",
+ "sources": [
+  "https://www.coindesk.com/markets/2026/10/16/bitcoin-buyers-snap-up-a-brief-drop-below-usd80-000-as-asian-stocks-rebound"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 280,
+ "buzz_level": 280,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 10.63,
+ "carried_over": false
+}

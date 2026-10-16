@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "GRASS",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "+7% 24h, Day momentum strong. No new news. Neutral.",
+ "sources": [
+  "https://www.coindesk.com/markets/2026/10/16/bitcoin-buyers-snap-up-a-brief-drop-below-usd80-000-as-asian-stocks-rebound"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 190,
+ "buzz_level": 190,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 7.15,
+ "carried_over": false
+}

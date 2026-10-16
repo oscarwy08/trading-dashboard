@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "WLD",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "Quiet tape: +6.6% 24h with still-low mention volume. No dated catalyst overnight. Mild positive on quiet strength, not hype.",
+ "sources": [
+  "https://www.coindesk.com/markets/2026/10/16/bitcoin-buyers-snap-up-a-brief-drop-below-usd80-000-as-asian-stocks-rebound"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 214,
+ "buzz_level": 214,
+ "buzz_change": 1.34,
+ "price_runup_24h_pct": 6.59,
+ "carried_over": false
+}

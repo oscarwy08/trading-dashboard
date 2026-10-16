@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "NOW",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "ServiceNow eligible; overnight print firmer. Low fresh news. Mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2110478242939650279"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 400,
+ "buzz_level": 400,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": 6.14,
+ "carried_over": false
+}

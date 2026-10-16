@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "ZEC",
+ "score": 0.1,
+ "confidence": 0.5,
+ "summary": "ZEC led majors overnight (~+13% 24h / CoinDesk noted +8% Asia). Privacy-coin rotation into bounce; no new unlock/listing. Mildly positive tape, watch chase.",
+ "sources": [
+  "https://www.coindesk.com/markets/2026/10/16/bitcoin-buyers-snap-up-a-brief-drop-below-usd80-000-as-asian-stocks-rebound"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst; relative-strength move",
+ "volume": 1600,
+ "buzz_level": 1600,
+ "buzz_change": 1.06,
+ "price_runup_24h_pct": 13.13,
+ "carried_over": false
+}

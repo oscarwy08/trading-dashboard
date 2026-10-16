@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "MON",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "Ecosystem positives (Ankr x402 agent payments on Monad; UBC 2026 sponsor) but Nov 24 team unlock overhang unchanged. Buzz still low. Neutral/slightly positive.",
+ "sources": [
+  "https://x.com/ankr/status/2110774777199862219",
+  "https://x.com/UBC_Conference/status/2110750498949357996"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Ankr x402 live on Monad; unlock overhang still from 24 Nov",
+ "volume": 130,
+ "buzz_level": 130,
+ "buzz_change": 1.16,
+ "price_runup_24h_pct": 3.8,
+ "carried_over": false
+}

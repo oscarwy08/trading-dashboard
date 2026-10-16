@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "ETH",
+ "score": 0.2,
+ "confidence": 0.6,
+ "summary": "ETH bounced from ~$2,315 swing low toward ~$2,445 with short liquidations; RSI divergence noted. Still soft ETF demand. Mildly bullish recovery after Thursday flush.",
+ "sources": [
+  "https://x.com/i/trending/2110836660141224264"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Bounce/short squeeze from 2-month-area low; no major listing/unlock today",
+ "volume": 16364,
+ "buzz_level": 16364,
+ "buzz_change": 3.79,
+ "price_runup_24h_pct": 3.92,
+ "carried_over": false
+}

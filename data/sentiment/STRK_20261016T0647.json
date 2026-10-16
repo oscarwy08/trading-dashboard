@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "STRK",
+ "score": 0.15,
+ "confidence": 0.6,
+ "summary": "Starknet non-binding poll on exploring independent post-quantum L1 (vote through 22 Oct). Price +13% \u2014 some chase risk but dated governance catalyst exists.",
+ "sources": [
+  "https://x.com/i/trending/2110641018152321467"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "Governance poll: explore independent PQ L1 (through 22 Oct)",
+ "volume": 980,
+ "buzz_level": 980,
+ "buzz_change": 1.33,
+ "price_runup_24h_pct": 12.7,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "KAIA",
+ "score": -0.1,
+ "confidence": 0.55,
+ "summary": "Sharp +26% 24h / strong Day momentum but no dated catalyst found \u2014 treat as price-chase/hype after runup. Mildly bearish per buzz-after-inflate view.",
+ "sources": [
+  "https://www.benzinga.com/crypto/cryptocurrency/26/10/62402641/bitcoin-ethereum-xrp-dogecoin-inflation-producer-prices-rate-hike"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst; price-run only",
+ "volume": 420,
+ "buzz_level": 420,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 25.98,
+ "carried_over": false
+}

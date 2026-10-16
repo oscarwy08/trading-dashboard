@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "ZAMA",
+ "score": -0.05,
+ "confidence": 0.45,
+ "summary": "+18% 24h after Day traded it yesterday. No fresh catalyst; runup caution.",
+ "sources": [
+  "https://www.benzinga.com/crypto/cryptocurrency/26/10/62402641/bitcoin-ethereum-xrp-dogecoin-inflation-producer-prices-rate-hike"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated verifiable catalyst",
+ "volume": 150,
+ "buzz_level": 150,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 17.93,
+ "carried_over": false
+}

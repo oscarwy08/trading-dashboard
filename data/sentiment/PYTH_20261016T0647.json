@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "PYTH",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "+10% 24h; Polymarket added ETH/SOL/XRP short-term markets (Pyth often cited as oracle stack) \u2014 weak link. Mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2110894837520277650"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Indirect: Polymarket short-term crypto markets expand (oracle-adjacent)",
+ "volume": 240,
+ "buzz_level": 240,
+ "buzz_change": 1.12,
+ "price_runup_24h_pct": 10.48,
+ "carried_over": false
+}

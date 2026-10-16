@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T06:47:00Z",
+ "asset": "XRP",
+ "score": 0.25,
+ "confidence": 0.65,
+ "summary": "Constructive: Ripple Prime launched 24/7 RWA perpetual swaps; Cross River Bank integrating RLUSD. Price +~3% 24h with rising buzz. Catalyst-led, not pure price-chase.",
+ "sources": [
+  "https://x.com/i/trending/2110727484924973186",
+  "https://x.com/i/trending/2110747063835357514"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "Ripple Prime RWA perps + Cross River RLUSD banking integration",
+ "volume": 9821,
+ "buzz_level": 9821,
+ "buzz_change": 2.58,
+ "price_runup_24h_pct": 2.92,
+ "carried_over": false
+}
