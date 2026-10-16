@@ -549,20 +549,20 @@ main
   exits: 57 pairs, avg time gap 2473s, avg price gap -0.49%, missed moves 2
   entries: 11 pairs, avg time gap 9282s, avg price gap +1.10%, missed moves 29
 ev_exit
-  exits: 34 pairs, avg time gap 11905s, avg price gap -0.65%, missed moves 1
-  entries: 8 pairs, avg time gap 55852s, avg price gap +1.70%, missed moves 125
+  exits: 35 pairs, avg time gap 11581s, avg price gap -0.64%, missed moves 1
+  entries: 8 pairs, avg time gap 55852s, avg price gap +1.70%, missed moves 150
 review_leftovers
-  exits: 34 pairs, avg time gap 5962s, avg price gap +0.07%, missed moves 0
-  entries: 7 pairs, avg time gap 55375s, avg price gap +9.10%, missed moves 65
+  exits: 35 pairs, avg time gap 5808s, avg price gap +0.07%, missed moves 0
+  entries: 7 pairs, avg time gap 55375s, avg price gap +9.10%, missed moves 79
 all_combined
-  exits: 33 pairs, avg time gap 4652s, avg price gap -0.10%, missed moves 2
-  entries: 7 pairs, avg time gap 50505s, avg price gap +3.08%, missed moves 81
+  exits: 34 pairs, avg time gap 4532s, avg price gap -0.11%, missed moves 2
+  entries: 7 pairs, avg time gap 50505s, avg price gap +3.08%, missed moves 94
 burst_runner
-  exits: 42 pairs, avg time gap 4915s, avg price gap -0.11%, missed moves 0
-  entries: 9 pairs, avg time gap 50197s, avg price gap +1.58%, missed moves 83
+  exits: 43 pairs, avg time gap 4814s, avg price gap -0.11%, missed moves 0
+  entries: 9 pairs, avg time gap 50197s, avg price gap +1.58%, missed moves 107
 everything
-  exits: 33 pairs, avg time gap 4672s, avg price gap -0.10%, missed moves 2
-  entries: 7 pairs, avg time gap 50526s, avg price gap +2.98%, missed moves 67
+  exits: 34 pairs, avg time gap 4553s, avg price gap -0.11%, missed moves 2
+  entries: 7 pairs, avg time gap 50526s, avg price gap +2.98%, missed moves 80
 midnight_crypto
   exits: 48 pairs, avg time gap 4420s, avg price gap -0.43%, missed moves 1
   entries: 22 pairs, avg time gap 23273s, avg price gap +2.46%, missed moves 148
@@ -570,23 +570,23 @@ entry_watch
   exits: 34 pairs, avg time gap 5957s, avg price gap -0.25%, missed moves 2
   entries: 6 pairs, avg time gap 67078s, avg price gap +5.38%, missed moves 30
 risk_giveback_15
-  exits: 39 pairs, avg time gap 2930s, avg price gap +0.18%, missed moves 0
-  entries: 9 pairs, avg time gap 41631s, avg price gap +0.53%, missed moves 52
+  exits: 40 pairs, avg time gap 2873s, avg price gap +0.17%, missed moves 0
+  entries: 10 pairs, avg time gap 43865s, avg price gap +0.85%, missed moves 72
 day_trail_arm
-  exits: 29 pairs, avg time gap 2536s, avg price gap -0.27%, missed moves 1
+  exits: 30 pairs, avg time gap 2480s, avg price gap -0.26%, missed moves 1
   entries: 8 pairs, avg time gap 38383s, avg price gap +2.20%, missed moves 107
 day_ev_blend
   exits: 23 pairs, avg time gap 4817s, avg price gap -0.27%, missed moves 0
   entries: 4 pairs, avg time gap 69494s, avg price gap +1.11%, missed moves 11
 no_risk_clock
-  exits: 39 pairs, avg time gap 2945s, avg price gap +0.18%, missed moves 0
-  entries: 8 pairs, avg time gap 39782s, avg price gap +0.84%, missed moves 52
+  exits: 40 pairs, avg time gap 2889s, avg price gap +0.17%, missed moves 0
+  entries: 9 pairs, avg time gap 42470s, avg price gap +1.15%, missed moves 69
 day_capital_caution
-  exits: 40 pairs, avg time gap 2438s, avg price gap -0.01%, missed moves 0
-  entries: 11 pairs, avg time gap 35743s, avg price gap +1.22%, missed moves 85
+  exits: 41 pairs, avg time gap 2396s, avg price gap -0.01%, missed moves 0
+  entries: 12 pairs, avg time gap 38095s, avg price gap +1.42%, missed moves 101
 partial_take
-  exits: 45 pairs, avg time gap 709s, avg price gap -0.20%, missed moves 1
+  exits: 46 pairs, avg time gap 703s, avg price gap -0.17%, missed moves 1
   entries: 10 pairs, avg time gap 65899s, avg price gap -1.15%, missed moves 65
 sent_split
-  exits: 26 pairs, avg time gap 2113s, avg price gap +0.58%, missed moves 1
+  exits: 26 pairs, avg time gap 2113s, avg price gap +0.58%, missed moves 2
   entries: 5 pairs, avg time gap 37871s, avg price gap +1.10%, missed moves 73
