@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-16T09:31:55+00:00",
+  "generated": "2026-10-16T10:35:39+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -21,76 +21,76 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 32,
-        "avg_dt_s": 12632.5,
-        "avg_price_pct": -0.6626987509846585,
+        "pairs": 33,
+        "avg_dt_s": 12265.69696969697,
+        "avg_price_pct": -0.6679277261700779,
         "missed": 1
       },
       "entries": {
-        "pairs": 6,
-        "avg_dt_s": 56300.5,
-        "avg_price_pct": 2.773160849207447,
-        "missed": 123
+        "pairs": 7,
+        "avg_dt_s": 55705.28571428572,
+        "avg_price_pct": 2.197264441080815,
+        "missed": 122
       }
     },
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 31,
-        "avg_dt_s": 6103.4838709677415,
-        "avg_price_pct": 0.2803130570772099,
+        "pairs": 32,
+        "avg_dt_s": 5929.25,
+        "avg_price_pct": 0.2454515574153127,
         "missed": 1
       },
       "entries": {
         "pairs": 7,
         "avg_dt_s": 55374.71428571428,
         "avg_price_pct": 9.102559278728515,
-        "missed": 64
+        "missed": 65
       }
     },
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 30,
-        "avg_dt_s": 4663.3,
-        "avg_price_pct": 0.0926816792234649,
+        "pairs": 31,
+        "avg_dt_s": 4530.870967741936,
+        "avg_price_pct": 0.06274824014840155,
         "missed": 3
       },
       "entries": {
         "pairs": 7,
         "avg_dt_s": 50504.857142857145,
         "avg_price_pct": 3.075349224294496,
-        "missed": 80
+        "missed": 81
       }
     },
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 40,
-        "avg_dt_s": 5145.75,
-        "avg_price_pct": -0.09023114874438845,
+        "pairs": 41,
+        "avg_dt_s": 5033.90243902439,
+        "avg_price_pct": -0.10840246053363504,
         "missed": 0
       },
       "entries": {
-        "pairs": 7,
-        "avg_dt_s": 48829.28571428572,
-        "avg_price_pct": 2.4236188728451435,
-        "missed": 81
+        "pairs": 8,
+        "avg_dt_s": 49295.75,
+        "avg_price_pct": 1.9670059812465037,
+        "missed": 80
       }
     },
     {
       "name": "everything",
       "exits": {
-        "pairs": 30,
-        "avg_dt_s": 4681.966666666666,
-        "avg_price_pct": 0.0926816792234649,
+        "pairs": 31,
+        "avg_dt_s": 4550.032258064516,
+        "avg_price_pct": 0.06274824014840155,
         "missed": 3
       },
       "entries": {
         "pairs": 7,
         "avg_dt_s": 50525.57142857143,
         "avg_price_pct": 2.981777495362937,
-        "missed": 66
+        "missed": 67
       }
     },
     {
@@ -111,10 +111,10 @@
     {
       "name": "entry_watch",
       "exits": {
-        "pairs": 33,
-        "avg_dt_s": 6119.0,
-        "avg_price_pct": -0.23448603061513215,
-        "missed": 1
+        "pairs": 34,
+        "avg_dt_s": 5957.35294117647,
+        "avg_price_pct": -0.25215570418831945,
+        "missed": 2
       },
       "entries": {
         "pairs": 6,
@@ -126,16 +126,16 @@
     {
       "name": "risk_giveback_15",
       "exits": {
-        "pairs": 37,
-        "avg_dt_s": 3069.0,
-        "avg_price_pct": 0.21617101557204352,
+        "pairs": 38,
+        "avg_dt_s": 3004.657894736842,
+        "avg_price_pct": 0.18850191168584501,
         "missed": 0
       },
       "entries": {
-        "pairs": 7,
-        "avg_dt_s": 38097.857142857145,
-        "avg_price_pct": 1.2058732969243235,
-        "missed": 54
+        "pairs": 8,
+        "avg_dt_s": 39789.125,
+        "avg_price_pct": 0.8440704559978225,
+        "missed": 53
       }
     },
     {
@@ -171,40 +171,40 @@
     {
       "name": "no_risk_clock",
       "exits": {
-        "pairs": 37,
-        "avg_dt_s": 3080.5945945945946,
-        "avg_price_pct": 0.212980856574519,
+        "pairs": 38,
+        "avg_dt_s": 3017.6052631578946,
+        "avg_price_pct": 0.18539570424088694,
         "missed": 0
       },
       "entries": {
-        "pairs": 7,
-        "avg_dt_s": 38088.57142857143,
-        "avg_price_pct": 1.2065402455482837,
-        "missed": 53
+        "pairs": 8,
+        "avg_dt_s": 39782.25,
+        "avg_price_pct": 0.8446540360437875,
+        "missed": 52
       }
     },
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 38,
-        "avg_dt_s": 2543.684210526316,
-        "avg_price_pct": 0.015140278250546882,
+        "pairs": 39,
+        "avg_dt_s": 2496.051282051282,
+        "avg_price_pct": -0.006664727143146611,
         "missed": 0
       },
       "entries": {
-        "pairs": 9,
-        "avg_dt_s": 29774.333333333332,
-        "avg_price_pct": 1.0105244658366597,
-        "missed": 87
+        "pairs": 10,
+        "avg_dt_s": 31960.9,
+        "avg_price_pct": 0.7406170762042252,
+        "missed": 86
       }
     },
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 43,
-        "avg_dt_s": 722.7674418604652,
-        "avg_price_pct": -0.20496668975586307,
-        "missed": 2
+        "pairs": 44,
+        "avg_dt_s": 717.6363636363636,
+        "avg_price_pct": -0.2079320883631902,
+        "missed": 1
       },
       "entries": {
         "pairs": 9,
