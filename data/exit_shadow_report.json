@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-15T23:56:57+00:00",
+  "generated": "2026-10-16T00:59:26+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -96,16 +96,16 @@
     {
       "name": "midnight_crypto",
       "exits": {
-        "pairs": 45,
-        "avg_dt_s": 4676.688888888889,
-        "avg_price_pct": -0.4512017446826666,
+        "pairs": 46,
+        "avg_dt_s": 4597.217391304348,
+        "avg_price_pct": -0.44649759597812455,
         "missed": 0
       },
       "entries": {
         "pairs": 20,
         "avg_dt_s": 25551.65,
         "avg_price_pct": 2.707802907679893,
-        "missed": 129
+        "missed": 131
       }
     },
     {
