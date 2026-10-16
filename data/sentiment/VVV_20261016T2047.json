@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T20:47:00Z",
+ "asset": "VVV",
+ "score": 0.03,
+ "confidence": 0.35,
+ "summary": "Venice cut OpenAI-model API prices 20% (16 Oct); 5% of API credit purchases go to buy-and-burn. Minor product news; price -7.9% 24h, buzz below norm (0.8x). Roughly neutral.",
+ "sources": [
+  "https://x.com/sabrinaesaquino/status/2111116400748110230"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "API price cut 16 Oct (minor)",
+ "volume": 171,
+ "buzz_level": 171,
+ "buzz_change": 0.81,
+ "price_runup_24h_pct": -7.87,
+ "carried_over": false
+}

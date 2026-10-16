@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T20:47:00Z",
+ "asset": "HYPE",
+ "score": 0.12,
+ "confidence": 0.55,
+ "summary": "Pump.fun integrated Hyperliquid perps (BTC 40x, ETH 25x) on 16 Oct, adding order flow; founder's neutral-regulation pitch (15 Oct) still in view. Price -2.8% 24h, buzz flat (~1.0x). Mild positive, not a frenzy.",
+ "sources": [
+  "https://x.com/i/trending/2111131893609767172",
+  "https://x.com/i/trending/2110683247256752437"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Pump.fun x Hyperliquid perps integration 16 Oct",
+ "volume": 4876,
+ "buzz_level": 4876,
+ "buzz_change": 0.97,
+ "price_runup_24h_pct": -2.77,
+ "carried_over": false
+}

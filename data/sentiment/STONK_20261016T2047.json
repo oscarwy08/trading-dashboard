@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T20:47:00Z",
+ "asset": "STONK",
+ "score": -0.2,
+ "confidence": 0.45,
+ "summary": "Memecoin up ~61% 24h; X posts are burn-counter shilling, vote-for-listing spam and pairing promos, no dated catalyst. Buzz actually fell to ~0.15x its 3-day level after an earlier hype wave. Pump with fading attention: bearish lean.",
+ "sources": [
+  "https://x.com/mauricedefi/status/2111156935131267356",
+  "https://x.com/_sere_curioso/status/2111199572286656929"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none (burn-counter posts are not a catalyst)",
+ "volume": 972,
+ "buzz_level": 972,
+ "buzz_change": 0.15,
+ "price_runup_24h_pct": 61.2,
+ "carried_over": false
+}

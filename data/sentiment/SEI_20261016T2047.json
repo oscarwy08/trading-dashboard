@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T20:47:00Z",
+ "asset": "SEI",
+ "score": 0.08,
+ "confidence": 0.35,
+ "summary": "One account says a staked-SEI ETF filing has 23 Oct as its effective date (not independently verified here); price +5.6% 24h, buzz modestly up (1.3x). Rest is breakout-call chatter. Slightly positive, low confidence.",
+ "sources": [
+  "https://x.com/LongtermR/status/2111194565646696649"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Reported staked-SEI ETF effective date 23 Oct (unverified, single source)",
+ "volume": 292,
+ "buzz_level": 292,
+ "buzz_change": 1.32,
+ "price_runup_24h_pct": 5.57,
+ "carried_over": false
+}

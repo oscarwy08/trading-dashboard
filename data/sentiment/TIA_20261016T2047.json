@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T20:47:00Z",
+ "asset": "TIA",
+ "score": 0.0,
+ "confidence": 0.55,
+ "summary": "Celestia announced Eden (AI-agent EVM chain, TIA as gas) ~11:20 UTC 16 Oct: a real dated catalyst. But TIA already ran +16% 24h (peak ~+30%) and X buzz is ~4.9x its 3-day norm, full of gainer-list and 'send it' posts. Catalyst real, entry late: neutral, caution on chasing.",
+ "sources": [
+  "https://x.com/i/trending/2111110469721468949",
+  "https://x.com/oct_trades/status/2111148176476606840"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "Eden chain launch announced 16 Oct 11:20 UTC (closed beta Botfun)",
+ "volume": 630,
+ "buzz_level": 630,
+ "buzz_change": 4.9,
+ "price_runup_24h_pct": 16.47,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-16T20:47:00Z",
+ "asset": "PYTH",
+ "score": 0.1,
+ "confidence": 0.5,
+ "summary": "Q3 data: Pyth priced ~94% of $2.16T RWA perp volume; DAO-approved shift sends 100% of eligible revenue to PYTH buybacks; Pro MCP server 1.1. Price has given back ~10% over 24h after a spike, buzz 1.3x. Fundamentals-led positive, quiet-ish.",
+ "sources": [
+  "https://x.com/i/trending/2110766893808406693"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "DAO-approved 100% revenue to buybacks; Q3 metrics",
+ "volume": 293,
+ "buzz_level": 293,
+ "buzz_change": 1.32,
+ "price_runup_24h_pct": -10.05,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T20:47:00Z",
+ "asset": "KAIA",
+ "score": -0.25,
+ "confidence": 0.45,
+ "summary": "Day pot holds KAIA. Price ~+27% 24h with almost no organic X discussion (6 cashtag posts/24h), only launchpad vote spam. One dated negative: HashKey Global reportedly delists KAIA/USDT on 23 Oct (via Techub News). Run-up without support: bearish lean.",
+ "sources": [
+  "https://x.com/jackwong6598/status/2111062330935235064",
+  "https://x.com/Coiniseasy/status/2111041261776015696"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "HashKey Global KAIA/USDT delisting 23 Oct (reported)",
+ "volume": 6,
+ "buzz_level": 6,
+ "buzz_change": 0.31,
+ "price_runup_24h_pct": 26.69,
+ "carried_over": false
+}

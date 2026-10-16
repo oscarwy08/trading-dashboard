@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-16T20:47:00Z",
+ "asset": "XRP",
+ "score": 0.18,
+ "confidence": 0.6,
+ "summary": "Ripple Prime launched 24/7 perpetual swaps on 100+ real-world assets (RLUSD collateral, Virtu onboard, 15 Oct); XRP led Upbit spot volume. Price slipped to ~$1.33 (-2.6% 24h). Price-target chatter ignored. Mildly positive, buzz flat.",
+ "sources": [
+  "https://x.com/i/trending/2110727484924973186",
+  "https://x.com/i/trending/2111115991669510562"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Ripple Prime 24/7 RWA perps live 15 Oct; Upbit volume lead",
+ "volume": 4079,
+ "buzz_level": 4079,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": -2.64,
+ "carried_over": false
+}
