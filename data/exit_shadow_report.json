@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-17T17:06:49+00:00",
+  "generated": "2026-10-17T18:07:31+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 63,
-        "avg_dt_s": 4148.238095238095,
-        "avg_price_pct": 0.017549412184223324,
-        "missed": 2
+        "pairs": 64,
+        "avg_dt_s": 4183.0625,
+        "avg_price_pct": 0.0025137477298509195,
+        "missed": 1
       },
       "entries": {
         "pairs": 12,
@@ -21,10 +21,10 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 47,
-        "avg_dt_s": 8879.234042553191,
-        "avg_price_pct": -0.5869622337981314,
-        "missed": 2
+        "pairs": 48,
+        "avg_dt_s": 8827.375,
+        "avg_price_pct": -0.594415793779329,
+        "missed": 1
       },
       "entries": {
         "pairs": 12,
@@ -51,10 +51,10 @@
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 40,
-        "avg_dt_s": 4118.25,
-        "avg_price_pct": -0.21156617461868063,
-        "missed": 3
+        "pairs": 41,
+        "avg_dt_s": 4174.292682926829,
+        "avg_price_pct": -0.2294482950644594,
+        "missed": 2
       },
       "entries": {
         "pairs": 11,
@@ -81,10 +81,10 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 40,
-        "avg_dt_s": 4140.1,
-        "avg_price_pct": -0.21156617461868063,
-        "missed": 3
+        "pairs": 41,
+        "avg_dt_s": 4196.243902439024,
+        "avg_price_pct": -0.2294482950644594,
+        "missed": 2
       },
       "entries": {
         "pairs": 11,
@@ -210,7 +210,7 @@
         "pairs": 15,
         "avg_dt_s": 76432.26666666666,
         "avg_price_pct": 1.1322126019786252,
-        "missed": 79
+        "missed": 80
       }
     },
     {
@@ -225,7 +225,7 @@
         "pairs": 8,
         "avg_dt_s": 67527.75,
         "avg_price_pct": 4.020606705940795,
-        "missed": 84
+        "missed": 85
       }
     }
   ],
@@ -1118,13 +1118,13 @@
       "shadow_ts": "2026-10-17T15:20:57+00:00",
       "shadow_price": 6.358104652000001,
       "trigger": "trailing take-profit: -10.1% from peak (peak +18.5%), now +6.6%",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-17T17:07:14+00:00",
+      "cycle_price": 6.298037532,
+      "cycle_reason": "trailing take-profit: -10.0% from peak (peak +17.3%), now +5.6%; P&L \u00a3+0.28",
+      "dt_s": 6377.0,
+      "price_diff": -0.06006712000000025,
+      "price_pct": -0.9447331128956108
     },
     {
       "asset": "BTW",
