@@ -1,14 +1,14 @@
 {
   "status": "ok",
-  "generated": "2026-10-17T11:48:01+00:00",
+  "generated": "2026-10-17T12:49:46+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 59,
-        "avg_dt_s": 4310.406779661017,
-        "avg_price_pct": -0.032387807195061846,
+        "pairs": 60,
+        "avg_dt_s": 4285.266666666666,
+        "avg_price_pct": -0.031848010408477484,
         "missed": 1
       },
       "entries": {
@@ -30,7 +30,7 @@
         "pairs": 10,
         "avg_dt_s": 64058.9,
         "avg_price_pct": 4.292575630680623,
-        "missed": 162
+        "missed": 163
       }
     },
     {
@@ -45,7 +45,7 @@
         "pairs": 8,
         "avg_dt_s": 66559.5,
         "avg_price_pct": 11.417718316606193,
-        "missed": 83
+        "missed": 84
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 9,
         "avg_dt_s": 64337.22222222222,
         "avg_price_pct": 6.251471124181277,
-        "missed": 97
+        "missed": 98
       }
     },
     {
@@ -75,7 +75,7 @@
         "pairs": 9,
         "avg_dt_s": 50197.22222222222,
         "avg_price_pct": 1.5781226315831391,
-        "missed": 110
+        "missed": 111
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 9,
         "avg_dt_s": 64357.444444444445,
         "avg_price_pct": 6.171366963618296,
-        "missed": 83
+        "missed": 84
       }
     },
     {
@@ -105,7 +105,7 @@
         "pairs": 24,
         "avg_dt_s": 40814.333333333336,
         "avg_price_pct": 3.4387434480713295,
-        "missed": 149
+        "missed": 150
       }
     },
     {
@@ -120,7 +120,7 @@
         "pairs": 6,
         "avg_dt_s": 67077.5,
         "avg_price_pct": 5.381461295134751,
-        "missed": 30
+        "missed": 31
       }
     },
     {
@@ -135,7 +135,7 @@
         "pairs": 10,
         "avg_dt_s": 43864.9,
         "avg_price_pct": 0.8462064401856862,
-        "missed": 85
+        "missed": 86
       }
     },
     {
@@ -150,7 +150,7 @@
         "pairs": 8,
         "avg_dt_s": 38383.0,
         "avg_price_pct": 2.2002025585556964,
-        "missed": 107
+        "missed": 108
       }
     },
     {
@@ -180,7 +180,7 @@
         "pairs": 9,
         "avg_dt_s": 42470.22222222222,
         "avg_price_pct": 1.152592967076995,
-        "missed": 82
+        "missed": 83
       }
     },
     {
@@ -195,30 +195,30 @@
         "pairs": 13,
         "avg_dt_s": 46349.07692307692,
         "avg_price_pct": 3.523820581735604,
-        "missed": 108
+        "missed": 109
       }
     },
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 59,
-        "avg_dt_s": 1152.864406779661,
-        "avg_price_pct": -0.08687308959708968,
+        "pairs": 61,
+        "avg_dt_s": 1055.7540983606557,
+        "avg_price_pct": -0.1390293844827878,
         "missed": 0
       },
       "entries": {
-        "pairs": 13,
-        "avg_dt_s": 76517.53846153847,
-        "avg_price_pct": 0.9396214429121295,
+        "pairs": 14,
+        "avg_dt_s": 81583.71428571429,
+        "avg_price_pct": 1.488693566428637,
         "missed": 74
       }
     },
     {
       "name": "sent_split",
       "exits": {
-        "pairs": 39,
-        "avg_dt_s": 2346.230769230769,
-        "avg_price_pct": 0.21697701631100616,
+        "pairs": 40,
+        "avg_dt_s": 2357.175,
+        "avg_price_pct": 0.1954495313219106,
         "missed": 0
       },
       "entries": {
@@ -1067,6 +1067,20 @@
       "cycle_price": 0.0438489976,
       "cycle_reason": "[burst 24h] stop-loss -1.7% <= -1.7% (ATR-scaled); P&L \u00a3-0.09",
       "dt_s": 693.0,
+      "price_diff": 0.0,
+      "price_pct": 0.0
+    },
+    {
+      "asset": "SAND",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-17T11:53:59+00:00",
+      "shadow_price": 0.0462516824,
+      "trigger": "[burst 24h] trailing stop +1.2% (peak +2.7%, gives back 40% of the gain)",
+      "status": "matched",
+      "cycle_ts": "2026-10-17T12:40:41+00:00",
+      "cycle_price": 0.0462516824,
+      "cycle_reason": "[burst 24h] trailing stop +1.2% (peak +3.2%, gives back 40% of the gain); P&L \u00a3+0.06",
+      "dt_s": 2802.0,
       "price_diff": 0.0,
       "price_pct": 0.0
     }
