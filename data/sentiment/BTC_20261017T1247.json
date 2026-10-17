@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-17T12:47:00Z",
+ "asset": "BTC",
+ "score": 0.05,
+ "confidence": 0.6,
+ "summary": "New since morning: US spot BTC ETFs had -$82.4M net outflows on 16 Oct (IBIT -$71.8M), about -$228M for the week, after hot US CPI/PPI and a $110 Brent oil spike hit risk assets Friday. Offsets: Schwab BTC/ETH trading now live for ~40M accounts. Price steady near $81.4k, -1% 24h; weekend buzz ~0.86x its 3-day norm. Slightly positive, lower than morning.",
+ "sources": [
+  "https://x.com/i/trending/2111436910719561743",
+  "https://x.com/i/trending/2111426730141306891",
+  "https://x.com/i/trending/2111432984951705776"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Spot BTC ETF outflows -$82.4M (16 Oct) vs Schwab Crypto rollout (16 Oct)",
+ "volume": 22798,
+ "buzz_level": 22798,
+ "buzz_change": 0.86,
+ "price_runup_24h_pct": -0.97,
+ "carried_over": false
+}

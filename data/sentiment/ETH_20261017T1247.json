@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T12:47:00Z",
+ "asset": "ETH",
+ "score": 0.0,
+ "confidence": 0.55,
+ "summary": "New: BlackRock's ETHA lost $69.7M on 16 Oct, leading ETH ETF outflows; Schwab ETH trading live is the offsetting positive. Price ~$2,428, -1.8% 24h; buzz ~0.84x its 3-day norm. Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2111436910719561743",
+  "https://x.com/i/trending/2111330891851038851"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "ETHA -$69.7M outflow (16 Oct) offsets Schwab ETH rollout",
+ "volume": 5931,
+ "buzz_level": 5931,
+ "buzz_change": 0.84,
+ "price_runup_24h_pct": -1.81,
+ "carried_over": false
+}

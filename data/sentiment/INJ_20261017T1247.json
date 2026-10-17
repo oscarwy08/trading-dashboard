@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-17T12:47:00Z",
+ "asset": "INJ",
+ "score": 0.0,
+ "confidence": 0.45,
+ "summary": "Held (Risk). No new dated event today: X is recycling older items (INJ on Solana via Raydium from 13 Oct, 21Shares Euronext ETP, Canary staked-INJ ETF proposal) plus moonshot shilling with a false $22-24 price (actual ~$8.66). Governance prop 709 (fixed gas for exchange messages) vote ends 17 Oct 17:02 UTC. Giving back the 16 Oct pump: -5% 24h; buzz ~1.07x norm. Neutral.",
+ "sources": [
+  "https://x.com/wizzybanks26/status/2111416242850451553",
+  "https://x.com/mrunners_val/status/2111414445473665360",
+  "https://x.com/Lucky_m_X/status/2111406210662473868"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none new (prop 709 vote closes 17 Oct, minor)",
+ "volume": 3115,
+ "buzz_level": 3115,
+ "buzz_change": 1.07,
+ "price_runup_24h_pct": -4.97,
+ "carried_over": false
+}

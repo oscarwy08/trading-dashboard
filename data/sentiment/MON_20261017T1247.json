@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-17T12:47:00Z",
+ "asset": "MON",
+ "score": -0.05,
+ "confidence": 0.45,
+ "summary": "Held (Core). Community chatter is about MON's weak price, falling new-address counts and the late-Nov team/investor unlock; small positives are ecosystem launches (OnRe's nONYC reinsurance-yield token coming to Monad via Plume Vaults; small onchain apps). Price -5.8% 24h; buzz ~0.75x norm. Slight negative.",
+ "sources": [
+  "https://x.com/defichess/status/2111329902016200938",
+  "https://x.com/erdincsekerim/status/2111379690640257480",
+  "https://x.com/0xTruealpha/status/2111386755525914778"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "nONYC (OnRe) to Monad via Plume Vaults, announced 17 Oct",
+ "volume": 583,
+ "buzz_level": 583,
+ "buzz_change": 0.75,
+ "price_runup_24h_pct": -5.78,
+ "carried_over": false
+}
