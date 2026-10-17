@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-17T22:13:30+00:00",
+  "generated": "2026-10-17T23:15:36+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -156,9 +156,9 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 25,
-        "avg_dt_s": 4496.12,
-        "avg_price_pct": -0.24680451856919589,
+        "pairs": 26,
+        "avg_dt_s": 4335.538461538462,
+        "avg_price_pct": -0.2534374438858001,
         "missed": 0
       },
       "entries": {
