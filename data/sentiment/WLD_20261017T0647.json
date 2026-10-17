@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "WLD",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "Price +5.8% 24h with buzz ~1.9x its 3-day norm, but from a tiny base (~57 posts in 10h). An Okta identity partnership and a 'World Money in 150 countries' claim circulate only via small accounts and clickbait, not verified, so no catalyst credit. Roughly neutral.",
+ "sources": [
+  "https://x.com/SarahLadalo/status/2111198029659390348",
+  "https://x.com/BullrunnersHQ/status/2111332630104846721"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none verified (Okta partnership claim unconfirmed)",
+ "volume": 57,
+ "buzz_level": 57,
+ "buzz_change": 1.93,
+ "price_runup_24h_pct": 5.82,
+ "carried_over": false
+}

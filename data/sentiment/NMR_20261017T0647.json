@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "NMR",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "Numerai launched 'Unity' (16 Oct): a dataset with real stock identifiers and 1,040 features, merging Numerai and Numerai Signals into one meta-model for AI agents. Official announcement; buzz small but ~2.3x normal. Price +5.6% 24h. Positive.",
+ "sources": [
+  "https://x.com/numerai/status/2111140758552277458",
+  "https://x.com/richardcraib/status/2111165449404609023"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Numerai Unity dataset launch + Signals merge, 16 Oct",
+ "volume": 14,
+ "buzz_level": 14,
+ "buzz_change": 2.27,
+ "price_runup_24h_pct": 5.58,
+ "carried_over": false
+}

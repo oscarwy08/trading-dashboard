@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "BTC",
+ "score": 0.15,
+ "confidence": 0.6,
+ "summary": "Charles Schwab completed its Schwab Crypto rollout (BTC/ETH trading for ~40M retail accounts, 16 Oct); spot ETF inflows only +$5.1M on 15 Oct; hot US PPI (+1.3% m/m) cooling rate-cut hopes. Price flat near $81.5k, weekend buzz below its 3-day norm. Mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2111289827018866900",
+  "https://x.com/i/trending/2111342565018505425"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Schwab Crypto full rollout to ~40M accounts, 16 Oct",
+ "volume": 12026,
+ "buzz_level": 12026,
+ "buzz_change": 0.68,
+ "price_runup_24h_pct": -0.55,
+ "carried_over": false
+}

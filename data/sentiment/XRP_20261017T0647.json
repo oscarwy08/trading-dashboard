@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "XRP",
+ "score": 0.12,
+ "confidence": 0.5,
+ "summary": "Cross River Bank integrated RLUSD on the XRP Ledger; spot XRP ETFs hold 1.16B XRP with a small net outflow (-1.91M XRP) on 16 Oct. Price drifted to ~$1.31 (-2% 24h). Raw X counts exploded ~200x from 01:00 UTC, but that is a bot flood from a fake 'Xaman WaIIet' airdrop phishing account, excluded here; organic buzz is roughly flat. Price-target posts ignored.",
+ "sources": [
+  "https://x.com/81Ex_6/status/2111326168464916491",
+  "https://x.com/chachaX72/status/2111328830187241728",
+  "https://x.com/XamanlWallets/status/2111349523335262342"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Cross River RLUSD integration on XRPL (16-17 Oct); ETF flows slightly negative",
+ "volume": 9000,
+ "buzz_level": 9000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.01,
+ "carried_over": false
+}

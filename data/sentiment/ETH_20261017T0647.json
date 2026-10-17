@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "ETH",
+ "score": 0.12,
+ "confidence": 0.55,
+ "summary": "Included in Schwab's BTC/ETH retail rollout (16 Oct). Ethereum researchers machine-verified the Fast Confirmation Rule with AI (research, not a near-term price driver). Price flat ~$2,428; buzz well below norm. Mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2111264303999320522",
+  "https://x.com/i/trending/2111157199527448588"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "Schwab Crypto rollout includes ETH, 16 Oct",
+ "volume": 3480,
+ "buzz_level": 3480,
+ "buzz_change": 0.58,
+ "price_runup_24h_pct": -0.54,
+ "carried_over": false
+}

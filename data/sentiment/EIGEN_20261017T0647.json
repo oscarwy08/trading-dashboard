@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "EIGEN",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "Up ~8-12% in 24h with spot buyers leading (Binance open interest only +5%, funding neutral) and very low X attention (~18 posts in 10h, below norm). No dated catalyst; posts discuss EigenLayer's pivot beyond restaking. Quiet strength, mild positive.",
+ "sources": [
+  "https://x.com/EntitledTrader/status/2111312472023929011",
+  "https://x.com/miaumiaubiralo/status/2111343290855616791"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none",
+ "volume": 18,
+ "buzz_level": 18,
+ "buzz_change": 0.78,
+ "price_runup_24h_pct": 8.39,
+ "carried_over": false
+}

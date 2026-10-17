@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "HYPE",
+ "score": 0.2,
+ "confidence": 0.55,
+ "summary": "Pump.fun integrated Hyperliquid perpetual futures (up to 40x BTC, 25x ETH, 10x HYPE) directly in its app, adding order flow to Hyperliquid. Price -1.6% 24h, buzz below its norm, so no hype run-up. Positive.",
+ "sources": [
+  "https://x.com/i/trending/2111131893609767172"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "Pump.fun x Hyperliquid perps integration live, 16-17 Oct",
+ "volume": 1119,
+ "buzz_level": 1119,
+ "buzz_change": 0.66,
+ "price_runup_24h_pct": -1.59,
+ "carried_over": false
+}

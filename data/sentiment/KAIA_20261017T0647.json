@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "KAIA",
+ "score": -0.2,
+ "confidence": 0.4,
+ "summary": "Giving back the 16 Oct Binance-futures pump (+38.8% 'top gainer' posts, not news): -19% 24h. Only new item is a paid-wire release that BTQ Technologies signed a 3-year deal to deploy its QSSN on Kaia, minor. Attention tiny. Bearish lean.",
+ "sources": [
+  "https://x.com/IOCpulse/status/2111204290438082616",
+  "https://x.com/maxellacap/status/2111086201663037473"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "BTQ QSSN 3-year deployment deal on Kaia (press release, 16 Oct)",
+ "volume": 18,
+ "buzz_level": 18,
+ "buzz_change": 2.68,
+ "price_runup_24h_pct": -19.16,
+ "carried_over": false
+}

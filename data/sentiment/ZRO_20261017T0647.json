@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-17T06:47:00Z",
+ "asset": "ZRO",
+ "score": -0.3,
+ "confidence": 0.6,
+ "summary": "23.6M ZRO (~5.9% of circulating, ~$50M) unlocks on 20 Oct. Traders flagged the earlier +25% no-news squeeze as perp-driven ahead of the unlock; it has reversed (-12.9% 24h). Chainlink also displaced LayerZero as Pacific Meta's interop choice. Bearish into the unlock.",
+ "sources": [
+  "https://x.com/tpro_tank/status/2111066649591763281",
+  "https://x.com/MrSecret143/status/2111284908262101114",
+  "https://x.com/LinkBoi777/status/2111089080373068039"
+ ],
+ "catalyst_score": -0.4,
+ "catalyst_note": "Token unlock 23.6M ZRO on 20 Oct",
+ "volume": 61,
+ "buzz_level": 61,
+ "buzz_change": 1.23,
+ "price_runup_24h_pct": -12.94,
+ "carried_over": false
+}
