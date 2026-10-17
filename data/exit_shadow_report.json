@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-17T08:25:56+00:00",
+  "generated": "2026-10-17T09:32:32+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -24,7 +24,7 @@
         "pairs": 41,
         "avg_dt_s": 10010.634146341463,
         "avg_price_pct": -0.6190627805768603,
-        "missed": 1
+        "missed": 2
       },
       "entries": {
         "pairs": 10,
@@ -39,7 +39,7 @@
         "pairs": 38,
         "avg_dt_s": 5392.736842105263,
         "avg_price_pct": -0.09708444804557392,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 8,
@@ -54,7 +54,7 @@
         "pairs": 37,
         "avg_dt_s": 4212.72972972973,
         "avg_price_pct": -0.2695707463538735,
-        "missed": 2
+        "missed": 3
       },
       "entries": {
         "pairs": 9,
@@ -69,7 +69,7 @@
         "pairs": 48,
         "avg_dt_s": 4397.958333333333,
         "avg_price_pct": -0.20258568129629853,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 9,
@@ -84,7 +84,7 @@
         "pairs": 37,
         "avg_dt_s": 4234.054054054054,
         "avg_price_pct": -0.2695707463538735,
-        "missed": 2
+        "missed": 3
       },
       "entries": {
         "pairs": 9,
@@ -129,7 +129,7 @@
         "pairs": 46,
         "avg_dt_s": 2605.8260869565215,
         "avg_price_pct": 0.01796633999714213,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 10,
@@ -174,7 +174,7 @@
         "pairs": 46,
         "avg_dt_s": 2626.3478260869565,
         "avg_price_pct": 0.015400342542611552,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 9,
@@ -189,7 +189,7 @@
         "pairs": 47,
         "avg_dt_s": 2202.021276595745,
         "avg_price_pct": -0.1403520289952402,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 13,
@@ -204,7 +204,7 @@
         "pairs": 56,
         "avg_dt_s": 1145.1785714285713,
         "avg_price_pct": -0.17352711943255952,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 12,
@@ -219,7 +219,7 @@
         "pairs": 36,
         "avg_dt_s": 2413.25,
         "avg_price_pct": 0.2802720917522477,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 7,
