@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-17T20:47:00Z",
+ "asset": "INJ",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "New tonight: Pentiv (ex-Pineapple Financial) says it has tokenized over $1B of mortgage records on Injective and aims to move its full $10B, 29,000-loan book there; its $100M INJ treasury has earned ~$399K staking. Real-world-asset use, not hype. Price ~$8.69, +2% 24h, so no run-up; buzz ~1.2x norm. Mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2111555828935426502"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Pentiv $1B+ mortgages tokenized on Injective, update reported 17 Oct",
+ "volume": 4713,
+ "buzz_level": 4713,
+ "buzz_change": 1.21,
+ "price_runup_24h_pct": 2.01,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-17T20:47:00Z",
+ "asset": "HYPE",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "HYPE broke supports and fell to ~$79 (-3% 24h, from above $85 earlier this month), and traders are piling into large leveraged shorts on Hyperliquid. Buzz is up ~1.3x its norm while the price falls, which is fear rather than a run-up. Pump.fun perps integration from the morning still stands. Down from +0.20 to roughly neutral.",
+ "sources": [
+  "https://x.com/i/trending/2111481976314282020"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No new dated event; price breakdown and short build-up only",
+ "volume": 27642,
+ "buzz_level": 27642,
+ "buzz_change": 1.33,
+ "price_runup_24h_pct": -3.06,
+ "carried_over": false
+}

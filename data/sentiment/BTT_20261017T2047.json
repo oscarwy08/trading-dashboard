@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-17T20:47:00Z",
+ "asset": "BTT",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "BitTorrent completed its first revenue-funded quarterly buyback-and-burn on 17 Oct, removing ~21.6T BTT (about 2.18% of supply) on TRON. That is a dated supply event. Buzz is up ~1.5x its 3-day norm but the price has barely moved (+0.5% 24h), so this is not chasing a pump. Mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2111538881455923476"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "First revenue-funded buyback-and-burn, ~2.18% of supply, 17 Oct",
+ "volume": 1317,
+ "buzz_level": 1317,
+ "buzz_change": 1.54,
+ "price_runup_24h_pct": 0.54,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T20:47:00Z",
+ "asset": "ETH",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "New tonight: Bitfinex margin longs hit a record 367.5k ETH (~$889M), up more than 300% this October, so big traders are leaning long; that is positioning, not a dated event, and crowded longs cut both ways. ETF outflow news already counted at midday. Price ~$2,417, -1% 24h; buzz ~1.0x its 3-day norm. Close to neutral, a touch positive.",
+ "sources": [
+  "https://x.com/i/trending/2111484739349774636",
+  "https://x.com/i/trending/2111462833024307589"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "None dated; Bitfinex ETH longs record is positioning data",
+ "volume": 12955,
+ "buzz_level": 12955,
+ "buzz_change": 1.02,
+ "price_runup_24h_pct": -0.97,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-17T20:47:00Z",
+ "asset": "XRP",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "New since morning: Ripple-backed Evernorth, which holds 473M XRP, is now listed on Nasdaq as XRPN and plans to deploy its treasury. Cross River RLUSD news already counted. The rest of tonight's XRP talk is $750-$1,000 price-target hype, ignored. Price ~$1.30, -2.5% 24h. Raw X counts spiked in three hours again (same pattern as the morning's phishing-bot flood); organic hours run ~0.85x the 3-day norm. Mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2111528901600272527",
+  "https://x.com/i/trending/2111455132068049291"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Evernorth (473M XRP treasury) listed on Nasdaq as XRPN, reported 17 Oct",
+ "volume": 11400,
+ "buzz_level": 11400,
+ "buzz_change": 0.85,
+ "price_runup_24h_pct": -2.52,
+ "carried_over": false
+}
