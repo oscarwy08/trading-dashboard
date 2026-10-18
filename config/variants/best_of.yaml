@@ -1,0 +1,25 @@
+# Sentiment split, the entry watcher and the burst runner. Nothing else.
+# The EV exit stays off. The main book is unchanged.
+variant_rules:
+  sent_split: true
+  sent_hot: 0.3
+  sent_overheat: 0.10
+  sent_quiet_bonus: 0.05
+  sent_runup_24h_pct: 15
+  sent_runup_4h_pct: 5
+  sent_buzz_hot: 3
+  sent_buzz_quiet: 1.2
+  sent_quiet_vol_x: 2
+  entry_watch: true
+  entry_watch_expiry_min: 15
+  burst_runner: true
+  burst_runner_giveback_pct: 20
+  ev_exit: false
+  ev_action: false
+day:
+  burst:
+    sentiment_missing: 0.5
+riskpot:
+  sentiment_missing: 0.5
+  dip:
+    sentiment_missing: 0.5

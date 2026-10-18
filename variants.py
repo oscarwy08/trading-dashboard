@@ -27,6 +27,7 @@ LABELS = {
     "day_capital_caution": "Day capital caution",
     "partial_take": "Partial take",
     "sent_split": "Sentiment split",
+    "best_of": "Best of",
 }
 BLURB = {
     "ev_exit": "EV exit is off. Live expected value rises when the trade falls, so it was selling winners between about +1% and +5%. This book was reset; sells before the reset are not counted. It follows the main book until the upside is taken from the current price and the chance is recomputed.",
@@ -43,6 +44,7 @@ BLURB = {
     "day_capital_caution": "Day only, per account. f is that account's Day loss today divided by 15% of that account's start-of-day Day equity, with no cap at 1. Momentum's threshold is its base (0.35, or 0.30 on MON, WLD and XRP) plus 0.30 x f. Burst uses the same f. Size is multiplied by (1 - min(f, 1)). The -15% halt on the whole Day pot stays.",
     "partial_take": "Day and Risk. At the trail arm, sell half and leave the rest on this book's trail. Buy that half back on a later dip only when a fresh expected value clears the hurdle. The fresh value uses a recomputed chance and the percent still available from the current price, not the inverted live EV. Orders in this split may be £1. Every other book keeps the £5 minimum. The sell records the extra fee of splitting one exit into two.",
     "sent_split": "Burst and Risk. A missing sentiment print scores 0.50, the same as a real neutral, instead of 0.25. A Risk dip needs the 48-hour uptrend; positive sentiment does not stand in for it. When price is up 15% or more over 24 hours (5% or more over 4 hours on a Day momentum entry) and sentiment is at least 0.30, or the buzz change is 3 or more, burst and Risk confidence lose 0.10 and that Day momentum entry ignores sentiment. A catalyst score, when the file has one, is used instead of the raw score. A quiet tape (buzz change under 1.2) with volume at least 2x and a confirmed breakout or bounce adds 0.05. Files without those fields score as before.",
+    "best_of": "Sentiment split, the entry watcher and the burst runner, and nothing else. A missing sentiment print is neutral (0.50). A Risk dip needs the 48-hour uptrend. Hot run-up and quiet-tape adjustments are the sentiment-split numbers. Armed entries expire after 15 minutes. A burst that hits its target can keep running and then gives back 20% of the peak gain. The EV exit stays off.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
@@ -82,7 +84,7 @@ def active(R):
 
 
 TABLE_BOOKS = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock",
-               "day_capital_caution", "partial_take", "sent_split")
+               "day_capital_caution", "partial_take", "sent_split", "best_of")
 
 
 def blend_ev(model, n, exp, prior_n=10):
@@ -982,10 +984,25 @@ def report():
                 ev_note=EV_NOTE, books=books)
 
 
+def _book_files_present():
+    """True when a snapshot or a variant database is already on disk."""
+    root = dir_path()
+    if (root / "_snapshot.db").exists():
+        return True
+    for name in ((cfg().get("variants") or {}).get("run") or []):
+        if (root / f"{name}.db").exists():
+            return True
+    return False
+
+
 def summary_line():
     rep = report()
     if not rep["books"]:
-        return "VARIANTS not started yet" if rep["enabled"] else "VARIANTS off"
+        if not rep["enabled"]:
+            return "VARIANTS off"
+        if _book_files_present():
+            return "VARIANTS present but none could be read"
+        return "VARIANTS not started yet"
     bits = []
     for b in rep["books"]:
         if b.get("error"):
