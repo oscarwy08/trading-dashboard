@@ -1,4 +1,4 @@
-PAPER scorecard Sun 18 Oct 22:46 UK
+PAPER scorecard Sun 18 Oct 22:58 UK
 TOTAL Equity £183.64 (-8.18% since £200 start) | Day P&L £-2.43
 vs BTC buy&hold (£) -2.70% | Max DD -9.51% | Win rate 34.41% over 93 closed
 CRYPTO acct (Monad wallet) £89.32 (-10.68% vs £100) | P&L £-10.68 | day £-2.43 | cash £56.17 | invested £33.15 | realised £-6.84 | fees £2.73 (fee £2.658, gas £0.069) | by pot: CORE £43.55 (cash £10.40), DAY £27.11 (cash £27.11), RISK £18.67 (cash £18.67)
