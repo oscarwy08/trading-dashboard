@@ -1,6 +1,6 @@
 # Strategy rethink: why every book trails BTC, and what to test instead
 
-Report only. Data: `data/trading.db`, `docs/data*.json` and `data/daily_summary.txt` at main `55f49f9` (18 Oct 22:26 UK). Two-year daily closes are from Kraken's public OHLC endpoint, because the repo keeps no crypto daily history.
+Report only. Data: `data/trading.db`, `docs/data*.json` and `data/daily_summary.txt` at main `55f49f9` (18 Oct 22:26 UK), plus two years of Kraken daily closes (the repo keeps no crypto daily history).
 
 ## 1. Why it loses
 
@@ -9,8 +9,8 @@ Report only. Data: `data/trading.db`, `docs/data*.json` and `data/daily_summary.
 3. **Costs exceed the edge.** Day traded £930 on a £60 pot in 8 days, 15 times its size. Costs are 0.23% per side and came to £2.15, 61% of Day's loss. Day still lost £1.40 before fees.
 4. **Churn and noise stops.** The median hold is 1.3 hours. Bursts have 18 stops to 2 targets, because stops of about 1.5% sit inside normal intraday noise.
 5. **Payoffs are lopsided the wrong way.** Momentum wins 29.5%, with +4.2% average wins and −3.0% average losses. It needs about 42% wins to break even.
-6. **Small-cap tilt.** The thinnest coins cost up to 0.40% per side and fall hardest when markets turn risk-off.
-7. **Tuning can't fix it.** The 15 variants range only from −£10.5 to −£20.8, because they share the same entries.
+6. **Small-cap tilt.** Thin coins cost up to 0.40% per side and fall hardest in risk-off weeks.
+7. **Tuning can't fix it.** All 15 variants sit between −£10.5 and −£20.8; they share the same entries.
 8. **Benchmark mismatch.** The stocks account can't hold BTC. Judge it against VUSA or EQQQ.
 
 ## 2. Different strategies
@@ -42,8 +42,7 @@ The backtest below uses Kraken daily closes from December 2024 to 18 Oct 2026 at
 - **Kraken, UK retail:** derivatives are professional-only. Spot margin shorts against fiat (for example BTC/USD) are allowed, but only on majors, so hyped small caps can't be shorted. Costs: an opening fee plus a 4-hourly rollover.
 - **Trading 212:** Invest and ISA are long-only. Shorting needs a separate CFD account (stocks only, 5:1 leverage, overnight financing, no crypto for UK retail). Probably not on the user's plan.
 - **Test:** A with a −0.5× BTC short below the 50-day average returned +25.3% before borrow costs. At 0.06% a day it falls to +13.8%, and at 0.12% a day to +3.3%. Both are worse than long or flat.
-- **Engine:** long-only. It has no short positions, borrow accrual or margin calls, so a short variant needs new accounting code.
-- **Verdict:** test shorts offline only; don't build them yet.
+- **Engine:** long-only, with no short positions, borrow accrual or margin calls. Test shorts offline only; don't build them yet.
 
 **How to paper-test A, B and C**
 - Store daily crypto closes in `daily_closes`.
