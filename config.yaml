@@ -31,6 +31,7 @@ coingecko:                      # demo key: 100 calls/min but 10,000/month. Pric
 
 dex:                            # free public pool prices for a coin with no Kraken, Coinbase or Kyber route, when CoinGecko is skipped or errors
   max_jump: 2                   # reject a pool price more than this many times the last good price (or below 1/this)
+  disagree_pct: 10              # a different source more than this percent from the last accepted print is dropped until another source, or the next print, agrees
   max_per_cycle: 8              # lookups per cycle; a held coin or an armed entry goes first
 
 crypto:

@@ -488,6 +488,117 @@ GT_NET = {"ethereum": "eth", "eth": "eth", "solana": "solana", "base": "base", "
           "bsc": "bsc", "polygon": "polygon_pos", "monad": "monad"}
 
 
+POOL_SOURCES = {"dexscreener", "geckoterminal"}
+SUSPECT_KEY = "price_suspect"
+CONFIRM_AFTER_S = 60
+
+
+def _disagree_pct(con=None):
+    try:
+        from common import cfg
+        return float(((cfg().get("dex") or {}).get("disagree_pct", 10)))
+    except Exception:
+        return 10.0
+
+
+def _near(a, b, pct):
+    try:
+        a, b = float(a), float(b)
+    except (TypeError, ValueError):
+        return False
+    if a <= 0 or b <= 0:
+        return False
+    lim = 1 + float(pct) / 100.0
+    ratio = a / b
+    return (1 / lim) <= ratio <= lim
+
+
+def _iso_seconds(a, b):
+    from datetime import datetime
+    try:
+        da = datetime.fromisoformat(str(a).replace("Z", "+00:00"))
+        db = datetime.fromisoformat(str(b).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return 0
+    return abs((da - db).total_seconds())
+
+
+def _load_suspects(con):
+    import json
+    try:
+        raw = con.execute("SELECT value FROM state WHERE key=?", (SUSPECT_KEY,)).fetchone()
+    except Exception:
+        return {}
+    try:
+        blob = json.loads(raw[0]) if raw and raw[0] else {}
+    except Exception:
+        blob = {}
+    return blob if isinstance(blob, dict) else {}
+
+
+def _save_suspects(con, blob):
+    import json
+    try:
+        con.execute("INSERT OR REPLACE INTO state VALUES(?,?)", (SUSPECT_KEY, json.dumps(blob)))
+    except Exception:
+        return
+
+
+def accept_print(con, asset, usd, source, also=None, now_iso=None, disagree_pct=None):
+    """Whether this crypto print may be stored or traded.
+
+    A move within disagree_pct of the last accepted print is kept, and so is any move from the same source.
+    A different source further away is dropped. It is kept when another source in this batch agrees, unless
+    both are pool quotes disagreeing with CoinGecko or an exchange, or when a later print (at least a minute
+    on) sits on the same new price. Stocks are not checked here.
+    """
+    sym = (asset or "").upper()
+    src = source or ""
+    try:
+        px = float(usd)
+    except (TypeError, ValueError):
+        return False
+    if not sym or px <= 0:
+        return False
+    pct = float(_disagree_pct(con) if disagree_pct is None else disagree_pct)
+    try:
+        last = con.execute("""SELECT price, source FROM prices WHERE asset=? AND klass='crypto' AND source!='backfill'
+                              AND price>0 ORDER BY ts DESC LIMIT 1""", (sym,)).fetchone()
+    except Exception:
+        return True
+    if not last or _near(px, last[0], pct) or (last[1] or "") == src:
+        blob = _load_suspects(con)
+        if sym in blob:
+            blob.pop(sym, None)
+            _save_suspects(con, blob)
+        return True
+    last_src = last[1] or ""
+    for other in also or []:
+        if not isinstance(other, dict):
+            continue
+        osrc = other.get("source") or ""
+        if not osrc or osrc == src or not _near(other.get("usd"), px, pct):
+            continue
+        if last_src not in POOL_SOURCES and src in POOL_SOURCES and osrc in POOL_SOURCES:
+            continue
+        blob = _load_suspects(con)
+        blob.pop(sym, None)
+        _save_suspects(con, blob)
+        return True
+    blob = _load_suspects(con)
+    sus = blob.get(sym) if isinstance(blob.get(sym), dict) else None
+    if sus and _near(sus.get("usd"), px, pct) and _iso_seconds(now_iso, sus.get("ts")) >= CONFIRM_AFTER_S:
+        blob.pop(sym, None)
+        _save_suspects(con, blob)
+        return True
+    if not (sus and _near(sus.get("usd"), px, pct)):
+        blob[sym] = dict(usd=px, source=src, ts=now_iso or "")
+        _save_suspects(con, blob)
+        from common import log
+        log("pricesrc").info("price guard %s %s %.6g vs last %s %.6g", sym, src, px, last_src, float(last[0]))
+    return False
+
+
 def sane_price(new, last, jump=2.0):
     """A backup quote against the last good price. No last price accepts any positive number.
     jump 2 rejects a print below half or above twice the last good price."""
@@ -629,7 +740,8 @@ def backup_quotes(con, c, symbols, fetch, now_iso, limit=None):
         if not pick: continue
         if pick.get("address"):
             cache[sym] = dict(chain=pick.get("chain"), address=pick.get("address"))
-        out[sym] = dict(usd=float(pick["usd"]), high=None, low=None, vol=None, src_ts=now_iso, source=pick["source"])
+        others = [dict(usd=float(c["usd"]), source=c.get("source") or "") for c in cands if c is not pick and c.get("usd")]
+        out[sym] = dict(usd=float(pick["usd"]), high=None, low=None, vol=None, src_ts=now_iso, source=pick["source"], also=others)
     if cache:
         _dex_save(con, cache)
     return out

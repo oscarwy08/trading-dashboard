@@ -1178,8 +1178,9 @@ def serve():
     def deliver(asset, raw, quote, src):
         gbp = to_gbp(raw, quote, rate_box["fx"])
         if gbp is None: return
+        usd = pricesrc.to_usd(raw, quote, rate_box["fx"])
         with guard:
-            latest[asset] = dict(gbp=gbp, mono=time.monotonic(), src=src)
+            latest[asset] = dict(gbp=gbp, usd=usd, mono=time.monotonic(), src=src)
             seen[asset] = latest[asset]["mono"]
 
     threading.Thread(target=_streams, args=(rate_box, seen, deliver, stop), daemon=True).start()
@@ -1197,10 +1198,15 @@ def serve():
         if KILL.exists():
             time.sleep(5); continue
         with guard:
-            fresh = {a: v["gbp"] for a, v in latest.items() if time.monotonic() - v["mono"] <= LIVE_S}
+            snap = {a: dict(v) for a, v in latest.items() if time.monotonic() - v["mono"] <= LIVE_S}
             recv = {a: v["mono"] for a, v in latest.items()}
         try:
             con = db()
+            fresh = {}
+            for a, v in snap.items():
+                src = v.get("src") or ""
+                if src in ("yahoo", "yahoo-live") or v.get("usd") is None or pricesrc.accept_print(con, a, v["usd"], src, now_iso=iso()):
+                    fresh[a] = v["gbp"]
             for e in evaluate(con, fresh, recv):
                 print(e["log"], flush=True)
             # Main entries are always a shadow log, even after ENTRY_WATCH_SHADOW=0.
