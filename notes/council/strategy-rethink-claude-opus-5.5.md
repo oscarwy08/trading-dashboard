@@ -11,8 +11,7 @@ Report only. Data: `data/trading.db`, `docs/data*.json` and `data/daily_summary.
 5. **Payoffs are lopsided the wrong way.** Momentum wins 29.5%, with +4.2% average wins and −3.0% average losses. It needs about 42% wins to break even.
 6. **Small-cap tilt.** The thinnest coins cost up to 0.40% per side and fall hardest when markets turn risk-off.
 7. **Tuning can't fix it.** The 15 variants range only from −£10.5 to −£20.8, because they share the same entries.
-8. **Benchmark mismatch.** The stocks account can't hold BTC. It should be judged against VUSA or EQQQ.
-9. **The sample is short.** Eight days in a down market proves little, but there is no sign of an edge even before costs.
+8. **Benchmark mismatch.** The stocks account can't hold BTC. Judge it against VUSA or EQQQ.
 
 ## 2. Different strategies
 
@@ -40,8 +39,8 @@ The backtest below uses Kraken daily closes from December 2024 to 18 Oct 2026 at
 - Data: buzz has only been logged since 9 Oct, so it can't be tested until about December.
 
 **E. Shorting.**
-- **Kraken, UK retail:** derivatives are for professional clients only. Spot margin shorts of crypto against fiat (for example BTC/USD) are allowed without the high-net-worth declaration. Margin covers majors only, so hyped small caps can't be shorted. Costs are an opening fee plus a rollover fee every 4 hours.
-- **Trading 212:** the Invest account and ISA are long-only. Shorting needs a separate CFD account: stocks only, 5:1 maximum leverage, overnight financing, and no crypto CFDs for UK retail. Probably not on the user's plan.
+- **Kraken, UK retail:** derivatives are professional-only. Spot margin shorts against fiat (for example BTC/USD) are allowed, but only on majors, so hyped small caps can't be shorted. Costs: an opening fee plus a 4-hourly rollover.
+- **Trading 212:** Invest and ISA are long-only. Shorting needs a separate CFD account (stocks only, 5:1 leverage, overnight financing, no crypto for UK retail). Probably not on the user's plan.
 - **Test:** A with a −0.5× BTC short below the 50-day average returned +25.3% before borrow costs. At 0.06% a day it falls to +13.8%, and at 0.12% a day to +3.3%. Both are worse than long or flat.
 - **Engine:** long-only. It has no short positions, borrow accrual or margin calls, so a short variant needs new accounting code.
 - **Verdict:** test shorts offline only; don't build them yet.
@@ -49,8 +48,8 @@ The backtest below uses Kraken daily closes from December 2024 to 18 Oct 2026 at
 **How to paper-test A, B and C**
 - Store daily crypto closes in `daily_closes`.
 - Run each as a `variants.py` book on the crypto account with Kraken costs.
-- Pass bar: beat BTC hold after costs, profit factor of at least 1.1, and drawdown no worse than −20%. Trend strategies trade too rarely to reach 100 trades soon, so judge them on a multi-year replay plus live paper results.
-- For the stocks account, run the same trend filter on VUSA or EQQQ and benchmark it against that fund.
+- Pass bar: beat BTC hold after costs, profit factor ≥1.1, drawdown no worse than −20%. Trend books trade too rarely for 100 trades soon, so use a multi-year replay plus live paper.
+- Stocks account: the same trend filter on VUSA or EQQQ, benchmarked against that fund.
 
 ## 3. What to keep from `best_of`
 
