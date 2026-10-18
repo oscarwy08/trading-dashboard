@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-18T20:47:00Z",
+ "asset": "SOL",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "SOL -3.1% in 24h to ~$101 with the market. Fundamentals news is positive: Western Union's USDPT stablecoin is live on Bitso in Mexico, HKEX listed a second spot SOL ETF (Pando), record Q3 activity (14.2B txs, app revenue +48%), and the Alpenglow upgrade is due around 21 Oct (finality ~150ms). Mentions slightly below the 3-day norm. Mildly bullish on catalysts despite weak price.",
+ "sources": [
+  "https://x.com/i/trending/2111916392052392404",
+  "https://x.com/i/trending/2111194156135784586"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Alpenglow upgrade due ~21 Oct; second HK spot SOL ETF listed; Western Union USDPT live on Bitso",
+ "volume": 82208,
+ "buzz_level": 82208,
+ "buzz_change": 0.89,
+ "price_runup_24h_pct": -3.07,
+ "carried_over": false
+}

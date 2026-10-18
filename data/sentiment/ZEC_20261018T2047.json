@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-18T20:47:00Z",
+ "asset": "ZEC",
+ "score": -0.1,
+ "confidence": 0.45,
+ "summary": "ZEC fell ~8.8% in 24h to ~$1,057 after peaking above $1,200, with privacy coins amplifying the alt sell-off. Positive: Zcash shipped post-quantum unlinkable swap addresses; Burniske and Altcoin Sherpa frame sub-$1,000 as a buy zone. Bears eye $888 if support breaks. Mentions below the 3-day norm (0.83x). Mildly bearish short term.",
+ "sources": [
+  "https://x.com/i/trending/2111921389158666615",
+  "https://x.com/i/trending/2111844830418436134"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Post-quantum unlinkable swap feature released (reported 18 Oct)",
+ "volume": 2481,
+ "buzz_level": 2481,
+ "buzz_change": 0.83,
+ "price_runup_24h_pct": -8.79,
+ "carried_over": false
+}

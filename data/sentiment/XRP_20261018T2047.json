@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-18T20:47:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "XRP -3.2% in 24h to ~$1.26, down from >$1.40-1.50 earlier in October. Real items: Cross River Bank integrating RLUSD and the XRP Ledger, Ripple's Monica Long on XRP as payment-credit collateral, Evernorth's XRP treasury deployment. Rest is holder fatigue mixed with outsized price targets. Ripple/XRPL mentions are well below the 3-day norm (0.6x). Neutral, slight positive.",
+ "sources": [
+  "https://x.com/i/trending/2111834467958767749",
+  "https://x.com/i/trending/2111908744321794102",
+  "https://x.com/i/trending/2111679704340312216"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Cross River Bank RLUSD + XRPL integration announced (date not given in source)",
+ "volume": 10152,
+ "buzz_level": 10152,
+ "buzz_change": 0.6,
+ "price_runup_24h_pct": -3.18,
+ "carried_over": false
+}

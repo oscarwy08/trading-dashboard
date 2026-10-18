@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-18T20:47:00Z",
+ "asset": "MON",
+ "score": -0.3,
+ "confidence": 0.45,
+ "summary": "MON -8.8% in 24h to ~$0.0201, below its public-sale price; posts say it lost $0.025 support. Community tone is frustrated (scam calls, 'where are the market makers'), and Monad TVL is falling with the native token. Several posts flag the large 24 Nov cliff unlock (~16.6B MON per one account, bigger than the circulating float). A few dip-buy calls. Bearish.",
+ "sources": [
+  "https://x.com/feemon_meme/status/2111897271239672062",
+  "https://x.com/Roberth00069/status/2111817347346350390",
+  "https://x.com/01Rajpurohit/status/2111874508630200732"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Cliff unlock on 24 Nov 2026 (one year after mainnet); size ~16.6B MON per an X account, not independently verified",
+ "volume": 221,
+ "buzz_level": 221,
+ "buzz_change": 1.08,
+ "price_runup_24h_pct": -8.82,
+ "carried_over": false
+}

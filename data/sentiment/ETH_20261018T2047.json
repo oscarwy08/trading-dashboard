@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-18T20:47:00Z",
+ "asset": "ETH",
+ "score": -0.1,
+ "confidence": 0.4,
+ "summary": "ETH -3.1% in 24h to ~$2,342, underperforming BTC as BTC dominance climbs to 60.8% and traders call it short-term bearish for alts. ETH-specific talk is mostly the lattice vs hash post-quantum debate and NFT activity; nothing price-moving. Mentions slightly below the 3-day norm. Mildly bearish.",
+ "sources": [
+  "https://x.com/i/trending/2111918969258905789",
+  "https://x.com/i/trending/2111844829915136080"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 39938,
+ "buzz_level": 39938,
+ "buzz_change": 0.91,
+ "price_runup_24h_pct": -3.09,
+ "carried_over": false
+}

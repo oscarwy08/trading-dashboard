@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-10-18T20:47:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "BTC eased from ~$87k highs to ~$80.8k (-0.9% 24h). Dominance hit 60.8%, a 1-year high. Weekly ETF outflows ~$228M, over $321M of liquidations in 24h (mostly longs), and 'Black Monday' chatter ahead of the US open on 19 Oct after a weekend sell-off in tokenized chip stocks. Offsets: Saylor teasing another Strategy buy, a $110M 40x long on Hyperliquid near $81.9k (liquidation ~$80k). Slightly bearish into Monday.",
+ "sources": [
+  "https://x.com/i/trending/2111691648103268859",
+  "https://x.com/i/trending/2111918969258905789",
+  "https://x.com/i/trending/2111804793811509732",
+  "https://x.com/i/trending/2111457542304088210"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No BTC-specific dated event; Strategy buy only teased, not confirmed",
+ "volume": 64833,
+ "buzz_level": 64833,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": -0.92,
+ "carried_over": false
+}
