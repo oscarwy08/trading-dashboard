@@ -46,8 +46,8 @@
 
 ## 4. Existing `best_of` Components to Keep
 
-Keep all three active modules in `config/variants/best_of.yaml` (£189.19, #1 of 16 books, +£5.58 vs Main):
+Keep all 3 modules in `config/variants/best_of.yaml` (£189.19, #1/16 books, +£5.58 vs Main):
 1. **`sent_split` (`variants.py:163`):** Overheat penalty (`-0.10` on `buzz>=3x`), quiet bonus (`+0.05` on low buzz + >=2x vol), `0.5` fallback.
-2. **`entry_watch` (`variants.py:255`):** 1m pullback/breakout trigger (15m expiry) instead of blind 15m buys.
-3. **`burst_runner` (`variants.py:194`):** Uncapped upside with 20% profit-giveback trail once clear of fees.
+2. **`entry_watch` (`variants.py:255`):** 1m pullback/breakout trigger (15m expiry) vs blind 15m buys.
+3. **`burst_runner` (`variants.py:194`):** Uncapped upside with 20% profit-giveback trail after fees.
 4. **Drop:** `ev_exit`, `ev_action`, `partial_take`, `midnight_crypto`, `day_trail_arm`.
