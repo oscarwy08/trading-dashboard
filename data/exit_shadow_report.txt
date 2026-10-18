@@ -341,7 +341,8 @@ SENT day
 
 HBAR day
   shadow  2026-10-18T11:55:29+00:00  £0.0664197  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-18T12:59:20+00:00  £0.0663372  [burst 24h] stop-loss -1.7% <= -1.5% (ATR-scaled); P&L £-0.08
+  cycle was 3831s later, price £-8.2593e-05 (-0.12%)
 
 Cycle sells with no shadow exit
   PRE.L day  2026-10-16T08:04:18+00:00  £0.4  [momentum] stop-loss -5.3% <= -4.5% (ATR-scaled) [gap fill]; P&L £-0.40
@@ -612,7 +613,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 67 pairs, avg time gap 4009s, avg price gap -0.02%, missed moves 2
+  exits: 68 pairs, avg time gap 4006s, avg price gap -0.02%, missed moves 1
   entries: 14 pairs, avg time gap 43157s, avg price gap +0.93%, missed moves 28
 ev_exit
   exits: 50 pairs, avg time gap 8506s, avg price gap -0.58%, missed moves 1
