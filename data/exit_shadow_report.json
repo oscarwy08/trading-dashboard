@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-18T14:23:08+00:00",
+  "generated": "2026-10-18T15:25:53+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 72,
-        "avg_dt_s": 991.3472222222222,
-        "avg_price_pct": -0.14223247915391724,
+        "pairs": 73,
+        "avg_dt_s": 986.0958904109589,
+        "avg_price_pct": -0.13801234273714683,
         "missed": 0
       },
       "entries": {
