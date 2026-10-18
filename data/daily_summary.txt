@@ -1,6 +1,6 @@
-PAPER scorecard Sun 18 Oct 17:43 UK
+PAPER scorecard Sun 18 Oct 17:52 UK
 TOTAL Equity £184.31 (-7.84% since £200 start) | Day P&L £-1.76
-vs BTC buy&hold (£) -2.59% | Max DD -9.10% | Win rate 34.78% over 92 closed
+vs BTC buy&hold (£) -2.64% | Max DD -9.10% | Win rate 34.78% over 92 closed
 CRYPTO acct (Monad wallet) £90.00 (-10.00% vs £100) | P&L £-10.00 | day £-1.76 | cash £45.93 | invested £44.07 | realised £-4.22 | fees £2.70 (fee £2.631, gas £0.069) | by pot: CORE £44.22 (cash £0.15), DAY £27.11 (cash £27.11), RISK £18.67 (cash £18.67)
 STOCKS acct (Trading 212) £94.32 (-5.68% vs £100) | P&L £-5.68 | day £+0.00 | cash £48.36 | invested £45.95 | realised £-1.64 | fees £0.27 (spread £0.093, fx £0.062, stamp £0.115) | by pot: CORE £45.96 (cash £0.01), DAY £29.34 (cash £29.34), RISK £19.02 (cash £19.02)
 CORE £90.18 (-9.82% vs £100) | day £-1.09 | realised £+0.00 | win n/a of 0 | today 0 trades (0 buys, 0 sells) | built 11/11 | open: AMD, BTC, ETH, MON, MSFT, ONT.L, PLTR, TEAM, WLD, XRP, ZS | crypto £44.22 (cash £0.15) / stocks £45.96 (cash £0.01)
@@ -9,7 +9,7 @@ RISK £37.69 (-5.79% vs £40) | day £+0.00 | realised £-2.31 | win 40.00% of 1
 SELLS DAY BTW -£0.39 (-5.7%); DAY HBAR -£0.08 (-1.5%); DAY SENT -£0.12 (-2.4%); DAY HBAR -£0.08 (-1.7%)
   DAY momentum all: 44 closed trades, win 29.5%, avg win +4.23%, avg loss -3.03%, PF 0.58, closed P&L £-2.52 (after its fees £1.34; + £0.00 buy fees on open positions), expectancy -0.88%/trade | today: 1 trades, P&L £-0.39
   DAY burst    all: 38 closed trades, win 39.5%, avg win +1.92%, avg loss -2.14%, PF 0.58, closed P&L £-1.03 (after its fees £0.86; + £0.00 buy fees on open positions), expectancy -0.54%/trade | today: 3 trades, P&L £-0.28
-  DAY burst threshold 0.573 (Day pot today -1.17%), 0/2 setups taken last cycle
+  DAY burst threshold 0.573 (Day pot today -1.17%), 0/1 setups taken last cycle
 RULES frozen since 2026-10-10 (v7.8). Do not retune from one day.
   SETUP momentum         closed  44  net £-2.52  fees £1.34  fee/gross n/a  win 30%  exits: flatten 7, trail 11, stop 16, signal 10
   SETUP burst            closed  38  net £-1.03  fees £0.86  fee/gross n/a  win 40%  exits: stop 21, flatten 4, trail 10, target 2, time 1
