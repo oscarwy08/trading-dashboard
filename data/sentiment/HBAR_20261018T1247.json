@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-18T12:47:00Z",
+ "asset": "HBAR",
+ "score": 0.0,
+ "confidence": 0.45,
+ "summary": "HBAR is up about 7% in 24h and trending on X, but the story is chart talk (double bottom, resistance at $0.088) plus unverified whale-accumulation claims, with no dated catalyst. Mentions are about 1.5x the 3-day norm on a coin that has already run, so treat it as overheating, not news. Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2111782977369723144"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 334,
+ "buzz_level": 334,
+ "buzz_change": 1.49,
+ "price_runup_24h_pct": 6.8,
+ "carried_over": false
+}

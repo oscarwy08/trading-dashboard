@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-18T12:47:00Z",
+ "asset": "SOL",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "Solana reported a record Q3: app revenue up 48% to $299M, 14.2B transactions and $7.1B in tokenized equities volume. The Alpenglow upgrade, targeting 150ms finality, is flagged for 21 Oct. Price is flat around $104 and mentions are below the norm (0.8x), so this is quiet strength, not hype. Mildly bullish.",
+ "sources": [
+  "https://x.com/i/trending/2111194156135784586",
+  "https://x.com/Horse_Router/status/2111794617918345413"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Q3 2026 network report (record app revenue); Alpenglow upgrade scheduled 21 Oct",
+ "volume": 16815,
+ "buzz_level": 16815,
+ "buzz_change": 0.79,
+ "price_runup_24h_pct": -0.11,
+ "carried_over": false
+}

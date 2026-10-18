@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-18T12:47:00Z",
+ "asset": "HYPE",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "An early HYPE whale has been selling, including about $8.2M of HYPE sent to Kraken, locking in over $21M profit. Price is flat near $79. Buyback-and-burn support is unchanged, but visible whale distribution tempers the outlook. Mentions are below the 3-day norm (0.8x). Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2111790051587919903"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 8160,
+ "buzz_level": 8160,
+ "buzz_change": 0.82,
+ "price_runup_24h_pct": 0.25,
+ "carried_over": false
+}

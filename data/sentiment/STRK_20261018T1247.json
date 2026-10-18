@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-18T12:47:00Z",
+ "asset": "STRK",
+ "score": -0.2,
+ "confidence": 0.5,
+ "summary": "STRK is down about 12% in 24h and roughly 40-46% on the week, as the 127M-token unlock on 15 Oct works through. StarkWare's non-binding poll (open until 22 Oct) shows 99.95% support for researching an independent post-quantum L1, but any move is years away, and posts say supply is still being absorbed. Mildly bearish.",
+ "sources": [
+  "https://x.com/i/trending/2111760474236916159",
+  "https://x.com/StarkWareLtd/status/2111724469488341452",
+  "https://x.com/DegenOracleXBT/status/2111781139308216724"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "127M STRK unlock on 15 Oct (negative supply event); non-binding L1 research poll runs 15-22 Oct (small positive)",
+ "volume": 247,
+ "buzz_level": 247,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": -12.22,
+ "carried_over": false
+}

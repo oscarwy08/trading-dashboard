@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-18T12:47:00Z",
+ "asset": "BTC",
+ "score": 0.0,
+ "confidence": 0.5,
+ "summary": "BTC is flat around $81-82k in a $74-88k range. Bullish on-chain and institutional talk is offset by a weekend sell-off in tokenized chip stocks and 'Black Monday' chatter ahead of the US open on 19 Oct. France's narrow vote to tax crypto-to-stablecoin swaps from 2027 is still pending Senate review. Mixed, neutral.",
+ "sources": [
+  "https://x.com/i/trending/2111691648103268859",
+  "https://x.com/i/trending/2111457542304088210",
+  "https://x.com/i/trending/2111743649386242299"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "France crypto-to-stablecoin swap tax passed Assembly 38-37 on 16 Oct, effective 2027 if it survives the Senate; minor, not BTC-specific",
+ "volume": 10898,
+ "buzz_level": 10898,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": 0.59,
+ "carried_over": false
+}
