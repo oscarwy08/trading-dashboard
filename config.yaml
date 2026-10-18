@@ -349,7 +349,8 @@ variants:
   enabled: true
   run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
         risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take,
-        sent_split, best_of]
+        sent_split, best_of, btc_trend, btc_trend_vol, majors_rotation, btc_core_satellite,
+        rs_rotation_veto, quiet_strength, best_of_plus]
   # These three books sold on an inverted EV. The next cycle recopies each from the current main book
   # and the scorecard starts there, so those sells are not counted.
   reset:
@@ -401,3 +402,22 @@ variant_rules:
   sent_buzz_hot: 3                # buzz_change at or above this, with the run-up, is the same overheat
   sent_buzz_quiet: 1.2            # buzz_change below this can earn the quiet-strength bonus
   sent_quiet_vol_x: 2             # last hour versus the average hour
+  hold_overnight: false           # strategy books only: do not flatten at 22:00 or at the stock close
+  day_risk_cap_pct: 0             # 0 = off. best_of_plus sets 15 so day and risk together stay inside 15% of the book
+  core_off: false                 # strategy book only: core alt picks do not run
+
+# Overnight paper books (strategies.py). These numbers are not read by the main book.
+strategies:
+  kraken_fee_pct: 0.40            # Kraken taker, per side, on the crypto sleeve of the trend books
+  stock_fee_pct: 0.15             # stock sleeve, per side (the Trading 212 FX fee)
+  vol_target: 0.40                # btc_trend_vol size = min(1, this / 30-day realised vol)
+  sma_days: 50
+  satellite_sma: 100
+  drift_pts: 5                    # rebalance the vol size, and the 85% BTC core, after this many points
+  quiet_trail_pct: 12
+  quiet_giveback: false           # true would use the burst-runner 20% giveback instead of only the 12% trail
+  crypto_gbp: 100
+  stocks_gbp: 100
+  min_trade_gbp: 5
+  day_risk_cap_pct: 15
+  trend_weight: 0.85

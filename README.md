@@ -22,6 +22,22 @@ A crypto print from a different source that is more than 10% from the last accep
 
 Day and Risk hit rates are counted separately for crypto and for stocks. A crypto loss no longer moves a stock's chance or its expected value, and a stock loss no longer moves the crypto number. Stock momentum, breakouts and dips measure 4h, 24h, 36h and 48h in regular-session time (London, New York or Sydney hours, including holidays), not in wall-clock time across the overnight close. Crypto still uses wall-clock hours. Names dropped before they become a setup are logged as `book=… setup=… asset=… reason=…`.
 
+## Overnight strategy books (2026-10-18)
+
+Seven paper books, each with its own £200 (£100 crypto, £100 stocks). They are not the main book. They hold through nights and weekends. The main book's 22:00 flatten, stops and thresholds are unchanged.
+
+- **btc_trend.** 100% BTC when the daily close is above the 50-day average, otherwise cash. The stock half uses the same rule on VUSA (EQQQ if VUSA has no history).
+- **btc_trend_vol.** The same trend, sized at min(1, 40% / 30-day realised vol). A weight trades only after it drifts more than 5 points.
+- **majors_rotation.** Once a week, the best 28-day return among BTC, ETH and SOL that are above their own 50-day average. The stock half stays cash.
+- **btc_core_satellite.** 85% BTC, put back after a 5 point drift, plus 15% in one coin that has beaten BTC over 30 and 90 days and is above its 100-day average. The satellite is held at least 5 days.
+- **rs_rotation_veto.** Once a week, the top 3 by 4-week return minus BTC, above the 50-day average, skipping a buzz change of 3 or more or a 24h jump of 15% or more. BTC if none qualify. Cash when BTC is below its average.
+- **quiet_strength.** Within 10% of the 30-day high, buzz below the median, top quartile of volume/market cap. Sold on a 12% trail or into that hype spike. A 20% giveback trail exists and is off.
+- **best_of_plus.** The best_of rules may use 15% of the book. The other 85% is the BTC/VUSA trend. Core alt picks are off on this book only.
+
+`python3 backtest.py --daily` replays the first five on Kraken's public daily history from 2017, at a 0.40% Kraken taker and a 0.15% stock fee, against holding BTC. The collector stores those Kraken closes into `daily_closes` so a live book can warm up without waiting a year.
+
+The first cycle after this is deployed archives the run since 11 Oct 2026 18:07 UK as Test 1 under `data/tests/test1/` and restarts every book at £200 (Test 2). A later cycle sees `data/tests/generation.json` and does not reset again. The Strategies and Tests tabs read that archive. The exit watcher and the variant scorecard pick the new books up from `variants.run`.
+
 ## Backtest (report only)
 
 `python3 backtest.py` replays the stored prices in `data/trading.db` through the main book and each name in `variants.run`. It uses the live trader, so fees and slippage are the ones the cycle charges. It writes a temporary copy only. It does not change the frozen rules or the live database.

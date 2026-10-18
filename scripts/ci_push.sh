@@ -39,6 +39,7 @@ reapply() {
   local tip=$1
   local tmp; tmp=$(mktemp -d)
   cp -a data/trading.db data/daily_summary.txt "$tmp/" 2>/dev/null || true
+  if [ -d data/tests ]; then mkdir -p "$tmp/tests"; cp -a data/tests/. "$tmp/tests/"; fi
   cp -a data/exit_shadow_report.txt data/exit_shadow_report.json "$tmp/" 2>/dev/null || true
   mkdir -p "$tmp/docs"
   cp -a docs/data.json "$tmp/docs/" 2>/dev/null || true
@@ -52,9 +53,10 @@ reapply() {
   fi
   cp -a "$tmp/trading.db" data/trading.db
   cp -a "$tmp/daily_summary.txt" data/ 2>/dev/null || true
+  if [ -d "$tmp/tests" ]; then mkdir -p data/tests; cp -a "$tmp/tests/." data/tests/; fi
   cp -a "$tmp/exit_shadow_report.txt" "$tmp/exit_shadow_report.json" data/ 2>/dev/null || true
   cp -a "$tmp/docs/." docs/ 2>/dev/null || true
-  git add -A -- data/trading.db data/daily_summary.txt docs
+  git add -A -- data/trading.db data/daily_summary.txt data/tests docs
   if [ -f data/exit_shadow_report.txt ]; then git add -A -- data/exit_shadow_report.txt data/exit_shadow_report.json; fi
   unstage_shadow
   git commit -q -m "$MSG (re-applied on top of concurrent push)"

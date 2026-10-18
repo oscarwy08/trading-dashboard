@@ -33,6 +33,9 @@ run_step() {
 # (2026-10-10, great_reset.py) started fresh v7 accounts - re-running them could only corrupt the fresh state.
 run_step collector ${PY:-python} collector.py        || echo "::warning::collector failed"
 run_step ingest ${PY:-python} ingest_sentiment.py || echo "::warning::sentiment ingest failed"
+# Once, on the first cycle after this lands: archive Test 1 and restart every book at £200.
+# Later cycles see data/tests/generation.json and do not reset again.
+run_step test_reset ${PY:-python} testreset.py    || echo "::warning::test reset failed"
 run_step trader ${PY:-python} trader.py           || { echo "::error::trader failed"; fail=1; }
 # Variant books use the prices this cycle already stored. A failure here must not fail the main book.
 run_step variants ${PY:-python} variants.py         || echo "::warning::variants failed"

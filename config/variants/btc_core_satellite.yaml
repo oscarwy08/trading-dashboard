@@ -1,0 +1,4 @@
+# 85% BTC, rebalanced after a 5 point drift, plus 15% in one coin that has beaten BTC.
+strategy_book: btc_core_satellite
+variant_rules:
+  hold_overnight: true

@@ -448,6 +448,26 @@ def _cycle():
 
     def buy(sleeve, a, value, reason, sub=None, conf=None, snap=None):
         """Spends value on the asset (fill incl. fees/slippage/FX/stamp duty) + gas on top (crypto only); all go into the cost basis."""
+        if sleeve == "core" and R.get("core_off"):
+            return None
+        cap = float(R.get("day_risk_cap_pct") or 0)
+        if cap > 0 and sleeve in ("day", "risk"):
+            deployed = 0.0
+            for (sl, asset), p in pos.items():
+                if sl not in ("day", "risk"):
+                    continue
+                qv = px.get(asset)
+                deployed += p["qty"] * qv["price"] if qv else p["cost"]
+            other = 0.0
+            for (sl, _ac), amt in cash.items():
+                other += amt
+            for (sl, asset), p in pos.items():
+                qv = px.get(asset)
+                other += p["qty"] * qv["price"] if qv else p["cost"]
+            if other > 0 and deployed + float(value) > other * cap / 100.0 + 1e-6:
+                sig(sleeve, a, None, None, None, "SKIP",
+                    f"day/risk already £{deployed:.0f}; a £{float(value):.0f} buy would pass {cap:.0f}% of the book")
+                return None
         q = px[a]; fp = cost_pct(c, a, q["klass"], "BUY", q, value)
         fill = trade(sleeve, a, q["klass"], "BUY", value / (q["price"] * (1 + fp)), q["price"], reason, sub=sub, conf=conf, snap=snap, notional=value)
         qty = value / fill; p = pos.get((sleeve, a)); spent = value + gas_of(q["klass"]); ck = (sleeve, acct_of(q["klass"]))
@@ -686,7 +706,7 @@ def _cycle():
         if sl != "day": continue
         q = px.get(a); m, s, comb, info = scores.get(a, (None, None, None, ""))
         opened_day = datetime.fromisoformat(p["opened"]).astimezone(LON).date().isoformat()
-        if p["klass"] == "stock" and (mclose_in(a) is None or mclose_in(a) <= int(D.get("stock_flatten_before_close_min", 15))):
+        if (not R.get("hold_overnight")) and p["klass"] == "stock" and (mclose_in(a) is None or mclose_in(a) <= int(D.get("stock_flatten_before_close_min", 15))):
             if not exit_ok(q):
                 if not q:
                     day_late.append(a); sig("day", a, m, s, comb, "HOLD", "flatten due but no price at all")
@@ -696,7 +716,10 @@ def _cycle():
             cl = mclose_in(a)
             day_exit(a, p, stock_flatten_reason(cl, markets.exchange(a)), m, s, comb); continue
         crypto_midnight = bool(R["midnight_crypto"]) and p["klass"] != "stock"
-        if crypto_midnight:
+        if R.get("hold_overnight"):
+            session_flat = False
+            flat_label = D["flatten_uk"]
+        elif crypto_midnight:
             session_flat = variants.crypto_flatten_due(opened_day, day, flat_now, True)
             flat_label = str(R["midnight_flatten_uk"])
         else:

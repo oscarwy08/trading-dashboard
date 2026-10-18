@@ -1,0 +1,4 @@
+# Weekly top 3 by return versus BTC, with a hype veto. Cash when BTC is below its 50-day average.
+strategy_book: rs_rotation_veto
+variant_rules:
+  hold_overnight: true

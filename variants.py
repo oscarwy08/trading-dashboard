@@ -28,6 +28,13 @@ LABELS = {
     "partial_take": "Partial take",
     "sent_split": "Sentiment split",
     "best_of": "Best of",
+    "btc_trend": "BTC trend",
+    "btc_trend_vol": "BTC trend, vol sized",
+    "majors_rotation": "Majors rotation",
+    "btc_core_satellite": "BTC core + satellite",
+    "rs_rotation_veto": "RS rotation, veto",
+    "quiet_strength": "Quiet strength",
+    "best_of_plus": "Best of plus trend",
 }
 BLURB = {
     "ev_exit": "EV exit is off. Live expected value rises when the trade falls, so it was selling winners between about +1% and +5%. This book was reset; sells before the reset are not counted. It follows the main book until the upside is taken from the current price and the chance is recomputed.",
@@ -45,6 +52,13 @@ BLURB = {
     "partial_take": "Day and Risk. At the trail arm, sell half and leave the rest on this book's trail. Buy that half back on a later dip only when a fresh expected value clears the hurdle. The fresh value uses a recomputed chance and the percent still available from the current price, not the inverted live EV. Orders in this split may be £1. Every other book keeps the £5 minimum. The sell records the extra fee of splitting one exit into two.",
     "sent_split": "Burst and Risk. A missing sentiment print scores 0.50, the same as a real neutral, instead of 0.25. A Risk dip needs the 48-hour uptrend; positive sentiment does not stand in for it. When price is up 15% or more over 24 hours (5% or more over 4 hours on a Day momentum entry) and sentiment is at least 0.30, or the buzz change is 3 or more, burst and Risk confidence lose 0.10 and that Day momentum entry ignores sentiment. A catalyst score, when the file has one, is used instead of the raw score. A quiet tape (buzz change under 1.2) with volume at least 2x and a confirmed breakout or bounce adds 0.05. Files without those fields score as before.",
     "best_of": "Sentiment split, the entry watcher and the burst runner, and nothing else. A missing sentiment print is neutral (0.50). A Risk dip needs the 48-hour uptrend. Hot run-up and quiet-tape adjustments are the sentiment-split numbers. Armed entries expire after 15 minutes. A burst that hits its target can keep running and then gives back 20% of the peak gain. The EV exit stays off.",
+    "btc_trend": "Crypto is 100% BTC when the daily close is above its 50-day average, otherwise cash. Stocks is the same rule on VUSA, or EQQQ if VUSA has no history. Checked once a day. Held through nights and weekends.",
+    "btc_trend_vol": "The same trend book, sized at min(1, 40% / 30-day realised vol). A weight only moves when it has drifted more than 5 points.",
+    "majors_rotation": "Once a week, hold the best 28-day return among BTC, ETH and SOL that are above their own 50-day average. Cash when none are. The stock half stays in cash.",
+    "btc_core_satellite": "85% BTC, put back when it drifts more than 5 points, plus 15% in one coin that has beaten BTC over 30 and 90 days and is above its 100-day average. The satellite is held at least 5 days.",
+    "rs_rotation_veto": "Once a week, the top 3 by 4-week return minus BTC, above their 50-day average, skipping a buzz change of 3 or more or a 24h jump of 15% or more. BTC when none qualify. Cash when BTC is below its 50-day average.",
+    "quiet_strength": "Within 10% of the 30-day high, buzz below the median, top quartile of volume over market cap. Sold on a 12% trail or into a hype spike. Held through nights and weekends.",
+    "best_of_plus": "Sentiment split, the 15-minute entry watch and the burst runner may use 15% of the book. The other 85% is the BTC / VUSA trend. Nothing flattens at 22:00.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))
@@ -67,7 +81,8 @@ def rules_of(c):
              partial_take=False, partial_min_gbp=1.0,
              sent_split=False, sent_hot=0.3, sent_overheat=0.10, sent_quiet_bonus=0.05,
              sent_runup_24h_pct=15.0, sent_runup_4h_pct=5.0, sent_buzz_hot=3.0,
-             sent_buzz_quiet=1.2, sent_quiet_vol_x=2.0)
+             sent_buzz_quiet=1.2, sent_quiet_vol_x=2.0,
+             hold_overnight=False, day_risk_cap_pct=0, core_off=False)
     for k, v in ((c or {}).get("variant_rules") or {}).items():
         if k in d and v is not None:
             d[k] = v
@@ -656,15 +671,28 @@ def prepare(name, root=None):
 
 def _trade_child(name):
     """common.DB is bound when this process imported common, which is before TRADING_DB exists.
-    Point that global at the variant file, then run the trader."""
+    Point that global at the variant file, then run the trader. A strategy book runs strategies.py
+    instead, so it does not inherit the main book's entries or the 22:00 flatten."""
     import common
+    import strategies
     os.environ["TRADING_VARIANT"] = name
+    if name in strategies.PURE:
+        path = strategies.prepare_book(name)
+        common.DB = path
+        os.environ["TRADING_DB"] = str(path)
+        os.environ.setdefault("TRADING_LOG", str(ROOT / "logs" / f"variant-{name}.log"))
+        strategies.run(name, path)
+        return
     path = prepare(name)
     common.DB = path
     os.environ["TRADING_DB"] = str(path)
     os.environ.setdefault("TRADING_LOG", str(ROOT / "logs" / f"variant-{name}.log"))
+    if name == "best_of_plus":
+        strategies.allocate_best_of_plus(path)
     import trader
     trader.main()
+    if name == "best_of_plus":
+        strategies.run(name, path)
 
 
 def worker_count():
@@ -700,7 +728,7 @@ def _run_one(name):
     except Exception as e:
         return name, time.perf_counter() - one, "error", str(e)
     dt = time.perf_counter() - one
-    tail = [ln for ln in (r.stdout or "").splitlines() if ln.startswith("[trader")]
+    tail = [ln for ln in (r.stdout or "").splitlines() if ln.startswith("[trader") or ln.startswith("[strategy")]
     if r.returncode != 0:
         err = (r.stderr or r.stdout or "").strip().splitlines()
         return name, dt, "failed", (err[-1] if err else "")

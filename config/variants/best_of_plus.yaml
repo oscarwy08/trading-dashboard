@@ -1,0 +1,27 @@
+# best_of on 15% of the book. The other 85% is the BTC / VUSA trend. No 22:00 flatten.
+variant_rules:
+  sent_split: true
+  sent_hot: 0.3
+  sent_overheat: 0.10
+  sent_quiet_bonus: 0.05
+  sent_runup_24h_pct: 15
+  sent_runup_4h_pct: 5
+  sent_buzz_hot: 3
+  sent_buzz_quiet: 1.2
+  sent_quiet_vol_x: 2
+  entry_watch: true
+  entry_watch_expiry_min: 15
+  burst_runner: true
+  burst_runner_giveback_pct: 20
+  ev_exit: false
+  ev_action: false
+  hold_overnight: true
+  day_risk_cap_pct: 15
+  core_off: true
+day:
+  burst:
+    sentiment_missing: 0.5
+riskpot:
+  sentiment_missing: 0.5
+  dip:
+    sentiment_missing: 0.5
