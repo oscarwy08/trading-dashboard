@@ -544,6 +544,53 @@ def _save_suspects(con, blob):
         return
 
 
+_LIVE = {}
+
+
+def live_tick_ok(con, asset, usd, source, now_mono=None, disagree_pct=None):
+    """Whether the exit watcher may trade this tick. Memory only: it does not write the price database.
+
+    The cycle still uses accept_print, which does write. A watcher tick used to take that write on every
+    symbol several times a second, and the collector's price update then waited on the same file.
+    """
+    import time as _time
+    sym = (asset or "").upper()
+    src = source or ""
+    try:
+        px = float(usd)
+    except (TypeError, ValueError):
+        return False
+    if not sym or px <= 0:
+        return False
+    now_mono = _time.monotonic() if now_mono is None else float(now_mono)
+    pct = float(_disagree_pct(con) if disagree_pct is None else disagree_pct)
+    slot = _LIVE.get(sym)
+    if slot is None:
+        last_px, last_src = None, ""
+        if con is not None:
+            try:
+                row = con.execute("""SELECT price, source FROM prices WHERE asset=? AND klass='crypto'
+                                     AND source!='backfill' AND price>0 ORDER BY ts DESC LIMIT 1""", (sym,)).fetchone()
+                if row:
+                    last_px, last_src = float(row[0]), row[1] or ""
+            except Exception:
+                last_px = None
+        slot = dict(usd=last_px, source=last_src, suspect=None, suspect_at=None)
+        _LIVE[sym] = slot
+    last = slot.get("usd")
+    if not last or _near(px, last, pct) or (slot.get("source") or "") == src:
+        slot.update(usd=px, source=src, read=slot.get("read", now_mono), suspect=None, suspect_at=None)
+        return True
+    sus, at = slot.get("suspect"), slot.get("suspect_at")
+    if sus and _near(sus, px, pct) and at is not None and now_mono - at >= CONFIRM_AFTER_S:
+        slot.update(usd=px, source=src, suspect=None, suspect_at=None)
+        return True
+    if not (sus and _near(sus, px, pct)):
+        slot["suspect"] = px
+        slot["suspect_at"] = now_mono
+    return False
+
+
 def accept_print(con, asset, usd, source, also=None, now_iso=None, disagree_pct=None):
     """Whether this crypto print may be stored or traded.
 

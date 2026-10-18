@@ -628,7 +628,8 @@ def build(con, variant_report=None):
     coll = (con.execute("SELECT value FROM state WHERE key='collector_status'").fetchone() or [""])[0]
     s = stats(con)
     cur_eq = s["equity"]; day_start = risk.get("day_start")
-    updated = max([ep(x) for x in (risk.get("ts"), eq[-1]["ts"] if eq else None) if x] or [n_ep])
+    px_ts = con.execute("SELECT MAX(ts) FROM prices WHERE source!='backfill' AND price>0").fetchone()[0]
+    updated = max([ep(x) for x in (risk.get("ts"), eq[-1]["ts"] if eq else None, px_ts) if x] or [n_ep])
     acash = {(r[0], r[1]): r[2] for r in con.execute("SELECT sleeve, account, amount FROM acct_cash")}
     cash_now = {s_: sum(acash.get((s_, ac), 0.0) for ac in ACCOUNTS) for s_ in SLEEVES}
     lt = t_now.astimezone(LON)

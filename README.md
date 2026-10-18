@@ -16,7 +16,7 @@ A last-hour volume above 50 times the average hour, or a rolling 24h total that 
 
 ## Price-source guard (2026-10-17)
 
-A crypto print from a different source that is more than 10% from the last accepted price is not stored and the watcher does not trade it. Two pool quotes (DexScreener and GeckoTerminal) do not overrule CoinGecko or an exchange. The print is kept when a later print, at least a minute afterwards, is on that new price, or when another non-pool source agrees. A move from the same source, and any move within 10%, is unchanged. Paper books read the same prices.
+A crypto print from a different source that is more than 10% from the last accepted price is not stored and the watcher does not trade it. Two pool quotes (DexScreener and GeckoTerminal) do not overrule CoinGecko or an exchange. The print is kept when a later print, at least a minute afterwards, is on that new price, or when another non-pool source agrees. A move from the same source, and any move within 10%, is unchanged. Paper books read the same prices. The watcher keeps that check in memory, so a tick does not lock the price database. If the first exchange pass misses a Kraken-listed coin, or CoinGecko is out of budget, the cycle asks Kraken's public ticker again. The dashboard "Updated" time follows the newest stored price, not only the last equity row.
 
 ## Stock clocks and hit rates (2026-10-15)
 

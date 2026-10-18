@@ -1219,7 +1219,7 @@ def serve():
             fresh = {}
             for a, v in snap.items():
                 src = v.get("src") or ""
-                if src in ("yahoo", "yahoo-live") or v.get("usd") is None or pricesrc.accept_print(con, a, v["usd"], src, now_iso=iso()):
+                if src in ("yahoo", "yahoo-live") or v.get("usd") is None or pricesrc.live_tick_ok(con, a, v["usd"], src):
                     fresh[a] = v["gbp"]
             for e in evaluate(con, fresh, recv):
                 print(e["log"], flush=True)
