@@ -657,3 +657,6 @@ partial_take
 sent_split
   exits: 51 pairs, avg time gap 2439s, avg price gap +0.08%, missed moves 0
   entries: 10 pairs, avg time gap 100941s, avg price gap +4.69%, missed moves 83
+best_of
+  exits: 7 pairs, avg time gap 1s, avg price gap -0.27%, missed moves 1
+  entries: no shadow rows
