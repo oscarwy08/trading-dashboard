@@ -822,7 +822,23 @@ def build(con, variant_report=None):
                   if len(mon) == 2 else None,
         equity=equity, positions=positions, trades=trades, assets=assets, prices=prices, fx_hist=fx_hourly,
         signals=sig_hist, reasons=reasons, sentiment=sentiment,
-        variants=variant_report if variant_report is not None else _variant_report())
+        variants=variant_report if variant_report is not None else _variant_report(),
+        strategies=_strategy_rows(),
+        tests=_tests_view())
+
+def _strategy_rows():
+    try:
+        import strategies
+        return strategies.comparison_rows()
+    except Exception as e:
+        return [dict(name="strategies", error=str(e), excess_btc=None)]
+
+def _tests_view():
+    try:
+        import testreset
+        return testreset.tests_view()
+    except Exception as e:
+        return dict(archived=[], live=None, error=str(e))
 
 def _variant_report():
     try:
@@ -849,6 +865,13 @@ BOOK_MENU = {
     "partial_take": "Partial take",
     "sent_split": "Sentiment split",
     "best_of": "Best of",
+    "btc_trend": "BTC trend",
+    "btc_trend_vol": "BTC trend, vol sized",
+    "majors_rotation": "Majors rotation",
+    "btc_core_satellite": "BTC core + satellite",
+    "rs_rotation_veto": "RS rotation, veto",
+    "quiet_strength": "Quiet strength",
+    "best_of_plus": "Best of plus trend",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 

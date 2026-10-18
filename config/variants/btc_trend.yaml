@@ -1,0 +1,5 @@
+# Crypto 100% BTC above its 50-day average, else cash. Stocks: the same on VUSA.
+# Held overnight. The main book is unchanged.
+strategy_book: btc_trend
+variant_rules:
+  hold_overnight: true

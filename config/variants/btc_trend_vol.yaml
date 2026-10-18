@@ -1,0 +1,4 @@
+# The BTC / VUSA trend, sized min(1, 40% / 30-day realised vol). Held overnight.
+strategy_book: btc_trend_vol
+variant_rules:
+  hold_overnight: true

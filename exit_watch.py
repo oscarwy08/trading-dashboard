@@ -672,7 +672,7 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
             md = dmeta.get(a) or {}
             sub = md.get("sub", "momentum")
             tag = sub + (f" {md['kind']}" if md.get("kind") else "")
-            if p["klass"] == "stock":
+            if p["klass"] == "stock" and not R.get("hold_overnight"):
                 cl = markets.mins_to_close(a, t)
                 if cl is None or cl <= int(D.get("stock_flatten_before_close_min", 15)):
                     why = stock_flatten_reason(cl, markets.exchange(a))
@@ -681,7 +681,9 @@ def _tick(con, prices_gbp, recv_mono, started, c=None, book="main", force_shadow
                         if not shadow: sset(con, f"day_exit:{a}", ts)
                     continue
             opened_day = datetime.fromisoformat(p["opened"]).astimezone(LON).date().isoformat()
-            if R.get("midnight_crypto") and p["klass"] != "stock":
+            if R.get("hold_overnight"):
+                pass
+            elif R.get("midnight_crypto") and p["klass"] != "stock":
                 if not variants.crypto_flatten_due(opened_day, day, flat_now, True):
                     pass
                 else:

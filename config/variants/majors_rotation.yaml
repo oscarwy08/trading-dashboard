@@ -1,0 +1,4 @@
+# Weekly: the best 28-day return among BTC, ETH and SOL that are above their 50-day average.
+strategy_book: majors_rotation
+variant_rules:
+  hold_overnight: true

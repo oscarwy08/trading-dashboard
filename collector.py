@@ -638,7 +638,12 @@ def daily(con, c, status):
         con.execute("INSERT OR REPLACE INTO state VALUES('stock_rank',?)", (json.dumps(dict(ts=iso(), data=rk)),))
     try: extra = crypto_daily(con, c)
     except Exception as e: L.warning("crypto daily failed: %s", e); extra = 0
-    status["daily"] = f"{have}/{len(uni)} fresh (+{ok} this cycle)" + (f", crypto candidates +{extra}" if extra else "")
+    try:
+        import strategies
+        kh = strategies.store_kraken_history(con, fetch=lambda url, params: get(url, params, tries=2), limit=3, pause=0.4)
+    except Exception as e:
+        L.warning("kraken daily history failed: %s", e); kh = 0
+    status["daily"] = f"{have}/{len(uni)} fresh (+{ok} this cycle)" + (f", crypto candidates +{extra}" if extra else "") + (f", kraken history +{kh}" if kh else "")
 
 def exchange_points(route, kind, fx):
     """[(unix seconds, USD close)] from Kraken or Coinbase OHLC. None when this coin is not on an exchange,
@@ -765,6 +770,13 @@ def main():
                 L.exception("%s failed", name); status[name] = f"FAILED: {e}"
             con.commit()
             print(f"[timing] collector {name} {time.perf_counter() - t1:.1f}s", flush=True)
+        if fast:
+            try:
+                import strategies
+                kh = strategies.store_kraken_history(con, fetch=lambda url, params: get(url, params, tries=1), limit=1, pause=0.2)
+                if kh: status["kraken_daily"] = f"+{kh}"
+            except Exception as e:
+                L.warning("kraken daily history failed: %s", e)
         if not fast:
             t1 = time.perf_counter()
             try: daily(con, c, status)

@@ -415,7 +415,15 @@ def main(argv=None):
                    help="replay step in minutes (default 5, the live cycle)")
     p.add_argument("--books", default="", help="comma list, default main plus variants.run")
     p.add_argument("--limit", type=int, default=0, help="stop after this many clock steps (0 = the whole history)")
+    p.add_argument("--daily", action="store_true",
+                   help="replay the overnight strategy books on Kraken daily closes instead of the 5-minute trader")
     args = p.parse_args(argv)
+    if args.daily:
+        import strategies
+        names = [n.strip() for n in (args.books or "btc_trend,btc_trend_vol,majors_rotation,btc_core_satellite,rs_rotation_veto").split(",") if n.strip()]
+        rows = strategies.replay_books(names, pause=0.35)
+        print(strategies.report_table(rows))
+        return 0
     rows = run(args.db, args.out, args.step_min, args.books or None, args.limit or None)
     print(report_table(rows))
     print(format_calibration(rows))
