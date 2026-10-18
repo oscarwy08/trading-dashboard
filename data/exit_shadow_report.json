@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-18T11:10:14+00:00",
+  "generated": "2026-10-18T12:10:37+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 67,
         "avg_dt_s": 4008.507462686567,
         "avg_price_pct": -0.01724462952574207,
-        "missed": 1
+        "missed": 2
       },
       "entries": {
         "pairs": 14,
@@ -30,7 +30,7 @@
         "pairs": 13,
         "avg_dt_s": 81489.84615384616,
         "avg_price_pct": 5.562353352120914,
-        "missed": 164
+        "missed": 165
       }
     },
     {
@@ -45,7 +45,7 @@
         "pairs": 10,
         "avg_dt_s": 56392.2,
         "avg_price_pct": 10.150848585281466,
-        "missed": 83
+        "missed": 84
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 11,
         "avg_dt_s": 55385.0,
         "avg_price_pct": 5.808019974395413,
-        "missed": 97
+        "missed": 98
       }
     },
     {
@@ -75,7 +75,7 @@
         "pairs": 12,
         "avg_dt_s": 65865.66666666667,
         "avg_price_pct": 3.021717104639947,
-        "missed": 112
+        "missed": 113
       }
     },
     {
@@ -90,22 +90,22 @@
         "pairs": 11,
         "avg_dt_s": 55401.72727272727,
         "avg_price_pct": 5.694559941045409,
-        "missed": 83
+        "missed": 84
       }
     },
     {
       "name": "midnight_crypto",
       "exits": {
-        "pairs": 60,
-        "avg_dt_s": 5073.333333333333,
-        "avg_price_pct": 0.28751216335051544,
-        "missed": 1
+        "pairs": 61,
+        "avg_dt_s": 5147.819672131148,
+        "avg_price_pct": 0.39161166159465166,
+        "missed": 0
       },
       "entries": {
         "pairs": 26,
         "avg_dt_s": 49446.192307692305,
         "avg_price_pct": 3.860910017851341,
-        "missed": 161
+        "missed": 164
       }
     },
     {
@@ -1181,6 +1181,20 @@
       "dt_s": 549.0,
       "price_diff": -0.00012935783852480176,
       "price_pct": -0.780505513454652
+    },
+    {
+      "asset": "HBAR",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-18T11:55:29+00:00",
+      "shadow_price": 0.0664197487,
+      "trigger": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -2104,6 +2118,13 @@
       "asset": "BTW",
       "price": 1.82861721119938,
       "reason": "[momentum] DAY score 0.777 >= 0.35; target +12.0% / stop -5.0% (ATR 5.13%); EV +0.93%; 4h +4.0%, 24h +18.1%, EMA6/24 up, RSI 54, sentiment +0.00 (conf 0.35, weight x0.98)"
+    },
+    {
+      "ts": "2026-10-18T11:21:21+00:00",
+      "sleeve": "day",
+      "asset": "HBAR",
+      "price": 0.06733363248955936,
+      "reason": "[burst 24h] 24h-high break +0.66% (high $0.08892); vol x3.2, RSI 80, BTC 1h -0.10%, 4h +0.43%; confidence 0.61 >= 0.57, EV +0.39% after costs; target +3.6% / stop -1.5% / max 6h"
     }
   ]
 }
