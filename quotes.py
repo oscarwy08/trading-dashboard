@@ -53,7 +53,7 @@ def _prefetch_bound(con, c, symbols, px, ts, collector, pricesrc, usd_gbp, to_is
         crypto, routes, fx[0] if fx else None, collector.get, lambda route: collector._kyber_usd(c, route), ts, pace=time.sleep)
     for sym, row in priced.items():
         if not row.get("usd"): continue
-        collector._write_crypto(con, ts, sym, row)
+        if not collector._write_crypto(con, ts, sym, row): continue
         _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
     ids = {}
     cg = [s for s in crypto if (routes.get(s) or {}).get("src") == "coingecko"]
@@ -67,14 +67,14 @@ def _prefetch_bound(con, c, symbols, px, ts, collector, pricesrc, usd_gbp, to_is
                           {"ids": ",".join(list(ids)[:250]), "vs_currencies": "usd", "include_last_updated_at": "true"},
                           tries=2, purpose="live")
         for sym, row in pricesrc.parse_cg_simple(d, ids, ts).items():
-            collector._write_crypto(con, ts, sym, row)
+            if not collector._write_crypto(con, ts, sym, row): continue
             _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
     missed_cg = [s for s in cg if (routes.get(s) or {}).get("src") == "coingecko" and not con.execute(
         "SELECT 1 FROM prices WHERE ts=? AND asset=?", (ts, s)).fetchone()]
     if missed_cg:
         for sym, row in pricesrc.backup_quotes(con, c, missed_cg, collector.get, ts).items():
             if not row.get("usd"): continue
-            collector._write_crypto(con, ts, sym, row)
+            if not collector._write_crypto(con, ts, sym, row): continue
             _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
     for s in stocks:
         sym, price, meta, _vi, bars = collector.stock_quote(s)

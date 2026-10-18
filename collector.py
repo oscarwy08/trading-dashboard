@@ -196,8 +196,12 @@ def _write_crypto(con, ts, sym, row):
     low = row.get("low") if row.get("low") else (prev["low24"] if prev else None)
     vol = row.get("vol") if row.get("vol") else (prev["vol24"] if prev else None)
     mcap = prev["mcap"] if prev else None
+    import pricesrc
+    if not pricesrc.accept_print(con, sym, row["usd"], row.get("source") or "coingecko", also=row.get("also"), now_iso=ts):
+        return False
     con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)",
                 (ts, sym, "crypto", row["usd"], high, low, vol, mcap, row.get("source") or "coingecko", row.get("src_ts") or ts))
+    return True
 
 def _kyber_usd(c, route):
     """USD price of a Monad token from one KyberSwap route. MON uses the configured MON->USDC size; other tokens a $50 USDC probe."""
@@ -235,7 +239,7 @@ def price_tracked(con, c, ts, status):
     priced, missed = pricesrc.quote_exchanges(syms, routes, fx[0] if fx else None, get, lambda route: _kyber_usd(c, route), ts, pace=time.sleep)
     wrote = set()
     for sym, row in priced.items():
-        if row.get("usd"): _write_crypto(con, ts, sym, row); wrote.add(sym)
+        if row.get("usd") and _write_crypto(con, ts, sym, row): wrote.add(sym)
     now = now_fn()
     guard = set(pricesrc.protected(con, now))
     def _cid(s):
@@ -261,7 +265,7 @@ def price_tracked(con, c, ts, status):
                 tries=2, purpose=purpose)
         if not d: return False
         for sym, row in pricesrc.parse_cg_simple(d, ids, ts).items():
-            _write_crypto(con, ts, sym, row); wrote.add(sym)
+            if _write_crypto(con, ts, sym, row): wrote.add(sym)
         return True
     _pull(held_ids, "held")
     _pull(other_ids, "fallback")
@@ -270,7 +274,7 @@ def price_tracked(con, c, ts, status):
     need = [s for s in syms if s not in wrote and (routes.get(s) or {}).get("src") == "coingecko"]
     if need and (held_ids or other_ids or not pricesrc.allow(con, c, now, "fallback")):
         for sym, row in pricesrc.backup_quotes(con, c, need, get, ts).items():
-            if row.get("usd"): _write_crypto(con, ts, sym, row); wrote.add(sym)
+            if row.get("usd") and _write_crypto(con, ts, sym, row): wrote.add(sym)
     cnt = Counter()
     for sym in wrote:
         src = con.execute("SELECT source FROM prices WHERE asset=? AND ts=? AND klass='crypto' ORDER BY rowid DESC LIMIT 1", (sym, ts)).fetchone()
@@ -365,6 +369,7 @@ def crypto(con, c, ts, status):
             kept += 1
             continue
         if x.get("current_price") is None: continue
+        if not pricesrc.accept_print(con, sym, x["current_price"], "coingecko", now_iso=ts): continue
         con.execute("INSERT INTO prices VALUES(?,?,?,?,?,?,?,?,?,?)", (ts, sym, "crypto",
                     x["current_price"], x.get("high_24h"), x.get("low_24h"), x.get("total_volume"),
                     x.get("market_cap"), "coingecko", freshness.to_iso(x.get("last_updated")) or ts))
