@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-18T06:51:05+00:00",
+  "generated": "2026-10-18T07:56:35+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -15,7 +15,7 @@
         "pairs": 12,
         "avg_dt_s": 29079.583333333332,
         "avg_price_pct": -0.15596784301543853,
-        "missed": 28
+        "missed": 29
       }
     },
     {
@@ -96,16 +96,16 @@
     {
       "name": "midnight_crypto",
       "exits": {
-        "pairs": 58,
-        "avg_dt_s": 5215.362068965517,
-        "avg_price_pct": 0.3276846386502789,
+        "pairs": 59,
+        "avg_dt_s": 5137.762711864407,
+        "avg_price_pct": 0.2937962121850818,
         "missed": 0
       },
       "entries": {
         "pairs": 25,
         "avg_dt_s": 42183.2,
         "avg_price_pct": 3.8012990809347116,
-        "missed": 161
+        "missed": 162
       }
     },
     {
@@ -1710,6 +1710,20 @@
       "dt_s": 111.0,
       "price_diff": -0.0011269847076902373,
       "price_pct": -0.21294718909713808
+    },
+    {
+      "asset": "HBAR",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-18T07:08:45+00:00",
+      "shadow_price": 0.06610117237746388,
+      "trigger": "[burst 24h] price breaks \u00a30.0660922; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_entry_missed": [
@@ -2027,6 +2041,13 @@
       "asset": "BTW",
       "price": 1.6272909541313905,
       "reason": "[momentum] DAY score 0.9 >= 0.35; target +8.6% / stop -4.1% (ATR 3.43%); EV +0.50%; 4h +5.8%, 24h +12.6%, EMA6/24 up, RSI 67, no fresh sentiment"
+    },
+    {
+      "ts": "2026-10-18T07:01:58+00:00",
+      "sleeve": "day",
+      "asset": "BTW",
+      "price": 1.82861721119938,
+      "reason": "[momentum] DAY score 0.777 >= 0.35; target +12.0% / stop -5.0% (ATR 5.13%); EV +0.93%; 4h +4.0%, 24h +18.1%, EMA6/24 up, RSI 54, sentiment +0.00 (conf 0.35, weight x0.98)"
     }
   ]
 }
