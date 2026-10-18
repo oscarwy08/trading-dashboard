@@ -269,6 +269,17 @@ def price_tracked(con, c, ts, status):
         return True
     _pull(held_ids, "held")
     _pull(other_ids, "fallback")
+    # A Kraken-listed coin the first pass missed is asked again, without CoinGecko.
+    # This is the path when the day budget is used up, and when the first ticker call failed.
+    gap = [s for s in syms if s not in wrote and (routes.get(s) or {}).get("src") == "kraken" and (routes.get(s) or {}).get("pair")]
+    for s in ("BTC", "ETH", "SOL"):
+        if s in syms and s not in wrote and s not in gap and (routes.get(s) or {}).get("pair"):
+            gap.append(s)
+    if gap:
+        again, _missed_again = pricesrc.quote_exchanges(gap, routes, fx[0] if fx else None, get, lambda route: _kyber_usd(c, route), ts)
+        for sym, row in again.items():
+            if row.get("usd") and _write_crypto(con, ts, sym, row):
+                wrote.add(sym)
     # CoinGecko-only coins still unpriced: a public pool, most liquid, checked against the last good price.
     # Run when this cycle asked CoinGecko and it missed, or when the general fallback is not allowed to spend.
     need = [s for s in syms if s not in wrote and (routes.get(s) or {}).get("src") == "coingecko"]

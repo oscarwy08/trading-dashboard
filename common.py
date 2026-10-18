@@ -273,7 +273,7 @@ def ensure_sentiment_cols(con):
         con.execute("ALTER TABLE sentiment ADD COLUMN buzz_change REAL")
 
 def db():
-    con = sqlite3.connect(DB, timeout=30)
+    con = sqlite3.connect(DB, timeout=60)
     con.row_factory = sqlite3.Row
     con.executescript(SCHEMA)
     cols = {r[1] for r in con.execute("PRAGMA table_info(trades)")}

@@ -51,5 +51,14 @@ check(not pricesrc.accept_print(con, "SOL", 130, "dexscreener", also=[{"usd": 13
 check(not pricesrc.accept_print(con, "SOL", 130, "dexscreener", now_iso=(jump + timedelta(seconds=30)).isoformat()), "the same jump inside a minute stays dropped")
 check(pricesrc.accept_print(con, "SOL", 131, "dexscreener", now_iso=(jump + timedelta(seconds=90)).isoformat()), "the next print a minute later confirms the new price")
 
+pricesrc._LIVE.clear()
+before = con.execute("SELECT value FROM state WHERE key='price_suspect'").fetchone()
+check(not pricesrc.live_tick_ok(con, "BP", 1.50, "dexscreener", now_mono=10), "a watcher tick does not take a 25% pool jump")
+after = con.execute("SELECT value FROM state WHERE key='price_suspect'").fetchone()
+check(after == before, "the watcher does not write the price database")
+check(pricesrc.live_tick_ok(con, "BP", 1.21, "coingecko", now_mono=11), "a watcher tick near the last good price is kept")
+check(pricesrc.live_tick_ok(con, "BP", 1.50, "dexscreener", now_mono=20) is False, "the first jumped tick is only remembered")
+check(pricesrc.live_tick_ok(con, "BP", 1.51, "dexscreener", now_mono=90), "the same jump a minute later is a real move")
+
 print("price guard " + ("ok" if not fails else f"FAILED {len(fails)}"))
 raise SystemExit(1 if fails else 0)
