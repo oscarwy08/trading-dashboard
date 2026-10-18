@@ -42,7 +42,7 @@
   - **Kraken+ / Pro:** **FCA PS20/10 bans crypto derivatives (perps/futures) for UK retail.** Spot margin is blocked unless Elective Professional (€500k+ portfolio). Consumer **Kraken+** is spot-only (~1% spread, or 0% fee to £10k/mo on £4.99/mo plan)—**no shorting**.
   - **Trading 212:** Invest/ISA accounts are **long-only** (inverse ETPs restricted). Shorting requires a **T212 CFD** account (outside plan), charging **~0.05%–0.15%/day overnight swap (~18%–55% APR)** + wide spreads and 20%–50% margin—prohibitive on £100.
   - **DeFi (Monad/Aave):** On-chain borrow-shorting works from self-custody but costs **10%–45% APR borrow/funding** + liquidation risk.
-- **Paper Engine (`trader.py`/`common.py`):** **Not supported natively** (`positions` requires `qty>0`, `sell()` clamps `qty=min(qty,pos['qty'])` and deletes at zero at `trader.py:1303`, `test/check_data.py` asserts non-negative values). Add `side IN ('long','short')` + `borrow_bps_per_day:8` in `variants.py` to shadow-test **Post-Hype Short**, while executing live UK bearish views via **Cash/Gold rotation**.
+- **Paper Engine (`trader.py`/`common.py`):** **Not supported natively** (`positions` requires `qty>0`, `sell()` clamps `qty=min(qty,pos['qty'])` and deletes at 0 at `trader.py:1303`, `test/check_data.py` asserts non-negative values). Add `side IN ('long','short')` + `borrow_bps_per_day:8` in `variants.py` to shadow-test **Post-Hype Short**, executing live UK bearish views via **Cash/Gold rotation**.
 
 ## 4. Existing `best_of` Components to Keep
 
