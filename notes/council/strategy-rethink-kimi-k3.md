@@ -4,7 +4,7 @@ Council review, 18 Oct 2026. Data: `trading.db`, 22:25 UK scorecard, exit shadow
 
 ## 1) Diagnosis — why the core approach structurally loses
 
-1. **No measurable entry edge.** Entries with confidence ≥0.75 average −1.37%/trade; <0.75 average −1.18% (84 trips since 11 Oct). Higher conviction does not win more; the score is ranking noise.
+1. **No measurable entry edge.** Entries with confidence ≥0.75 average −1.37%/trade; <0.75 average −1.18% (84 trips). Higher conviction does not win more; the score is ranking noise.
 2. **The fee floor exceeds any plausible edge.** Average trade £5.70; effective one-side cost 0.49% (£2.61 fees on £532 turnover) → ~1% round trip. Crypto-account fees £2.73 ≈ 2.7% of a £100 account in 8 days.
 3. **Churn compounds the fee drag.** 85 closes in 8 days, median hold 1.5h, 19 re-entries within 6h of the previous exit (KAIA bought 4× in one hour, BP 5×). The same coin is re-bought after each stop and re-fee'd each time.
 4. **Stops leak beyond their level.** 42 stop exits, mean −4.8%; 11 gap-filled; overshoot averages −0.75pp (worst −4.7pp). A 5-minute cycle on 5-minute bars means the stop you set is not the stop you get.
@@ -12,21 +12,21 @@ Council review, 18 Oct 2026. Data: `trading.db`, 22:25 UK scorecard, exit shadow
 6. **Signal asymmetry is backwards.** Momentum buys strength in a falling tape (BTC −2.3% window), then the same score exits hours later: 10/10 "signal" exits are losses. Whipsaw by construction.
 7. **Beta carrier is concentrated alt beta.** CORE (−10.5%) is ~70% MON/WLD/XRP-emphasis; MON realized −20.3% on 18 Oct. Long high-beta alts, downtrend, no hedge.
 8. **Day pot has no beta excuse.** Flat overnight with 1.5h holds; its −5.9% is pure negative alpha plus costs, not market exposure.
-9. **Variants cannot fix a zero-edge core.** All 15 paper books lose; the ~6pp best-worst spread reflects which trades they happened to share, not rule quality. Threshold-tuning a noise signal stays noise.
+9. **Variants cannot fix a zero-edge core.** All 15 paper books lose; the ~6pp best-worst spread reflects shared trades, not rule quality. Tuning a noise signal stays noise.
 10. **Small-sample caveat.** 93 closes indicts the cost/churn arithmetic (which needs no alpha estimate), not the setup ranking; nor does it bless the alternatives below.
 
 ## 2) Genuinely different strategies
 
 **S1 — BTC-core with trend regime overlay.** Base holding: BTC (optionally + ETH). Rule: hold while BTC's daily close is above its 50-day average (or 30-day return positive); move the sleeve to GBP cash when below. Check once daily. *Why it beats BTC hold:* crypto bear legs drive all of BTC-hold's underperformance; time-series momentum keeps most upside and truncates −30…−60% legs. *Paper-test:* replay `daily_closes` through backtest.py; no new data needed.
 
-**S2 — Cross-sectional relative-strength rotation.** Universe: liquid top-50 (existing screens). Weekly: rank by 30-day return excluding the last 7 days; hold the top 5 equally; drop names falling out of the top 10. Buzz veto per your thesis: exclude any name with `buzz_change` ≥3 or 24h run-up ≥15%. *Why:* alt relative strength persists (crypto momentum factor) — you own the leaders, and the veto avoids buying hype tops. *Paper-test:* replay the 30 days of stored prices; buzz fields exist only since ~15 Oct, so shadow the veto forward.
+**S2 — Cross-sectional relative-strength rotation.** Universe: liquid top-50 (existing screens). Weekly: rank by 30-day return excluding the last 7; hold top 5 equally; drop names below top 10. Buzz veto per your thesis: exclude any name with `buzz_change` ≥3 or 24h run-up ≥15%. *Why:* alt relative strength persists (crypto momentum factor) — you own the leaders, and the veto avoids buying hype tops. *Paper-test:* replay the 30 days of stored prices; buzz fields exist only since ~15 Oct, so shadow the veto forward.
 
 **S3 — Volatility-targeted holding.** Hold BTC or the S2 basket sized target_vol/realised_vol (target ~40% annualised, weight = min(1, 40/realised-20d)); delever to cash when realised vol >80%. *Why:* cuts the left tail (DD ≤20% becomes reachable) at similar mean return — better compounding than raw hold. *Paper-test:* realised vol from the prices table; replay.
 
 **S4 — Quiet-strength swing (your hypothesis, long side).** Buy quality alts with vol/mcap in the top universe quartile, price within 10% of its 30-day high, `buzz_level` below the universe median (and `catalyst_score` ≥0.3 when present). Hold days-to-weeks. Exit: sell *into* hype (buzz_change ≥3 with run-up ≥15%), or a 12% trail. *Why:* harvests the attention-reversal premium (Barber–Odean; Liu–Tsyvinski) without a short venue — quiet accumulation, distribution into spikes. *Paper-test:* replay price/volume rules now; shadow the buzz fields forward (archive is short).
 
 **S5 — Short-side (evaluated; mostly venue-blocked).**
-- *Regime short BTC / pairs vs BTC:* strongest theoretical fit, but UK retail cannot short crypto — FCA PS20/10 bans crypto derivatives to retail; Kraken UK retail is spot-only (no margin/futures). Flag: Trading 212 CFD is a separate account, **not in your plan**, high-risk, and has no UK-retail crypto anyway; stock CFDs cost benchmark+~3% funding plus borrow.
+- *Regime short BTC / pairs vs BTC:* strongest theoretical fit, but UK retail cannot short crypto — FCA PS20/10 bans crypto derivatives to retail; Kraken UK retail is spot-only (no margin/futures). Flag: Trading 212 CFD is a separate account, **not in your plan**, and has no UK-retail crypto anyway; stock CFDs cost benchmark+~3% funding plus borrow.
 - *Executable approximation:* buy an inverse ETP (e.g. 21Shares Short Bitcoin ETP, LSE: SBTC) in the stocks account while the S1 regime is down — ~1–2%/yr TER plus daily-reset decay, acceptable for weeks-long bear legs. The engine already trades stocks, so this paper-tests today as an ordinary long.
 - *Shorting hyped coins after buzz spikes:* the best alpha here and no retail venue for it; perp funding ~0.01%/8h where it exists. Paper-test only.
 - *Engine reality:* the book is long-only (no negative qty, funding, borrow, or margin). True shorts are paper-testable as shadow accounting in a backtest.py-style replay; live is venue-blocked regardless.
