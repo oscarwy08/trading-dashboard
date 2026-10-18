@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-18T06:47:00Z",
+ "asset": "BTW",
+ "score": 0.0,
+ "confidence": 0.35,
+ "summary": "Bitway is +26% in 24h and about +60% over 7 days, with no verified catalyst found (one trader explicitly notes none). Mentions are cooling (about 0.7x the 3-day norm), so this is not a buzz spike, and a few posts call it a pump. Neutral: strong tape, no news to back it.",
+ "sources": [
+  "https://x.com/homotrades/status/2111592938035876032",
+  "https://x.com/defaiscope/status/2111381704699199693"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 211,
+ "buzz_level": 211,
+ "buzz_change": 0.7,
+ "price_runup_24h_pct": 26.37,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-18T06:47:00Z",
+ "asset": "HBAR",
+ "score": -0.05,
+ "confidence": 0.45,
+ "summary": "The only US spot Hedera ETF had a $559K net outflow on 17 Oct, only its second outflow day, though it still holds about 1.81% of supply. Some posts say Karate Combat is ending its Hedera tie-up (not confirmed). Price is still +4.7% in 24h on flat buzz (about 1.06x norm). Slightly negative.",
+ "sources": [
+  "https://x.com/BSCNews/status/2111632103037435906",
+  "https://x.com/HederaKimchi/status/2111468506122510743"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Spot HBAR ETF -$559K net outflow on 17 Oct",
+ "volume": 678,
+ "buzz_level": 678,
+ "buzz_change": 1.06,
+ "price_runup_24h_pct": 4.71,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-18T06:47:00Z",
+ "asset": "SAND",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "SAND is +24% in 24h, but X chatter about The Sandbox is flat (about 1.0x its 3-day norm), so this is a quiet move rather than a hype spike. The only project item is Sandbox Studio, its AI game builder, opening to the public later this month after closed testing (no firm date). Some posts link it to a gaming-token rotation (MAGIC, PIXEL). Gainer-list posts ignored. Mildly positive, but the move is already large.",
+ "sources": [
+  "https://x.com/cryptolevier/status/2111490907832758601",
+  "https://x.com/miaumiaubiralo/status/2111662209868955734"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Sandbox Studio public launch expected this month (undated)",
+ "volume": 477,
+ "buzz_level": 477,
+ "buzz_change": 1.03,
+ "price_runup_24h_pct": 23.8,
+ "carried_over": false
+}

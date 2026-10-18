@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-18T06:47:00Z",
+ "asset": "XMR",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "Monero is +6.5% in 24h and was one of only two large coins up on the week. No dated news: overnight X volume is inflated by copy-paste 'vote for $Monero on CoinMarketCap' spam tied to an unrelated token contract, so raw counts overstate interest; the 24h total is about 0.84x the 3-day norm. FCMP upgrade talk is ongoing, with no release date. Neutral.",
+ "sources": [
+  "https://x.com/Criptoinforme/status/2111597344273920254"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 1384,
+ "buzz_level": 1384,
+ "buzz_change": 0.84,
+ "price_runup_24h_pct": 6.49,
+ "carried_over": false
+}
