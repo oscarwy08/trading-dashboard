@@ -848,6 +848,7 @@ BOOK_MENU = {
     "day_capital_caution": "Day capital caution",
     "partial_take": "Partial take",
     "sent_split": "Sentiment split",
+    "best_of": "Best of",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 

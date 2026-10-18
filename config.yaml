@@ -349,7 +349,7 @@ variants:
   enabled: true
   run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
         risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take,
-        sent_split]
+        sent_split, best_of]
   # These three books sold on an inverted EV. The next cycle recopies each from the current main book
   # and the scorecard starts there, so those sells are not counted.
   reset:

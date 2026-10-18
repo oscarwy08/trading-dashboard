@@ -257,6 +257,16 @@ def _stamp_open(con, arm, ts, price, snap):
     sset(con, "risk_meta", rmeta)
 
 
+def _entry_live_ok(book, c):
+    """Live trigger buys are the entry_watch book and any book that turns that flag on.
+
+    best_of is one of those. Main stays shadow-only. Shadow mode is a separate switch.
+    """
+    if book == "entry_watch":
+        return True
+    return bool(variants.rules_of(c).get("entry_watch")) and book not in ("main", "", None)
+
+
 def _entry_tick(con, prices_gbp, live, book="main", c=None):
     """Shadow-log (live False) or buy (live True) armed entries whose trigger has traded.
 
@@ -265,9 +275,9 @@ def _entry_tick(con, prices_gbp, live, book="main", c=None):
     Every other book, including main, only logs WOULD BUY.
     """
     book = _book_name(book)
-    if live and book != "entry_watch":
-        live = False
     c = c or cfg()
+    if live and not _entry_live_ok(book, c):
+        live = False
     t = now()
     ts = iso(t)
     fx = usd_gbp(con, c["fx"]["max_age_h"])
@@ -319,11 +329,13 @@ def _entry_tick(con, prices_gbp, live, book="main", c=None):
 def act_entries(con, prices_gbp, recv_mono=None, live=False, book="main", c=None):
     """One entry pass. live=False never writes the book. live=True buys under that book's lock.
 
-    live=True is ignored unless book is entry_watch. Variant shadow logs never buy.
+    live=True is ignored unless this book is allowed to take trigger buys.
+    Variant shadow logs never buy.
     """
     del recv_mono
     book = _book_name(book)
-    if live and book != "entry_watch":
+    c = c or cfg()
+    if live and not _entry_live_ok(book, c):
         live = False
     if KILL.exists():
         L.info("KILL file present - watcher halted, no entries")
@@ -1159,7 +1171,7 @@ def _shadow_variants(fresh, recv):
             L.exception("%s shadow tick failed; that book's cycle still trades", name)
         finally:
             vcon.close()
-        if name == "entry_watch" and not entry_shadow_mode():
+        if _entry_live_ok(name, c) and not entry_shadow_mode():
             wcon = sqlite3.connect(path, timeout=30)
             wcon.row_factory = sqlite3.Row
             try:
