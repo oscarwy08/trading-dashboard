@@ -10,7 +10,7 @@
 <title>Paper Trader - £200 paper account</title>
 <link rel="stylesheet" href="styles.css?v=768a92302e">
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js" crossorigin="anonymous"></script>
-<script src="app.js?v=2a45acfd2d" defer></script>
+<script src="app.js?v=2e718fb235" defer></script>
 </head>
 <body>
 <header class="top">
@@ -35,6 +35,8 @@
     <a href="#sentiment" data-tab="sentiment" role="tab">Sentiment</a>
     <a href="#orders" data-tab="orders" role="tab">Orders</a>
     <a href="#variants" data-tab="variants" role="tab">Variants</a>
+    <a href="#strategies" data-tab="strategies" role="tab">Strategies</a>
+    <a href="#tests" data-tab="tests" role="tab">Tests</a>
   </nav>
   <div class="acct-bar hidden" id="acct-bar"><div class="acct-in"><span class="muted small">Account</span>
     <div class="seg" id="acct-switch" role="group" aria-label="Account"><button data-a="" class="on">All</button><button data-a="crypto">Crypto <span class="muted">· Monad wallet</span></button><button data-a="stocks">Stocks <span class="muted">· Trading 212</span></button></div>
@@ -165,6 +167,22 @@
       <div class="tw"><table id="var-table" class="tbl"></table></div>
       <div id="var-books"></div>
       <div id="var-score" class="tw"></div>
+    </div>
+  </section>
+
+  <!-- ===================== STRATEGIES ===================== -->
+  <section class="tab" id="tab-strategies" data-tab="strategies">
+    <div class="card">
+      <div class="card-h"><div><h2>Strategies</h2><p class="explain" id="st-explain">Every paper book, sorted by how far it is ahead of holding BTC. The new books hold through the night and the weekend. Excess is the book's return minus the BTC hold over the same window. The stock column is the same against VUSA.</p></div></div>
+      <div class="tw"><table id="st-table" class="tbl"></table></div>
+    </div>
+  </section>
+
+  <!-- ===================== TESTS ===================== -->
+  <section class="tab" id="tab-tests" data-tab="tests">
+    <div class="card">
+      <div class="card-h"><div><h2>Tests</h2><p class="explain" id="te-explain">Test 1 is the frozen run from 11 Oct 2026 18:07 UK until the reset. Test 2 is the live run: every book starts again at £200, rules unchanged.</p></div></div>
+      <div id="te-body"></div>
     </div>
   </section>
 

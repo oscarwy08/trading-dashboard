@@ -36,7 +36,7 @@ function seriesWithFills(bars, marks, line) {
 const LC = window.LightweightCharts;
 const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const TZ = 'Europe/London', REFRESH_MS = 60000;
-const TABS = ['overview', 'portfolio', 'core', 'day', 'risk', 'markets', 'sentiment', 'orders', 'variants'];
+const TABS = ['overview', 'portfolio', 'core', 'day', 'risk', 'markets', 'sentiment', 'orders', 'variants', 'strategies', 'tests'];
 const C = {green: '#00ba7c', red: '#f4212e', blue: '#1d9bf0', mut: '#71767b', txt: '#e7e9ea', grid: '#16181c', line: '#2f3336', grey: '#536471'};
 let D = null, lastGen = null, loadErr = null;
 const S = {tab: 'overview', book: 'main', aSort: {k: 'a', d: 1}, tSort: {k: 't', d: -1}, pSort: {k: 'value', d: -1}, rSort: {k: 'score', d: -1},
@@ -1068,7 +1068,7 @@ function renderSentTimeline(a) {
 }
 
 /* ---------- variant books ---------- */
-const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880', everything: '#2dd4bf', midnight_crypto: '#6366f1', risk_giveback_15: '#e8b931', day_trail_arm: '#2dd4bf', day_ev_blend: '#c084fc', no_risk_clock: '#fb7185', day_capital_caution: '#38bdf8', partial_take: '#f97316', sent_split: '#a3e635', best_of: '#34d399'};
+const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880', everything: '#2dd4bf', midnight_crypto: '#6366f1', risk_giveback_15: '#e8b931', day_trail_arm: '#2dd4bf', day_ev_blend: '#c084fc', no_risk_clock: '#fb7185', day_capital_caution: '#38bdf8', partial_take: '#f97316', sent_split: '#a3e635', best_of: '#34d399', btc_trend: '#f5a623', btc_trend_vol: '#e8b931', majors_rotation: '#38bdf8', btc_core_satellite: '#c084fc', rs_rotation_veto: '#fb7185', quiet_strength: '#2dd4bf', best_of_plus: '#a3e635'};
 function renderVariants() {
   const V = (D && D.variants) || {}, books = V.books || [];
   const el = $('#var-explain');
@@ -1128,7 +1128,7 @@ function renderVariants() {
 }
 
 /* ---------- book switch ---------- */
-const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch', risk_giveback_15: 'Risk giveback 15', day_trail_arm: 'Day trail arm', day_ev_blend: 'Day EV blend', no_risk_clock: 'No risk clock', day_capital_caution: 'Day capital caution', partial_take: 'Partial take', sent_split: 'Sentiment split', best_of: 'Best of'};
+const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch', risk_giveback_15: 'Risk giveback 15', day_trail_arm: 'Day trail arm', day_ev_blend: 'Day EV blend', no_risk_clock: 'No risk clock', day_capital_caution: 'Day capital caution', partial_take: 'Partial take', sent_split: 'Sentiment split', best_of: 'Best of', btc_trend: 'BTC trend', btc_trend_vol: 'BTC trend, vol sized', majors_rotation: 'Majors rotation', btc_core_satellite: 'BTC core + satellite', rs_rotation_veto: 'RS rotation, veto', quiet_strength: 'Quiet strength', best_of_plus: 'Best of plus trend'};
 const bookLabel = (name, fallback) => BOOK_LABEL[name] || fallback || name;
 const bookFile = name => (!name || name === 'main') ? 'data.json' : (/^[a-z0-9_]+$/.test(name) ? 'data_' + name + '.json' : null);
 let menu = [{name: 'main', label: 'Main (frozen)', file: 'data.json', variant: false}];
@@ -1186,6 +1186,57 @@ function paintLinks() {
   const see = $('#tab-overview a.link');
   if (see) see.href = '#' + hashString(book, 'orders', null);
 }
+function spark(curve) {
+  const pts = (curve || []).filter(p => p && isNum(p.eq));
+  if (pts.length < 2) return '';
+  const eqs = pts.map(p => p.eq);
+  const lo = Math.min(...eqs), hi = Math.max(...eqs);
+  const span = hi - lo || 1;
+  const w = 120, h = 36;
+  const xy = eqs.map((v, i) => {
+    const x = (i / (eqs.length - 1)) * (w - 2) + 1;
+    const y = h - 2 - ((v - lo) / span) * (h - 4);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><polyline fill="none" stroke="#1d9bf0" stroke-width="1.6" points="${xy}"/></svg>`;
+}
+function pctCell(x) { return x == null || !isNum(x) ? '' : `<span class="${cls(x)}">${(x * 100).toFixed(1)}%</span>`; }
+function renderStrategies() {
+  const rows = ((D && D.strategies) || []).slice().sort((a, b) => {
+    if (a.excess_btc == null && b.excess_btc == null) return 0;
+    if (a.excess_btc == null) return 1;
+    if (b.excess_btc == null) return -1;
+    return b.excess_btc - a.excess_btc;
+  });
+  table($('#st-table'), [
+    {k: 'label', l: 'Book', f: r => `<b style="color:${VAR_COL[r.name] || '#e7e9ea'}">${esc(r.label || r.name)}</b>`},
+    {k: 'equity', l: 'Value', num: 1, f: r => r.equity == null ? '' : fM(r.equity)},
+    {k: 'ret', l: 'Return', num: 1, f: r => pctCell(r.ret)},
+    {k: 'excess_btc', l: 'Excess vs BTC', num: 1, f: r => pctCell(r.excess_btc)},
+    {k: 'excess_vusa', l: 'Excess vs VUSA', num: 1, f: r => pctCell(r.excess_vusa)},
+    {k: 'max_dd', l: 'Max drawdown', num: 1, f: r => pctCell(r.max_dd)},
+    {k: 'trades', l: 'Trades', num: 1, f: r => r.trades == null ? '' : String(r.trades)},
+    {k: 'pf', l: 'Profit factor', num: 1, f: r => r.pf == null ? '' : (r.pf >= 99 ? '∞' : Number(r.pf).toFixed(2))},
+    {k: 'fees', l: 'Fees', num: 1, f: r => r.fees == null ? '' : fM(r.fees)},
+    {k: 'holdings', l: 'Holdings', f: r => esc((r.holdings || []).map(h => h.asset).join(', '))},
+    {k: 'curve', l: 'Equity', f: r => spark(r.curve)},
+  ], rows, null, renderStrategies, {empty: 'No books yet'});
+}
+function testCard(test, live) {
+  const books = (test && test.books) || [];
+  const head = `<h3>${esc(test.name || '')}${live ? ' · live' : ''}</h3><p class="explain">${esc(test.note || '')}${test.started ? ' From ' + esc(String(test.started).replace('T', ' ').slice(0, 16)) + ' UTC.' : ''}</p>`;
+  const body = books.map(r => `<tr><td><b>${esc(r.label || r.name)}</b></td><td class="num">${r.equity == null ? '' : fM(r.equity)}</td><td class="num">${pctCell(r.ret)}</td><td class="num">${pctCell(r.excess_btc)}</td><td class="num">${pctCell(r.excess_vusa)}</td><td class="num">${pctCell(r.max_dd)}</td><td class="num">${r.trades == null ? '' : r.trades}</td><td class="num">${r.pf == null ? '' : Number(r.pf).toFixed(2)}</td><td class="num">${r.fees == null ? '' : fM(r.fees)}</td><td>${spark(r.curve)}</td></tr>`).join('');
+  return head + `<div class="tw"><table class="tbl"><thead><tr><th>Book</th><th class="num">Value</th><th class="num">Return</th><th class="num">Excess vs BTC</th><th class="num">Excess vs VUSA</th><th class="num">Max drawdown</th><th class="num">Trades</th><th class="num">Profit factor</th><th class="num">Fees</th><th>Equity</th></tr></thead><tbody>${body || '<tr><td colspan="10" class="muted">No rows yet</td></tr>'}</tbody></table></div>`;
+}
+function renderTests() {
+  const host = $('#te-body');
+  if (!host) return;
+  const T = (D && D.tests) || {};
+  const parts = [];
+  if (T.live) parts.push(testCard(T.live, true));
+  (T.archived || []).forEach(t => parts.push(testCard(t, false)));
+  host.innerHTML = parts.join('') || '<p class="muted">No archived test yet. The first cycle after this ships writes Test 1 and starts Test 2.</p>';
+}
 function renderBookChrome() {
   const sel = $('#book-select');
   const cur = S.book || 'main';
@@ -1218,7 +1269,8 @@ function dropBookCharts() {
 
 /* ---------- tabs / routing ---------- */
 const RENDER = {overview: () => { renderOverview(); renderEquity(); }, portfolio: renderPortfolio, core: renderCore, day: renderDay, risk: renderRiskPot,
-  markets: renderMarkets, sentiment: renderSentiment, orders: renderOrders, variants: renderVariants};
+  markets: renderMarkets, sentiment: renderSentiment, orders: renderOrders, variants: renderVariants,
+  strategies: renderStrategies, tests: renderTests};
 const safe = (name, fn) => { try { fn(); } catch (e) { console.error('render ' + name + ' failed:', e); } };
 function setAcct(a, render = true) {
   S.acct = a || ''; try { localStorage.setItem('acct', S.acct); } catch (e) {}
