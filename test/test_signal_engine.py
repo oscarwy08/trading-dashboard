@@ -94,6 +94,19 @@ check(strategies.due("signal_engine", date(2026, 10, 5), date(2026, 10, 6)) is F
       and strategies.due("signal_engine", date(2026, 10, 5), date(2026, 10, 12)) is True,
       "the book waits for a new week")
 check(signalcomb.tilt(0, 1) == 0, "cash is not turned into a position by the composite")
+today = signalcomb.news_value_on([("2026-10-01", 1.0)], "2026-10-01")
+old = signalcomb.news_value_on([("2026-10-01", 1.0)], "2026-10-11")
+check(abs(today - 1.0) < 1e-9, "a headline today keeps its score")
+check(abs(old - 0.5 ** (10 / 3)) < 1e-9, "a headline ten days ago has faded with a three-day half life")
+check(old < 0.15, "a headline ten days ago is nearly gone")
+check(signalcomb.value_on([("2026-10-01", 1.0)], "2026-10-11") == 1.0, "other signals still carry the last print")
+news_days = [(date(2026, 1, 1) + timedelta(days=i)).isoformat() for i in range(90)]
+news_rows, _, _ = signalcomb.edges_for(news_days, [100.0 + i for i in range(90)], {"news": [("2026-01-01", 1.0)]})
+news_now = next(r for r in news_rows if r["signal"] == "news")["value"]
+check(abs(news_now) < 1e-6, "stale news does not still score on the last day")
+fresh_rows, _, _ = signalcomb.edges_for(news_days, [100.0 + i for i in range(90)], {"news": [(news_days[-1], 0.8)]})
+fresh_now = next(r for r in fresh_rows if r["signal"] == "news")["value"]
+check(abs(fresh_now - 0.8) < 1e-9, "a headline on the last day keeps its score in the book")
 
 R = variants.rules_of(common.cfg())
 check(R["hold_overnight"] is False, "the main book still flattens")

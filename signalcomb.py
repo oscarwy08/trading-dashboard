@@ -6,8 +6,9 @@ both have to agree on the sign, and both have to clear a small bar. A correlatio
 is suspiciously perfect is dropped: that is leakage or a one-off, not an edge. A signal
 with no history, or no agreement, gets weight zero and does not tilt the book.
 
-Nothing here fetches the network. News is read from the hourly file. Funding and insider
-marks are read from those books' own databases when they already exist.
+Nothing here fetches the network. News is read from the hourly file and faded with a
+three-day half life. Funding and insider marks are read from those books' own databases
+when they already exist, and those marks still carry forward until a newer print.
 """
 import math
 import sqlite3
@@ -20,6 +21,7 @@ IC_MIN = 0.03
 IC_CAP = 0.50
 WEIGHT_CAP = 0.15
 TRAIN_N = 30
+NEWS_HALF_LIFE_DAYS = 3.0
 CONFIRM_N = 15
 SIGNALS = ("news", "routine", "funding", "unlock", "insider", "trend", "momentum", "vol", "forecast")
 LABELS = {
@@ -34,7 +36,7 @@ LABELS = {
     "forecast": "5-day forecast",
 }
 BLURB = {
-    "news": "Mean finance-lexicon score of headlines in the hourly news file.",
+    "news": "Mean finance-lexicon score, faded with a three-day half life so an old headline does not linger.",
     "routine": "The sentiment file the cycle already ingests, from -1 to 1.",
     "funding": "Low BTC perpetual funding is the bullish reading. High funding is negative.",
     "unlock": "No large unlock is the bullish reading. A token unlocking supply is negative.",
@@ -157,6 +159,39 @@ def value_on(pairs, day):
     return best
 
 
+def _day_gap(earlier, later):
+    from datetime import date
+    try:
+        a = date.fromisoformat(str(earlier)[:10])
+        b = date.fromisoformat(str(later)[:10])
+    except ValueError:
+        return None
+    return (b - a).days
+
+
+def news_value_on(pairs, day, half_life=NEWS_HALF_LIFE_DAYS):
+    """Latest news score on or before day, faded with a three-day half life.
+
+    A headline does not stay fully in force until the next one. Tone predicts
+    the next day and mean-reverts within about a week (Tetlock, 2007).
+    """
+    if not pairs:
+        return None
+    best_day = None
+    best = None
+    for d, value in pairs:
+        if d <= day:
+            best_day, best = d, value
+        else:
+            break
+    if best_day is None or best is None:
+        return None
+    gap = _day_gap(best_day, day)
+    if gap is None or gap < 0:
+        return None
+    return float(best) * (0.5 ** (gap / float(half_life)))
+
+
 def funding_reading(ann):
     """10% a year is neutral. 30% is -1. Zero funding is mildly bullish."""
     if ann is None:
@@ -237,12 +272,20 @@ def _align(pairs, days):
     return [value_on(pairs, day) for day in days]
 
 
+def _align_news(pairs, days):
+    if not pairs:
+        return None
+    pairs = sorted(pairs)
+    return [news_value_on(pairs, day) for day in days]
+
+
 def edges_for(days, prices, extras=None):
     """Rows for one asset. extras maps a signal name to [(day, value), ...]."""
     extras = extras or {}
     cols = _price_rows(prices)
     for name in ("news", "routine", "funding", "unlock", "insider"):
-        aligned = _align(extras.get(name), days)
+        pairs = extras.get(name)
+        aligned = _align_news(pairs, days) if name == "news" else _align(pairs, days)
         cols[name] = aligned if aligned is not None else [None] * len(days)
     rows = []
     weights = {}
@@ -451,7 +494,7 @@ def dashboard_view(con, closes):
                 note=("A signal is used only when an older window and a later window agree on its rank "
                       "correlation with the next five daily returns, and neither correlation is tiny or perfect. "
                       "The weight is the weaker of those two. News is scored by a finance lexicon, hourly, "
-                      "outside this cycle."))
+                      "outside this cycle, and a headline fades with a three-day half life."))
 
 
 def book_snapshot(closes, con):
