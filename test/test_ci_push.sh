@@ -69,6 +69,8 @@ setup_and_push() {
   printf '{}\n' > "$base/data/exit_shadow_report.json"
   mark_db "$base/data/trading.db"
   if (cd "$base" && env CI_PUSH_RETRY_SLEEP=0 $envx bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
+  GC_AUTO=$(git -C "$base" config --get gc.auto || true)
+  GC_PACK=$(git -C "$base" config --get gc.autopacklimit || true)
   git -C "$OTHER" fetch -q origin main
 }
 
@@ -99,6 +101,11 @@ check_kept() {
 
 setup_and_push ""
 check_kept "rebase"
+if [ "$GC_AUTO" = "0" ] && [ "$GC_PACK" = "0" ]; then
+  ok "cycle turns automatic repack off"
+else
+  bad "cycle left automatic repack on (auto=$GC_AUTO pack=$GC_PACK)"
+fi
 if [ "$RC" -eq 0 ] && [ "$(cycle_mark "$OTHER")" = "yes" ]; then
   ok "rebase pushed the cycle book on top of the code commit"
 else

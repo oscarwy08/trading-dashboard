@@ -3,6 +3,20 @@
 # A collector/ingest failure is logged but the trader still runs (it refuses to buy on stale prices/FX on its own).
 # Exit 1 if trader or dashboard failed (the workflow still commits whatever state was written, then marks the run red).
 set -u
+# A 5-minute commit of trading.db does not delta. git gc --auto then repacks
+# those blobs inside this service, after the book is already written, and can
+# sit in pack-objects until systemd kills the whole cycle. Prune from an idle
+# shell (scripts/idle_repack.sh). Never during a cycle.
+git config gc.auto 0 2>/dev/null || true
+git config gc.autopacklimit 0 2>/dev/null || true
+git config maintenance.auto false 2>/dev/null || true
+export GIT_CONFIG_COUNT=3
+export GIT_CONFIG_KEY_0=gc.auto
+export GIT_CONFIG_VALUE_0=0
+export GIT_CONFIG_KEY_1=gc.autopacklimit
+export GIT_CONFIG_VALUE_1=0
+export GIT_CONFIG_KEY_2=maintenance.auto
+export GIT_CONFIG_VALUE_2=false
 mkdir -p logs data/sentiment/processed data/sentiment/rejected
 export TZ=Europe/London
 # Optional secrets for the VPS (not in git). Example line: COINGECKO_API_KEY=...
