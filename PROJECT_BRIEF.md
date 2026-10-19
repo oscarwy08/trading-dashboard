@@ -146,7 +146,7 @@ Each account divides its funds across three pots with distinct strategies:
 - **Source of Truth**: SQLite database (`data/trading.db`)
 - **Repository**: GitHub (branch: `main`)
 - **Commits**: Every cycle commits DB + dashboard to git
-- **History Pruning**: DB vacuumed daily; git squashed to single commit after >100 commits (keeps repo size manageable)
+- **History Pruning**: DB vacuumed daily; git squashed to a single commit after more than 100 cycle pushes. The VPS checkout is depth 1 and prunes loose objects so `.git` cannot fill the disk. A shallow clone counts those pushes locally (it cannot see older commits).
 
 ## Security & Safety (Future Live Trading)
 

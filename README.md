@@ -345,6 +345,12 @@ Cadence: every 5 min the fast cycle (collector `COLLECT_MODE=fast`: crypto re-pr
 CoinGecko only for coins those do not list, then stocks, gas, market proxy, sentiment ingest, trader incl. exits,
 maintenance, dashboard, push); every ~15 min the full collector (daily closes, backfills, and the top-300 screen when it
 is due). FX stays hourly. Pushes only when state changed (at most one per 5-min cycle). Health: `/home/bot/health.sh`.
+The checkout stays shallow, so `.git` cannot grow with every database commit. `deploy/run_cycle.sh` is the file that belongs at `/home/bot/run_cycle.sh` (the timer runs that path, which is outside the repo). Sync is `git fetch --depth 1 origin main` and then `git reset --hard origin/main`. `scripts/git_slim.sh` expires the reflog and runs `git prune`, not `git gc`, at most once every 6 hours, and also when `/` has under 3GB free. That prune is inside the cycle lock and is stopped if it runs longer than 60 seconds; the cycle still continues. `gc.auto` stays off. A shallow clone can still fast-forward and rebase onto a commit that landed during the cycle. It cannot see older commits, so the squash counts cycle pushes in `.git/slim-pushes` instead of walking history. After this is on main, install the runner. The filename has an underscore between run and cycle:
+
+    cp /home/bot/trading-dashboard/deploy/run_cycle.sh /home/bot/run_cycle.sh
+
+`scripts/ci_cycle.sh` also shortens a checkout that is already shallow, so the disk bound starts on the first cycle that contains this change. The copy makes the sync step itself use depth 1.
+
 Exit and entry watcher (one process, separate from the timer): `exit_watch.py` runs as systemd
 `trading-exit-watch` (`deploy/trading-exit-watch.service`, `Restart=on-failure`). It watches open
 Day positions, then Risk, on Kraken and Coinbase public websockets, and the same streams cover
@@ -462,6 +468,7 @@ force-push is allowed only when this cycle's parent is still the main tip just f
 commit landed, the cycle is rebased onto that tip and pushed as a fast-forward, or skipped until the
 next cycle if main moves again. It never force-pushes a tree that is not based on that tip. Never rely
 on git history of main for audit - the DB itself holds the full trade/equity history.
+The database stays in the commits. The VPS replaces the worktree with origin/main every cycle, and the book is `data/trading.db`. The site file `docs/data.json` is built from that database during the cycle. Leaving it out of git would put an old book back on the next reset. `maintenance.py` keeps the file itself near 40MB. The disk filled because the history of that blob was kept as loose objects after automatic repack was turned off. Shallow fetch plus prune is what bounds the VPS. GitHub still stores each cycle's database; the squash above is what bounds GitHub, including from a depth-1 checkout via the local push counter.
 
 Timing: GitHub may start scheduled runs late (often 5-20 min) or skip some under load. The trader is delay-tolerant:
 DAY positions are force-closed by the first cycle at/after 22:00 UK, or by any cycle before 08:00 UK, or by the first

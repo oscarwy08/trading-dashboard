@@ -27,6 +27,38 @@ SQUASH_AT=${SQUASH_AT:-100}
 git config user.name "${BOT_NAME:-trading-bot}"
 git config user.email "${BOT_EMAIL:-41898282+github-actions[bot]@users.noreply.github.com}"
 
+# A depth-1 clone cannot see older commits, so git rev-list --count stays at 1
+# and the squash would never run. Count cycle pushes on this machine instead.
+# The file is under .git and is not part of the tree.
+shallow_checkout() {
+  [ "$(git rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]
+}
+shallow_push_count() {
+  local prev raw
+  prev=0
+  if [ -f .git/slim-pushes ]; then
+    raw=$(tr -cd '0-9' < .git/slim-pushes || true)
+    if [ -n "$raw" ]; then prev=$raw; fi
+  fi
+  echo $((prev + 1))
+}
+note_shallow_push() {
+  shallow_checkout || return 0
+  echo "$1" > .git/slim-pushes || true
+  echo "shallow cycle count $1"
+}
+history_len() {
+  if shallow_checkout; then
+    shallow_push_count
+  else
+    git rev-list --count HEAD
+  fi
+}
+prune_if_shallow() {
+  shallow_checkout || return 0
+  bash "$(dirname "$0")/git_slim.sh" prune || true
+}
+
 # data/exit_shadow.db is the watcher's log. It used to be untracked inside the clone, so `git add -A` committed
 # it. Never stage it (or its wal/shm/journal), even if an older commit still has it in the index.
 unstage_shadow() {
@@ -77,6 +109,9 @@ reapply() {
 
 # Fetch main and make HEAD a descendant of that exact commit. A second fetch must still see the same SHA.
 # Returns 0 and sets TIP, or 2 if main moved (caller must not push), or 1 on a hard failure.
+# Not `git fetch --depth 1`. On a shallow clone that cuts the new tip off from its parent, so
+# rebase treats the histories as unrelated and replays the old shallow root. A plain fetch on a
+# shallow clone only downloads the new commits that share the commit we already have.
 integrate() {
   git fetch -q origin main || { echo "::error::fetch origin/main failed" >&2; return 1; }
   local tip now
@@ -115,7 +150,12 @@ integrate() {
 push_ff() {
   local i rc
   for i in 1 2 3 4 5 6; do
-    if git push -q origin HEAD:main; then echo "pushed $(git rev-parse --short HEAD) (try $i)"; return 0; fi
+    if git push -q origin HEAD:main; then
+      echo "pushed $(git rev-parse --short HEAD) (try $i)"
+      note_shallow_push "$n"
+      prune_if_shallow
+      return 0
+    fi
     echo "push rejected; rebasing onto latest main (try $i)" >&2
     sleep "${CI_PUSH_RETRY_SLEEP:-$((i * 3))}"
     integrate
@@ -179,7 +219,7 @@ print(len(data))'); then
   echo "$count"
 }
 
-n=$(git rev-list --count HEAD)
+n=$(history_len)
 # Squash only when nobody else committed: our parent is still the tip we just leased.
 # A code commit that landed during the cycle stays in history (fast-forward below).
 # An open pull request also stays. The orphan force-push would close it.
@@ -194,6 +234,8 @@ if [ "$n" -gt "$SQUASH_AT" ] && [ "$TIP" = "$BASE_BEFORE" ]; then
     NEW=$(git commit-tree "HEAD^{tree}" -m "Squashed history ($n commits) at $(date -u +%FT%TZ) - state + site snapshot")
     if git push -q --force-with-lease=main:"$TIP" origin "$NEW":main; then
       echo "squashed $n commits into $NEW and pushed"
+      note_shallow_push 0
+      prune_if_shallow
       exit 0
     fi
     echo "squash push lost the race (main was no longer ${TIP:0:7}); not force-pushing, next cycle will retry" >&2
