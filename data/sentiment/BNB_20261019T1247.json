@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-19T12:57:00Z",
+ "asset": "BNB",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "BNB ~$728 (+0.7% 24h). BNB Chain completed its 37th quarterly burn (1.65M BNB, ~$1.2bn) and now holds ~43% of tokenized-stock supply. The burn is scheduled and expected, so modest positive.",
+ "sources": [
+  "https://x.com/i/trending/2112134338393358493"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "37th quarterly BNB burn completed (19 Oct)",
+ "volume": 23052,
+ "buzz_level": 23052,
+ "buzz_change": 1.45,
+ "price_runup_24h_pct": 0.72,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-19T12:57:00Z",
+ "asset": "SUI",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "SUI back above $1.00 (+2.2% 24h) after weeks below it; Mysten Labs buybacks continue and the Hashi BTC-lending protocol is upcoming (no date). Much of the buzz is 'we're so back' price celebration after the reclaim, which is not counted as bullish news. Mildly positive at most.",
+ "sources": [
+  "https://x.com/i/trending/2112132882961780956"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Ongoing fee-funded buybacks; Hashi launch undated",
+ "volume": 29450,
+ "buzz_level": 29450,
+ "buzz_change": 1.24,
+ "price_runup_24h_pct": 2.23,
+ "carried_over": false
+}

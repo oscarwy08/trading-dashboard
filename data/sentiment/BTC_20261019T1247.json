@@ -1,0 +1,21 @@
+{
+ "timestamp": "2026-10-19T12:57:00Z",
+ "asset": "BTC",
+ "score": 0.1,
+ "confidence": 0.55,
+ "summary": "BTC ~$82.4k (+0.7% 24h), holding above the $81k support. Strategy filed a real buy today (267 BTC, plus a $3bn preferred buyback programme) and Strive added 1,223 BTC last week. Offsets: US BTC ETFs saw ~$229M outflows last week (third straight week), and MARA moved 1,000 BTC to exchanges. Long-term holders are sending far fewer coins to exchanges (CryptoQuant). Slightly more positive than this morning now the Strategy buy is confirmed.",
+ "sources": [
+  "https://x.com/i/trending/2112153447092895868",
+  "https://x.com/i/trending/2112160144674947343",
+  "https://x.com/i/trending/2112085330849607686",
+  "https://x.com/i/trending/2112085329301934419",
+  "https://x.com/i/trending/2112158548104753652"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Strategy bought 267 BTC (announced 19 Oct); Strive bought 1,223 BTC (week to 16 Oct)",
+ "volume": 142652,
+ "buzz_level": 142652,
+ "buzz_change": 0.98,
+ "price_runup_24h_pct": 0.7,
+ "carried_over": false
+}

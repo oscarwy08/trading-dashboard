@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-19T12:57:00Z",
+ "asset": "HYPE",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "HYPE ~$79.5 (+1.1% 24h). Kinetiq set Elysium L2 mainnet for 9 Nov (HYPE as gas). Mentions jumped sharply today (~15x yesterday's hourly rate), driven by the Elysium date and a story that retail wallet-app users lost ~$280M on Hyperliquid, mostly to fees. Price has not run, so this is news rather than post-pump hype, but the retail-loss angle and heavy leverage keep it near neutral.",
+ "sources": [
+  "https://x.com/i/trending/2112153446862242209",
+  "https://x.com/i/trending/2112077537786376353",
+  "https://x.com/i/trending/2112067844943020337"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Elysium mainnet date set: 9 Nov 2026",
+ "volume": 3934,
+ "buzz_level": 3934,
+ "buzz_change": 15.1,
+ "price_runup_24h_pct": 1.11,
+ "carried_over": false
+}

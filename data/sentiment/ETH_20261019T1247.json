@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-10-19T12:57:00Z",
+ "asset": "ETH",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,421 (+0.3% 24h). Glamsterdam upgrade is set for 26 Oct (doubles gas limit to 200M), and JPMorgan opened JPM Coin to Ethereum mainnet. Against that, ETH ETFs lost ~$320M last week and a large 25x short sits near spot. Slightly positive on dated upgrade and institutional news, not price.",
+ "sources": [
+  "https://x.com/i/trending/2112155079554027729",
+  "https://x.com/i/trending/2112086843172778488",
+  "https://x.com/i/trending/2112085330849607686",
+  "https://x.com/i/trending/2112067844943020337"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Glamsterdam upgrade scheduled 26 Oct; JPM Coin live on Ethereum (19 Oct)",
+ "volume": 70978,
+ "buzz_level": 70978,
+ "buzz_change": 1.19,
+ "price_runup_24h_pct": 0.32,
+ "carried_over": false
+}
