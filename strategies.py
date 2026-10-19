@@ -9,16 +9,19 @@ best_of_plus is the exception: 15% of the book is the best_of day and risk engin
 """
 import json
 import math
+import os
 import sqlite3
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime, timedelta, timezone
+import xml.etree.ElementTree as ET
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from common import ACCOUNTS, DATA, LON, ROOT, SCHEMA, cfg, ensure_sentiment_cols, iso, now
 
-PURE = ("btc_trend", "btc_trend_vol", "majors_rotation", "btc_core_satellite", "rs_rotation_veto", "quiet_strength")
+PURE = ("btc_trend", "btc_trend_vol", "majors_rotation", "btc_core_satellite", "rs_rotation_veto", "quiet_strength",
+        "trend_carry_unlock", "insider_rs_stocks")
 BOOKS = PURE + ("best_of_plus",)
 MAJORS = ("BTC", "ETH", "SOL")
 STOCK_SYMS = ("VUSA", "VUSA.L", "EQQQ", "EQQQ.L")
@@ -42,6 +45,8 @@ LABELS = {
     "rs_rotation_veto": "RS rotation, veto",
     "quiet_strength": "Quiet strength",
     "best_of_plus": "Best of plus trend",
+    "trend_carry_unlock": "Trend, funding and unlocks",
+    "insider_rs_stocks": "Insider relative strength",
 }
 BLURB = {
     "btc_trend": "Crypto is 100% BTC when the daily close is above its 50-day average, otherwise cash. Stocks is the same rule on VUSA, or EQQQ if VUSA has no history. Checked once a day. Held through nights and weekends.",
@@ -51,6 +56,8 @@ BLURB = {
     "rs_rotation_veto": "Once a week, the top 3 liquid coins by 4-week return minus BTC, among names above their 50-day average. A buzz change of 3 or more, or a 24h jump of 15% or more, is skipped. If none qualify, hold BTC. Cash when BTC itself is below its 50-day average.",
     "quiet_strength": "Names within 10% of their 30-day high, with buzz below the universe median and vol/mcap in the top quartile. Held for days to weeks. Sold on a 12% trail from the peak, or when buzz jumps to 3 or more after a 15% run-up. A 20% giveback trail is available and off.",
     "best_of_plus": "The best_of book (sentiment split, 15-minute entry watch, burst runner) may use only 15% of the £200. The other 85% follows the BTC / VUSA trend. Nothing flattens at 22:00. Core alt picks are off on this book.",
+    "trend_carry_unlock": "Once a week, hold the strongest of BTC, ETH and SOL that is above its 50-day average, sized like the vol-target book. Crypto is halved when BTC perpetual funding is in the top tenth of the past year, or at 25% a year or more. An alt with more than 1% of supply unlocking within 30 days is left out. If that feed is missing, only BTC and ETH are held. A resize smaller than 10% of the position is skipped. Stocks follow the vol-sized VUSA trend. Held through nights and weekends. Unlock dates: Data: PatternPlus (https://pattern.plus).",
+    "insider_rs_stocks": "Once a month, the stock half holds the strongest Trading 212 US and UK names by six-month return, above a long average. A name in the top half of that ranking is overweighted after an opportunistic open-market insider buy (the same person did not trade that calendar month in an earlier year). Routine filings are ignored. The crypto half stays in cash. Held through nights and weekends.",
 }
 
 
@@ -71,6 +78,11 @@ def opts(c=None):
         min_trade=float(block.get("min_trade_gbp", 5)),
         cap=float(block.get("day_risk_cap_pct", 15)),
         trend_weight=float(block.get("trend_weight", 0.85)),
+        funding_hot=float(block.get("carry_funding_pct", 25)) / 100.0,
+        unlock_pct=float(block.get("carry_unlock_pct", 1)),
+        min_pos_frac=float(block.get("carry_min_pos_frac", 10)) / 100.0,
+        insider_window=int(block.get("insider_window_days", 180)),
+        insider_batch=int(block.get("insider_per_day", 8)),
     )
 
 
@@ -192,6 +204,10 @@ def targets_for(book, closes, extra=None):
         for sym in names:
             out[sym] = ("crypto", w)
         return out
+    if book == "trend_carry_unlock":
+        return _carry_targets(closes, extra, o, n)
+    if book == "insider_rs_stocks":
+        return _insider_targets(closes, extra)
     return out
 
 
@@ -309,12 +325,354 @@ def quiet_giveback_exit(entry, price, peak, giveback_pct=20):
     return None
 
 
+def _percentile(values, q):
+    """Linear percentile. q is 0 to 1."""
+    s = sorted(float(v) for v in values)
+    if not s:
+        return None
+    if len(s) == 1:
+        return s[0]
+    pos = min(1.0, max(0.0, q)) * (len(s) - 1)
+    lo = int(math.floor(pos))
+    hi = int(math.ceil(pos))
+    if lo == hi:
+        return s[lo]
+    return s[lo] + (s[hi] - s[lo]) * (pos - lo)
+
+
+def funding_halve(points, hot=0.25, min_obs=30):
+    """True when the latest annualised funding rate should cut crypto exposure in half.
+
+    The last point is the live reading. It halves the book when it is at or above `hot`
+    (25% a year) or strictly above the 90th percentile of the readings before it.
+    A flat year does not halve on the percentile rule. No readings means no change.
+    """
+    if not points:
+        return False
+    latest = float(points[-1])
+    if latest >= float(hot):
+        return True
+    prior = [float(x) for x in points[:-1]][-365:]
+    if len(prior) < min_obs:
+        return False
+    p90 = _percentile(prior, 0.90)
+    return p90 is not None and latest > p90
+
+
+def halve_series(points, hot=0.25):
+    """[(day, bool)] walking forward, so a replay never uses a future funding print."""
+    out, hist = [], []
+    for day, ann in points:
+        hist.append(float(ann))
+        out.append((day, funding_halve(hist, hot=hot)))
+    return out
+
+
+def allowed_from(known, hot):
+    """BTC is always allowed. ETH is allowed unless it is unlocking. Other majors only when known and not unlocking."""
+    known = set(known or [])
+    hot = set(hot or [])
+    allowed = {"BTC"}
+    if "ETH" not in hot:
+        allowed.add("ETH")
+    for sym in MAJORS:
+        if sym in known and sym not in hot:
+            allowed.add(sym)
+    return allowed
+
+
+def parse_pattern_unlocks(payload, today, window=30, limit_pct=1.0):
+    """PatternPlus rows: pct_circulating is already in percent. Sum the next `window` days.
+
+    Returns (allowed set, known symbols) or None when the payload is not that feed.
+    """
+    rows = payload.get("data") if isinstance(payload, dict) else payload
+    if not isinstance(rows, list):
+        return None
+    end = today + timedelta(days=window)
+    known, total = set(), {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        sym = str(row.get("symbol") or "").upper().strip()
+        if not sym:
+            continue
+        known.add(sym)
+        try:
+            day = date.fromisoformat(str(row.get("date") or "")[:10])
+        except ValueError:
+            continue
+        if day < today or day > end:
+            continue
+        pct = row.get("pct_circulating")
+        if pct is None:
+            pct = row.get("pct_total")
+        try:
+            total[sym] = total.get(sym, 0.0) + float(pct)
+        except (TypeError, ValueError):
+            continue
+    hot = {sym for sym, pct in total.items() if pct > float(limit_pct)}
+    return allowed_from(known, hot), known
+
+
+def parse_llama_emissions(payload, today, limit=0.01):
+    """DeFiLlama emissions rows. Token amount over circulating supply, next 30 days.
+
+    Returns (allowed, known) or None when this is not that shape. A PatternPlus
+    payload is handed to that parser instead.
+    """
+    rows = payload if isinstance(payload, list) else None
+    if isinstance(payload, dict):
+        rows = payload.get("data") if isinstance(payload.get("data"), list) else payload.get("protocols")
+    if not isinstance(rows, list) or not rows or not isinstance(rows[0], dict):
+        return None
+    if "pct_circulating" in rows[0] or "symbol" in rows[0] and "date" in rows[0]:
+        return parse_pattern_unlocks({"data": rows}, today, limit_pct=limit * 100.0)
+    alias = {"BITCOIN": "BTC", "ETHEREUM": "ETH", "SOLANA": "SOL", "BTC": "BTC", "ETH": "ETH", "SOL": "SOL"}
+    start = datetime(today.year, today.month, today.day, tzinfo=timezone.utc).timestamp()
+    end = start + 30 * 86400
+    known, hot = set(), set()
+    for row in rows:
+        raw = str(row.get("token") or row.get("gecko_id") or row.get("name") or "").upper().strip()
+        sym = alias.get(raw)
+        supply = row.get("circSupply") or row.get("circulating") or row.get("supply")
+        try:
+            supply = float(supply)
+        except (TypeError, ValueError):
+            continue
+        if not sym or supply <= 0:
+            continue
+        tokens = 0.0
+        for ev in row.get("events") or []:
+            ts = ev.get("timestamp")
+            try:
+                ts = float(ts)
+            except (TypeError, ValueError):
+                continue
+            if ts > 10 ** 12:
+                ts = ts / 1000.0
+            if ts < start or ts > end:
+                continue
+            amt = ev.get("noOfTokens") if ev.get("noOfTokens") is not None else ev.get("amount")
+            if isinstance(amt, list):
+                amt = sum(float(x or 0) for x in amt)
+            try:
+                tokens += float(amt or 0)
+            except (TypeError, ValueError):
+                continue
+        known.add(sym)
+        if tokens / supply > float(limit):
+            hot.add(sym)
+    return allowed_from(known, hot), known
+
+
+def _carry_ok(sym, extra):
+    """BTC always. With no unlock feed, ETH is kept and every other alt is dropped."""
+    if sym == "BTC":
+        return True
+    allowed = extra.get("unlock_allowed")
+    if allowed is None:
+        return sym == "ETH"
+    return sym in allowed
+
+
+def _carry_targets(closes, extra, o, n):
+    """Best 28-day major above its 50-day average, sized by realised vol. Stocks stay on the vol trend."""
+    best = None
+    best_r = None
+    best_series = None
+    for sym in MAJORS:
+        if not _carry_ok(sym, extra):
+            continue
+        series = closes.get(sym) or []
+        if not _above(series, n):
+            continue
+        r = ret_n(_px(series), 28)
+        if r is None:
+            continue
+        if best_r is None or r > best_r:
+            best, best_r, best_series = sym, r, series
+    out = {}
+    if best_series is not None:
+        w = vol_weight(_px(best_series), o["vol_target"])
+        if extra.get("funding_halve"):
+            w *= 0.5
+        out[best] = ("crypto", w)
+    stock = _stock_name(closes, n)
+    if stock and _above(closes[stock], n):
+        out[stock] = ("stocks", vol_weight(_px(closes[stock]), o["vol_target"]))
+    return out
+
+
+def _equity_universe():
+    """Trading 212 US and UK names from the stock universe. Australian listings are left out."""
+    names = []
+    uni = ((cfg().get("stocks") or {}).get("universe") or {})
+    for block in uni.values():
+        for ticker in block.get("tickers") or []:
+            sym = str(ticker).strip()
+            if not sym or sym.upper().endswith(".AX"):
+                continue
+            names.append(sym)
+    return list(dict.fromkeys(names))
+
+
+def _insider_targets(closes, extra):
+    """Top five by 126-day return, equal weight, with a 1.5 tilt for a recent opportunistic buy.
+
+    A tilted name that is already in the top half but outside the top five is added.
+    At most eight names. Weights are renormalised to the stock sleeve. Crypto stays cash.
+    """
+    insider = extra.get("insider") or {}
+    universe = extra.get("universe")
+    if universe is None:
+        universe = _equity_universe()
+    ranked = []
+    for sym in universe:
+        series = closes.get(sym) or []
+        vals = _px(series)
+        if len(vals) < 126:
+            continue
+        span = 200 if len(vals) >= 200 else 50
+        if not _above(series, span):
+            continue
+        r = ret_n(vals, 126)
+        if r is None:
+            continue
+        ranked.append((r, sym))
+    ranked.sort(key=lambda row: (-row[0], row[1]))
+    if not ranked:
+        return {}
+    half = max(1, (len(ranked) + 1) // 2)
+    weights = {}
+    for _, sym in ranked[:5]:
+        weights[sym] = 1.5 if insider.get(sym) else 1.0
+    for _, sym in ranked[:half]:
+        if len(weights) >= 8:
+            break
+        if sym in weights or not insider.get(sym):
+            continue
+        weights[sym] = 1.5
+    total = sum(weights.values()) or 1.0
+    return {sym: ("stocks", w / total) for sym, w in weights.items()}
+
+
+def owner_is_routine(months, buy_month):
+    """Cohen-Malloy-Pomorski routine trader: this person already traded that calendar month in an earlier year."""
+    try:
+        year_s, month = str(buy_month)[:7].split("-")
+        year = int(year_s)
+    except (TypeError, ValueError):
+        return False
+    for raw in months or []:
+        text = str(raw)
+        if len(text) < 7 or text[4] != "-":
+            continue
+        try:
+            y = int(text[:4])
+        except ValueError:
+            continue
+        if text[5:7] == month and y < year:
+            return True
+    return False
+
+
+def insider_flags(cache, today, window_days=180):
+    """{symbol: True} when a non-routine open-market buy falls inside the window and the history was complete enough."""
+    flags = {}
+    start = today - timedelta(days=int(window_days))
+    for sym, rec in ((cache or {}).get("tickers") or {}).items():
+        if not rec.get("history_ok"):
+            continue
+        hit = False
+        for info in (rec.get("owners") or {}).values():
+            months = info.get("months") or []
+            for buy in info.get("buys") or []:
+                try:
+                    day = date.fromisoformat(str(buy)[:10])
+                except ValueError:
+                    continue
+                if day < start or day > today:
+                    continue
+                if owner_is_routine(months, str(buy)[:7]):
+                    continue
+                hit = True
+                break
+            if hit:
+                break
+        if hit:
+            flags[sym] = True
+    return flags
+
+
+def parse_form4(text):
+    """Open-market and other coded transactions from one SEC Form 4 XML document."""
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError:
+        return []
+    owners = []
+    for el in root.iter():
+        if el.tag.rsplit("}", 1)[-1] == "rptOwnerName" and el.text and el.text.strip():
+            owners.append(" ".join(el.text.split()).upper())
+    owner = owners[0] if owners else ""
+    out = []
+    for tx in root.iter():
+        kind = tx.tag.rsplit("}", 1)[-1]
+        if kind not in ("nonDerivativeTransaction", "derivativeTransaction"):
+            continue
+        code = when = None
+        for el in tx.iter():
+            name = el.tag.rsplit("}", 1)[-1]
+            if name == "transactionCode" and el.text and el.text.strip():
+                code = el.text.strip().upper()
+            if name == "transactionDate":
+                for child in el.iter():
+                    if child.tag.rsplit("}", 1)[-1] == "value" and child.text and child.text.strip():
+                        when = child.text.strip()[:10]
+        if code and when and owner:
+            out.append(dict(owner=owner, code=code, date=when, purchase=kind == "nonDerivativeTransaction" and code == "P"))
+    return out
+
+
+def _note_trade(owners, owner, day, purchase):
+    info = owners.setdefault(owner, {"months": [], "buys": []})
+    ym = day[:7]
+    if ym and ym not in info["months"]:
+        info["months"].append(ym)
+    if purchase and day not in info["buys"]:
+        info["buys"].append(day)
+
+
+def parse_finnhub_insiders(payload):
+    """Finnhub insider-transactions rows into the same owner map Form 4 uses."""
+    rows = payload.get("data") if isinstance(payload, dict) else payload
+    owners = {}
+    earliest = None
+    if not isinstance(rows, list):
+        return owners, earliest
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        name = " ".join(str(row.get("name") or "").split()).upper()
+        day = str(row.get("transactionDate") or row.get("filingDate") or "")[:10]
+        code = str(row.get("transactionCode") or "").upper()
+        if not name or len(day) < 10:
+            continue
+        _note_trade(owners, name, day, code == "P")
+        if earliest is None or day < earliest:
+            earliest = day
+    return owners, earliest
+
+
 def due(book, last_day, today):
     """Daily books act once a calendar day. Weekly books act when the ISO week has changed."""
     if last_day is None:
         return True
-    if book in ("majors_rotation", "btc_core_satellite", "rs_rotation_veto"):
+    if book in ("majors_rotation", "btc_core_satellite", "rs_rotation_veto", "trend_carry_unlock"):
         return last_day.isocalendar()[:2] != today.isocalendar()[:2]
+    if book == "insider_rs_stocks":
+        return (last_day.year, last_day.month) != (today.year, today.month)
     return last_day != today
 
 
@@ -325,7 +683,7 @@ def band_for(book):
     return 0.0
 
 
-def apply_targets(cash, pos, prices, targets, fees, min_trade, band=0.0):
+def apply_targets(cash, pos, prices, targets, fees, min_trade, band=0.0, min_pos_frac=0.0):
     """Move holdings toward the target weights. Sells first. Returns trade rows (no timestamps).
 
     cash is {account: gbp}. pos is {asset: {qty, cost, account, peak}}.
@@ -355,6 +713,9 @@ def apply_targets(cash, pos, prices, targets, fees, min_trade, band=0.0):
                 sell_gbp = have if goal <= 0 else min(have, gap)
                 if sell_gbp < min_trade and goal > 0:
                     continue
+                # A full exit is the whole position. A trim under min_pos_frac of the position waits.
+                if goal > 0 and have > 0 and sell_gbp + 1e-9 < have * min_pos_frac:
+                    continue
                 _sell(cash, pos, trades, asset, sell_gbp, px, fees, account)
         for asset, goal in want.items():
             px = prices.get(asset)
@@ -363,6 +724,8 @@ def apply_targets(cash, pos, prices, targets, fees, min_trade, band=0.0):
             have = pos[asset]["qty"] * px if asset in pos else 0.0
             gap = goal - have
             if gap < min_trade:
+                continue
+            if have > 0 and gap + 1e-9 < have * min_pos_frac:
                 continue
             if abs(gap) / equity < band - 1e-12 and have > 0:
                 continue
@@ -418,11 +781,28 @@ def _sell(cash, pos, trades, asset, gbp, px, fees, account):
                         reason="target weight"))
 
 
-def replay(book, closes, fees=None, min_trade=5.0, fx=1.0):
+def _asof_value(pairs, day, default=None):
+    """Latest value whose day is on or before `day`. pairs is a sorted [(day, value)]."""
+    if not pairs:
+        return default
+    lo, hi, best = 0, len(pairs) - 1, None
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if pairs[mid][0] <= day:
+            best = pairs[mid][1]
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return default if best is None else best
+
+
+def replay(book, closes, fees=None, min_trade=5.0, fx=1.0, carry=None):
     """Step one book across daily closes. closes is {asset: [(date, usd), ...]}.
 
     fx is GBP per 1 USD and is constant, so the return does not depend on it.
     The stock sleeve uses the stock fee. Crypto uses the Kraken fee.
+    carry holds a precomputed funding series and an unlock allow-list. Nothing
+    is fetched inside the day loop.
     """
     fees = fees or {"crypto": 0.004, "stocks": 0.0015}
     dates = sorted({d for series in closes.values() for d, _ in series})
@@ -436,6 +816,8 @@ def replay(book, closes, fees=None, min_trade=5.0, fx=1.0):
     sat_since = None
     peaks = {}
     o = opts()
+    carry = carry or {}
+    frac = o["min_pos_frac"] if book == "trend_carry_unlock" else 0.0
     for i, day in enumerate(dates):
         today = datetime.fromisoformat(day).date()
         window = {}
@@ -447,6 +829,14 @@ def replay(book, closes, fees=None, min_trade=5.0, fx=1.0):
         extra = {"opts": o, "held": None}
         if book == "btc_core_satellite" and held_sat and sat_since:
             extra["held"] = (held_sat, (today - sat_since).days)
+        if book == "trend_carry_unlock":
+            extra["funding_halve"] = bool(_asof_value(carry.get("halve") or [], day, False))
+            if carry.get("allowed") is not None:
+                extra["unlock_allowed"] = set(carry["allowed"])
+        if book == "insider_rs_stocks":
+            extra["insider"] = carry.get("insider") or {}
+            if carry.get("universe") is not None:
+                extra["universe"] = carry["universe"]
         act = due(book, last, today)
         # Quiet-strength exits are checked every day, not only on the entry day.
         if book == "quiet_strength":
@@ -471,7 +861,7 @@ def replay(book, closes, fees=None, min_trade=5.0, fx=1.0):
                 if sat != held_sat:
                     held_sat = sat
                     sat_since = today if sat else None
-            rows = apply_targets(cash, pos, prices, targets, fees, min_trade, band_for(book))
+            rows = apply_targets(cash, pos, prices, targets, fees, min_trade, band_for(book), frac)
             for row in rows:
                 row["day"] = day
             trades.extend(rows)
@@ -647,20 +1037,438 @@ def load_history(books=None, pause=0.6):
     return closes
 
 
-def replay_books(books, closes=None, pause=0.6):
-    """Replay books 1-5 (or the names given) and return stat rows."""
+def _get_json(url, timeout=8, headers=None):
+    req = urllib.request.Request(url, headers=headers or {"User-Agent": "paper-trader"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read().decode())
+
+
+def parse_kraken_funding(payload):
+    """Kraken hourly relative funding, kept as one annualised rate per UTC day (the last hour)."""
+    rates = (payload or {}).get("rates") if isinstance(payload, dict) else None
+    if not isinstance(rates, list) or not rates:
+        return []
+    daily = {}
+    for row in sorted(rates, key=lambda r: str((r or {}).get("timestamp") or "")):
+        if not isinstance(row, dict):
+            continue
+        day = str(row.get("timestamp") or "")[:10]
+        rel = row.get("relativeFundingRate")
+        if len(day) < 10 or rel is None:
+            continue
+        try:
+            daily[day] = float(rel) * 24.0 * 365.0
+        except (TypeError, ValueError):
+            continue
+    return sorted(daily.items())
+
+
+def parse_binance_funding(rows):
+    """Binance 8-hour fundingRate, one annualised rate per UTC day."""
+    if isinstance(rows, dict):
+        rows = rows.get("data") if isinstance(rows.get("data"), list) else None
+    if not isinstance(rows, list) or not rows:
+        return []
+    daily = {}
+    for row in sorted(rows, key=lambda r: (r or {}).get("fundingTime") or 0):
+        if not isinstance(row, dict):
+            continue
+        try:
+            ts = float(row.get("fundingTime"))
+            ann = float(row.get("fundingRate")) * 3.0 * 365.0
+        except (TypeError, ValueError):
+            continue
+        if ts > 10 ** 12:
+            ts = ts / 1000.0
+        daily[datetime.fromtimestamp(ts, timezone.utc).date().isoformat()] = ann
+    return sorted(daily.items())
+
+
+def parse_deribit_funding(payload):
+    """Deribit interest_8h (or interest_1h), one annualised rate per UTC day."""
+    rows = payload.get("result") if isinstance(payload, dict) else payload
+    if not isinstance(rows, list) or not rows:
+        return []
+    daily = {}
+    for row in sorted(rows, key=lambda r: (r or {}).get("timestamp") or 0):
+        if not isinstance(row, dict):
+            continue
+        rate = row.get("interest_8h")
+        mult = 3.0 * 365.0
+        if rate is None:
+            rate = row.get("interest_1h")
+            mult = 24.0 * 365.0
+        try:
+            ts = float(row.get("timestamp"))
+            ann = float(rate) * mult
+        except (TypeError, ValueError):
+            continue
+        if ts > 10 ** 12:
+            ts = ts / 1000.0
+        daily[datetime.fromtimestamp(ts, timezone.utc).date().isoformat()] = ann
+    return sorted(daily.items())
+
+
+def fetch_funding_points(get=None):
+    """One year of daily BTC funding. Kraken, then Binance, then Deribit. Empty when all three fail."""
+    get = get or _get_json
+    try:
+        data = get("https://futures.kraken.com/derivatives/api/v3/historical-funding-rates?symbol=PF_XBTUSD")
+        pts = parse_kraken_funding(data)
+        if len(pts) >= 30:
+            return pts, "kraken"
+    except Exception:
+        pass
+    try:
+        start = int((time.time() - 370 * 86400) * 1000)
+        rows, cursor = [], start
+        for _ in range(2):
+            chunk = get(f"https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&startTime={cursor}&limit=1000")
+            if not isinstance(chunk, list) or not chunk:
+                break
+            rows.extend(chunk)
+            last = chunk[-1].get("fundingTime") if isinstance(chunk[-1], dict) else 0
+            if len(chunk) < 1000 or not last:
+                break
+            cursor = int(last) + 1
+        pts = parse_binance_funding(rows)
+        if len(pts) >= 30:
+            return pts, "binance"
+    except Exception:
+        pass
+    try:
+        end = int(time.time() * 1000)
+        start = end - 370 * 86400 * 1000
+        url = ("https://www.deribit.com/api/v2/public/get_funding_rate_history"
+               f"?instrument_name=BTC-PERPETUAL&start_timestamp={start}&end_timestamp={end}")
+        pts = parse_deribit_funding(get(url))
+        if pts:
+            return pts, "deribit"
+    except Exception:
+        pass
+    return [], ""
+
+
+def fetch_unlock_decision(today, get=None, limit_pct=1.0):
+    """(allowed, known, source) or None. DeFiLlama, then Tokenomist if a key is set, then PatternPlus."""
+    get = get or _get_json
+    try:
+        parsed = parse_llama_emissions(get("https://api.llama.fi/emissions"), today, limit=limit_pct / 100.0)
+        if parsed and parsed[1]:
+            return parsed[0], parsed[1], "defillama"
+    except Exception:
+        pass
+    key = os.environ.get("TOKENOMIST_API_KEY") or ""
+    if key:
+        try:
+            data = get("https://api.tokenomist.ai/v2/unlock/events",
+                       headers={"User-Agent": "paper-trader", "x-api-key": key})
+            parsed = parse_pattern_unlocks(data, today, limit_pct=limit_pct) or parse_llama_emissions(data, today, limit=limit_pct / 100.0)
+            if parsed and parsed[1]:
+                return parsed[0], parsed[1], "tokenomist"
+        except Exception:
+            pass
+    try:
+        parsed = parse_pattern_unlocks(get("https://pattern.plus/api/v1/unlocks.json"), today, limit_pct=limit_pct)
+        if parsed:
+            return parsed[0], parsed[1], "patternplus"
+    except Exception:
+        pass
+    return None
+
+
+def load_carry(today=None, get=None):
+    """Funding and unlocks for a replay. One fetch of each, outside the day loop."""
+    today = today or datetime.now(timezone.utc).date()
+    o = opts()
+    points, source = fetch_funding_points(get=get)
+    decided = fetch_unlock_decision(today, get=get, limit_pct=o["unlock_pct"])
+    return dict(halve=halve_series(points, hot=o["funding_hot"]),
+                allowed=(decided[0] if decided else None),
+                funding_source=source,
+                unlock_source=(decided[2] if decided else ""),
+                funding_days=len(points))
+
+
+def replay_books(books, closes=None, pause=0.6, carry=None):
+    """Replay books (or the names given) and return stat rows."""
     books = list(books)
     closes = closes or load_history(books, pause=pause)
     fees = {"crypto": opts()["kraken_fee"], "stocks": opts()["stock_fee"]}
+    if carry is None and "trend_carry_unlock" in books:
+        try:
+            carry = load_carry()
+        except Exception:
+            carry = {}
     rows = []
     for name in books:
-        result = replay(name, closes, fees=fees, min_trade=opts()["min_trade"])
+        result = replay(name, closes, fees=fees, min_trade=opts()["min_trade"],
+                        carry=carry if name == "trend_carry_unlock" else None)
         row = replay_stats(result)
         row["book"] = name
         row["days"] = len(result["curve"])
         row["symbols"] = len(closes)
+        if name == "trend_carry_unlock" and carry:
+            row["funding_source"] = carry.get("funding_source") or ""
+            row["unlock_source"] = carry.get("unlock_source") or ""
         rows.append(row)
     return rows
+
+
+_LAST_SEC = 0.0
+SEC_UA = "PaperTrader research github.com/oscarwy08/trading-dashboard"
+
+
+def _sec_get(url, kind="json"):
+    """SEC asks for a declared User-Agent and about 10 requests a second."""
+    global _LAST_SEC
+    wait = 0.12 - (time.time() - _LAST_SEC)
+    if wait > 0:
+        time.sleep(wait)
+    headers = {"User-Agent": SEC_UA, "Accept": "application/xml,text/xml,*/*" if kind == "text" else "application/json"}
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            raw = resp.read().decode("utf-8", "replace")
+    finally:
+        _LAST_SEC = time.time()
+    return raw if kind == "text" else json.loads(raw)
+
+
+def _cik_map(payload):
+    out = {}
+    rows = payload.values() if isinstance(payload, dict) else (payload or [])
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        ticker = str(row.get("ticker") or "").upper()
+        cik = row.get("cik_str", row.get("cik"))
+        if not ticker or cik is None:
+            continue
+        try:
+            out[ticker] = f"{int(cik):010d}"
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+def _form4_filings(sub):
+    recent = ((sub or {}).get("filings") or {}).get("recent") or {}
+    forms = recent.get("form") or []
+    dates = recent.get("filingDate") or []
+    acc = recent.get("accessionNumber") or []
+    docs = recent.get("primaryDocument") or []
+    out = []
+    for i, form in enumerate(forms):
+        if str(form) != "4":
+            continue
+        if i >= len(dates) or i >= len(acc) or i >= len(docs):
+            break
+        doc = str(docs[i] or "")
+        if not doc.lower().endswith(".xml"):
+            continue
+        out.append((str(dates[i]), str(acc[i]), doc))
+    return out
+
+
+def _choose_filings(filings, today, window_days, xml_cap=4):
+    """Recent Form 4s, plus the same month in earlier years, capped so one ticker stays small.
+
+    history_ok is false when a prior-year month still has filings we did not read.
+    Those names stay on pure relative strength.
+    """
+    start = today - timedelta(days=int(window_days))
+    parsed = []
+    for day_s, accn, doc in filings:
+        try:
+            day = date.fromisoformat(str(day_s)[:10])
+        except ValueError:
+            continue
+        parsed.append((day, accn, doc))
+    recent = [row for row in parsed if start <= row[0] <= today]
+    recent.sort(key=lambda row: row[0], reverse=True)
+    chosen = list(recent[:2])
+    prior_keys = {(y, day.month) for day, _, _ in chosen for y in range(day.year - 3, day.year)}
+    by_month = {}
+    for row in parsed:
+        by_month.setdefault((row[0].year, row[0].month), []).append(row)
+    have = {accn for _, accn, _ in chosen}
+    for key in sorted(prior_keys):
+        for row in by_month.get(key) or []:
+            if len(chosen) >= xml_cap:
+                break
+            if row[1] not in have:
+                chosen.append(row)
+                have.add(row[1])
+    history_ok = bool(chosen)
+    for key in prior_keys:
+        for row in by_month.get(key) or []:
+            if row[1] not in have:
+                history_ok = False
+                break
+    return chosen[:xml_cap], history_ok
+
+
+def _form4_url(cik, accession, doc):
+    return f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{str(accession).replace('-', '')}/{doc}"
+
+
+def _us_names():
+    return [sym for sym in _equity_universe() if "." not in sym]
+
+
+def _refresh_edgar(cache, today, batch, get):
+    cik_day = str(cache.get("cik_day") or "")
+    try:
+        stale = (today - date.fromisoformat(cik_day)).days >= 7
+    except ValueError:
+        stale = True
+    started = time.perf_counter()
+    if stale or not cache.get("cik"):
+        mapped = _cik_map(get("https://www.sec.gov/files/company_tickers.json", "json"))
+        want = {sym.upper() for sym in _us_names()}
+        mapped = {k: v for k, v in mapped.items() if k in want}
+        if mapped:
+            cache["cik"] = mapped
+            cache["cik_day"] = today.isoformat()
+    cik = cache.get("cik") or {}
+    tickers = cache.setdefault("tickers", {})
+    window = opts()["insider_window"]
+
+    def refreshed(sym):
+        return (tickers.get(sym) or {}).get("refreshed") or ""
+
+    todo = [sym for sym in _us_names() if sym.upper() in cik and refreshed(sym) != today.isoformat()]
+    todo.sort(key=refreshed)
+    for sym in todo[:batch]:
+        if time.perf_counter() - started > 20:
+            break
+        rec = dict(tickers.get(sym) or {})
+        owners = dict(rec.get("owners") or {})
+        seen = set(rec.get("seen") or [])
+        history_ok = False
+        try:
+            sub = get(f"https://data.sec.gov/submissions/CIK{cik[sym.upper()]}.json", "json")
+            chosen, history_ok = _choose_filings(_form4_filings(sub), today, window, xml_cap=4)
+            for _day, accn, doc in chosen:
+                if accn in seen:
+                    continue
+                text = get(_form4_url(cik[sym.upper()], accn, doc), "text")
+                for tx in parse_form4(text):
+                    _note_trade(owners, tx["owner"], tx["date"], tx["purchase"])
+                seen.add(accn)
+        except Exception:
+            history_ok = False
+        tickers[sym] = {"refreshed": today.isoformat(), "owners": owners, "seen": sorted(seen),
+                        "history_ok": history_ok, "source": "edgar"}
+    cache["source"] = "edgar"
+
+
+def _refresh_finnhub(cache, today, batch, get):
+    key = os.environ.get("FINNHUB_API_KEY") or os.environ.get("FINNHUB_TOKEN") or ""
+    tickers = cache.setdefault("tickers", {})
+    start = (today - timedelta(days=365 * 4)).isoformat()
+
+    def refreshed(sym):
+        return (tickers.get(sym) or {}).get("refreshed") or ""
+
+    todo = [sym for sym in _us_names() if refreshed(sym) != today.isoformat()]
+    todo.sort(key=refreshed)
+    started = time.perf_counter()
+    for sym in todo[:batch]:
+        if time.perf_counter() - started > 20:
+            break
+        owners, earliest, history_ok = {}, None, False
+        try:
+            url = ("https://finnhub.io/api/v1/stock/insider-transactions?symbol="
+                   f"{urllib.parse.quote(sym)}&from={start}&to={today.isoformat()}&token={urllib.parse.quote(key)}")
+            owners, earliest = parse_finnhub_insiders(get(url))
+            if earliest:
+                history_ok = (today - date.fromisoformat(earliest)).days >= 365 * 2
+        except Exception:
+            history_ok = False
+        tickers[sym] = {"refreshed": today.isoformat(), "owners": owners, "history_ok": history_ok, "source": "finnhub"}
+    cache["source"] = "finnhub"
+
+
+def refresh_carry(con, today, get=None):
+    """Funding and unlock caches, at most once a UTC day. Returns (halve, allowed).
+
+    A failed fetch keeps yesterday's readings. With no readings, funding does not
+    change the weight and unlocks fall back to BTC and ETH.
+    """
+    o = opts()
+    day = today.isoformat()
+    funding = _state(con, "btc_funding") or {}
+    unlocks = _state(con, "unlocks") or {}
+    if funding.get("fetched") != day:
+        points, source = fetch_funding_points(get=get)
+        if points:
+            funding = {"fetched": day, "source": source, "points": [[d, round(float(v), 6)] for d, v in points]}
+        else:
+            funding = dict(funding)
+            funding["fetched"] = day
+            funding["error"] = "no funding feed"
+        _set_state(con, "btc_funding", funding)
+    if unlocks.get("fetched") != day:
+        decided = fetch_unlock_decision(today, get=get, limit_pct=o["unlock_pct"])
+        if decided:
+            allowed, known, source = decided
+            unlocks = {"fetched": day, "ok": True, "source": source,
+                       "allowed": sorted(allowed), "known": sorted(known)}
+        else:
+            unlocks = dict(unlocks)
+            unlocks["fetched"] = day
+            unlocks["error"] = "no unlock feed"
+            if not unlocks.get("ok"):
+                unlocks["allowed"] = ["BTC", "ETH"]
+                unlocks["known"] = []
+        _set_state(con, "unlocks", unlocks)
+    points = []
+    for row in funding.get("points") or []:
+        try:
+            points.append(float(row[1]))
+        except (TypeError, ValueError, IndexError):
+            continue
+    halve = funding_halve(points, hot=o["funding_hot"]) if points else False
+    if unlocks.get("ok"):
+        allowed = set(unlocks.get("allowed") or ["BTC", "ETH"])
+    else:
+        allowed = {"BTC", "ETH"}
+    allowed.add("BTC")
+    return halve, allowed
+
+
+def refresh_insiders(con, today, get=None):
+    """At most one batch of US names a day. Returns opportunistic-buy flags. A miss leaves the old cache."""
+    o = opts()
+    cache = _state(con, "insider_cache") or {}
+    if cache.get("fetched") == today.isoformat():
+        return insider_flags(cache, today, o["insider_window"])
+    batch = max(1, int(o["insider_batch"]))
+    try:
+        if os.environ.get("FINNHUB_API_KEY") or os.environ.get("FINNHUB_TOKEN"):
+            _refresh_finnhub(cache, today, batch, get or _get_json)
+        else:
+            _refresh_edgar(cache, today, batch, get or _sec_get)
+        cache["error"] = ""
+    except Exception as exc:
+        text = str(exc)
+        for env in ("FINNHUB_API_KEY", "FINNHUB_TOKEN", "TOKENOMIST_API_KEY"):
+            secret = os.environ.get(env) or ""
+            if secret and secret in text:
+                text = text.replace(secret, "redacted")
+        cache["error"] = text[:180]
+    cache["fetched"] = today.isoformat()
+    _set_state(con, "insider_cache", cache)
+    return insider_flags(cache, today, o["insider_window"])
+
+
+def _insider_ready(closes):
+    for sym in _equity_universe():
+        if len(closes.get(sym) or []) >= 126:
+            return True
+    return False
 
 
 # --- live book -------------------------------------------------------------
@@ -889,7 +1697,11 @@ def run(name, path=None):
             print(f"[strategy] {name} skipped (no GBP rate)")
             return
         closes = _closes(con)
-        if len(closes.get("BTC") or []) < 50 and book != "quiet_strength":
+        if book == "insider_rs_stocks":
+            if not _insider_ready(closes):
+                print(f"[strategy] {name} waiting for 126 stock closes")
+                return
+        elif len(closes.get("BTC") or []) < 50 and book != "quiet_strength":
             print(f"[strategy] {name} waiting for 50 BTC closes ({len(closes.get('BTC') or [])} stored)")
             return
         o = opts()
@@ -906,6 +1718,16 @@ def run(name, path=None):
             last = datetime.fromisoformat(state["last_day"]).date()
         extra = {"opts": o, "buzz": _buzz(con), "turnover": _turnover(con),
                  "held": None}
+        note = ""
+        if book == "trend_carry_unlock":
+            halve, allowed = refresh_carry(con, today)
+            extra["funding_halve"] = halve
+            extra["unlock_allowed"] = allowed
+            note = " funding " + ("halved" if halve else "full")
+        elif book == "insider_rs_stocks":
+            flags = refresh_insiders(con, today)
+            extra["insider"] = flags
+            note = f" insider {len(flags)}"
         if book == "btc_core_satellite" and state.get("satellite"):
             since = datetime.fromisoformat(state["satellite"]["since"]).date()
             extra["held"] = (state["satellite"]["asset"], (today - since).days)
@@ -930,7 +1752,8 @@ def run(name, path=None):
             entry_due = due("majors_rotation" if book == "quiet_strength" else book, last, today)
             if book != "quiet_strength" or entry_due:
                 targets = targets_for(book, closes, extra)
-                trades += apply_targets(cash, pos, gbp, targets, _fees(o), o["min_trade"], band_for(book))
+                frac = o["min_pos_frac"] if book == "trend_carry_unlock" else 0.0
+                trades += apply_targets(cash, pos, gbp, targets, _fees(o), o["min_trade"], band_for(book), frac)
                 acted = True
                 if book == "btc_core_satellite":
                     sat = next((a for a, (acct, w) in targets.items() if a != "BTC"), None)
@@ -951,7 +1774,10 @@ def run(name, path=None):
         _set_state(con, "strategy_state", state)
         con.commit()
         eq = con.execute("SELECT equity FROM equity ORDER BY ts DESC LIMIT 1").fetchone()
-        print(f"[strategy] {name} trades {len(trades)} equity £{eq[0]:.2f}" if eq else f"[strategy] {name} trades {len(trades)}")
+        line = f"[strategy] {name} trades {len(trades)}"
+        if eq:
+            line += f" equity £{eq[0]:.2f}"
+        print(line + note)
     finally:
         con.close()
 

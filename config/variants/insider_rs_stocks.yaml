@@ -1,0 +1,5 @@
+# Monthly US/UK relative strength, tilted by opportunistic SEC Form 4 buys. Held overnight.
+# The crypto half stays in cash.
+strategy_book: insider_rs_stocks
+variant_rules:
+  hold_overnight: true

@@ -937,6 +937,8 @@ BOOK_MENU = {
     "rs_rotation_veto": "RS rotation, veto",
     "quiet_strength": "Quiet strength",
     "best_of_plus": "Best of plus trend",
+    "trend_carry_unlock": "Trend, funding and unlocks",
+    "insider_rs_stocks": "Insider relative strength",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 
