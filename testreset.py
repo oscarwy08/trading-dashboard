@@ -68,8 +68,10 @@ def _book_paths():
     return paths
 
 
-def _curve(con, start):
+def _curve(con, start, book_start=None):
+    from dashboard import partial_equity_point
     rows = con.execute("SELECT ts, equity, btc FROM equity WHERE ts>=? ORDER BY ts", (start,)).fetchall()
+    rows = [r for r in rows if not partial_equity_point(r[0], r[1], [(x[0], x[1]) for x in rows], book_start)]
     out = []
     for ts, eq, btc in rows:
         try:
@@ -86,16 +88,14 @@ def _curve(con, start):
 
 def _stats(con, start, end):
     eq = con.execute("SELECT equity, btc FROM equity WHERE ts>=? AND ts<=? ORDER BY ts", (start, end)).fetchall()
-    start_eq = float(eq[0][0]) if eq and eq[0][0] else 200.0
-    end_eq = float(eq[-1][0]) if eq and eq[-1][0] else start_eq
+    from dashboard import curve_drawdown, partial_equity_point
+    start_eq = 200.0
+    raw = [(r[0], r[1]) for r in con.execute(
+        "SELECT ts, equity FROM equity WHERE ts>=? AND ts<=? ORDER BY ts", (start, end)) if r[1] is not None]
+    kept = [(ts, v) for ts, v in raw if not partial_equity_point(ts, v, raw, start_eq)]
+    end_eq = float(kept[-1][1]) if kept else (float(eq[-1][0]) if eq and eq[-1][0] else start_eq)
     ret = end_eq / start_eq - 1 if start_eq else None
-    peak, mdd = 0.0, 0.0
-    for v, _btc in eq:
-        if v is None:
-            continue
-        peak = max(peak, float(v))
-        if peak:
-            mdd = min(mdd, float(v) / peak - 1)
+    mdd = curve_drawdown(kept, start_eq)
     btc_ret = None
     if eq and eq[0][1] and eq[-1][1]:
         btc_ret = float(eq[-1][1]) / float(eq[0][1]) - 1
@@ -152,7 +152,7 @@ def archive_test1(end_ts):
         con.row_factory = sqlite3.Row
         try:
             st = _stats(con, TEST1_START, end_ts)
-            curve = _curve(con, TEST1_START)
+            curve = _curve(con, TEST1_START, st["start"])
         finally:
             con.close()
         label = "Main book" if name == "main" else variants.LABELS.get(name, name)

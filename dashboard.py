@@ -179,6 +179,67 @@ def day_ledger(con, c, positions, acash, base):
     out["shares"] = {sb: round(v * 100, 2) for sb, v in sh.items()}
     return out
 
+def _as_epoch(ts):
+    if isinstance(ts, (int, float)):
+        return float(ts)
+    try:
+        d = datetime.fromisoformat(str(ts))
+    except Exception:
+        return None
+    if d.tzinfo is None:
+        d = d.replace(tzinfo=timezone.utc)
+    return d.timestamp()
+
+
+def test_since(con):
+    """Timestamp the current test opened, if this book recorded one. Earlier equity is a different test."""
+    try:
+        row = con.execute("SELECT value FROM state WHERE key='test_generation'").fetchone()
+        blob = json.loads(row[0]) if row and row[0] else None
+    except Exception:
+        return None
+    if not isinstance(blob, dict):
+        return None
+    return blob.get("started") or blob.get("ts")
+
+
+def partial_equity_point(ts, value, rows, start):
+    """A sleeve-only snapshot sitting next to the full book. best_of_plus writes £30 for the
+    day/risk slice, then the whole £200 a few seconds later. That £30 is not a drawdown."""
+    if value is None or start is None or float(value) >= float(start) * 0.5:
+        return False
+    t = _as_epoch(ts)
+    if t is None:
+        return False
+    for ts2, v2 in rows:
+        if v2 is None:
+            continue
+        t2 = _as_epoch(ts2)
+        if t2 is None or abs(t2 - t) > 180:
+            continue
+        if float(v2) >= max(float(start) * 0.8, float(value) * 2):
+            return True
+    return False
+
+
+def curve_drawdown(rows, start=None):
+    """Peak-to-trough of one book's equity since the test opened.
+
+    `rows` is (timestamp, equity) in time order. The peak starts at `start`, the Test 2
+    opening equity, so a book that leaves £200 and comes back is measured from £200.
+    A partial sleeve row next to a full-book row is left out.
+    """
+    kept = [(ts, v) for ts, v in rows if v is not None and not partial_equity_point(ts, v, rows, start)]
+    peak = float(start) if start else 0.0
+    mdd = 0.0
+    for _, v in kept:
+        v = float(v)
+        peak = max(peak, v)
+        if peak:
+            mdd = min(mdd, v / peak - 1)
+    return mdd
+
+
 def stats(con, sleeve=None, account=None):
     """Stats for the whole paper money (sleeve=None, account=None), one pot ('core'/'day'/'risk'), one account
     ('crypto' = Monad wallet / 'stocks' = Trading 212, v6) or one pot x account cell. Also used by daily_summary.py.
@@ -200,8 +261,9 @@ def stats(con, sleeve=None, account=None):
         sells = [r[0] for r in con.execute(f"SELECT pnl FROM trades WHERE side='SELL' AND (CASE WHEN klass='stock' THEN 'stock' ELSE 'crypto' END) IN {kl}{w}", a)]
         nt = con.execute(f"SELECT COUNT(*) FROM trades WHERE side IN ('BUY','SELL') AND (CASE WHEN klass='stock' THEN 'stock' ELSE 'crypto' END) IN {kl}{w}", a).fetchone()[0]
         start = base[sleeve][account] if sleeve else sum(base[s_][account] for s_ in SLEEVES)
-        peak, mdd = 0, 0
-        for r in eq: peak = max(peak, r[1]); mdd = min(mdd, r[1] / peak - 1) if peak else mdd
+        since = test_since(con)
+        eq = [r for r in eq if not since or (r[0] or "") >= since]
+        mdd = curve_drawdown([(r[0], r[1]) for r in eq], start)
         return dict(start=start, equity=eq[-1][1] if eq else start, ret=(eq[-1][1] / start - 1) if eq and start else 0,
                     realized=sum(x or 0 for x in sells), trades=nt, closed=len(sells),
                     win_rate=(sum((x or 0) > 0 for x in sells) / len(sells)) if sells else None, max_dd=mdd, btc_ret=None,
@@ -213,8 +275,10 @@ def stats(con, sleeve=None, account=None):
     q = "SELECT pnl FROM trades WHERE side='SELL'" + (" AND sleeve=?" if sleeve else "")
     sells = [r[0] for r in con.execute(q, (sleeve,) if sleeve else ())]
     start = float(c["starting_balance"]) if not sleeve else sum(base[sleeve].values())
-    peak, mdd = 0, 0
-    for r in eq: peak = max(peak, r[1]); mdd = min(mdd, r[1] / peak - 1) if peak else mdd
+    since = test_since(con)
+    eq = [r for r in eq if not since or (r[0] or "") >= since]
+    # Only the whole-book equity column has the sleeve-only ghost rows. A pot's own column is already that pot.
+    mdd = curve_drawdown([(r[0], r[1]) for r in eq], None if sleeve else start)
     btc0 = next((r[2] for r in eq if r[2]), None)
     btc_ret = (eq[-1][2] / btc0 - 1) if eq and btc0 and eq[-1][2] else None
     nt = con.execute("SELECT COUNT(*) FROM trades" + (" WHERE sleeve=?" if sleeve else ""), (sleeve,) if sleeve else ()).fetchone()[0]
