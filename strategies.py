@@ -47,7 +47,7 @@ LABELS = {
     "best_of_plus": "Best of plus trend",
     "trend_carry_unlock": "Trend, funding and unlocks",
     "insider_rs_stocks": "Insider relative strength",
-    "signal_engine": "Signal engine",
+    "signal_engine": 'DVOL fear',
 }
 BLURB = {
     "btc_trend": "Crypto is 100% BTC when the daily close is above its 50-day average, otherwise cash. Stocks is the same rule on VUSA, or EQQQ if VUSA has no history. Checked once a day. Held through nights and weekends.",
@@ -59,7 +59,7 @@ BLURB = {
     "best_of_plus": "The best_of book (sentiment split, 15-minute entry watch, burst runner) may use only 15% of the £200. The other 85% follows the BTC / VUSA trend. Nothing flattens at 22:00. Core alt picks are off on this book.",
     "trend_carry_unlock": "Once a week, hold the strongest of BTC, ETH and SOL that is above its 50-day average, sized like the vol-target book. Crypto is halved when BTC perpetual funding is in the top tenth of the past year, or at 25% a year or more. An alt with more than 1% of supply unlocking within 30 days is left out. If that feed is missing, only BTC and ETH are held. A resize smaller than 10% of the position is skipped. Stocks follow the vol-sized VUSA trend. Held through nights and weekends. Unlock dates: Data: PatternPlus (https://pattern.plus).",
     "insider_rs_stocks": "Once a month, the stock half holds the strongest Trading 212 US and UK names by six-month return, above a long average. A name in the top half of that ranking is overweighted after an opportunistic open-market insider buy (the same person did not trade that calendar month in an earlier year). Routine filings are ignored. The crypto half stays in cash. Held through nights and weekends.",
-    "signal_engine": "The vol-sized BTC and VUSA trend, checked once a week. A composite of news, the routine sentiment file, funding, unlocks, insider buys, trend, momentum, volatility and a shrunk 5-day return tilts that weight. A signal is used only when an older window and a later window agree it ranked with the next week's return. No edge means no tilt, so the book matches the vol trend. Cash stays cash. Held through nights and weekends.",
+    "signal_engine": 'Once a week, crypto is cash when the previous Deribit DVOL close is above its trailing 252-day 80th percentile, and 100% BTC otherwise. No history means cash. Stocks stay cash. Held overnight.',
 }
 
 
@@ -562,16 +562,21 @@ def _insider_targets(closes, extra):
 
 
 def _signal_targets(closes, extra, o, n):
-    """Vol-sized trend, tilted by the composite. A missing composite leaves the vol weight as it is."""
-    import signalcomb
-    comp = extra.get("composite") or {}
+    """Full account when that day's regime is long. A missing regime is cash. There is no short.
+
+    The 50-day trend is not a gate. This book is the timing rule, long or flat.
+    """
+    regime = extra.get("regime") or {}
     out = {}
-    btc = closes.get("BTC") or []
-    if _above(btc, n):
-        out["BTC"] = ("crypto", signalcomb.tilt(vol_weight(_px(btc), o["vol_target"]), comp.get("BTC")))
-    stock = _stock_name(closes, n)
-    if stock and _above(closes[stock], n):
-        out[stock] = ("stocks", signalcomb.tilt(vol_weight(_px(closes[stock]), o["vol_target"]), comp.get(stock)))
+    if regime.get("BTC") and closes.get("BTC"):
+        out["BTC"] = ("crypto", 1.0)
+    stock = None
+    for sym in STOCK_SYMS:
+        if closes.get(sym):
+            stock = "VUSA" if sym.startswith("VUSA") else "EQQQ"
+            break
+    if stock and regime.get(stock) and _stock_name(closes, 2):
+        out[_stock_name(closes, 2)] = ("stocks", 1.0)
     return out
 
 
@@ -687,7 +692,7 @@ def due(book, last_day, today):
     """Daily books act once a calendar day. Weekly books act when the ISO week has changed."""
     if last_day is None:
         return True
-    if book in ("majors_rotation", "btc_core_satellite", "rs_rotation_veto", "trend_carry_unlock", "signal_engine"):
+    if book in ("majors_rotation", "btc_core_satellite", "rs_rotation_veto", "trend_carry_unlock"):
         return last_day.isocalendar()[:2] != today.isocalendar()[:2]
     if book == "insider_rs_stocks":
         return (last_day.year, last_day.month) != (today.year, today.month)
@@ -835,15 +840,11 @@ def replay(book, closes, fees=None, min_trade=5.0, fx=1.0, carry=None):
     peaks = {}
     o = opts()
     carry = carry or {}
-    frac = o["min_pos_frac"] if book in ("trend_carry_unlock", "signal_engine") else 0.0
-    if book == "signal_engine" and not carry.get("by_day"):
-        import signalcomb
-        names = ["BTC"]
-        stock = _stock_name(closes, int(o["sma"]))
-        if stock:
-            names.append(stock)
-        carry = dict(carry)
-        carry["by_day"] = signalcomb.composites_by_day(closes, names)
+    frac = o["min_pos_frac"] if book == "trend_carry_unlock" else 0.0
+    regime_by_day = {}
+    if book == "signal_engine":
+        import signalhist
+        regime_by_day = signalhist.book_regime(closes, carry)
     for i, day in enumerate(dates):
         today = datetime.fromisoformat(day).date()
         window = {}
@@ -864,7 +865,7 @@ def replay(book, closes, fees=None, min_trade=5.0, fx=1.0, carry=None):
             if carry.get("universe") is not None:
                 extra["universe"] = carry["universe"]
         if book == "signal_engine":
-            extra["composite"] = (carry.get("by_day") or {}).get(day) or {}
+            extra["regime"] = regime_by_day.get(day) or {}
         act = due(book, last, today)
         # Quiet-strength exits are checked every day, not only on the entry day.
         if book == "quiet_strength":
@@ -1758,16 +1759,15 @@ def run(name, path=None):
             note = f" insider {len(flags)}"
         elif book == "signal_engine":
             try:
-                import signalcomb
-                snap = signalcomb.book_snapshot(closes, con)
-                extra["composite"] = snap.get("composite") or {}
-                _set_state(con, "signal_live", dict(composite=snap.get("composite") or {}, kept=snap.get("kept") or [],
-                                                    btc=snap.get("composite_btc"), stock=snap.get("stock_composite")))
-                btc_c = snap.get("composite_btc")
-                note = " tilt BTC %+.2f" % (btc_c if btc_c is not None else 0.0)
+                import signalhist
+                regime = signalhist.book_regime(closes, {})
+                extra["regime"] = regime.get(today.isoformat()) or {}
+                _set_state(con, "signal_live", dict(btc=int(extra["regime"].get("BTC") or 0),
+                                                    regime=extra["regime"]))
+                note = " BTC" if extra["regime"].get("BTC") else " cash"
             except Exception:
-                extra["composite"] = {}
-                note = " tilt off"
+                extra["regime"] = {}
+                note = " cash"
         if book == "btc_core_satellite" and state.get("satellite"):
             since = datetime.fromisoformat(state["satellite"]["since"]).date()
             extra["held"] = (state["satellite"]["asset"], (today - since).days)
@@ -1792,7 +1792,7 @@ def run(name, path=None):
             entry_due = due("majors_rotation" if book == "quiet_strength" else book, last, today)
             if book != "quiet_strength" or entry_due:
                 targets = targets_for(book, closes, extra)
-                frac = o["min_pos_frac"] if book in ("trend_carry_unlock", "signal_engine") else 0.0
+                frac = o["min_pos_frac"] if book == "trend_carry_unlock" else 0.0
                 trades += apply_targets(cash, pos, gbp, targets, _fees(o), o["min_trade"], band_for(book), frac)
                 acted = True
                 if book == "btc_core_satellite":
