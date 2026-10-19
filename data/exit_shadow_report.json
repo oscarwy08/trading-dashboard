@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-19T15:29:02+00:00",
+  "generated": "2026-10-19T16:30:49+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 3,
-        "avg_dt_s": 316283.6666666667,
-        "avg_price_pct": -6.700912593234335,
-        "missed": 71
+        "pairs": 6,
+        "avg_dt_s": 163267.16666666666,
+        "avg_price_pct": -4.123114059145558,
+        "missed": 70
       },
       "entries": {
         "pairs": 1,
@@ -21,10 +21,10 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 3,
-        "avg_dt_s": 105430.0,
-        "avg_price_pct": -4.857671419975016,
-        "missed": 52
+        "pairs": 4,
+        "avg_dt_s": 79125.0,
+        "avg_price_pct": -3.6432535649812623,
+        "missed": 51
       },
       "entries": {
         "pairs": 4,
@@ -66,10 +66,10 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 3,
-        "avg_dt_s": 105444.0,
-        "avg_price_pct": -4.857671419975016,
-        "missed": 57
+        "pairs": 4,
+        "avg_dt_s": 161874.5,
+        "avg_price_pct": -5.882893032214426,
+        "missed": 56
       },
       "entries": {
         "pairs": 2,
@@ -96,25 +96,25 @@
     {
       "name": "midnight_crypto",
       "exits": {
-        "pairs": 7,
-        "avg_dt_s": 2254.0,
-        "avg_price_pct": -0.10159525440824657,
-        "missed": 62
+        "pairs": 10,
+        "avg_dt_s": 35799.3,
+        "avg_price_pct": -0.7467051476243223,
+        "missed": 61
       },
       "entries": {
         "pairs": 6,
         "avg_dt_s": 361334.1666666667,
         "avg_price_pct": 1.6944519703135164,
-        "missed": 215
+        "missed": 241
       }
     },
     {
       "name": "entry_watch",
       "exits": {
-        "pairs": 5,
-        "avg_dt_s": 66414.6,
-        "avg_price_pct": -3.2111095028664574,
-        "missed": 43
+        "pairs": 6,
+        "avg_dt_s": 109643.83333333333,
+        "avg_price_pct": -3.920987993969135,
+        "missed": 42
       },
       "entries": {
         "pairs": 0,
@@ -126,10 +126,10 @@
     {
       "name": "risk_giveback_15",
       "exits": {
-        "pairs": 5,
-        "avg_dt_s": 115469.2,
-        "avg_price_pct": -5.64154308316437,
-        "missed": 55
+        "pairs": 6,
+        "avg_dt_s": 96263.16666666667,
+        "avg_price_pct": -4.701285902636975,
+        "missed": 54
       },
       "entries": {
         "pairs": 2,
@@ -141,10 +141,10 @@
     {
       "name": "day_trail_arm",
       "exits": {
-        "pairs": 7,
-        "avg_dt_s": 154931.42857142858,
-        "avg_price_pct": 0.41832756235255647,
-        "missed": 37
+        "pairs": 8,
+        "avg_dt_s": 135595.0,
+        "avg_price_pct": 0.3660366170584869,
+        "missed": 36
       },
       "entries": {
         "pairs": 6,
@@ -156,10 +156,10 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 4,
-        "avg_dt_s": 221.75,
-        "avg_price_pct": -0.23003466451860666,
-        "missed": 28
+        "pairs": 5,
+        "avg_dt_s": 225.6,
+        "avg_price_pct": -0.18402773161488534,
+        "missed": 27
       },
       "entries": {
         "pairs": 0,
@@ -171,10 +171,10 @@
     {
       "name": "no_risk_clock",
       "exits": {
-        "pairs": 5,
-        "avg_dt_s": 115497.8,
-        "avg_price_pct": -5.64154308316437,
-        "missed": 55
+        "pairs": 6,
+        "avg_dt_s": 96289.66666666667,
+        "avg_price_pct": -4.701285902636975,
+        "missed": 54
       },
       "entries": {
         "pairs": 1,
@@ -186,10 +186,10 @@
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 5,
-        "avg_dt_s": 115498.6,
-        "avg_price_pct": -5.64154308316437,
-        "missed": 56
+        "pairs": 6,
+        "avg_dt_s": 96290.33333333333,
+        "avg_price_pct": -4.701285902636975,
+        "missed": 55
       },
       "entries": {
         "pairs": 2,
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 7,
-        "avg_dt_s": 248110.7142857143,
-        "avg_price_pct": 0.12896159123038706,
-        "missed": 73
+        "pairs": 8,
+        "avg_dt_s": 217128.875,
+        "avg_price_pct": 0.11284139232658869,
+        "missed": 72
       },
       "entries": {
         "pairs": 3,
@@ -216,10 +216,10 @@
     {
       "name": "sent_split",
       "exits": {
-        "pairs": 5,
-        "avg_dt_s": 185166.0,
-        "avg_price_pct": -6.016197921051872,
-        "missed": 52
+        "pairs": 6,
+        "avg_dt_s": 154347.66666666666,
+        "avg_price_pct": -5.013498267543227,
+        "missed": 51
       },
       "entries": {
         "pairs": 3,
@@ -231,10 +231,10 @@
     {
       "name": "best_of",
       "exits": {
-        "pairs": 5,
-        "avg_dt_s": 1380.2,
-        "avg_price_pct": -0.12642829201027023,
-        "missed": 9
+        "pairs": 6,
+        "avg_dt_s": 1193.8333333333333,
+        "avg_price_pct": -0.10535691000855851,
+        "missed": 8
       },
       "entries": {
         "pairs": 0,
@@ -365,6 +365,261 @@
     },
     {
       "name": "insider_rs_stocks",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_engine",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_purge",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_equal",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_multitest",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_news",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_funding_contrarian",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_funding_carry",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_basis",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_dvol",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_vrp",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_stablecoin",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_macro",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_tsmom",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_gold",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_onchain",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_gdelt",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "signal_dominance",
       "exits": {
         "pairs": 0,
         "avg_dt_s": null,
@@ -1366,13 +1621,13 @@
       "shadow_ts": "2026-10-19T07:52:42+00:00",
       "shadow_price": 1.4342654721947214,
       "trigger": "[burst 24h] stop-loss -1.7% <= -1.5% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-19T15:58:24+00:00",
+      "cycle_price": 1.4290443219699736,
+      "cycle_reason": "[burst 4h] stop-loss -1.8% <= -1.6% (ATR-scaled); P&L \u00a3-0.09",
+      "dt_s": 29142.0,
+      "price_diff": -0.005221150224747895,
+      "price_pct": -0.3640295556134709
     },
     {
       "asset": "BAT",
@@ -1408,6 +1663,34 @@
       "shadow_ts": "2026-10-19T15:23:47+00:00",
       "shadow_price": 1.4861159817018275,
       "trigger": "[burst 4h] take-profit 5.5% >= 5.4% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-19T15:35:54+00:00",
+      "cycle_price": 1.4215348930578875,
+      "cycle_reason": "[burst 4h] trailing stop +0.9% (peak +4.9%, gives back 40% of the gain) [gap fill]; P&L \u00a3+0.05",
+      "dt_s": 727.0,
+      "price_diff": -0.06458108864393997,
+      "price_pct": -4.345629105608895
+    },
+    {
+      "asset": "CRV",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-19T15:32:39+00:00",
+      "shadow_price": 0.27506287162079956,
+      "trigger": "[burst 4h] trailing stop +2.2% (peak +4.0%, gives back 40% of the gain)",
+      "status": "matched",
+      "cycle_ts": "2026-10-19T15:47:22+00:00",
+      "cycle_price": 0.27526562620142586,
+      "cycle_reason": "[burst 4h] trailing stop +2.3% (peak +3.8%, gives back 40% of the gain); P&L \u00a3+0.11",
+      "dt_s": 883.0,
+      "price_diff": 0.00020275458062629648,
+      "price_pct": 0.0737120860520256
+    },
+    {
+      "asset": "RAY",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-19T15:55:08+00:00",
+      "shadow_price": 1.4305462077523907,
+      "trigger": "[burst 4h] stop-loss -1.7% <= -1.6% (ATR-scaled)",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
