@@ -967,7 +967,17 @@ def build(con, variant_report=None):
         signals=sig_hist, reasons=reasons, sentiment=sentiment,
         variants=variant_report if variant_report is not None else _variant_report(),
         strategies=_strategy_rows(),
+        rulebook=_rulebook(),
         tests=_tests_view())
+
+def _rulebook():
+    """Static plain-English cards. Performance is joined in the browser from `strategies`."""
+    try:
+        import strategytext
+        return strategytext.cards()
+    except Exception as e:
+        return [dict(name="rulebook", error=str(e), kind="rules", label="Main rules", show="always")]
+
 
 def _strategy_rows():
     try:

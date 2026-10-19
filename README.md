@@ -22,6 +22,10 @@ A crypto print from a different source that is more than 10% from the last accep
 
 Day and Risk hit rates are counted separately for crypto and for stocks. A crypto loss no longer moves a stock's chance or its expected value, and a stock loss no longer moves the crypto number. Stock momentum, breakouts and dips measure 4h, 24h, 36h and 48h in regular-session time (London, New York or Sydney hours, including holidays), not in wall-clock time across the overnight close. Crypto still uses wall-clock hours. Names dropped before they become a setup are logged as `book=… setup=… asset=… reason=…`.
 
+## Strategies tab (2026-10-19)
+
+The Strategies tab explains rule sets, not a league table of every paper book. The first card is the main Core, Day and Risk rules. Each other card is a book that does not follow those rules: what it holds, when it enters, when it exits, when it rebalances, which data it uses, and its live Test 2 return against holding BTC. A tweak of the main rules (EV exit, partial take, the day trail, and the rest) stays on the Variants tab, grouped under Main strategy, with one line describing the change. Signal-engine books use the same cards and appear there once they are in the cycle.
+
 ## Overnight strategy books (2026-10-18)
 
 Seven paper books, each with its own £200 (£100 crypto, £100 stocks). They are not the main book. They hold through nights and weekends. The main book's 22:00 flatten, stops and thresholds are unchanged.

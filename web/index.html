@@ -162,9 +162,10 @@
   <!-- ===================== VARIANTS ===================== -->
   <section class="tab" id="tab-variants" data-tab="variants">
     <div class="card">
-      <div class="card-h"><div><h2>Variant books</h2><p class="explain" id="var-explain">Paper books that start from the same snapshot as the main book and then follow a different rule. The main book is the frozen one. A variant cannot change it.</p></div></div>
+      <div class="card-h"><div><h2>Variant books</h2><p class="explain" id="var-explain">Paper books that start from the same snapshot as the main book. Tweaks of the Core, Day and Risk rules are grouped under Main strategy. A book with its own rules is explained on the Strategies tab.</p></div></div>
       <div class="chart-wrap"><div id="var-chart" class="chart"></div><div id="var-empty" class="empty hidden"></div></div>
-      <div class="tw"><table id="var-table" class="tbl"></table></div>
+      <div id="var-groups"></div>
+      <div class="tw" id="var-fallback"><table id="var-table" class="tbl"></table></div>
       <div id="var-books"></div>
       <div id="var-score" class="tw"></div>
     </div>
@@ -173,8 +174,8 @@
   <!-- ===================== STRATEGIES ===================== -->
   <section class="tab" id="tab-strategies" data-tab="strategies">
     <div class="card">
-      <div class="card-h"><div><h2>Strategies</h2><p class="explain" id="st-explain">Every paper book, sorted by how far it is ahead of holding BTC. The new books hold through the night and the weekend. Excess is the book's return minus the BTC hold over the same window. The stock column is the same against VUSA.</p></div></div>
-      <div class="tw"><table id="st-table" class="tbl"></table></div>
+      <div class="card-h"><div><h2>Strategies</h2><p class="explain" id="st-explain">The rule sets, in plain English. Main rules are the Core, Day and Risk pots. Each other card is a paper book that does not follow those rules. It starts at £200 in Test 2. Excess is that book's return minus holding BTC over the same window. A tweak of the main rules stays on the Variants tab.</p></div></div>
+      <div id="st-cards"></div>
     </div>
   </section>
 

@@ -77,6 +77,11 @@ plain = dashboard.build(con)
 check("trend" not in plain["sleeves"], "a book with no trend sleeve does not invent one")
 check(abs(plain["stats"]["start"] - 200) < 0.02, "that book still starts at the copied £200")
 check(abs(plain["sleeves"]["core"]["start"] - 100) < 0.02, "core keeps its own start")
+shown = [c["name"] for c in plain["rulebook"] if c.get("kind") != "tweak" and c.get("show") != "when_live"]
+check("main" in shown and "btc_trend" in shown and "ev_exit" not in shown and "partial_take" not in shown,
+      "strategy cards are the main rules and the separate books, not the tweaks")
+check(all(c.get("tweak") for c in plain["rulebook"] if c.get("kind") == "tweak"),
+      "each main-rule tweak has a one-line description")
 con.close()
 
 # The live failure: a trend buy used to raise KeyError and the JSON was never written.

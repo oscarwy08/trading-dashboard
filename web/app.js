@@ -1096,16 +1096,10 @@ function renderVariants() {
   if (el) el.textContent = (V.since
     ? `Same snapshot from ${fTs(Math.floor(Date.parse(V.since) / 1000))}, starting at ${fM(V.start_equity)}. P&L, trades, win rate and drawdown are the change since then. The main book keeps the frozen rules.`
     : 'The snapshot is taken the first cycle after this is deployed. Until then there is nothing to compare.')
-    + (V.ev_note ? ' ' + V.ev_note : '');
+    + (V.ev_note ? ' ' + V.ev_note : '')
+    + ' Tweaks of the main rules are grouped under Main strategy. A book with its own rules is explained on the Strategies tab.';
   const rows = books.filter(b => !b.error);
-  table($('#var-table'), [
-    {k: 'label', l: 'Book', f: r => `<b style="color:${VAR_COL[r.name] || '#e7e9ea'}">${esc(r.label)}</b><div class="muted small">${esc(r.blurb || '')}</div>`},
-    {k: 'equity', l: 'Value', num: 1, f: r => fM(r.equity)},
-    {k: 'pnl', l: 'P&L after fees', num: 1, f: r => `<span class="${cls(r.pnl)}">${fM(r.pnl, true)}</span>`},
-    {k: 'trades', l: 'Trades', num: 1, f: r => String(r.trades ?? '')},
-    {k: 'win_rate', l: 'Win rate', num: 1, f: r => r.win_rate == null ? 'n/a' : r.win_rate.toFixed(0) + '%'},
-    {k: 'max_dd', l: 'Max drawdown', num: 1, f: r => r.max_dd == null ? '' : r.max_dd.toFixed(1) + '%'},
-  ], rows, null, renderVariants, {empty: !V.enabled ? 'Variants are switched off' : (V.since ? 'Comparison rows are missing' : 'No variant has run yet')});
+  renderVariantGroups(rows, !V.enabled ? 'Variants are switched off' : (V.since ? 'Comparison rows are missing' : 'No variant has run yet'));
   const booksHost = $('#var-books');
   if (booksHost) booksHost.innerHTML = rows.filter(b => (b.table || []).length).map(b => {
     const body = (b.table || []).map(s => `<tr><td>${esc(s.strategy)}</td>` +
@@ -1119,8 +1113,10 @@ function renderVariants() {
       `<td class="num">${pnlCell(s.open_pnl)}</td>` +
       `<td class="num">${fM(s.fees)}<div class="muted small">${fM(s.fees_closed)} closed · ${fM(s.fees_open)} on open buys</div></td>` +
       `<td class="num">${isNum(s.exp_gbp) ? `<span class="${cls(s.exp_gbp)}">${fM(s.exp_gbp, true)}</span><div class="muted small">${fPct(s.exp_pct)}</div>` : '-'}</td></tr>`).join('');
+    const meta = ruleMeta(b.name);
+    const line = (meta && meta.tweak) || b.blurb || '';
     return `<h3 style="color:${VAR_COL[b.name] || '#e7e9ea'}">${esc(b.label)}</h3>` +
-      `<p class="explain">${esc(b.blurb || '')}</p>` +
+      `<p class="explain">${esc(line)}</p>` +
       `<div class="tw"><table class="tbl"><thead><tr>` +
       `<th>Strategy</th><th class="num">Budget</th><th class="num">Closed trades</th><th class="num">Win rate</th>` +
       `<th class="num">Avg win</th><th class="num">Avg loss</th><th class="num">Profit factor</th>` +
@@ -1222,26 +1218,87 @@ function spark(curve) {
   return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><polyline fill="none" stroke="#1d9bf0" stroke-width="1.6" points="${xy}"/></svg>`;
 }
 function pctCell(x) { return x == null || !isNum(x) ? '' : `<span class="${cls(x)}">${(x * 100).toFixed(1)}%</span>`; }
+function ruleMeta(name) {
+  return ((D && D.rulebook) || []).find(c => c && c.name === name) || null;
+}
+function variantCols(useTweak) {
+  return [
+    {k: 'label', l: 'Book', wrap: 1, f: r => {
+      const meta = ruleMeta(r.name);
+      const line = useTweak ? ((meta && meta.tweak) || r.blurb || '') : 'Full rules are on the Strategies tab.';
+      return `<b style="color:${VAR_COL[r.name] || '#e7e9ea'}">${esc(r.label)}</b><div class="muted small">${esc(line)}</div>`;
+    }},
+    {k: 'equity', l: 'Value', num: 1, f: r => fM(r.equity)},
+    {k: 'pnl', l: 'P&L after fees', num: 1, f: r => `<span class="${cls(r.pnl)}">${fM(r.pnl, true)}</span>`},
+    {k: 'trades', l: 'Trades', num: 1, f: r => String(r.trades ?? '')},
+    {k: 'win_rate', l: 'Win rate', num: 1, f: r => r.win_rate == null ? 'n/a' : r.win_rate.toFixed(0) + '%'},
+    {k: 'max_dd', l: 'Max drawdown', num: 1, f: r => r.max_dd == null ? '' : r.max_dd.toFixed(1) + '%'},
+  ];
+}
+function renderVariantGroups(rows, empty) {
+  const groups = $('#var-groups'), fallback = $('#var-fallback'), single = $('#var-table');
+  const book = (D && D.rulebook) || [];
+  if (!groups || !book.length) {
+    if (groups) groups.innerHTML = '';
+    if (fallback) fallback.classList.remove('hidden');
+    if (single) table(single, variantCols(true), rows, null, renderVariants, {empty});
+    return;
+  }
+  if (fallback) fallback.classList.add('hidden');
+  const kindOf = name => {
+    const meta = ruleMeta(name);
+    if (!meta) return 'tweak';
+    return meta.kind === 'book' ? 'book' : 'tweak';
+  };
+  const tweaks = rows.filter(r => kindOf(r.name) !== 'book');
+  const others = rows.filter(r => kindOf(r.name) === 'book');
+  groups.innerHTML =
+    `<div class="var-group"><h3>Main strategy</h3><p class="explain">These books follow the Core, Day and Risk rules. The line under each name is the one change.</p><div class="tw"><table class="tbl" id="var-main-table"></table></div></div>` +
+    `<div class="var-group"><h3>Different rule sets</h3><p class="explain">These books do not follow the main rules. What they hold, and when they buy and sell, is on the Strategies tab.</p><div class="tw"><table class="tbl" id="var-diff-table"></table></div></div>`;
+  table($('#var-main-table'), variantCols(true), tweaks, null, renderVariants, {empty: tweaks.length ? '' : empty});
+  table($('#var-diff-table'), variantCols(false), others, null, renderVariants, {empty: 'No separate rule set has run yet'});
+}
+function strategyCard(card, perf) {
+  const fields = [['What it holds', card.holds], ['Entry', card.entry], ['Exit', card.exit], ['Rebalance', card.rebalance], ['Data', card.data]];
+  const dl = fields.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v || '')}</dd>`).join('');
+  const bits = [];
+  if (perf && perf.equity != null) bits.push(fM(perf.equity));
+  if (perf && isNum(perf.ret)) bits.push('return ' + (perf.ret * 100).toFixed(1) + '%');
+  if (perf && isNum(perf.btc_ret)) bits.push('BTC ' + (perf.btc_ret * 100).toFixed(1) + '%');
+  if (perf && isNum(perf.excess_btc)) bits.push(`<span class="${cls(perf.excess_btc)}">excess ${(perf.excess_btc * 100).toFixed(1)}%</span>`);
+  if (perf && isNum(perf.max_dd)) bits.push('drawdown ' + (perf.max_dd * 100).toFixed(1) + '%');
+  const held = ((perf && perf.holdings) || []).map(h => h.asset).filter(Boolean);
+  const perfHtml = bits.length ? bits.join(' · ') : '<span class="muted">No Test 2 row yet</span>';
+  return `<article class="rule-card"><div class="rule-top"><h3 style="color:${VAR_COL[card.name] || '#e7e9ea'}">${esc(card.label || card.name)}</h3>` +
+    `<div class="rule-perf"><span>${perfHtml}</span>${spark(perf && perf.curve)}</div></div>` +
+    `<dl class="rule-dl">${dl}</dl>` +
+    (held.length ? `<p class="muted small">Open now: ${esc(held.join(', '))}</p>` : '') +
+    `</article>`;
+}
 function renderStrategies() {
-  const rows = ((D && D.strategies) || []).slice().sort((a, b) => {
-    if (a.excess_btc == null && b.excess_btc == null) return 0;
-    if (a.excess_btc == null) return 1;
-    if (b.excess_btc == null) return -1;
-    return b.excess_btc - a.excess_btc;
-  });
-  table($('#st-table'), [
-    {k: 'label', l: 'Book', f: r => `<b style="color:${VAR_COL[r.name] || '#e7e9ea'}">${esc(r.label || r.name)}</b>`},
-    {k: 'equity', l: 'Value', num: 1, f: r => r.equity == null ? '' : fM(r.equity)},
-    {k: 'ret', l: 'Return', num: 1, f: r => pctCell(r.ret)},
-    {k: 'excess_btc', l: 'Excess vs BTC', num: 1, f: r => pctCell(r.excess_btc)},
-    {k: 'excess_vusa', l: 'Excess vs VUSA', num: 1, f: r => pctCell(r.excess_vusa)},
-    {k: 'max_dd', l: 'Max drawdown', num: 1, f: r => pctCell(r.max_dd)},
-    {k: 'trades', l: 'Trades', num: 1, f: r => r.trades == null ? '' : String(r.trades)},
-    {k: 'pf', l: 'Profit factor', num: 1, f: r => r.pf == null ? '' : (r.pf >= 99 ? '∞' : Number(r.pf).toFixed(2))},
-    {k: 'fees', l: 'Fees', num: 1, f: r => r.fees == null ? '' : fM(r.fees)},
-    {k: 'holdings', l: 'Holdings', f: r => esc((r.holdings || []).map(h => h.asset).join(', '))},
-    {k: 'curve', l: 'Equity', f: r => spark(r.curve)},
-  ], rows, null, renderStrategies, {empty: 'No books yet'});
+  const host = $('#st-cards');
+  if (!host) return;
+  const catalog = ((D && D.rulebook) || []).filter(c => c && c.kind !== 'tweak' && !c.error);
+  const by = {};
+  ((D && D.strategies) || []).forEach(r => { if (r && r.name) by[r.name] = r; });
+  const shown = catalog.filter(c => c.show !== 'when_live' || by[c.name]);
+  const rank = name => {
+    const row = by[name];
+    return row && isNum(row.excess_btc) ? row.excess_btc : -Infinity;
+  };
+  const main = shown.filter(c => c.kind === 'rules');
+  const books = shown.filter(c => c.kind === 'book' && c.family !== 'signal').sort((a, b) => rank(b.name) - rank(a.name));
+  const signals = shown.filter(c => c.family === 'signal').sort((a, b) => rank(b.name) - rank(a.name));
+  if (!shown.length) {
+    host.innerHTML = '<p class="muted">No rule cards in this file yet.</p>';
+    return;
+  }
+  host.innerHTML =
+    main.map(c => strategyCard(c, by[c.name])).join('') +
+    (books.length ? '<h3 class="rule-h">Separate rule sets</h3>' : '') +
+    books.map(c => strategyCard(c, by[c.name])).join('') +
+    (signals.length ? '<h3 class="rule-h">Signal engine</h3>' : '') +
+    signals.map(c => strategyCard(c, by[c.name])).join('');
 }
 function testCard(test, live) {
   const books = (test && test.books) || [];
