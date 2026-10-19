@@ -221,13 +221,16 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
     stock = klass == "stock" and bool(asset)
     if stock:
         import daypot
+        ages = daypot._session_ages(asset, pts, t)
         def sess_age(ts, end):
+            if end == t:
+                return ages.get(ts)
             return daypot._session_age_h(asset, ts, end)
         span = sess_age(pts[0][0], t)
         span_h = 0 if span is None else span
         excl_h = float(D.get("swing_exclude_h", 1.5))
         hi_h = float(D.get("high_lookback_h", 36))
-        window = [(ts, p) for ts, p in pts if (sess_age(ts, t) or -1) >= excl_h and (sess_age(ts, t) or 1e9) <= hi_h]
+        window = [(ts, p) for ts, p in pts if (ages.get(ts) or -1) >= excl_h and (ages.get(ts) or 1e9) <= hi_h]
     else:
         span_h = (t - pts[0][0]).total_seconds() / 3600
         excl = timedelta(hours=float(D.get("swing_exclude_h", 1.5)))
@@ -249,7 +252,8 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
         return blank                                   # still rising, or only a wiggle: leave the breakout row in charge
     if stock:
         tr_h = float(D.get("trend_lookback_h", 48))
-        before = [p for ts, p in pts if ts <= high_ts and sess_age(ts, high_ts) is not None and sess_age(ts, high_ts) <= tr_h]
+        ages_high = daypot._session_ages(asset, pts, high_ts)
+        before = [p for ts, p in pts if ts <= high_ts and ages_high.get(ts) is not None and ages_high.get(ts) <= tr_h]
     else:
         before = [p for ts, p in pts if t - timedelta(hours=float(D.get("trend_lookback_h", 48))) <= ts <= high_ts]
     swing = min(before) if before else high_px
@@ -264,7 +268,7 @@ def dip(pts, R, sent=None, regime=None, hr=0.5, freshness=1.0, vol=None, atr=Non
     ma = sum(prices[-ma_n:]) / ma_n if len(prices) >= ma_n else None
     reclaimed = ma is not None and price >= ma
     if stock:
-        day = [p for ts, p in pts if sess_age(ts, t) is not None and sess_age(ts, t) <= 24]
+        day = [p for ts, p in pts if ages.get(ts) is not None and ages.get(ts) <= 24]
     else:
         day = [p for ts, p in pts if ts >= t - timedelta(hours=24)]
     avg = sum(day) / len(day) if day else None

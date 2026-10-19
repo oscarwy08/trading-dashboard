@@ -71,8 +71,9 @@ def momentum(pts, min_h, asset=None, klass=None):
         span = daypot._session_age_h(asset, pts[0][0], t)
         if span is None or span < float(min_h):
             return None, "insufficient history", None
+        ages = daypot._session_ages(asset, pts, t)
         def ret(h):
-            old = daypot._price_session_ago(asset, pts, t, h)
+            old = daypot._price_session_ago(asset, pts, t, h, ages)
             return None if not old or not old[1] else p / old[1] - 1
     else:
         if (pts[-1][0] - pts[0][0]).total_seconds() < min_h * 3600:

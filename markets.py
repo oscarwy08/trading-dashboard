@@ -98,6 +98,18 @@ def mins_to_close(sym_or_ex, t):
     s = session(ex, t.astimezone(EXCH[ex]["tz"]).date())
     return (s[1] - t).total_seconds() / 60 if s and s[0] <= t < s[1] else None
 
+def _sessions_between(ex, d0, d1):
+    """Regular sessions from exchange-local date d0 through d1, inclusive."""
+    out = []
+    d = d0
+    while d <= d1:
+        s = session(ex, d)
+        if s:
+            out.append(s)
+        d += timedelta(days=1)
+    return out
+
+
 def open_minutes(sym_or_ex, start, end):
     """Minutes between two times that fall inside a regular session.
 
@@ -114,13 +126,52 @@ def open_minutes(sym_or_ex, start, end):
     d, last = a.astimezone(tz).date(), b.astimezone(tz).date()
     if (last - d).days > 30: return 1e9
     total = 0.0
-    while d <= last:
-        s = session(ex, d)
-        if s:
-            lo, hi = max(s[0], a), min(s[1], b)
-            if hi > lo: total += (hi - lo).total_seconds() / 60.0
-        d += timedelta(days=1)
+    for so, sc in _sessions_between(ex, d, last):
+        lo, hi = max(so, a), min(sc, b)
+        if hi > lo: total += (hi - lo).total_seconds() / 60.0
     return total
+
+
+def open_minutes_many(sym_or_ex, starts, end):
+    """open_minutes for many starts against one end. Sessions are built once.
+
+    Scoring a stock used to walk the calendar again for every 15-minute bar.
+    With a few dozen names, on every paper book, that is what pushed a cycle
+    that was already near 14 minutes over the systemd cap once London opened.
+    """
+    b = _as_utc(end)
+    ex = sym_or_ex if sym_or_ex in EXCH else exchange(sym_or_ex)
+    tz = EXCH[ex]["tz"]
+    parsed = [(s, _as_utc(s)) for s in starts]
+    if b is None:
+        return {s: None for s, _a in parsed}
+    valid = [a for _s, a in parsed if a is not None and a < b]
+    sessions = []
+    if valid:
+        d0 = min(a.astimezone(tz).date() for a in valid)
+        d1 = b.astimezone(tz).date()
+        if (d1 - d0).days <= 40:
+            sessions = _sessions_between(ex, d0, d1)
+    out = {}
+    for key, a in parsed:
+        if a is None or b is None:
+            out[key] = None
+            continue
+        if b <= a:
+            out[key] = 0.0
+            continue
+        if (b.astimezone(tz).date() - a.astimezone(tz).date()).days > 30:
+            out[key] = 1e9
+            continue
+        total = 0.0
+        for so, sc in sessions:
+            if sc <= a or so >= b:
+                continue
+            lo, hi = max(so, a), min(sc, b)
+            if hi > lo:
+                total += (hi - lo).total_seconds() / 60.0
+        out[key] = total
+    return out
 
 def _as_utc(t):
     if t is None: return None

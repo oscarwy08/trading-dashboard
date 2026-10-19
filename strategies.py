@@ -787,19 +787,27 @@ def _buzz(con):
 def _turnover(con):
     """Latest vol24/mcap from the prices table, for the quiet-strength quartile."""
     out = {}
-    rows = con.execute("""SELECT asset, vol24, mcap FROM prices WHERE mcap>0 AND vol24>0
-                          AND source!='backfill' ORDER BY ts""").fetchall()
+    rows = con.execute("""SELECT asset, vol24, mcap FROM (
+                            SELECT asset, vol24, mcap, ROW_NUMBER() OVER (PARTITION BY asset ORDER BY ts DESC) rn
+                            FROM prices WHERE mcap>0 AND vol24>0 AND source!='backfill')
+                          WHERE rn=1""").fetchall()
     for asset, vol, mcap in rows:
         out[asset] = float(vol) / float(mcap)
     return out
 
 
 def _gbp_prices(con, rate, closes):
-    """Latest GBP price per asset. A missing print falls back to the last daily close."""
+    """Latest GBP price per asset. A missing print falls back to the last daily close.
+
+    One indexed read of the newest row per asset. Scanning every stored print on every
+    strategy book was a full sort of the price table, repeated seven times a cycle.
+    """
     out = {}
-    rows = con.execute("""SELECT asset, price, klass FROM prices WHERE price>0 AND source!='backfill'
-                          ORDER BY ts""").fetchall()
-    for asset, price, klass in rows:
+    rows = con.execute("""SELECT asset, price FROM (
+                            SELECT asset, price, ROW_NUMBER() OVER (PARTITION BY asset ORDER BY ts DESC) rn
+                            FROM prices WHERE price>0 AND source!='backfill')
+                          WHERE rn=1""").fetchall()
+    for asset, price in rows:
         out[asset] = float(price) * rate
     for asset, series in closes.items():
         if asset not in out and series:

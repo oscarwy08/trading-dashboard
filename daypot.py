@@ -48,19 +48,27 @@ def rsi_h(pts, n=14):
     up, dn = sum(x for x in d if x > 0), -sum(x for x in d if x < 0)
     return 100.0 if dn == 0 else 100 - 100 / (1 + up / dn)
 
+def _session_ages(asset, pts, end):
+    """Hours of regular-session time from each bar to `end`, computed in one pass."""
+    import markets
+    mapped = markets.open_minutes_many(asset, [ts for ts, _x in pts], end)
+    return {ts: (None if mapped.get(ts) is None else mapped[ts] / 60.0) for ts, _x in pts}
+
 def _session_age_h(asset, ts, end):
     """Regular-session hours from ts to end, or None if the clock cannot be read."""
     import markets
     mins = markets.open_minutes(asset, ts, end)
     return None if mins is None else mins / 60.0
 
-def _price_session_ago(asset, pts, t, hours):
+def _price_session_ago(asset, pts, t, hours, ages=None):
     """Last (ts, price) at least `hours` of regular-session time before t."""
+    if ages is None:
+        ages = _session_ages(asset, pts, t)
     found = None
     for ts, x in pts:
         if ts > t:
             continue
-        age = _session_age_h(asset, ts, t)
+        age = ages.get(ts)
         if age is not None and age + 1e-9 >= float(hours):
             found = (ts, x)
     return found
@@ -76,8 +84,11 @@ def breakout(con, a, pts, B, klass=None):
     lb, rl = float(B.get("breakout_lookback_h", 24)), float(B.get("range_lookback_h", 4))
     mb, mx = float(B.get("min_break_pct", 0.1)) / 100, float(B.get("max_extension_pct", 3)) / 100
     if klass == "stock":
-        prior24_pts = [(ts, x) for ts, x in pts if ts < t and (_session_age_h(a, ts, t) or 1e9) <= lb]
-        cover = _session_age_h(a, prior24_pts[0][0], t) if prior24_pts else 0
+        ages = _session_ages(a, pts, t)
+        prior24_pts = [(ts, x) for ts, x in pts if ts < t and (ages.get(ts) or 1e9) <= lb]
+        cover = ages.get(prior24_pts[0][0]) if prior24_pts else 0
+        if cover is None:
+            cover = 0
         prior24 = [x for _, x in prior24_pts]
     else:
         prior24 = [x for ts, x in pts if t - timedelta(hours=lb) <= ts < t]
@@ -87,7 +98,7 @@ def breakout(con, a, pts, B, klass=None):
                     (a, t.isoformat())).fetchone()       # CoinGecko 24h high of the previous snapshot (crypto)
     if r and r[0]: hi24 = max(hi24 or 0, r[0])
     if klass == "stock":
-        prior4 = [x for ts, x in pts if ts < t and (_session_age_h(a, ts, t) or 1e9) <= rl]
+        prior4 = [x for ts, x in pts if ts < t and (ages.get(ts) or 1e9) <= rl]
     else:
         prior4 = [x for ts, x in pts if t - timedelta(hours=rl) <= ts < t]
     out = dict(kind=None, strength=0.0, hi24=hi24, ext_pct=None, level=None, cap=None, pending_kind=None, range_frac=None)
