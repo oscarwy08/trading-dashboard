@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-19T06:55:00Z",
+ "asset": "SOL",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "SOL ~$105.8 (+2.1% 24h) after dipping near $104. Ansem said he is cutting longs and derisking; others call it 'max bid territory'. Fundamentals still constructive (Western Union USDPT on Bitso, second HK spot SOL ETF) and the Alpenglow upgrade is due 21 Oct. Slightly less positive than last night given trader derisking.",
+ "sources": [
+  "https://x.com/i/trending/2111995677106716698",
+  "https://x.com/i/trending/2111916392052392404",
+  "https://x.com/i/trending/2111950429038735740"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Alpenglow upgrade scheduled 21 Oct (finality ~150ms)",
+ "volume": 91112,
+ "buzz_level": 91112,
+ "buzz_change": 1.11,
+ "price_runup_24h_pct": 2.13,
+ "carried_over": false
+}

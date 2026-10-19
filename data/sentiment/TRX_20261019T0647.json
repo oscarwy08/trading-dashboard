@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-19T06:55:00Z",
+ "asset": "TRX",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "TRON topped blockchain revenue rankings over 24h/7d/30d (~$23.4M monthly) and settled $2.21T of stablecoins in Q3; TRON Inc bought 149,576 TRX on 19 Oct (small). Price flat (-0.5% 24h). Quiet, fundamentals-led positive.",
+ "sources": [
+  "https://x.com/i/trending/2111598142076465470"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "TRON Inc TRX purchase 19 Oct (small size)",
+ "volume": 1676,
+ "buzz_level": 1676,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.52,
+ "carried_over": false
+}

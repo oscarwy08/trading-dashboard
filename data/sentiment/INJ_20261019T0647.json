@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-19T06:55:00Z",
+ "asset": "INJ",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "Injective's real-world-asset perps passed $1.1B year-to-date volume (about $230M in the last 30 days) and the IIP-709 fixed-gas upgrade went live on 17 Oct. Price ~$8.60 (+0.9% 24h) with buzz below its mid-week levels. Mildly positive, no run-up.",
+ "sources": [
+  "https://x.com/i/trending/2112008558409609696",
+  "https://x.com/i/trending/2111821364193829370"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "IIP-709 upgrade live 17 Oct; RWA volume milestone",
+ "volume": 1300,
+ "buzz_level": 1300,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.88,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-19T06:55:00Z",
+ "asset": "WLD",
+ "score": 0.2,
+ "confidence": 0.5,
+ "summary": "World launched a World ID suite for banks and financial firms, with deepfake detection live on Zoom and a 'Proof of Human' badge; Bain Capital among testers. Real product news while price is flat (+0.4% 24h, ~$0.495) and mentions modest (~2.3k/24h), so this is news ahead of price rather than hype after a run. Positive.",
+ "sources": [
+  "https://x.com/i/trending/2112006730498404393"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "World ID bank suite and Zoom deepfake detection launched (story 19 Oct)",
+ "volume": 2344,
+ "buzz_level": 2344,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.36,
+ "carried_over": false
+}

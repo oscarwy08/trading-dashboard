@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-19T06:55:00Z",
+ "asset": "ARB",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "Robinhood Chain, built on Arbitrum, passed $1.05B TVL on 18 Oct after ~100 days, with 1.58M real-world-asset holders. This is ecosystem news rather than an ARB token event. ARB is already +7.7% in 24h with buzz ~1.5x its last prints, so mild run-up caution.",
+ "sources": [
+  "https://x.com/i/trending/2112051296958026013"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Robinhood Chain (Arbitrum stack) TVL milestone 18 Oct; indirect for ARB",
+ "volume": 1156,
+ "buzz_level": 1156,
+ "buzz_change": 1.52,
+ "price_runup_24h_pct": 7.69,
+ "carried_over": false
+}

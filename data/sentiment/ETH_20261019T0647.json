@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-19T06:55:00Z",
+ "asset": "ETH",
+ "score": 0.0,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,432 (+0.9% 24h). A fresh 25x ETH short (~$21M left after partial liquidation) sits with liquidation ~$2,430, right at spot, so squeeze-or-dump volatility is likely. Vitalik pushed draft EIP-8288 (client-side STARK proofs) with no activation timeline, so not a catalyst. Alts still weak vs BTC dominance. Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2112067844943020337",
+  "https://x.com/i/trending/2112042726959063073",
+  "https://x.com/i/trending/2111918969258905789"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "EIP-8288 is a draft with no timeline; no dated ETH event",
+ "volume": 46441,
+ "buzz_level": 46441,
+ "buzz_change": 1.16,
+ "price_runup_24h_pct": 0.87,
+ "carried_over": false
+}

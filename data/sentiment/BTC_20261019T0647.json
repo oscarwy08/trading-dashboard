@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-10-19T06:55:00Z",
+ "asset": "BTC",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "BTC back near $82.8k (+1.4% 24h) after weekend lows near $80k, which traders treat as solid support. Bearish weekly engulfing (Ansem) points to $75k/$72k risk, but on-chain inflows are stabilising (Willy Woo), the US turned net BTC importer, Saylor teased another Strategy buy (not yet filed), and US futures opened higher despite 'Black Monday' chatter. Dominance ~60.8%, a 14-month high. Slightly positive vs last night.",
+ "sources": [
+  "https://x.com/i/trending/2111691648103268859",
+  "https://x.com/i/trending/2111950429038735740",
+  "https://x.com/i/trending/2111804794600091828",
+  "https://x.com/i/trending/2111712966529695801"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No BTC-specific dated event; Strategy buy only teased, not filed",
+ "volume": 76590,
+ "buzz_level": 76590,
+ "buzz_change": 1.18,
+ "price_runup_24h_pct": 1.38,
+ "carried_over": false
+}
