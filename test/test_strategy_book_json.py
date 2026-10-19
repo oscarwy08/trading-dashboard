@@ -118,5 +118,34 @@ check(abs(plus["stats"]["start"] - 200) < 0.02, "best_of_plus still starts at £
 reconcile(plus, "best_of_plus")
 con.close()
 
+# Exporting every book must reuse one report. Rebuilding it per file is what made the cycle miss its limit.
+import variants
+calls = {"n": 0}
+real_report = variants.report
+
+
+def counting():
+    calls["n"] += 1
+    return {"enabled": True, "books": []}
+
+
+variants.report = counting
+try:
+    check(dashboard._strategy_rows({"books": []}) == [] and calls["n"] == 0,
+          "strategy rows reuse the report from this cycle")
+    root = Path(tempfile.mkdtemp())
+    os.environ["VARIANTS_DIR"] = str(root)
+    src = Path(os.environ["TRADING_DB"])
+    for name in ("ev_exit", "signal_engine"):
+        (root / f"{name}.db").write_bytes(src.read_bytes())
+    calls["n"] = 0
+    payloads = {}
+    dashboard._variant_payloads(payloads, {"books": []}, [], {"rows": []})
+    check(calls["n"] == 0 and set(payloads) == {"ev_exit", "signal_engine"},
+          "exporting each book does not rebuild the variant report")
+finally:
+    variants.report = real_report
+    os.environ.pop("VARIANTS_DIR", None)
+
 print("strategy-book-json " + ("ok" if not fails else f"FAILED {len(fails)}"))
 raise SystemExit(1 if fails else 0)

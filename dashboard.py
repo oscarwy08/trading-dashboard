@@ -422,7 +422,7 @@ def trend_book_baseline(con, base):
 def _empty_fees():
     return {ac: dict(fee=0.0, gas=0.0, spread=0.0, fx=0.0, stamp=0.0, xstock=0.0) for ac in ACCOUNTS}
 
-def build(con, variant_report=None):
+def build(con, variant_report=None, strategies=None, engine=None):
     c = cfg(); st, rk, K, DY = c["strategy"], c["risk"], c["core"], c["day"]
     base = acct_start(con, c)
     sleeves_on, base = trend_book_baseline(con, base)
@@ -966,10 +966,10 @@ def build(con, variant_report=None):
         equity=equity, positions=positions, trades=trades, assets=assets, prices=prices, fx_hist=fx_hourly,
         signals=sig_hist, reasons=reasons, sentiment=sentiment,
         variants=variant_report if variant_report is not None else _variant_report(),
-        strategies=_strategy_rows(),
+        strategies=strategies if strategies is not None else _strategy_rows(variant_report),
         rulebook=_rulebook(),
         tests=_tests_view(),
-        engine=_engine_view(con))
+        engine=engine if engine is not None else _engine_view(con))
 
 
 def _engine_view(con):
@@ -995,10 +995,10 @@ def _rulebook():
         return [dict(name="rulebook", error=str(e), kind="rules", label="Main rules", show="always")]
 
 
-def _strategy_rows():
+def _strategy_rows(report=None):
     try:
         import strategies
-        return strategies.comparison_rows()
+        return strategies.comparison_rows(report)
     except Exception as e:
         return [dict(name="strategies", error=str(e), excess_btc=None)]
 
@@ -1099,11 +1099,11 @@ def write_book_files(out, payloads):
             p.unlink()
     return catalog
 
-def _variant_payloads(payloads, variant_report=None):
+def _variant_payloads(payloads, variant_report=None, strategies=None, engine=None):
     """Fill payloads with one build() per existing variant database. A failure skips that book.
 
-    variant_report is the comparison already computed for this cycle. Building it again
-    inside every book reopened all thirteen databases and re-parsed config each time.
+    variant_report, the strategy rows and the signal view are computed once per cycle.
+    Building them again inside every book reopened every database, including the signal books.
     """
     import variants
     root = variants.dir_path()
@@ -1119,7 +1119,7 @@ def _variant_payloads(payloads, variant_report=None):
         con = None
         try:
             con = open_ro(path)
-            payloads[name] = build(con, variant_report)
+            payloads[name] = build(con, variant_report, strategies, engine)
         except Exception as e:
             print(f"[dashboard] {name} export skipped: {e}")
             payloads.pop(name, None)
@@ -1136,8 +1136,13 @@ def main():
     t_report = time.perf_counter()
     report = _variant_report()
     print(f"[timing] dashboard report {time.perf_counter() - t_report:.1f}s", flush=True)
-    payloads = {"main": build(db(), report)}
-    _variant_payloads(payloads, report)
+    t_rows = time.perf_counter()
+    strategies = _strategy_rows(report)
+    con = db()
+    engine = _engine_view(con)
+    print(f"[timing] dashboard strategies {time.perf_counter() - t_rows:.1f}s", flush=True)
+    payloads = {"main": build(con, report, strategies, engine)}
+    _variant_payloads(payloads, report, strategies, engine)
     catalog = write_book_files(OUT, payloads)
     (OUT / ".nojekyll").touch()
     # static assets: copy templates, cache-bust js/css by content hash in index.html

@@ -1845,11 +1845,14 @@ def _fees(o):
     return {"crypto": o["kraken_fee"], "stocks": o["stock_fee"]}
 
 
-def comparison_rows():
-    """One row per book the dashboard lists, old variants and these books, sorted by excess versus BTC."""
+def comparison_rows(report=None):
+    """One row per book the dashboard lists, old variants and these books, sorted by excess versus BTC.
+
+    Pass the report this cycle already built. Calling variants.report() again opens every book.
+    """
     import variants
     from dashboard import BOOK_MENU
-    rep = variants.report()
+    rep = variants.report() if report is None else report
     rows = []
     for book in rep.get("books") or []:
         if book.get("error"):
