@@ -34,7 +34,10 @@ check("day_trail_arm" not in strategytext.strategy_names(), "the day trail tweak
 
 for name in strategies.BOOKS:
     card = catalog.get(name)
-    check(card and card["kind"] == "book" and card["show"] == "always", name + " is a strategy card")
+    if card and card.get("family") == "signal":
+        check(card["kind"] == "book" and card["show"] == "when_live", name + " appears once it has a Test 2 row")
+    else:
+        check(card and card["kind"] == "book" and card["show"] == "always", name + " is a strategy card")
     if card:
         for key in ("holds", "entry", "exit", "rebalance", "data"):
             check(bool(card.get(key)), name + " explains " + key)
@@ -55,8 +58,8 @@ for key in ("holds", "entry", "exit", "rebalance", "data"):
 
 signals = [c for c in strategytext.cards() if c.get("family") == "signal"]
 check(len(signals) == 17, "seventeen signal books are described")
-check(all(c["show"] == "when_live" and c["name"] not in strategies.BOOKS for c in signals),
-      "signal cards wait for a live Test 2 row and are not the main-rule books")
+check(all(c["show"] == "when_live" and c["kind"] == "book" and c["name"] in strategies.PURE for c in signals),
+      "signal books are their own sleeves and wait for a Test 2 row")
 check(not (set(strategytext.tweak_names()) & set(strategytext.strategy_names())),
       "a tweak name is never also a strategy name")
 

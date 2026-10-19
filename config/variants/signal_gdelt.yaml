@@ -1,0 +1,4 @@
+# gdelt. Long when the lagged 7-day news tone is positive. Own £200 book. The main rules are unchanged.
+strategy_book: signal_gdelt
+variant_rules:
+  hold_overnight: true

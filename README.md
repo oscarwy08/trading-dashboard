@@ -26,6 +26,10 @@ Day and Risk hit rates are counted separately for crypto and for stocks. A crypt
 
 The Strategies tab explains rule sets, not a league table of every paper book. The first card is the main Core, Day and Risk rules. Each other card is a book that does not follow those rules: what it holds, when it enters, when it exits, when it rebalances, which data it uses, and its live Test 2 return against holding BTC. A tweak of the main rules (EV exit, partial take, the day trail, and the rest) stays on the Variants tab, grouped under Main strategy, with one line describing the change. Signal-engine books use the same cards and appear there once they are in the cycle.
 
+## Signal paper books (2026-10-19)
+
+Seventeen more paper books, each with its own £200 (£100 crypto and £100 stocks). Five of them tilt the volatility-sized 50-day trend: the baseline rank-correlation rule, the same rule with overlapping labels purged, an equal vote for every signal that passes, a nine-signal noise bar, and news that fades with a three-day half life. Twelve are long-or-cash timing rules: funding both ways, basis, DVOL, the variance premium, stablecoin supply, macro permission, 12-month momentum, gold, active addresses, news tone, and BTC dominance. The cycle writes one shared decision for all seventeen. Each book reads that file and does not fetch. A side series is refreshed only when it is more than a day behind, once that day, and the refresh stops after 8 seconds. News is scored by the hourly timer in `deploy/trading-news.timer`, not by the 15-minute cycle.
+
 ## Overnight strategy books (2026-10-18)
 
 Seven paper books, each with its own £200 (£100 crypto, £100 stocks). They are not the main book. They hold through nights and weekends. The main book's 22:00 flatten, stops and thresholds are unchanged.

@@ -19,9 +19,10 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from common import ACCOUNTS, DATA, LON, ROOT, SCHEMA, cfg, ensure_sentiment_cols, iso, now
+import signalbooks
 
 PURE = ("btc_trend", "btc_trend_vol", "majors_rotation", "btc_core_satellite", "rs_rotation_veto", "quiet_strength",
-        "trend_carry_unlock", "insider_rs_stocks")
+        "trend_carry_unlock", "insider_rs_stocks") + signalbooks.ORDER
 BOOKS = PURE + ("best_of_plus",)
 MAJORS = ("BTC", "ETH", "SOL")
 STOCK_SYMS = ("VUSA", "VUSA.L", "EQQQ", "EQQQ.L")
@@ -208,6 +209,34 @@ def targets_for(book, closes, extra=None):
         return _carry_targets(closes, extra, o, n)
     if book == "insider_rs_stocks":
         return _insider_targets(closes, extra)
+    if signalbooks.is_signal(book):
+        return _signal_targets(closes, extra, o, n)
+    return out
+
+
+def _signal_targets(closes, extra, o, n):
+    """Tilt books nudge the vol trend. Regime books are long or cash, with no 50-day gate."""
+    if extra.get("signal_kind") == "regime":
+        regime = extra.get("regime") or {}
+        out = {}
+        if regime.get("BTC") and closes.get("BTC"):
+            out["BTC"] = ("crypto", 1.0)
+        want = "VUSA" if regime.get("VUSA") else ("EQQQ" if regime.get("EQQQ") else None)
+        if want:
+            for sym in STOCK_SYMS:
+                if sym.startswith(want) and closes.get(sym):
+                    out[sym] = ("stocks", 1.0)
+                    break
+        return out
+    import signalcomb
+    comp = extra.get("composite") or {}
+    out = {}
+    btc = closes.get("BTC") or []
+    if _above(btc, n):
+        out["BTC"] = ("crypto", signalcomb.tilt(vol_weight(_px(btc), o["vol_target"]), comp.get("BTC")))
+    stock = _stock_name(closes, n)
+    if stock and _above(closes[stock], n):
+        out[stock] = ("stocks", signalcomb.tilt(vol_weight(_px(closes[stock]), o["vol_target"]), comp.get(stock)))
     return out
 
 
@@ -669,7 +698,7 @@ def due(book, last_day, today):
     """Daily books act once a calendar day. Weekly books act when the ISO week has changed."""
     if last_day is None:
         return True
-    if book in ("majors_rotation", "btc_core_satellite", "rs_rotation_veto", "trend_carry_unlock"):
+    if book in ("majors_rotation", "btc_core_satellite", "rs_rotation_veto", "trend_carry_unlock") or book in signalbooks.TILT:
         return last_day.isocalendar()[:2] != today.isocalendar()[:2]
     if book == "insider_rs_stocks":
         return (last_day.year, last_day.month) != (today.year, today.month)
@@ -817,7 +846,23 @@ def replay(book, closes, fees=None, min_trade=5.0, fx=1.0, carry=None):
     peaks = {}
     o = opts()
     carry = carry or {}
-    frac = o["min_pos_frac"] if book == "trend_carry_unlock" else 0.0
+    frac = o["min_pos_frac"] if book == "trend_carry_unlock" or book in signalbooks.TILT else 0.0
+    if book in signalbooks.TILT and not carry.get("by_day"):
+        import signalcomb
+        names = ["BTC"]
+        stock = _stock_name(closes, int(o["sma"]))
+        if stock:
+            names.append(stock)
+        carry = dict(carry)
+        carry["by_day"] = signalcomb.composites_by_day(closes, names, mode=signalbooks.TILT[book])
+    if book in signalbooks.REGIME and not carry.get("regime_by_day"):
+        import signalhist
+        carry = dict(carry)
+        if not carry.get("positions") and not any(carry.get(key) for key in ("funding", "perp", "dvol")):
+            import signalcache
+            for key, pts in signalcache.load_aux().items():
+                carry.setdefault(key, pts)
+        carry["regime_by_day"] = signalhist.book_regime(closes, carry, signalbooks.REGIME[book])
     for i, day in enumerate(dates):
         today = datetime.fromisoformat(day).date()
         window = {}
@@ -837,6 +882,12 @@ def replay(book, closes, fees=None, min_trade=5.0, fx=1.0, carry=None):
             extra["insider"] = carry.get("insider") or {}
             if carry.get("universe") is not None:
                 extra["universe"] = carry["universe"]
+        if book in signalbooks.TILT:
+            extra["signal_kind"] = "tilt"
+            extra["composite"] = (carry.get("by_day") or {}).get(day) or {}
+        elif book in signalbooks.REGIME:
+            extra["signal_kind"] = "regime"
+            extra["regime"] = (carry.get("regime_by_day") or {}).get(day) or {}
         act = due(book, last, today)
         # Quiet-strength exits are checked every day, not only on the entry day.
         if book == "quiet_strength":
@@ -1728,6 +1779,14 @@ def run(name, path=None):
             flags = refresh_insiders(con, today)
             extra["insider"] = flags
             note = f" insider {len(flags)}"
+        elif signalbooks.is_signal(book):
+            import signalcache
+            snap = signalcache.row_for(book, closes) or {}
+            if "signal_kind" not in snap:
+                kind, _mode = signalbooks.kind(book)
+                snap["signal_kind"] = kind or "tilt"
+            extra.update(snap)
+            note = " " + (snap.get("note") or snap["signal_kind"])
         if book == "btc_core_satellite" and state.get("satellite"):
             since = datetime.fromisoformat(state["satellite"]["since"]).date()
             extra["held"] = (state["satellite"]["asset"], (today - since).days)
@@ -1752,7 +1811,7 @@ def run(name, path=None):
             entry_due = due("majors_rotation" if book == "quiet_strength" else book, last, today)
             if book != "quiet_strength" or entry_due:
                 targets = targets_for(book, closes, extra)
-                frac = o["min_pos_frac"] if book == "trend_carry_unlock" else 0.0
+                frac = o["min_pos_frac"] if book == "trend_carry_unlock" or book in signalbooks.TILT else 0.0
                 trades += apply_targets(cash, pos, gbp, targets, _fees(o), o["min_trade"], band_for(book), frac)
                 acted = True
                 if book == "btc_core_satellite":

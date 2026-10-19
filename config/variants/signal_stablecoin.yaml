@@ -1,0 +1,4 @@
+# stablecoin. Long when lagged stablecoin supply has risen over 30 days. Own £200 book. The main rules are unchanged.
+strategy_book: signal_stablecoin
+variant_rules:
+  hold_overnight: true

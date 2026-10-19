@@ -1,0 +1,4 @@
+# news. Same tilt as the baseline, with headlines faded over three days. Own £200 book. The main rules are unchanged.
+strategy_book: signal_news
+variant_rules:
+  hold_overnight: true

@@ -1,0 +1,4 @@
+# purge. A training label that overlaps the later window is dropped. Own £200 book. The main rules are unchanged.
+strategy_book: signal_purge
+variant_rules:
+  hold_overnight: true

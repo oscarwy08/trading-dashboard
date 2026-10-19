@@ -35,6 +35,7 @@
     <a href="#sentiment" data-tab="sentiment" role="tab">Sentiment</a>
     <a href="#orders" data-tab="orders" role="tab">Orders</a>
     <a href="#variants" data-tab="variants" role="tab">Variants</a>
+    <a href="#signals" data-tab="signals" role="tab">Signals</a>
     <a href="#strategies" data-tab="strategies" role="tab">Strategies</a>
     <a href="#tests" data-tab="tests" role="tab">Tests</a>
   </nav>
@@ -168,6 +169,19 @@
       <div class="tw" id="var-fallback"><table id="var-table" class="tbl"></table></div>
       <div id="var-books"></div>
       <div id="var-score" class="tw"></div>
+    </div>
+  </section>
+
+  <!-- ===================== SIGNALS ===================== -->
+  <section class="tab" id="tab-signals" data-tab="signals">
+    <div class="card">
+      <div class="card-h"><div><h2>Signals</h2><p class="explain" id="sig-explain">Each input to the signal-engine book, and whether it has earned a weight. The weight is the weaker of two rank correlations with the next five daily returns: an older window and a later window. They have to agree. A signal with no history, no agreement, or a suspiciously perfect correlation is left out, and the book then matches the vol-sized trend. News is scored once an hour, outside this cycle.</p></div></div>
+      <div id="sig-head" class="note"></div>
+      <div class="tw"><table id="sig-table" class="tbl"></table></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><h2>Latest headlines</h2><p class="explain">Scored once an hour from free RSS, outside the trading cycle. The score is a finance word list, blended with VADER only when that package is already installed.</p></div></div>
+      <div class="tw"><table id="sig-news" class="tbl"></table></div>
     </div>
   </section>
 

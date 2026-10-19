@@ -1,0 +1,4 @@
+# dominance. Long when lagged BTC dominance has risen over 30 days. Own £200 book. The main rules are unchanged.
+strategy_book: signal_dominance
+variant_rules:
+  hold_overnight: true

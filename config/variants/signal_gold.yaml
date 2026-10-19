@@ -1,0 +1,4 @@
+# gold. Long BTC when lagged gold is down over 126 days. Own £200 book. The main rules are unchanged.
+strategy_book: signal_gold
+variant_rules:
+  hold_overnight: true

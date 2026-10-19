@@ -24,6 +24,13 @@ data/exit_shadow.db-journal
 data/variants/*.db
 data/variants/*.db-*
 data/variants/manifest.json
+data/news.db
+data/news.db-wal
+data/news.db-shm
+data/news.db-journal
+data/signal_cache.json
+data/signal_live.json
+data/signal_refresh.json
 data/sentiment/pushed/
 dashboard/
 docs/snapshot.png

@@ -1,0 +1,4 @@
+# equal. A signal that passes gets one vote, not a correlation-sized weight. Own £200 book. The main rules are unchanged.
+strategy_book: signal_equal
+variant_rules:
+  hold_overnight: true

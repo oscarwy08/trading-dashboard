@@ -1,0 +1,4 @@
+# funding_carry. Long when BTC funding is hot. Own £200 book. The main rules are unchanged.
+strategy_book: signal_funding_carry
+variant_rules:
+  hold_overnight: true

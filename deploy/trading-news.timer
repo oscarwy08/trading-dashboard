@@ -1,0 +1,10 @@
+[Unit]
+Description=Hourly news scores for the paper signal engine
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=90
+
+[Install]
+WantedBy=timers.target

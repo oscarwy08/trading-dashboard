@@ -1,0 +1,4 @@
+# basis_contrarian. Cash when the 7-day perp basis is rich. Own £200 book. The main rules are unchanged.
+strategy_book: signal_basis
+variant_rules:
+  hold_overnight: true

@@ -1,0 +1,4 @@
+# onchain. Long when lagged active addresses have risen over 30 days. Own £200 book. The main rules are unchanged.
+strategy_book: signal_onchain
+variant_rules:
+  hold_overnight: true

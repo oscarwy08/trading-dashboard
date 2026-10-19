@@ -968,7 +968,23 @@ def build(con, variant_report=None):
         variants=variant_report if variant_report is not None else _variant_report(),
         strategies=_strategy_rows(),
         rulebook=_rulebook(),
-        tests=_tests_view())
+        tests=_tests_view(),
+        engine=_engine_view(con))
+
+
+def _engine_view(con):
+    """Signals tab. Read-only. A missing feed must not fail the dashboard."""
+    try:
+        import signalcomb
+        closes = {}
+        for asset in ("BTC", "VUSA", "VUSA.L", "EQQQ", "EQQQ.L"):
+            rows = con.execute(
+                "SELECT d, close FROM daily_closes WHERE asset=? AND close>0 ORDER BY d", (asset,)).fetchall()
+            if rows:
+                closes[asset] = [(d, float(p)) for d, p in rows]
+        return signalcomb.dashboard_view(con, closes)
+    except Exception as e:
+        return dict(rows=[], headlines=[], error=str(e), note="")
 
 def _rulebook():
     """Static plain-English cards. Performance is joined in the browser from `strategies`."""
@@ -1031,7 +1047,18 @@ BOOK_MENU = {
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 
 def book_menu_label(name, fallback=None):
-    return BOOK_MENU.get(name) or fallback or name
+    if name in BOOK_MENU:
+        return BOOK_MENU[name]
+    if fallback:
+        return fallback
+    try:
+        import strategytext
+        label = (strategytext.by_name().get(name) or {}).get("label")
+        if label:
+            return label
+    except Exception:
+        pass
+    return name
 
 def book_file(name):
     """Published JSON name. main is data.json; a variant is data_<name>.json."""

@@ -350,7 +350,11 @@ variants:
   run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
         risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take,
         sent_split, best_of, btc_trend, btc_trend_vol, majors_rotation, btc_core_satellite,
-        rs_rotation_veto, quiet_strength, best_of_plus, trend_carry_unlock, insider_rs_stocks]
+        rs_rotation_veto, quiet_strength, best_of_plus, trend_carry_unlock, insider_rs_stocks,
+        signal_engine, signal_purge, signal_equal, signal_multitest, signal_news,
+        signal_funding_contrarian, signal_funding_carry, signal_basis, signal_dvol, signal_vrp,
+        signal_stablecoin, signal_macro, signal_tsmom, signal_gold, signal_onchain, signal_gdelt,
+        signal_dominance]
   # These three books sold on an inverted EV. The next cycle recopies each from the current main book
   # and the scorecard starts there, so those sells are not counted.
   reset:

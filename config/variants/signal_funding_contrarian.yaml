@@ -1,0 +1,4 @@
+# funding_contrarian. Cash when BTC funding is hot. Otherwise long. Own £200 book. The main rules are unchanged.
+strategy_book: signal_funding_contrarian
+variant_rules:
+  hold_overnight: true

@@ -1,0 +1,4 @@
+# dvol_fear. Cash when lagged DVOL is in the top fifth of the past year. Own £200 book. The main rules are unchanged.
+strategy_book: signal_dvol
+variant_rules:
+  hold_overnight: true

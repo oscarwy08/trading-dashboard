@@ -1,0 +1,4 @@
+# variance_premium. Long when implied variance is above realised variance. Own £200 book. The main rules are unchanged.
+strategy_book: signal_vrp
+variant_rules:
+  hold_overnight: true

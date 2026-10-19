@@ -762,6 +762,12 @@ def run_all():
     if not runnable:
         print("[variants] off")
         return 0.0
+    if any(str(name).startswith("signal_") for name in runnable):
+        try:
+            import signalcache
+            signalcache.prepare()
+        except Exception as exc:
+            print(f"[signals] prepare failed: {exc}")
     ensure_snapshot()
     t0 = time.perf_counter()
     n_workers = min(worker_count(), len(runnable))
@@ -973,6 +979,27 @@ def _book(con, name, label, blurb, since, start_equity, reset=None):
     )
 
 
+def _label(name):
+    if name in LABELS:
+        return LABELS[name]
+    try:
+        import strategytext
+        return (strategytext.by_name().get(name) or {}).get("label") or name
+    except Exception:
+        return name
+
+
+def _blurb(name):
+    if name in BLURB:
+        return BLURB[name]
+    try:
+        import strategytext
+        card = strategytext.by_name().get(name) or {}
+        return card.get("entry") or card.get("tweak") or ""
+    except Exception:
+        return ""
+
+
 def report():
     """Dashboard payload. Missing books are an empty list, not an error."""
     import json
@@ -1004,10 +1031,10 @@ def report():
         con.row_factory = sqlite3.Row
         try:
             stored = _read_reset(path)
-            books.append(_book(con, name, LABELS.get(name, name), BLURB.get(name, ""), since, man.get("equity"),
+            books.append(_book(con, name, _label(name), _blurb(name), since, man.get("equity"),
                                stored if name in reset_map() else None))
         except Exception as e:
-            books.append(dict(name=name, label=LABELS.get(name, name), error=str(e)))
+            books.append(dict(name=name, label=_label(name), error=str(e)))
         finally:
             con.close()
     return dict(enabled=bool(block.get("enabled")), since=since, start_equity=man.get("equity"),

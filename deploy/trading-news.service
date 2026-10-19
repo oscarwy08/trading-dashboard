@@ -1,0 +1,11 @@
+[Unit]
+Description=Score free news headlines for the paper signal engine
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=bot
+WorkingDirectory=/home/bot/trading-dashboard
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 newssent.py

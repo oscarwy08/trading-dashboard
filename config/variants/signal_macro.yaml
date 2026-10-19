@@ -1,0 +1,4 @@
+# macro. Long only when the Nasdaq is above its 200-day average and the dollar is down. Own £200 book. The main rules are unchanged.
+strategy_book: signal_macro
+variant_rules:
+  hold_overnight: true

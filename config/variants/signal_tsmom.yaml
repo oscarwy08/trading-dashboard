@@ -1,0 +1,4 @@
+# tsmom. Long when the 12-month return, skipping the last month, is positive. Own £200 book. The main rules are unchanged.
+strategy_book: signal_tsmom
+variant_rules:
+  hold_overnight: true

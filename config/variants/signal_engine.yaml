@@ -1,0 +1,4 @@
+# baseline tilt. Two windows must agree before a signal moves the vol-sized trend. Own £200 book. The main rules are unchanged.
+strategy_book: signal_engine
+variant_rules:
+  hold_overnight: true
