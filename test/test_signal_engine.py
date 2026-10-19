@@ -14,6 +14,7 @@ os.environ["NEWS_DB"] = str(Path(__file__).resolve().parent / "_news_test.db")
 import common
 import newssent
 import signalcomb
+import signalhist
 import strategies
 import variants
 
@@ -57,9 +58,13 @@ check("newssent" not in (Path(__file__).resolve().parent.parent / "scripts" / "c
       "the trading cycle does not fetch news")
 
 # --- weights: agree to keep, disagree or a perfect fit to drop ---
-check(signalcomb.decide_weight(0.08, 0.06, 40, 20)[1] is True, "two windows that agree are kept")
-w, kept = signalcomb.decide_weight(0.08, 0.06, 40, 20)
-check(kept and abs(w - 0.06) < 1e-9, "the weight is the weaker correlation")
+check(abs(signalcomb.ic_hurdle(400) - signalcomb.ic_hurdle(400, 21)) < 1e-12,
+      "the hurdle counts all 21 pre-registered tries")
+check(signalcomb.ic_hurdle(400, 21) > signalcomb.ic_hurdle(400, 9), "the extra tries raise the bar")
+check(signalcomb.decide_weight(0.14, 0.13, 400, 400)[1] is True, "two windows that clear the multiple-test bar are kept")
+w, kept = signalcomb.decide_weight(0.14, 0.13, 400, 400)
+check(kept and abs(w - 0.13) < 1e-9, "the weight is the weaker correlation")
+check(signalcomb.decide_weight(0.12, 0.11, 400, 400)[1] is False, "a correlation inside the multiple-test noise bar is dropped")
 check(signalcomb.decide_weight(0.08, -0.06, 40, 20)[1] is False, "a sign change is dropped")
 check(signalcomb.decide_weight(0.01, 0.01, 40, 20)[1] is False, "a tiny correlation is dropped")
 check(signalcomb.decide_weight(0.9, 0.9, 40, 20)[1] is False, "a perfect correlation is dropped")
@@ -71,29 +76,34 @@ for i in range(80):
     leaked.append(None if i + 5 >= 80 else prices[i + 5] / prices[i] - 1.0)
 weight, kept, *_ = signalcomb.measure_series(leaked, prices)
 check(kept is False, "a signal that copies the future return is not used")
+idx = list(range(100))
+train_idx, confirm_idx = signalcomb._purged_windows(idx)
+cut = int(len(idx) * 0.70)
+check(64 in train_idx and 65 not in train_idx, "a train point whose forward return overlaps confirm is excluded")
+check(confirm_idx and confirm_idx[0] == cut + signalcomb.HORIZON, "the first confirm points are embargoed")
+check(train_idx[-1] + signalcomb.HORIZON < confirm_idx[0], "purged train labels end before the confirm window")
 flat = [0.2 for _ in range(80)]
 weight, kept, *_ = signalcomb.measure_series(flat, prices)
 check(kept is False, "a signal that never changes is not used")
 
-# --- the book is a vol trend with a tilt, and it does not go short ---
+# --- the book is long or cash from the regime, and it does not go short ---
 up = geo(100, 80, 1.004)
 closes = {"BTC": up, "VUSA": geo(50, 80, 1.002)}
-base = strategies.targets_for("btc_trend_vol", closes)
-plain = strategies.targets_for("signal_engine", closes, {"composite": {}})
-check(abs(plain["BTC"][1] - base["BTC"][1]) < 1e-9 and abs(plain["VUSA"][1] - base["VUSA"][1]) < 1e-9,
-      "no composite leaves the vol-sized trend unchanged")
-faded = strategies.targets_for("signal_engine", closes, {"composite": {"BTC": -1, "VUSA": -1}})
-check(abs(faded["BTC"][1] - base["BTC"][1] * 0.5) < 1e-9, "a negative composite halves exposure")
-check(faded["BTC"][1] > 0, "the tilt stays long")
-hot = strategies.targets_for("signal_engine", closes, {"composite": {"BTC": 1}})
-check(hot["BTC"][1] <= 1.0 and hot["BTC"][1] >= base["BTC"][1], "a positive composite does not exceed full size")
+check("BTC" not in strategies.targets_for("signal_engine", closes, {}),
+      "no regime leaves the book in cash")
+long = strategies.targets_for("signal_engine", closes, {"regime": {"BTC": 1, "VUSA": 1}})
+check(long.get("BTC") == ("crypto", 1.0) and long.get("VUSA") == ("stocks", 1.0),
+      "a long regime is fully invested in BTC and VUSA")
 down = geo(200, 80, 0.99)
-check("BTC" not in strategies.targets_for("signal_engine", {"BTC": down}, {"composite": {"BTC": 1}}),
-      "a downtrend stays in cash even when the composite is hot")
-check(strategies.due("signal_engine", date(2026, 10, 5), date(2026, 10, 6)) is False
-      and strategies.due("signal_engine", date(2026, 10, 5), date(2026, 10, 12)) is True,
-      "the book waits for a new week")
-check(signalcomb.tilt(0, 1) == 0, "cash is not turned into a position by the composite")
+check(strategies.targets_for("signal_engine", {"BTC": down}, {"regime": {"BTC": 1}}).get("BTC") == ("crypto", 1.0),
+      "the timing rule can be long when the 50-day trend is down")
+check("BTC" not in strategies.targets_for("signal_engine", closes, {"regime": {"BTC": 0}}),
+      "a cash regime holds no coin")
+check(strategies.due("signal_engine", date(2026, 10, 5), date(2026, 10, 6)) is True,
+      "the book looks every day; the regime series is what keeps turnover low")
+check(signalcomb.tilt(0, 1) == 0, "the old tilt helper still cannot turn cash into a position")
+check(signalhist.book_regime({"BTC": geo(100, 20, 1.01)}) == {},
+      "a short tape with no side history stays in cash")
 
 R = variants.rules_of(common.cfg())
 check(R["hold_overnight"] is False, "the main book still flattens")
@@ -104,28 +114,33 @@ check(eng["hold_overnight"] is True, "the signal book holds overnight")
 check("signal_engine" in common.cfg()["variants"]["run"] and "signal_engine" in strategies.PURE,
       "the cycle list runs the book through the strategy engine")
 
-# A rising tape with no edge should invest. A constant negative tilt should finish with more cash.
-window = {"BTC": geo(100, 100, 1.004), "VUSA": geo(40, 100, 1.001)}
-full = strategies.replay("signal_engine", window, fees={"crypto": 0.004, "stocks": 0.0015}, min_trade=5)
-cut_days = {}
-for day, _ in window["BTC"]:
-    cut_days[day] = {"BTC": -1.0, "VUSA": -1.0}
+# A supplied long regime invests. A supplied cash regime does not.
+window = {"BTC": geo(100, 40, 1.004), "VUSA": geo(40, 40, 1.001)}
+days = [d for d, _ in window["BTC"]]
+full = strategies.replay("signal_engine", window, fees={"crypto": 0.004, "stocks": 0.0015}, min_trade=5,
+                         carry={"positions": {d: {"BTC": 1, "VUSA": 1} for d in days}})
 cut = strategies.replay("signal_engine", window, fees={"crypto": 0.004, "stocks": 0.0015}, min_trade=5,
-                        carry={"by_day": cut_days})
-vol = strategies.replay("btc_trend_vol", window, fees={"crypto": 0.004, "stocks": 0.0015}, min_trade=5)
-fs, cs, vs = strategies.replay_stats(full), strategies.replay_stats(cut), strategies.replay_stats(vol)
+                        carry={"positions": {d: {"BTC": 0, "VUSA": 0} for d in days}})
+fs, cs = strategies.replay_stats(full), strategies.replay_stats(cut)
 check(full["pos"].get("BTC") and cut["cash"]["crypto"] > full["cash"]["crypto"],
-      "halving the tilt leaves more crypto cash on a rising tape")
-check(fs["ret"] > cs["ret"] > 0, "full exposure finishes ahead of the halved book, and both are up")
-print(f"replay signal {fs['ret']*100:+.1f}% dd {fs['max_dd']*100:.1f}% trades {fs['trades']} vs btc {fs['excess_btc']*100:+.1f}%")
-print(f"replay halved {cs['ret']*100:+.1f}% dd {cs['max_dd']*100:.1f}% trades {cs['trades']}")
-print(f"replay btc_trend_vol {vs['ret']*100:+.1f}% dd {vs['max_dd']*100:.1f}% trades {vs['trades']} "
-      f"btc hold {vs['btc_ret']*100:+.1f}%")
+      "a cash regime leaves more crypto cash than a long regime on a rising tape")
+check(fs["ret"] > cs["ret"], "full exposure finishes ahead of cash")
+print(f"replay long {fs['ret']*100:+.1f}% cash {cs['ret']*100:+.1f}%")
 
 try:
     os.remove(path)
 except OSError:
     pass
+
+
+days = [(date(2024, 1, 1) + timedelta(days=i)).isoformat() for i in range(160)]
+btc = [(d, 100.0) for d in days]
+fall = [(d, 200.0 - i) for i, d in enumerate(days)]
+rise = [(d, 100.0 + i) for i, d in enumerate(days)]
+raw, _ = signalhist.change_rows(signalhist.Tape(btc), signalhist.Tape(fall), 126, "down")
+check(raw.get(days[150]) == 1, "falling gold is the long reading")
+raw, _ = signalhist.change_rows(signalhist.Tape(btc), signalhist.Tape(rise), 126, "down")
+check(raw.get(days[150]) == 0, "rising gold is cash")
 
 print("signal-engine " + ("ok" if not fails else f"FAILED {len(fails)}"))
 raise SystemExit(1 if fails else 0)
