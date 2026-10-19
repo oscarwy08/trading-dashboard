@@ -2,9 +2,11 @@
 
 Each signal is coded so that a higher number is the bullish reading. The weight is the
 rank correlation with the next five daily returns. An older window and a newer window
-both have to agree on the sign, and both have to clear a small bar. A correlation that
-is suspiciously perfect is dropped: that is leakage or a one-off, not an edge. A signal
-with no history, or no agreement, gets weight zero and does not tilt the book.
+both have to agree on the sign, and both have to clear a small bar. Training labels that
+overlap the newer window are purged, and the first five confirm days are embargoed, so a
+label is not used on both sides of the split. A correlation that is suspiciously perfect
+is dropped: that is leakage or a one-off, not an edge. A signal with no history, or no
+agreement, gets weight zero and does not tilt the book.
 
 Nothing here fetches the network. News is read from the hourly file. Funding and insider
 marks are read from those books' own databases when they already exist.
@@ -171,16 +173,36 @@ def forward(prices, i, horizon=HORIZON):
     return prices[j] / prices[i] - 1.0
 
 
+def _purged_windows(idx, horizon=HORIZON):
+    """Older 70% trains, newer 30% confirms.
+
+    A five-day label that reaches into the confirm window is dropped from training.
+    The first `horizon` confirm samples are embargoed, so the confirm correlation is
+    not scored on returns that sat inside the last training labels (Lopez de Prado,
+    Advances in Financial Machine Learning, 2018, chapter 7).
+    """
+    cut = int(len(idx) * 0.70)
+    if cut <= 0 or cut >= len(idx):
+        return list(idx), []
+    train, confirm = list(idx[:cut]), list(idx[cut:])
+    start = confirm[0]
+    train = [i for i in train if i + horizon < start]
+    return train, confirm[horizon:]
+
+
 def _split_weight(signals, fwds):
-    """Weight from samples whose forward return is already known. The newest 30% confirms the older 70%."""
+    """Weight from samples whose forward return is already known.
+
+    The newest 30% confirms the older 70%, after purging overlapping labels and
+    embargoing the first confirm samples.
+    """
     idx = [i for i, (s, f) in enumerate(zip(signals, fwds)) if s is not None and f is not None]
     if len(idx) < TRAIN_N + CONFIRM_N:
         ic, n = spearman([signals[i] for i in idx], [fwds[i] for i in idx])
         return 0.0, False, ic, n, None, 0
-    cut = int(len(idx) * 0.70)
-    train, confirm = idx[:cut], idx[cut:]
-    tr, ntr = spearman([signals[i] for i in train], [fwds[i] for i in train])
-    cf, ncf = spearman([signals[i] for i in confirm], [fwds[i] for i in confirm])
+    train, confirm = _purged_windows(idx)
+    tr, ntr = spearman([signals[i] for i in train], [fwds[i] for i in train]) if train else (None, 0)
+    cf, ncf = spearman([signals[i] for i in confirm], [fwds[i] for i in confirm]) if confirm else (None, 0)
     weight, kept = decide_weight(tr, cf, ntr, ncf)
     return weight, kept, tr, ntr, cf, ncf
 
@@ -450,8 +472,9 @@ def dashboard_view(con, closes):
                 headlines=newssent.latest(8),
                 note=("A signal is used only when an older window and a later window agree on its rank "
                       "correlation with the next five daily returns, and neither correlation is tiny or perfect. "
-                      "The weight is the weaker of those two. News is scored by a finance lexicon, hourly, "
-                      "outside this cycle."))
+                      "Training labels that overlap the later window are left out, and the first five confirm "
+                      "days are embargoed. The weight is the weaker of those two. News is scored by a finance "
+                      "lexicon, hourly, outside this cycle."))
 
 
 def book_snapshot(closes, con):

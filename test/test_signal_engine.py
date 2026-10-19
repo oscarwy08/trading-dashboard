@@ -71,6 +71,12 @@ for i in range(80):
     leaked.append(None if i + 5 >= 80 else prices[i + 5] / prices[i] - 1.0)
 weight, kept, *_ = signalcomb.measure_series(leaked, prices)
 check(kept is False, "a signal that copies the future return is not used")
+idx = list(range(100))
+train_idx, confirm_idx = signalcomb._purged_windows(idx)
+cut = int(len(idx) * 0.70)
+check(64 in train_idx and 65 not in train_idx, "a train point whose forward return overlaps confirm is excluded")
+check(confirm_idx and confirm_idx[0] == cut + signalcomb.HORIZON, "the first confirm points are embargoed")
+check(train_idx[-1] + signalcomb.HORIZON < confirm_idx[0], "purged train labels end before the confirm window")
 flat = [0.2 for _ in range(80)]
 weight, kept, *_ = signalcomb.measure_series(flat, prices)
 check(kept is False, "a signal that never changes is not used")
