@@ -35,6 +35,14 @@ main{max-width:1240px;margin:0 auto;padding:20px 20px 48px}
 @keyframes fade{from{opacity:.4}to{opacity:1}}
 /* cards */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px;min-width:0}
+.rule-h{margin:18px 0 10px;font-size:15px;color:var(--hi)}
+.rule-card{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 12px}
+.rule-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.rule-card h3{margin:0;font-size:16px;font-weight:800}
+.rule-perf{display:flex;align-items:center;gap:10px;color:var(--txt);font-variant-numeric:tabular-nums;font-size:13px;text-align:right}
+.rule-dl{display:grid;grid-template-columns:118px 1fr;gap:6px 12px;margin:12px 0 0;font-size:14px}
+.rule-dl dt{color:var(--mut);margin:0}.rule-dl dd{margin:0}
+.var-group{margin-top:18px}.var-group h3{margin:0 0 4px;font-size:15px}
 .card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .card-h h2,.card h2{font-size:19px;margin:0;color:var(--hi);font-weight:800;letter-spacing:-.2px}
 .card h2 .muted{font-weight:500;font-size:15px}
@@ -159,7 +167,8 @@ body.book-loading main,body.book-missing main{display:none}
 .chart{height:240px}.chart.sm{height:220px}.drawer-panel{padding:14px 14px 32px}.drawer .tw{margin:0 -14px;padding:0 14px}
 .trade .th{gap:6px}.evc .mbar{width:36px;min-width:36px}.comp{grid-template-columns:auto minmax(40px,1fr) auto}
 input[type=search]{min-width:0;width:100%}.tools{width:100%}#updated-ago{display:none}.tg-row{grid-template-columns:70px 1fr 100px;gap:8px}
-.stat-row{grid-template-columns:1fr 1fr}.kv{grid-template-columns:1fr}.kv>div:nth-child(odd){margin-top:6px}}
+.stat-row{grid-template-columns:1fr 1fr}.kv{grid-template-columns:1fr}.kv>div:nth-child(odd){margin-top:6px}
+.rule-dl{grid-template-columns:1fr}.rule-dl dt{margin-top:8px}.rule-perf{text-align:left}}
 /* v4: Risk pot */
 .tag.risk{color:#f91880;border-color:rgba(249,24,128,.5)}.tag.xfer{color:var(--mut2);border-style:dashed}
 /* v5: markets grouped by theme, watch-closely themes */
