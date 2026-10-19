@@ -312,7 +312,8 @@ RAY day
 
 XMR day
   shadow  2026-10-19T19:00:13+00:00  £437.091  [momentum] stop-loss -2.2% <= -2.0% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-19T21:52:19+00:00  £442.298  [momentum] flatten 22:00 UK (flat overnight); P&L £-0.08
+  cycle was 10326s later, price £+5.20712 (+1.19%)
 
 Shadow entries vs the 5-minute cycle
 
@@ -569,7 +570,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 6 pairs, avg time gap 163267s, avg price gap -4.12%, missed moves 71
+  exits: 7 pairs, avg time gap 141418s, avg price gap -3.36%, missed moves 70
   entries: 1 pairs, avg time gap 338569s, avg price gap -2.62%, missed moves 47
 ev_exit
   exits: 4 pairs, avg time gap 79125s, avg price gap -3.64%, missed moves 52
