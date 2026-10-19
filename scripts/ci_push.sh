@@ -10,6 +10,19 @@
 # pull-request check cannot be made, fast-forward instead. SQUASH_EVEN_WITH_PRS=1 squashes anyway.
 # Otherwise fast-forward the rebased cycle so the new commits stay on main.
 set -u
+# Same guard as ci_cycle.sh. git commit and git fetch call gc --auto, and that
+# is what blocks the service after the trader has finished. The override covers
+# this process even if the config file cannot be written.
+git config gc.auto 0 2>/dev/null || true
+git config gc.autopacklimit 0 2>/dev/null || true
+git config maintenance.auto false 2>/dev/null || true
+export GIT_CONFIG_COUNT=3
+export GIT_CONFIG_KEY_0=gc.auto
+export GIT_CONFIG_VALUE_0=0
+export GIT_CONFIG_KEY_1=gc.autopacklimit
+export GIT_CONFIG_VALUE_1=0
+export GIT_CONFIG_KEY_2=maintenance.auto
+export GIT_CONFIG_VALUE_2=false
 SQUASH_AT=${SQUASH_AT:-100}
 git config user.name "${BOT_NAME:-trading-bot}"
 git config user.email "${BOT_EMAIL:-41898282+github-actions[bot]@users.noreply.github.com}"
