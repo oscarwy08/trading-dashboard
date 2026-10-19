@@ -36,7 +36,7 @@ function seriesWithFills(bars, marks, line) {
 const LC = window.LightweightCharts;
 const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const TZ = 'Europe/London', REFRESH_MS = 60000;
-const TABS = ['overview', 'portfolio', 'core', 'day', 'risk', 'markets', 'sentiment', 'orders', 'variants', 'strategies', 'tests'];
+const TABS = ['overview', 'portfolio', 'core', 'day', 'risk', 'markets', 'sentiment', 'orders', 'variants', 'signals', 'strategies', 'tests'];
 const C = {green: '#00ba7c', red: '#f4212e', blue: '#1d9bf0', mut: '#71767b', txt: '#e7e9ea', grid: '#16181c', line: '#2f3336', grey: '#536471'};
 let D = null, lastGen = null, loadErr = null;
 const S = {tab: 'overview', book: 'main', aSort: {k: 'a', d: 1}, tSort: {k: 't', d: -1}, pSort: {k: 'value', d: -1}, rSort: {k: 'score', d: -1},
@@ -1068,7 +1068,7 @@ function renderSentTimeline(a) {
 }
 
 /* ---------- variant books ---------- */
-const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880', everything: '#2dd4bf', midnight_crypto: '#6366f1', risk_giveback_15: '#e8b931', day_trail_arm: '#2dd4bf', day_ev_blend: '#c084fc', no_risk_clock: '#fb7185', day_capital_caution: '#38bdf8', partial_take: '#f97316', sent_split: '#a3e635', best_of: '#34d399', btc_trend: '#f5a623', btc_trend_vol: '#e8b931', majors_rotation: '#38bdf8', btc_core_satellite: '#c084fc', rs_rotation_veto: '#fb7185', quiet_strength: '#2dd4bf', best_of_plus: '#a3e635', trend_carry_unlock: '#fbbf24', insider_rs_stocks: '#818cf8'};
+const VAR_COL = {main: '#1d9bf0', ev_exit: '#f5a623', review_leftovers: '#00ba7c', all_combined: '#7856ff', burst_runner: '#f91880', everything: '#2dd4bf', midnight_crypto: '#6366f1', risk_giveback_15: '#e8b931', day_trail_arm: '#2dd4bf', day_ev_blend: '#c084fc', no_risk_clock: '#fb7185', day_capital_caution: '#38bdf8', partial_take: '#f97316', sent_split: '#a3e635', best_of: '#34d399', btc_trend: '#f5a623', btc_trend_vol: '#e8b931', majors_rotation: '#38bdf8', btc_core_satellite: '#c084fc', rs_rotation_veto: '#fb7185', quiet_strength: '#2dd4bf', best_of_plus: '#a3e635', trend_carry_unlock: '#fbbf24', insider_rs_stocks: '#818cf8', signal_engine: '#a78bfa'};
 function renderVariants() {
   const V = (D && D.variants) || {}, books = V.books || [];
   const el = $('#var-explain');
@@ -1128,7 +1128,7 @@ function renderVariants() {
 }
 
 /* ---------- book switch ---------- */
-const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch', risk_giveback_15: 'Risk giveback 15', day_trail_arm: 'Day trail arm', day_ev_blend: 'Day EV blend', no_risk_clock: 'No risk clock', day_capital_caution: 'Day capital caution', partial_take: 'Partial take', sent_split: 'Sentiment split', best_of: 'Best of', btc_trend: 'BTC trend', btc_trend_vol: 'BTC trend, vol sized', majors_rotation: 'Majors rotation', btc_core_satellite: 'BTC core + satellite', rs_rotation_veto: 'RS rotation, veto', quiet_strength: 'Quiet strength', best_of_plus: 'Best of plus trend', trend_carry_unlock: 'Trend, funding and unlocks', insider_rs_stocks: 'Insider relative strength'};
+const BOOK_LABEL = {main: 'Main (frozen)', ev_exit: 'EV exit', review_leftovers: 'Review leftovers', all_combined: 'Both', burst_runner: 'Burst runner', everything: 'Everything combined', midnight_crypto: 'Midnight crypto', entry_watch: 'Entry watch', risk_giveback_15: 'Risk giveback 15', day_trail_arm: 'Day trail arm', day_ev_blend: 'Day EV blend', no_risk_clock: 'No risk clock', day_capital_caution: 'Day capital caution', partial_take: 'Partial take', sent_split: 'Sentiment split', best_of: 'Best of', btc_trend: 'BTC trend', btc_trend_vol: 'BTC trend, vol sized', majors_rotation: 'Majors rotation', btc_core_satellite: 'BTC core + satellite', rs_rotation_veto: 'RS rotation, veto', quiet_strength: 'Quiet strength', best_of_plus: 'Best of plus trend', trend_carry_unlock: 'Trend, funding and unlocks', insider_rs_stocks: 'Insider relative strength', signal_engine: 'Signal engine'};
 const bookLabel = (name, fallback) => BOOK_LABEL[name] || fallback || name;
 const bookFile = name => (!name || name === 'main') ? 'data.json' : (/^[a-z0-9_]+$/.test(name) ? 'data_' + name + '.json' : null);
 let menu = [{name: 'main', label: 'Main (frozen)', file: 'data.json', variant: false}];
@@ -1201,6 +1201,33 @@ function spark(curve) {
   return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><polyline fill="none" stroke="#1d9bf0" stroke-width="1.6" points="${xy}"/></svg>`;
 }
 function pctCell(x) { return x == null || !isNum(x) ? '' : `<span class="${cls(x)}">${(x * 100).toFixed(1)}%</span>`; }
+function renderSignals() {
+  const E = (D && D.engine) || {};
+  const head = $('#sig-head');
+  if (head) {
+    const btc = isNum(E.composite) ? E.composite.toFixed(2) : 'n/a';
+    const st = isNum(E.stock_composite) ? E.stock_composite.toFixed(2) : 'n/a';
+    head.textContent = (E.note || '') + (E.error ? ' ' + E.error : '') +
+      ' BTC composite ' + btc + (E.stock ? ', ' + E.stock + ' composite ' + st : '') + '.';
+  }
+  const num = v => isNum(v) ? (v > 0 ? '+' : '') + v.toFixed(2) : '—';
+  const yn = v => v ? 'kept' : 'dropped';
+  table($('#sig-table'), [
+    {k: 'label', l: 'Signal', f: r => `<b>${esc(r.label)}</b><div class="muted small">${esc(r.blurb || '')}</div>`},
+    {k: 'btc', l: 'BTC now', f: r => num(r.btc)},
+    {k: 'ic', l: 'BTC edge', f: r => `${num(r.ic)} <span class="muted">${esc(yn(r.kept))}</span>`},
+    {k: 'weight', l: 'BTC weight', f: r => num(r.weight)},
+    {k: 'stock', l: 'Stock now', f: r => num(r.stock)},
+    {k: 'stock_ic', l: 'Stock edge', f: r => `${num(r.stock_ic)} <span class="muted">${esc(yn(r.stock_kept))}</span>`},
+  ], E.rows || [], null, renderSignals, {empty: 'No signal measurement yet. The book needs about 80 daily closes.'});
+  table($('#sig-news'), [
+    {k: 'ts', l: 'When', f: r => esc((r.ts || '').replace('T', ' ').slice(0, 16))},
+    {k: 'source', l: 'Source', f: r => esc(r.source)},
+    {k: 'asset', l: 'Name', f: r => esc(r.asset || '—')},
+    {k: 'score', l: 'Score', f: r => num(r.score)},
+    {k: 'title', l: 'Headline', f: r => esc(r.title)},
+  ], E.headlines || [], null, renderSignals, {empty: 'No headlines stored yet. The hourly news timer writes them.'});
+}
 function renderStrategies() {
   const rows = ((D && D.strategies) || []).slice().sort((a, b) => {
     if (a.excess_btc == null && b.excess_btc == null) return 0;
@@ -1270,7 +1297,7 @@ function dropBookCharts() {
 /* ---------- tabs / routing ---------- */
 const RENDER = {overview: () => { renderOverview(); renderEquity(); }, portfolio: renderPortfolio, core: renderCore, day: renderDay, risk: renderRiskPot,
   markets: renderMarkets, sentiment: renderSentiment, orders: renderOrders, variants: renderVariants,
-  strategies: renderStrategies, tests: renderTests};
+  signals: renderSignals, strategies: renderStrategies, tests: renderTests};
 const safe = (name, fn) => { try { fn(); } catch (e) { console.error('render ' + name + ' failed:', e); } };
 function setAcct(a, render = true) {
   S.acct = a || ''; try { localStorage.setItem('acct', S.acct); } catch (e) {}

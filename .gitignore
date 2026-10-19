@@ -21,6 +21,11 @@ data/exit_shadow.db
 data/exit_shadow.db-wal
 data/exit_shadow.db-shm
 data/exit_shadow.db-journal
+# Hourly news scores. Written by the news timer, read by the signal book. Not a cycle commit.
+data/news.db
+data/news.db-wal
+data/news.db-shm
+data/news.db-journal
 data/variants/*.db
 data/variants/*.db-*
 data/variants/manifest.json

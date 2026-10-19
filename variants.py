@@ -37,6 +37,7 @@ LABELS = {
     "best_of_plus": "Best of plus trend",
     "trend_carry_unlock": "Trend, funding and unlocks",
     "insider_rs_stocks": "Insider relative strength",
+    "signal_engine": "Signal engine",
 }
 BLURB = {
     "ev_exit": "EV exit is off. Live expected value rises when the trade falls, so it was selling winners between about +1% and +5%. This book was reset; sells before the reset are not counted. It follows the main book until the upside is taken from the current price and the chance is recomputed.",
@@ -63,6 +64,7 @@ BLURB = {
     "best_of_plus": "Sentiment split, the 15-minute entry watch and the burst runner may use 15% of the book. The other 85% is the BTC / VUSA trend. Nothing flattens at 22:00.",
     "trend_carry_unlock": "Once a week, the strongest of BTC, ETH and SOL above its 50-day average, sized like the vol-target book. Crypto is halved when BTC funding is in the top tenth of the past year or at 25% a year or more. An alt unlocking more than 1% of supply within 30 days is left out; if that feed is missing, only BTC and ETH are held. A resize under 10% of the position is skipped. Stocks follow the vol-sized VUSA trend. Held through nights and weekends. Unlock dates: Data: PatternPlus (https://pattern.plus).",
     "insider_rs_stocks": "Once a month, the strongest US and UK names by six-month return. An opportunistic insider buy (not someone who trades that same month in earlier years) tilts the weight. The crypto half stays in cash. Held through nights and weekends.",
+    "signal_engine": "The vol-sized BTC and VUSA trend, once a week, tilted only by signals that kept an edge out of sample. No edge means no tilt. Held through nights and weekends.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
 MARKET = (("prices", "ts"), ("sentiment", "ts"), ("fx", "ts"), ("daily_closes", "d"))

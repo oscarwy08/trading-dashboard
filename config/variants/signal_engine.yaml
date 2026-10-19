@@ -1,0 +1,5 @@
+# Vol-sized BTC / VUSA trend, tilted only by signals that kept an out-of-sample edge.
+# Held overnight. News is read from the hourly file. This book does not fetch it.
+strategy_book: signal_engine
+variant_rules:
+  hold_overnight: true

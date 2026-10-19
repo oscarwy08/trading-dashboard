@@ -889,7 +889,21 @@ def build(con, variant_report=None):
         signals=sig_hist, reasons=reasons, sentiment=sentiment,
         variants=variant_report if variant_report is not None else _variant_report(),
         strategies=_strategy_rows(),
-        tests=_tests_view())
+        tests=_tests_view(),
+        engine=_engine_view(con))
+
+def _engine_view(con):
+    """Signals tab. Read-only, and it must not fail the dashboard if a feed file is missing."""
+    try:
+        import signalcomb
+        closes = {}
+        for asset in ("BTC", "VUSA", "VUSA.L", "EQQQ", "EQQQ.L"):
+            rows = con.execute("SELECT d, close FROM daily_closes WHERE asset=? AND close>0 ORDER BY d", (asset,)).fetchall()
+            if rows:
+                closes[asset] = [(d, float(p)) for d, p in rows]
+        return signalcomb.dashboard_view(con, closes)
+    except Exception as e:
+        return dict(rows=[], headlines=[], error=str(e), note="")
 
 def _strategy_rows():
     try:
@@ -939,6 +953,7 @@ BOOK_MENU = {
     "best_of_plus": "Best of plus trend",
     "trend_carry_unlock": "Trend, funding and unlocks",
     "insider_rs_stocks": "Insider relative strength",
+    "signal_engine": "Signal engine",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 
