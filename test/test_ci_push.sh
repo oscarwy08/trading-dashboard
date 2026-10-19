@@ -231,6 +231,141 @@ else
   sed -n '1,40p' "$TMP/push.log" >&2
 fi
 
+# Shallow clone (the VPS). file:// so --depth is honoured. A plain fetch must
+# still rebase onto a commit that landed on main; --depth 1 at integrate time
+# replays the old shallow root and conflicts. Rev-list on a depth-1 clone is
+# not the squash count: that is .git/slim-pushes.
+make_shallow_pair() {
+  local n=$1 i
+  TMP=$(mktemp -d)
+  local origin=$TMP/origin.git seed=$TMP/seed
+  git init -q --bare -b main "$origin"
+  local url="file://${origin}"
+  git clone -q "$url" "$seed"
+  git -C "$seed" config user.email test@example.com
+  git -C "$seed" config user.name test
+  mkdir -p "$seed/data" "$seed/docs"
+  new_db "$seed/data/trading.db"
+  printf 'v1\n' > "$seed/code.txt"
+  printf 'summary\n' > "$seed/data/daily_summary.txt"
+  printf '<html></html>\n' > "$seed/docs/index.html"
+  git -C "$seed" add -A
+  git -C "$seed" commit -q -m init
+  git -C "$seed" push -q origin main
+  for i in $(seq 2 "$n"); do
+    printf 'v%s\n' "$i" > "$seed/code.txt"
+    git -C "$seed" commit -q -am "c$i"
+    git -C "$seed" push -q origin main
+  done
+  git clone -q --depth 1 "$url" "$TMP/base"
+  git -C "$TMP/base" config user.email test@example.com
+  git -C "$TMP/base" config user.name test
+  git clone -q "$url" "$TMP/other"
+  git -C "$TMP/other" config user.email test@example.com
+  git -C "$TMP/other" config user.name test
+}
+
+make_shallow_pair 6
+printf 'v-code\n' > "$TMP/other/code.txt"
+git -C "$TMP/other" commit -q -am 'land code'
+git -C "$TMP/other" push -q origin HEAD:main
+CODE=$(git -C "$TMP/other" rev-parse HEAD)
+mark_db "$TMP/base/data/trading.db"
+if (cd "$TMP/base" && CI_PUSH_RETRY_SLEEP=0 bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
+git -C "$TMP/other" fetch -q origin main
+if [ "$RC" -eq 0 ] && git -C "$TMP/other" merge-base --is-ancestor "$CODE" origin/main \
+   && [ "$(git -C "$TMP/other" show origin/main:code.txt)" = "v-code" ] \
+   && [ "$(cycle_mark "$TMP/other")" = "yes" ]; then
+  ok "shallow rebase pushed the cycle book on top of the code commit"
+else
+  bad "shallow rebase did not push the cycle book (rc=$RC)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+if grep -q conflicted "$TMP/push.log"; then
+  bad "shallow rebase conflicted on a data-only cycle"
+else
+  ok "shallow rebase did not conflict"
+fi
+shallow_n=$(git -C "$TMP/base" rev-list --count HEAD)
+if [ "$(git -C "$TMP/base" rev-parse --is-shallow-repository)" = "true" ] && [ "$shallow_n" -le 4 ]; then
+  ok "shallow rebase stayed shallow (count $shallow_n)"
+else
+  bad "shallow rebase deepened the clone (count $shallow_n)"
+fi
+if [ "$(tr -cd '0-9' < "$TMP/base/.git/slim-pushes")" = "1" ]; then
+  ok "shallow fast-forward recorded push count 1"
+else
+  bad "shallow push count was not 1"
+fi
+
+# Rev-list after one commit on depth 1 is 2, which is already over SQUASH_AT=1.
+# The counter is 1, so this must fast-forward and keep the parent.
+make_shallow_pair 8
+mark_db "$TMP/base/data/trading.db"
+if (cd "$TMP/base" && CI_PUSH_RETRY_SLEEP=0 SQUASH_AT=1 SQUASH_OPEN_PRS=0 bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
+git -C "$TMP/other" fetch -q origin main
+if [ "$RC" -eq 0 ] && git -C "$TMP/other" rev-parse --verify -q origin/main^ >/dev/null \
+   && [ "$(cycle_mark "$TMP/other")" = "yes" ] && ! grep -q "squashed" "$TMP/push.log"; then
+  ok "shallow clone does not squash from rev-list depth"
+else
+  bad "shallow clone squashed from rev-list depth (rc=$RC)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+
+# Counter 5 + this push = 6, and 6 > 3. Rev-list is only 2, so only the counter can squash.
+make_shallow_pair 4
+echo 5 > "$TMP/base/.git/slim-pushes"
+mark_db "$TMP/base/data/trading.db"
+printf 'shadow report\n' > "$TMP/base/data/exit_shadow_report.txt"
+if (cd "$TMP/base" && CI_PUSH_RETRY_SLEEP=0 SQUASH_AT=3 SQUASH_OPEN_PRS=0 bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
+git -C "$TMP/other" fetch -q origin main
+if [ "$RC" -eq 0 ] && ! git -C "$TMP/other" rev-parse --verify -q origin/main^ >/dev/null \
+   && [ "$(cycle_mark "$TMP/other")" = "yes" ] && grep -q "squashed" "$TMP/push.log" \
+   && [ "$(tr -cd '0-9' < "$TMP/base/.git/slim-pushes")" = "0" ]; then
+  ok "shallow push counter still squashes and then resets"
+else
+  bad "shallow push counter did not squash (rc=$RC)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+
+make_shallow_pair 4
+echo 5 > "$TMP/base/.git/slim-pushes"
+mark_db "$TMP/base/data/trading.db"
+if (cd "$TMP/base" && CI_PUSH_RETRY_SLEEP=0 SQUASH_AT=3 SQUASH_OPEN_PRS=2 bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
+git -C "$TMP/other" fetch -q origin main
+if [ "$RC" -eq 0 ] && git -C "$TMP/other" rev-parse --verify -q origin/main^ >/dev/null \
+   && grep -q "skipping squash" "$TMP/push.log"; then
+  ok "shallow clone still skips squash while pull requests are open"
+else
+  bad "shallow clone squashed while pull requests are open (rc=$RC)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+
+# Main moves after the rebase and before the confirming fetch.
+make_shallow_pair 4
+printf 'v-code\n' > "$TMP/other/code.txt"
+git -C "$TMP/other" commit -q -am 'land code'
+git -C "$TMP/other" push -q origin HEAD:main
+CODE=$(git -C "$TMP/other" rev-parse HEAD)
+mark_db "$TMP/base/data/trading.db"
+confirm="git -C '$TMP/other' commit --allow-empty -q -m 'landed during confirm' && git -C '$TMP/other' push -q origin HEAD:main"
+if (cd "$TMP/base" && CI_PUSH_RETRY_SLEEP=0 SQUASH_AT=100 CI_PUSH_BEFORE_CONFIRM="$confirm" bash "$PUSH") >"$TMP/push.log" 2>&1; then RC=0; else RC=$?; fi
+git -C "$TMP/other" fetch -q origin main
+tip_msg=$(git -C "$TMP/other" log -1 --format=%s origin/main)
+if [ "$RC" -eq 0 ] && [ "$tip_msg" = "landed during confirm" ] \
+   && git -C "$TMP/other" merge-base --is-ancestor "$CODE" origin/main \
+   && [ -z "$(cycle_mark "$TMP/other")" ]; then
+  ok "shallow abort leaves the commit that landed during the confirming fetch"
+else
+  bad "shallow abort pushed over a moved main (rc=$RC tip=$tip_msg)"
+  sed -n '1,40p' "$TMP/push.log" >&2
+fi
+if [ -f "$TMP/base/.git/slim-pushes" ]; then
+  bad "shallow abort recorded a push that did not happen"
+else
+  ok "shallow abort did not advance the push counter"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "0 failure(s)"; else echo "$fail failure(s)"; fi
 exit "$fail"

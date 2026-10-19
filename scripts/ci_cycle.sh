@@ -3,10 +3,10 @@
 # A collector/ingest failure is logged but the trader still runs (it refuses to buy on stale prices/FX on its own).
 # Exit 1 if trader or dashboard failed (the workflow still commits whatever state was written, then marks the run red).
 set -u
-# A 5-minute commit of trading.db does not delta. git gc --auto then repacks
-# those blobs inside this service, after the book is already written, and can
-# sit in pack-objects until systemd kills the whole cycle. Prune from an idle
-# shell (scripts/idle_repack.sh). Never during a cycle.
+# A 5-minute commit of trading.db does not delta. git gc --auto repacks those
+# blobs and can sit in pack-objects until systemd kills the cycle. Automatic
+# gc stays off. A shallow checkout drops the loose objects with
+# scripts/git_slim.sh (git prune, 60s cap), not git gc.
 git config gc.auto 0 2>/dev/null || true
 git config gc.autopacklimit 0 2>/dev/null || true
 git config maintenance.auto false 2>/dev/null || true
@@ -29,6 +29,12 @@ if [ -f "$_env" ]; then
   set +a
 fi
 unset _env
+# The VPS checkout is shallow. Fetch depth 1 again so an older run_cycle.sh
+# that still fetches without --depth cannot keep the history. GitHub Actions
+# is a full clone and must stay one (the squash counts that history).
+if [ "${VPS_CYCLE:-}" = "1" ] || [ "$(git rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]; then
+  bash "$(dirname "$0")/git_slim.sh" sync || echo "::warning::shallow sync failed; continuing with the checkout already on disk"
+fi
 fail=0
 echo "=== cycle $(date '+%F %T %Z') ==="
 _cycle_t=$(date +%s)
@@ -67,5 +73,8 @@ run_step exit_shadow ${PY:-python} exit_shadow_report.py --write || echo "::warn
 echo "[timing] cycle $(( $(date +%s) - _cycle_t ))s"
 if [ -s logs/trading.log ] && grep -qE " (WARNING|ERROR) " logs/trading.log; then
   echo "--- warnings/errors this cycle (logs/trading.log) ---"; grep -E " (WARNING|ERROR) " logs/trading.log | tail -40
+fi
+if [ "${VPS_CYCLE:-}" = "1" ] || [ "$(git rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]; then
+  bash "$(dirname "$0")/git_slim.sh" prune || true
 fi
 exit $fail

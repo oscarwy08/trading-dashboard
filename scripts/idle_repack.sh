@@ -1,7 +1,9 @@
 #!/bin/bash
-# Reclaim unreachable trading.db blobs left by the history squash.
-# Run only when trading-cycle is not active. A second pack-objects on top of
-# one already running will use the same multi-gigabyte working set.
+# Manual repack for a full clone, only while trading-cycle is stopped.
+# The VPS cycle does not use this. A shallow checkout drops old loose objects
+# with scripts/git_slim.sh (git prune, 60s cap). git gc during a cycle is what
+# blocked pushes; do not put it back on the timer.
+# A second pack-objects on top of one already running uses the same working set.
 set -u
 cd "$(dirname "$0")/.."
 if pgrep -f pack-objects >/dev/null 2>&1; then
