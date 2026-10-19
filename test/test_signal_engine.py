@@ -57,9 +57,12 @@ check("newssent" not in (Path(__file__).resolve().parent.parent / "scripts" / "c
       "the trading cycle does not fetch news")
 
 # --- weights: agree to keep, disagree or a perfect fit to drop ---
-check(signalcomb.decide_weight(0.08, 0.06, 40, 20)[1] is True, "two windows that agree are kept")
-w, kept = signalcomb.decide_weight(0.08, 0.06, 40, 20)
-check(kept and abs(w - 0.06) < 1e-9, "the weight is the weaker correlation")
+check(abs(signalcomb.ic_hurdle(400) - signalcomb.ic_hurdle(400, len(signalcomb.SIGNALS))) < 1e-12,
+      "the hurdle counts all nine signals")
+check(signalcomb.decide_weight(0.12, 0.11, 400, 400)[1] is True, "two windows that clear the multiple-test bar are kept")
+w, kept = signalcomb.decide_weight(0.12, 0.11, 400, 400)
+check(kept and abs(w - 0.11) < 1e-9, "the weight is the weaker correlation")
+check(signalcomb.decide_weight(0.08, 0.06, 40, 20)[1] is False, "a correlation inside the multiple-test noise bar is dropped")
 check(signalcomb.decide_weight(0.08, -0.06, 40, 20)[1] is False, "a sign change is dropped")
 check(signalcomb.decide_weight(0.01, 0.01, 40, 20)[1] is False, "a tiny correlation is dropped")
 check(signalcomb.decide_weight(0.9, 0.9, 40, 20)[1] is False, "a perfect correlation is dropped")

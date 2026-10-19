@@ -2,9 +2,11 @@
 
 Each signal is coded so that a higher number is the bullish reading. The weight is the
 rank correlation with the next five daily returns. An older window and a newer window
-both have to agree on the sign, and both have to clear a small bar. A correlation that
-is suspiciously perfect is dropped: that is leakage or a one-off, not an edge. A signal
-with no history, or no agreement, gets weight zero and does not tilt the book.
+both have to agree on the sign, and both have to clear the correlation you would expect
+from the best of nine pure-noise signals. A fixed 0.03 bar is far too low for that many
+tries. A correlation that is suspiciously perfect is dropped: that is leakage or a
+one-off, not an edge. A signal with no history, or no agreement, gets weight zero and
+does not tilt the book.
 
 Nothing here fetches the network. News is read from the hourly file. Funding and insider
 marks are read from those books' own databases when they already exist.
@@ -81,10 +83,25 @@ def spearman(xs, ys):
     return num / (dx * dy), n
 
 
-def decide_weight(train_ic, confirm_ic, train_n, confirm_n, ic_min=IC_MIN, ic_cap=IC_CAP):
-    """(weight, kept). Both windows must agree. The weight is the weaker of the two, and it is capped.
+def ic_hurdle(n, k=None):
+    """Smallest |correlation| that beats the best of K null signals.
 
-    A perfect correlation is rejected. Flipping a signal that only worked in one window is rejected.
+    The expected maximum |z| among K independent noise series is about
+    sqrt(2 ln K). A rank correlation has standard error about 1/sqrt(n - 3)
+    (Bailey and Lopez de Prado, the deflated Sharpe / false-strategy result).
+    K is the nine signals this book tries, unless a test passes another count.
+    """
+    k = len(SIGNALS) if k is None else int(k)
+    if n is None or n <= 3 or k < 2:
+        return 1.0
+    return math.sqrt(2.0 * math.log(k)) / math.sqrt(n - 3.0)
+
+
+def decide_weight(train_ic, confirm_ic, train_n, confirm_n, ic_min=IC_MIN, ic_cap=IC_CAP):
+    """(weight, kept). Both windows must agree, and both must clear the multiple-test bar.
+
+    The weight is the weaker of the two, and it is capped. A perfect correlation is
+    rejected. Flipping a signal that only worked in one window is rejected.
     """
     if train_ic is None or confirm_ic is None:
         return 0.0, False
@@ -93,6 +110,8 @@ def decide_weight(train_ic, confirm_ic, train_n, confirm_n, ic_min=IC_MIN, ic_ca
     if train_ic * confirm_ic <= 0:
         return 0.0, False
     if abs(train_ic) < ic_min or abs(confirm_ic) < ic_min:
+        return 0.0, False
+    if abs(train_ic) < ic_hurdle(train_n) or abs(confirm_ic) < ic_hurdle(confirm_n):
         return 0.0, False
     if abs(train_ic) > ic_cap or abs(confirm_ic) > ic_cap:
         return 0.0, False
@@ -449,9 +468,10 @@ def dashboard_view(con, closes):
     return dict(asset="BTC", stock=stock, composite=btc_score, stock_composite=st_score, rows=rows,
                 headlines=newssent.latest(8),
                 note=("A signal is used only when an older window and a later window agree on its rank "
-                      "correlation with the next five daily returns, and neither correlation is tiny or perfect. "
-                      "The weight is the weaker of those two. News is scored by a finance lexicon, hourly, "
-                      "outside this cycle."))
+                      "correlation with the next five daily returns. The bar is the correlation expected "
+                      "from the best of the nine signals if they were noise, and a perfect correlation is "
+                      "still dropped. The weight is the weaker of the two windows. News is scored by a "
+                      "finance lexicon, hourly, outside this cycle."))
 
 
 def book_snapshot(closes, con):
