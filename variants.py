@@ -787,8 +787,10 @@ def run_all():
     return total
 
 
-def _curve(con, since):
+def _curve(con, since, start=None):
+    from dashboard import partial_equity_point
     rows = con.execute("SELECT ts, equity FROM equity WHERE ts>=? ORDER BY ts", (since or "",)).fetchall()
+    rows = [r for r in rows if not partial_equity_point(r[0], r[1], rows, start)]
     if len(rows) > 400:
         step = (len(rows) - 1) / 399
         rows = [rows[min(int(i * step), len(rows) - 1)] for i in range(400)]
@@ -815,13 +817,9 @@ def _since(con, since, start_equity):
                     win_rate=st["win_rate"], max_dd=st["max_dd"], realized=st["realized"])
     sells = [r[0] for r in con.execute("SELECT pnl FROM trades WHERE side='SELL' AND ts>?", (since,))]
     nt = con.execute("SELECT COUNT(*) FROM trades WHERE side IN ('BUY','SELL') AND ts>?", (since,)).fetchone()[0]
-    peak, mdd = 0.0, 0.0
-    for (v,) in con.execute("SELECT equity FROM equity WHERE ts>=? ORDER BY ts", (since,)):
-        if v is None:
-            continue
-        peak = max(peak, v)
-        if peak:
-            mdd = min(mdd, v / peak - 1)
+    from dashboard import curve_drawdown
+    pts = [(r[0], r[1]) for r in con.execute("SELECT ts, equity FROM equity WHERE ts>=? ORDER BY ts", (since or "",))]
+    mdd = curve_drawdown(pts, base)
     return dict(equity=st["equity"], start=base, pnl=st["equity"] - base, trades=nt, closed=len(sells),
                 win_rate=(sum((x or 0) > 0 for x in sells) / len(sells)) if sells else None,
                 max_dd=mdd, realized=sum(x or 0 for x in sells))
@@ -965,7 +963,7 @@ def _book(con, name, label, blurb, since, start_equity, reset=None):
         max_dd=round(st["max_dd"] * 100, 3),
         realized=round(st["realized"], 2),
         scorecard=setup_scorecard(con, since),
-        curve=_curve(con, since),
+        curve=_curve(con, since, st["start"]),
         table=sleeve_table(con) if name in TABLE_BOOKS else None,
         reset_note=note,
     )
