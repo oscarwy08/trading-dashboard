@@ -1,0 +1,5 @@
+# BTC / ETH / SOL trend, vol sized, halved when funding is rich, alts with a large unlock left out.
+# Held overnight. The stock half follows the vol-sized VUSA trend.
+strategy_book: trend_carry_unlock
+variant_rules:
+  hold_overnight: true

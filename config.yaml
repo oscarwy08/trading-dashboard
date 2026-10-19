@@ -350,7 +350,7 @@ variants:
   run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
         risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take,
         sent_split, best_of, btc_trend, btc_trend_vol, majors_rotation, btc_core_satellite,
-        rs_rotation_veto, quiet_strength, best_of_plus]
+        rs_rotation_veto, quiet_strength, best_of_plus, trend_carry_unlock, insider_rs_stocks]
   # These three books sold on an inverted EV. The next cycle recopies each from the current main book
   # and the scorecard starts there, so those sells are not counted.
   reset:
@@ -421,3 +421,8 @@ strategies:
   min_trade_gbp: 5
   day_risk_cap_pct: 15
   trend_weight: 0.85
+  carry_funding_pct: 25           # trend_carry_unlock halves crypto at this annualised funding, or in the top tenth of the past year
+  carry_unlock_pct: 1             # drop an alt when more than this percent of supply unlocks within 30 days
+  carry_min_pos_frac: 10          # skip a resize smaller than this percent of the current position
+  insider_window_days: 180        # opportunistic Form 4 buys inside this window tilt the stock book
+  insider_per_day: 8              # SEC lookups per day (about 10 requests a second, cached)
