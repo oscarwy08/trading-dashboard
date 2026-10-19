@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-10-19T20:58:00Z",
+ "asset": "XRP",
+ "score": 0.1,
+ "confidence": 0.5,
+ "summary": "XRP ~$1.30 (+3.4% 24h), holding above $1.25 support. New today: XRPL fixCleanup3_4_0 amendment reached the validator vote and activates around 09:34 UTC on 23 Oct (patches ahead of the lending protocol), Sparkassen added XRP to its banking-app rollout, and an official @XRP account launched on X. Lending amendments themselves are still short of votes (early Nov at the soonest). Price-target posts ($28 to $200) are ignored. Slightly better than midday.",
+ "sources": [
+  "https://x.com/i/trending/2112156730314379271",
+  "https://x.com/i/trending/2112195416242655459",
+  "https://x.com/i/trending/2112221951645130922",
+  "https://x.com/i/trending/2111679704340312216"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "XRPL fixCleanup3_4_0 activates ~09:34 UTC 23 Oct; Sparkassen XRP trading rollout began 19 Oct",
+ "volume": 76544,
+ "buzz_level": 76544,
+ "buzz_change": 0.1,
+ "price_runup_24h_pct": 3.4,
+ "carried_over": false
+}

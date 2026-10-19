@@ -1,0 +1,21 @@
+{
+ "timestamp": "2026-10-19T20:58:00Z",
+ "asset": "BTC",
+ "score": 0.12,
+ "confidence": 0.55,
+ "summary": "BTC ~$81.9k (+1.3% 24h), bounced from $81k support and ignored the 'Black Monday' anniversary scare. New today: Germany's Sparkassen began rolling out BTC trading in their banking apps (5 banks first, 30-40 more a month), Visa and Mesh launched direct crypto spending at 175M merchants, Metaplanet's US 'Superplanet' deal was approved by shareholders, and a whale opened ~$102M of leveraged BTC longs on Hyperliquid. Offsets unchanged: third straight week of ETF outflows. BTC dominance hit 60.7%, which hurts alts more than BTC. Slightly more positive than midday.",
+ "sources": [
+  "https://x.com/i/trending/2112195416242655459",
+  "https://x.com/i/trending/2112203560280584306",
+  "https://x.com/i/trending/2112170586952597921",
+  "https://x.com/i/trending/2112190708257845721",
+  "https://x.com/i/trending/2111918969258905789"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Sparkassen crypto trading rollout began 19 Oct; Visa-Mesh crypto spending announced 19 Oct; Superplanet (Metaplanet) shareholder approval 16 Oct",
+ "volume": 159865,
+ "buzz_level": 159865,
+ "buzz_change": 1.15,
+ "price_runup_24h_pct": 1.3,
+ "carried_over": false
+}

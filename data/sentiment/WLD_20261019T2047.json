@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-19T20:58:00Z",
+ "asset": "WLD",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "WLD ~$0.51, up ~10.6% in 24h. New today at Money20/20: World launched World ID tools for banks (identity wallet, a generally available Zoom 'Verified Human' check, agent tools) with design partners including Bain Capital, Pantera and VanEck. Real product news, but mentions are up ~1.5x after a 10% run, so part of it is likely chasing. Kept modest, slightly below this morning.",
+ "sources": [
+  "https://x.com/i/trending/2112006730498404393"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "World ID bank/fintech tool suite announced at Money20/20 (19 Oct)",
+ "volume": 3426,
+ "buzz_level": 3426,
+ "buzz_change": 1.47,
+ "price_runup_24h_pct": 10.6,
+ "carried_over": false
+}

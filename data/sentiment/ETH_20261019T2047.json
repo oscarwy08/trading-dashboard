@@ -1,0 +1,21 @@
+{
+ "timestamp": "2026-10-19T20:58:00Z",
+ "asset": "ETH",
+ "score": 0.1,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,397 (+2.6% 24h). New today: JPMorgan extended JPM Coin to Ethereum mainnet for 24/7 transfers, Sparkassen added ETH to its banking-app rollout, and a whale opened ~$39M of leveraged ETH longs. The Glamsterdam upgrade (gas limit doubled to 200M) is still set for 26 Oct. Offset: ETH ETFs lost ~$320M last week. A little more positive than midday.",
+ "sources": [
+  "https://x.com/i/trending/2112086843172778488",
+  "https://x.com/i/trending/2112195416242655459",
+  "https://x.com/i/trending/2112190708257845721",
+  "https://x.com/i/trending/2112155079554027729",
+  "https://x.com/i/trending/2112085330849607686"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "JPM Coin live on Ethereum mainnet (19 Oct); Sparkassen ETH trading (19 Oct); Glamsterdam upgrade scheduled 26 Oct",
+ "volume": 87032,
+ "buzz_level": 87032,
+ "buzz_change": 1.34,
+ "price_runup_24h_pct": 2.6,
+ "carried_over": false
+}
