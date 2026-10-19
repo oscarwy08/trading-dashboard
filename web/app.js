@@ -44,8 +44,9 @@ const S = {tab: 'overview', book: 'main', aSort: {k: 'a', d: 1}, tSort: {k: 't',
   filter: 'all', q: '', eqRange: 'ALL', ccy: 'gbp', ptype: 'candle', dRange: 'ALL', open: null,
   tAsset: '', tSide: '', tSleeve: '', tFrom: '', tTo: '', tLimit: 50, sLimit: 15, sAsset: '', pPot: '', rTheme: '', mTheme: '',
   acct: (() => { try { const a = localStorage.getItem('acct') || ''; return ['', 'crypto', 'stocks'].includes(a) ? a : ''; } catch (e) { return ''; } })(), eqAcct: '', trade: null};
-const POT = {core: 'Core pot', day: 'Day pot', risk: 'Risk pot'};
+const POT = {core: 'Core pot', day: 'Day pot', risk: 'Risk pot', trend: 'Trend sleeve'};
 const POTS = ['core', 'day', 'risk'];
+const potKeys = () => POTS.concat((D && D.sleeves && D.sleeves.trend) ? ['trend'] : []);
 const potTag = s => s ? `<span class="tag ${s === 'core' ? 'blue' : s === 'risk' ? 'risk' : ''}">${esc(POT[s] || s)}</span>` : '';
 // v7.3 loans between pots inside one account: 'Borrowed £4.00 from Core for STRK (Crypto account)' / 'Lent £4.00 to Risk for STRK'
 const PN = k => (POT[k] || k).replace(' pot', '');
@@ -54,7 +55,7 @@ const loanLines = k => (D.loans || []).filter(l => l.status === 'open' && (!k ||
   ` for ${esc(l.asset)}${l.sub ? ' (' + esc(l.sub) + ')' : ''} · ${esc(l.account === 'crypto' ? 'Crypto' : 'Stocks')} account${l.repaid ? ` · ${fM(l.repaid)} repaid` : ''}`);
 const loanNote = k => { const L = loanLines(k); return L.length ? `<div class="note loan" title="Temporary loan between pots inside the same account for an exceptional setup. The lender keeps it as money owed to it, the borrower as a debt, so neither pot's value or P&L changes; the money goes back to the lender when that position is sold, and the trade's profit or loss stays with the borrower.">${L.join('<br>')}</div>` : ''; };
 const CASHROW = t => t.side === 'TRANSFER' || t.side === 'LOAN' || t.side === 'REPAY';   // cash moves, not orders
-const potCash = () => POTS.reduce((a, k) => a + ((D.sleeves[k] || {}).cash || 0), 0);
+const potCash = () => potKeys().reduce((a, k) => a + ((D.sleeves[k] || {}).cash || 0), 0);
 /* v6: two accounts. Crypto = Monad wallet, Stocks = Trading 212. S.acct ('' = all) filters Portfolio, pot tabs, Orders, Markets. */
 const ACCTS = ['crypto', 'stocks'];
 const ACC = {crypto: 'Crypto account', stocks: 'Stocks account'}, ACCW = {crypto: 'Monad wallet', stocks: 'Trading 212'};
@@ -282,9 +283,14 @@ function renderOverview() {
   const pot = (k, x, desc) => `<a class="pot" href="#${hashString(S.book || 'main', k, null)}"><div><div class="pot-n">${POT[k]}</div><div class="pot-d">${desc}</div></div>` +
     `<div class="pot-v"><b>${fM(x.equity)}</b><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span>${pnlBreakdown(x.pnl_breakdown)}</div></a>`;
   const split = k => { const z = (Z[k] || {}).accts; return z ? `<br>Crypto ${fM(z.crypto.equity)} (${fM(z.crypto.cash)} cash) · Stocks ${fM(z.stocks.equity)} (${fM(z.stocks.cash)} cash)` : ''; };
+  const potTitle = $('#ov-pots-title');
+  if (potTitle) potTitle.textContent = Z.trend ? 'Your pots' : 'Your three pots';
+  const trendCard = !Z.trend ? '' : `<div class="pot"><div><div class="pot-n">Trend sleeve</div><div class="pot-d">Overnight holdings · started ${fM0(Z.trend.start)} · ${Z.trend.open_n} holdings${split('trend')}</div></div>` +
+    `<div class="pot-v"><b>${fM(Z.trend.equity)}</b><span class="${cls(Z.trend.pnl)}">${fM(Z.trend.pnl, true)} (${fPct(Z.trend.ret)})</span>${pnlBreakdown(Z.trend.pnl_breakdown)}</div></div>`;
   $('#ov-pots').innerHTML = pot('core', core, `Long-term holdings · started ${fM0(core.start)} · ${core.open_n} holdings${split('core')}`) +
     pot('day', d, `Short-term trades, flat by ${esc((d.rules || {}).flatten)} UK · started ${fM0(d.start)} · ${d.open_n} open${split('day')}`) +
     (Z.risk ? pot('risk', Z.risk, `Speculative small caps & niche stocks · started ${fM0(Z.risk.start)} · ${Z.risk.open_n} of ${(Z.risk.rules || {}).max_open} open${Z.risk.halted ? ' · <b class="neg">paused</b>' : ''}${split('risk')}`) : '') +
+    trendCard +
     `<div class="note">Each pot has separate cash in both accounts; a crypto trade only uses the pot's Crypto-account cash and a stock trade only its Stocks-account cash. Cash moves (pots / accounts) are on the Orders tab under "Cash transfers" and are never counted as profit or loss.</div>` + loanNote(null);
   const cols = [{k: 't', l: 'Time', f: r => esc(fTs(r.t))}, {k: 'side', l: 'Side', f: r => sideTag(r.side)}, {k: 'asset', l: 'Asset', f: r => assetLink(r.asset)}, {k: 'acct', l: 'Account', f: r => acctTag(r.acct)},
     {k: 'value', l: 'Value', num: 1, f: r => fM(r.value)}, {k: 'pnl', l: 'P&L', num: 1, f: r => r.side === 'SELL' ? sellPnl(r, true) : pnlCell(r.pnl)}];
@@ -299,8 +305,8 @@ function renderAccountCards() {
       [['spread', f.spread], ['FX', f.fx], ['stamp duty', f.stamp], ['early xStock fees', f.xstock]].filter(y => y[1]).map(y => `${y[0]} ${fFee(y[1])}`).join(' + ') || 'none yet';
     return `<div class="card acct" data-acct="${a}" tabindex="0" role="button" aria-label="Show ${esc(x.label)}"><div class="acct-h"><div><div class="nm">${esc(x.label)}</div><div class="wh">${esc(x.where)}</div></div>${acctTag(a)}</div>` +
       `<div class="big">${fM(x.equity)}</div><div class="pl"><span class="${cls(x.pnl)}">${fM(x.pnl, true)} (${fPct(x.ret)})</span> <span class="muted">since ${fM0(x.start)} start</span>${pnlBreakdown(x.pnl_breakdown)}</div>` +
-      `<div class="acct-kv">${stat('Cash', fM(x.cash), '', '', 'Money in this account not in a position (all three pots).')}${stat('Invested', fM(x.invested), '', `${x.open_n} holding${x.open_n === 1 ? '' : 's'}`, 'Current value of this account\'s open positions. Cash + invested = account value.')}${stat('Fees paid', fM(x.fees_total), '', esc(fl), 'All fees paid in this account (open and closed trades); already included in value and P&L.')}</div>` +
-      `<div class="acct-pots">${POTS.map(k => { const c = (x.pots || {})[k] || {}; return `<b>${esc(POT[k])}</b><span>${fM(c.cash)} cash</span><span class="num">${fM(c.equity)}</span><span class="num ${cls(c.pnl)}">${fM(c.pnl, true)}</span>`; }).join('')}</div></div>`; }).join('') +
+      `<div class="acct-kv">${stat('Cash', fM(x.cash), '', '', D.sleeves.trend ? 'Money in this account not in a position, including the trend sleeve.' : 'Money in this account not in a position (all three pots).')}${stat('Invested', fM(x.invested), '', `${x.open_n} holding${x.open_n === 1 ? '' : 's'}`, 'Current value of this account\'s open positions. Cash + invested = account value.')}${stat('Fees paid', fM(x.fees_total), '', esc(fl), 'All fees paid in this account (open and closed trades); already included in value and P&L.')}</div>` +
+      `<div class="acct-pots">${potKeys().map(k => { const c = (x.pots || {})[k] || {}; return `<b>${esc(POT[k])}</b><span>${fM(c.cash)} cash</span><span class="num">${fM(c.equity)}</span><span class="num ${cls(c.pnl)}">${fM(c.pnl, true)}</span>`; }).join('')}</div></div>`; }).join('') +
     (pend.length ? `<div class="note" style="grid-column:1/-1;margin-top:0">Account split ${esc(fTs(sp.t))}: Crypto ${fM0(A.crypto.start)} / Stocks ${fM0(A.stocks.start)}. Still to settle inside each account (pot to pot, never between accounts) as soon as the cash is free: ${pend.map(l => `${esc(l.account === 'crypto' ? 'Crypto' : 'Stocks')} ${esc(POT[l.from])} → ${esc(POT[l.to])} ${fM(l.amount)}`).join(' · ')}.</div>` : '');
   $$('.acct', el).forEach(c => { const go = () => { setAcct(c.dataset.acct); goHash({tab: 'portfolio', asset: null}); }; c.onclick = go; c.onkeydown = e => { if (e.key === 'Enter') go(); }; });
 }
@@ -329,7 +335,7 @@ function renderEquity() {
   }
   const key = S.eqAcct && E[S.eqAcct] ? S.eqAcct : 'eq', st0 = eqStart();
   $('#eq-title').textContent = S.eqAcct ? `${ACC[S.eqAcct]} over time` : 'Total value over time';
-  $('#eq-explain').textContent = S.eqAcct ? `${ACC[S.eqAcct]} (${ACCW[S.eqAcct]}): cash + holdings of all three pots. Dashed line = its ${fM0(st0)} start; history before the split (${fTs((D.account_split || {}).t)}) is rebuilt from the trades.` :
+  $('#eq-explain').textContent = S.eqAcct ? `${ACC[S.eqAcct]} (${ACCW[S.eqAcct]}): cash + holdings of ${D.sleeves.trend ? 'every pot, including the trend sleeve' : 'all three pots'}. Dashed line = its ${fM0(st0)} start; history before the split (${fTs((D.account_split || {}).t)}) is rebuilt from the trades.` :
     `What your £${D.start.toFixed(0)} is worth over time, both accounts together. The dashed line is where you started.`;
   eqSeries.applyOptions({pointMarkersVisible: E.t.length < 40});
   eqSeries.setData(E.t.map((t, i) => ({time: t, value: E[key][i]})).filter(p => isNum(p.value)));
@@ -342,18 +348,33 @@ function renderEquity() {
 
 /* ---------- portfolio ---------- */
 const PAL = ['#1d9bf0', '#8ecdf8', '#0f6fb0', '#c4e4fb', '#4fb3f4', '#0a4a75', '#a9b4bf', '#6a8fae', '#d6dde3', '#3b6e96'];
+function ensureTrendPot() {
+  const host = $('#pf-pot');
+  if (!host || !D) return;
+  if (S.pPot === 'trend' && !(D.sleeves || {}).trend) S.pPot = '';
+  let btn = host.querySelector('button[data-s="trend"]');
+  if ((D.sleeves || {}).trend && !btn) {
+    btn = document.createElement('button');
+    btn.dataset.s = 'trend';
+    btn.textContent = 'Trend sleeve';
+    host.appendChild(btn);
+    btn.onclick = () => { S.pPot = 'trend'; seg('pf-pot', 's', S.pPot); renderPortfolio(); };
+  } else if (!(D.sleeves || {}).trend && btn) btn.remove();
+  seg('pf-pot', 's', S.pPot || '');
+}
 function renderPortfolio() {
+  ensureTrendPot();
   const Z = D.sleeves, P = (D.positions || []).filter(p => (!S.pPot || p.sleeve === S.pPot) && inAcct(p));
   const cashOf = (k, a) => { const z = Z[k] || {}; return a ? ((z.accts || {})[a] || {}).cash || 0 : z.cash || 0; };
   const valOf = (k, a) => { const z = Z[k] || {}; return a ? ((z.accts || {})[a] || {}).equity || 0 : z.equity || 0; };
   const total = S.acct ? (S.pPot ? valOf(S.pPot, S.acct) : (D.accounts[S.acct] || {}).equity) || 1 : S.pPot ? (Z[S.pPot].equity || 1) : D.stats.equity || 1;
-  const cashT = S.pPot ? cashOf(S.pPot, S.acct) : POTS.reduce((a, k) => a + cashOf(k, S.acct), 0);
+  const cashT = S.pPot ? cashOf(S.pPot, S.acct) : potKeys().reduce((a, k) => a + cashOf(k, S.acct), 0);
   const scope = (S.pPot ? POT[S.pPot] : 'Total') + (S.acct ? ' · ' + (S.acct === 'crypto' ? 'Crypto' : 'Stocks') : '');
   const inv = P.reduce((a, p) => a + (p.value || 0), 0), unr = P.reduce((a, p) => a + (p.pnl || 0), 0), cost = P.reduce((a, p) => a + (p.cost || 0), 0);
   const realP = S.acct ? (S.pPot ? ((Z[S.pPot].accts || {})[S.acct] || {}).realized : (D.accounts[S.acct] || {}).realized) : S.pPot ? Z[S.pPot].realized : D.stats.realized;
   $('#pf-stats').innerHTML = stat(scope + ' value', fM(total), '', S.pPot ? (S.acct ? esc(ACC[S.acct]) : ACCTS.map(a => `${a === 'crypto' ? 'Crypto' : 'Stocks'} ${fM(valOf(S.pPot, a))}`).join(' · ')) :
-      S.acct ? POTS.map(k => `${POT[k].replace(' pot', '')} ${fM(valOf(k, S.acct))}`).join(' · ') : ACCTS.map(a => `${a === 'crypto' ? 'Crypto' : 'Stocks'} ${fM((D.accounts || {})[a] ? D.accounts[a].equity : null)}`).join(' · ')) +
-    stat('Cash', fM(cashT), '', S.pPot ? (S.acct ? esc(ACC[S.acct]) : acctCashLine(S.pPot)) : POTS.map(k => `${POT[k].replace(' pot', '')} ${fM(cashOf(k, S.acct))}`).join(' · '), 'Money not in any position (sum of the pots shown).') +
+      S.acct ? potKeys().map(k => `${(POT[k] || k).replace(' pot', '')} ${fM(valOf(k, S.acct))}`).join(' · ') : ACCTS.map(a => `${a === 'crypto' ? 'Crypto' : 'Stocks'} ${fM((D.accounts || {})[a] ? D.accounts[a].equity : null)}`).join(' · ')) +
+    stat('Cash', fM(cashT), '', S.pPot ? (S.acct ? esc(ACC[S.acct]) : acctCashLine(S.pPot)) : potKeys().map(k => `${(POT[k] || k).replace(' pot', '')} ${fM(cashOf(k, S.acct))}`).join(' · '), 'Money not in any position (sum of the pots shown).') +
     stat('Holdings value', fM(inv), '', `${P.length} position${P.length === 1 ? '' : 's'}`, 'Current value of the open positions shown below. Cash + holdings = value.') +
     stat('Unrealised P&L', `<span class="${cls(unr)}">${fM(unr, true)}</span>`, '', cost ? fPct(unr / cost * 100) + ' on cost' : '', 'Open positions: value now minus what they cost incl. buy fees.') +
     stat('Realised P&L', `<span class="${cls(realP)}">${fM(realP, true)}</span>`, '', 'from closed trades', 'Profit or loss of closed trades after all their fees.');

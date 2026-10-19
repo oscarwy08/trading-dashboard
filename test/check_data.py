@@ -18,7 +18,7 @@ def eq(a, b, what, tol=EXACT):
     if abs(a - b) > tol + 1e-9: fails.append(f"{what}: {a!r} != {b!r} (diff {a - b:+.4f})")
 
 def main(D):
-    ACC, POTS = ("crypto", "stocks"), [k for k in ("core", "day", "risk") if k in D["sleeves"]]
+    ACC, POTS = ("crypto", "stocks"), [k for k in ("core", "day", "risk", "trend") if k in D["sleeves"]]
     Z, A, S, P = D["sleeves"], D.get("accounts") or {}, D["stats"], D.get("positions") or []
     for p in P:
         if p.get("value") is not None: eq(p["pnl"], p["value"] - p["cost"], f"position {p['sleeve']}/{p['asset']} P&L = value - cost")

@@ -352,9 +352,81 @@ def pnl_parts(headline, closed):
     h = int(round(float(headline or 0) * 100)); c = int(round(float(closed or 0) * 100))
     return {"open": round((h - c) / 100.0, 2), "closed": round(c / 100.0, 2)}
 
+def _json_state(con, key):
+    row = con.execute("SELECT value FROM state WHERE key=?", (key,)).fetchone()
+    if not row or not row[0]:
+        return None
+    try:
+        return json.loads(row[0])
+    except Exception:
+        return None
+
+def _trend_live(con):
+    """True when this book actually holds the trend sleeve. A quiet book with no row does not."""
+    for sql in (
+        "SELECT 1 FROM acct_cash WHERE sleeve='trend' AND ABS(COALESCE(amount,0))>1e-6 LIMIT 1",
+        "SELECT 1 FROM positions WHERE sleeve='trend' LIMIT 1",
+        "SELECT 1 FROM trades WHERE sleeve='trend' LIMIT 1",
+    ):
+        try:
+            if con.execute(sql).fetchone():
+                return True
+        except sqlite3.OperationalError:
+            return False
+    return False
+
+def _trend_trade_stats(con, sleeve, account=None):
+    """Closed-trade stats for a sleeve that has no column on the equity table."""
+    clauses, args = ["sleeve=?"], [sleeve]
+    if account == "stocks":
+        clauses.append("klass='stock'")
+    elif account == "crypto":
+        clauses.append("(klass IS NULL OR klass!='stock')")
+    where = " WHERE " + " AND ".join(clauses)
+    sells = [r[0] for r in con.execute(f"SELECT pnl FROM trades{where} AND side='SELL'", args)]
+    nt = con.execute(f"SELECT COUNT(*) FROM trades{where} AND side IN ('BUY','SELL')", args).fetchone()[0]
+    return dict(realized=sum(x or 0 for x in sells), trades=nt, closed=len(sells),
+                win_rate=(sum((x or 0) > 0 for x in sells) / len(sells)) if sells else None, max_dd=0.0)
+
+def trend_book_baseline(con, base):
+    """(sleeve names, opening balances) for this database.
+
+    Strategy books copy the main snapshot and then park their £200 in the trend
+    sleeve (best_of_plus keeps 15% in day and risk). The copied account_split
+    still describes the main book's pots. Counting that split and the trend
+    sleeve would show a fake loss and hide the real holdings. A book with no
+    trend cash, positions or trades is returned unchanged.
+    """
+    if not _trend_live(con):
+        return SLEEVES, base
+    alloc = _json_state(con, "strategy_alloc")
+    out = {sl: {ac: 0.0 for ac in ACCOUNTS} for sl in ("core", "day", "risk", "trend")}
+    if isinstance(alloc, dict) and ("trend" in alloc or "day_risk" in alloc):
+        half = float(alloc.get("day_risk") or 0)
+        trend = float(alloc.get("trend") or 0)
+        for ac in ACCOUNTS:
+            out["day"][ac] = half
+            out["risk"][ac] = half
+            out["trend"][ac] = trend
+    else:
+        try:
+            import strategies
+            o = strategies.opts()
+            crypto, stocks = float(o["crypto"]), float(o["stocks"])
+        except Exception:
+            crypto, stocks = 100.0, 100.0
+        out["trend"]["crypto"] = crypto
+        out["trend"]["stocks"] = stocks
+    return ("core", "day", "risk", "trend"), out
+
+def _empty_fees():
+    return {ac: dict(fee=0.0, gas=0.0, spread=0.0, fx=0.0, stamp=0.0, xstock=0.0) for ac in ACCOUNTS}
+
 def build(con, variant_report=None):
     c = cfg(); st, rk, K, DY = c["strategy"], c["risk"], c["core"], c["day"]
-    base = acct_start(con, c); sc = {s_: sum(base[s_].values()) for s_ in SLEEVES}
+    base = acct_start(con, c)
+    sleeves_on, base = trend_book_baseline(con, base)
+    sc = {s_: sum(base[s_].values()) for s_ in sleeves_on}
     start = float(c["starting_balance"]); focus = list(st["focus_assets"])
     t_now = now(); n_ep = int(t_now.timestamp())
     fx = usd_gbp(con, c["fx"]["max_age_h"]); rate = fx[0] if fx else None
@@ -538,7 +610,7 @@ def build(con, variant_report=None):
 
     # ---- trades ----
     # ---- fees per account (crypto: fee + gas; stocks: spread + FX + stamp duty; early tokenised-stock trades: fee + gas) ----
-    fees = {s_: {ac: dict(fee=0.0, gas=0.0, spread=0.0, fx=0.0, stamp=0.0, xstock=0.0) for ac in ACCOUNTS} for s_ in SLEEVES}
+    fees = {s_: _empty_fees() for s_ in sleeves_on}
     def fparts(r):
         cost = r["cost"] or 0.0; gas_ = r["gas"] or 0.0
         if r["klass"] != "stock": return dict(fee=cost, gas=gas_)
@@ -548,7 +620,10 @@ def build(con, variant_report=None):
     tparts = {}
     for r in con.execute("SELECT id, sleeve, asset, klass, side, cost, gas FROM trades WHERE side IN ('BUY','SELL')"):
         fp_ = fparts(r); tparts[r["id"]] = fp_
-        for k, v in fp_.items(): fees[r["sleeve"]][acct_of(r["klass"])][k] += v
+        slot = fees.get(r["sleeve"])
+        if slot is None:
+            slot = fees[r["sleeve"]] = _empty_fees()
+        for k, v in fp_.items(): slot[acct_of(r["klass"])][k] += v
     trades = [dict(id=r["id"], t=ep(r["ts"]), sleeve=r["sleeve"], acct=acct_of(r["klass"]), side=r["side"], asset=r["asset"], klass=r["klass"], qty=sig(r["qty"]),
                    price=sig(r["price"]), fill=sig(r["fill"]), usd=sig(r["price_usd"]), fx=sig(r["usd_gbp"], 5),
                    value=r2(r["value"]), fee=round(r["cost"], 4) if r["cost"] is not None else None, pnl=r2(r["pnl"]),
@@ -703,15 +778,18 @@ def build(con, variant_report=None):
     if last_rb and datetime.fromisoformat(last_rb.strip('"')) >= rb_at: rb_at += timedelta(days=7)
     # v7.1 reconciled figures: every total is the sum of its (already rounded) parts, all from ONE price snapshot:
     #   cell (pot x account): cash = rounded cash, invested = sum of the rounded position values, equity = cash + invested,
-    #   P&L = equity - start; pot = sum of its two cells; account = sum of its three pot cells; total = sum of the pots.
+    #   P&L = equity - start; pot = sum of its two cells; account = sum of its pot cells; total = sum of the pots.
+    #   A strategy book adds the trend sleeve. The main book has no trend row, so its pots stay core, day and risk.
     #   (The equity HISTORY - chart, max drawdown - still comes from the stored equity rows.)
     R2 = lambda x: round(x + 0.0, 2)
     sleeves = {}; LO = loans_open(con)
-    for sl in SLEEVES:
-        ss = stats(con, sl); sp = [p for p in positions if p["sleeve"] == sl]
+    for sl in sleeves_on:
+        ss = stats(con, sl) if sl in SLEEVES else _trend_trade_stats(con, sl)
+        sp = [p for p in positions if p["sleeve"] == sl]
         cells = {}
         for ac in ACCOUNTS:                                   # v6: the pot's slice of each account
-            xs = stats(con, sl, ac); ap = [p for p in sp if p["acct"] == ac]; ff = fees[sl][ac]
+            xs = stats(con, sl, ac) if sl in SLEEVES else _trend_trade_stats(con, sl, ac)
+            ap = [p for p in sp if p["acct"] == ac]; ff = fees[sl][ac]
             inv_ = R2(sum(p["value"] or 0 for p in ap)); cash_ = R2(acash.get((sl, ac), 0.0))
             lent_ = R2(sum(l["out"] for l in LO if l["lender"] == sl and l["account"] == ac)); owed_ = R2(sum(l["out"] for l in LO if l["borrower"] == sl and l["account"] == ac))
             eq_ = R2(cash_ + inv_ + lent_ - owed_)                # v7.3: + money lent to another pot - money borrowed from one
@@ -727,11 +805,11 @@ def build(con, variant_report=None):
                            trades=ss["trades"], cash=tot("cash"), open_n=len(sp), max_dd=round(ss["max_dd"] * 100, 3),
                            invested=tot("invested"), fees=tot("fees"), lent=tot("lent"), borrowed=tot("borrowed"))
         sleeves[sl]["accts"] = cells
-    cur_eq = R2(sum(sleeves[s_]["equity"] for s_ in SLEEVES)); tstart_ = R2(sum(sleeves[s_]["start"] for s_ in SLEEVES))
+    cur_eq = R2(sum(sleeves[s_]["equity"] for s_ in sleeves_on)); tstart_ = R2(sum(sleeves[s_]["start"] for s_ in sleeves_on))
     
     # P&L breakdown: closed = realised P&L (already net of fees), open = headline minus closed, in integer pence
     # so the two lines under a card add up to that card exactly. Fees are not a third added component.
-    for sl in SLEEVES:
+    for sl in sleeves_on:
         sleeves[sl]["pnl_breakdown"] = pnl_parts(sleeves[sl]["pnl"], sleeves[sl]["realized"])
         for ac in ACCOUNTS:
             cell = sleeves[sl]["accts"][ac]
@@ -810,9 +888,9 @@ def build(con, variant_report=None):
     accounts = {}
     for ac in ACCOUNTS:
         xs = stats(con, None, ac); ap = [p for p in positions if p["acct"] == ac]
-        PC = [sleeves[s_]["accts"][ac] for s_ in SLEEVES]; sm = lambda k: R2(sum(x[k] for x in PC))
+        PC = [sleeves[s_]["accts"][ac] for s_ in sleeves_on]; sm = lambda k: R2(sum(x[k] for x in PC))
         inv_, cash_, st_, eq_ = sm("invested"), sm("cash"), sm("start"), sm("equity")
-        ff = {k: sum(fees[s_][ac][k] for s_ in SLEEVES) for k in fees["core"][ac]}
+        ff = {k: sum(fees[s_][ac][k] for s_ in sleeves_on if s_ in fees) for k in fees["core"][ac]}
         accounts[ac] = dict(label=(AC.get(ac) or {}).get("label", ac), where=(AC.get(ac) or {}).get("where", ""),
                             start=st_, target=r2(sum(float((AC.get("funding") or {}).get(s_, {}).get(ac, 0)) for s_ in SLEEVES)),
                             equity=eq_, cash=cash_, invested=inv_, pnl=sm("pnl"), lent=sm("lent"), borrowed=sm("borrowed"),
@@ -821,7 +899,7 @@ def build(con, variant_report=None):
                             win_rate=round(xs["win_rate"] * 100, 1) if xs["win_rate"] is not None else None, max_dd=round(xs["max_dd"] * 100, 3),
                             fees={k: sig(v, 4) for k, v in ff.items() if v}, fees_total=sm("fees"),
                             pnl_breakdown=pnl_parts(sm("pnl"), sm("realized")),
-                            pots={s_: sleeves[s_]["accts"][ac] for s_ in SLEEVES})
+                            pots={s_: sleeves[s_]["accts"][ac] for s_ in sleeves_on})
     asplit = json.loads((con.execute("SELECT value FROM state WHERE key='account_split'").fetchone() or ["null"])[0])
     if asplit:
         asplit = dict(t=ep(asplit["ts"]), opening={k: {a: r2(v) for a, v in d.items()} for k, d in asplit["opening"].items()},
@@ -865,14 +943,14 @@ def build(con, variant_report=None):
                 alt=round(1 / fx_alt["alt_rate"], 4) if fx_alt and fx_alt["alt_rate"] else None,
                 alt_source=fx_alt["alt_source"] if fx_alt else None),
         stats=dict(equity=cur_eq, start=tstart_, ret=round((cur_eq / tstart_ - 1) * 100, 3) if tstart_ else 0, btc_ret=round(s["btc_ret"] * 100, 3) if s["btc_ret"] is not None else None,
-                   realized=R2(sum(sleeves[s_]["realized"] for s_ in SLEEVES)), trades=s["trades"], closed=s["closed"],
+                   realized=R2(sum(sleeves[s_]["realized"] for s_ in sleeves_on)), trades=s["trades"], closed=s["closed"],
                    win_rate=round(s["win_rate"] * 100, 1) if s["win_rate"] is not None else None,
                    max_dd=round(s["max_dd"] * 100, 3), best=r2(s["best"]), worst=r2(s["worst"]),
-                   unrealized=R2(sum(sleeves[s_]["unrealized"] for s_ in SLEEVES)),
-                   cash=R2(sum(sleeves[s_]["cash"] for s_ in SLEEVES)), invested=R2(sum(sleeves[s_]["invested"] for s_ in SLEEVES)),
+                   unrealized=R2(sum(sleeves[s_]["unrealized"] for s_ in sleeves_on)),
+                   cash=R2(sum(sleeves[s_]["cash"] for s_ in sleeves_on)), invested=R2(sum(sleeves[s_]["invested"] for s_ in sleeves_on)),
                    pnl=R2(cur_eq - tstart_), day_start=r2(day_start),
                    day_pnl=R2(cur_eq - r2(day_start)) if day_start else None, day_pnl_pct=round((cur_eq / r2(day_start) - 1) * 100, 3) if day_start else None,
-                   pnl_breakdown=pnl_parts(R2(cur_eq - tstart_), R2(sum(sleeves[s_]["realized"] for s_ in SLEEVES))),
+                   pnl_breakdown=pnl_parts(R2(cur_eq - tstart_), R2(sum(sleeves[s_]["realized"] for s_ in sleeves_on))),
                    day_pnl_breakdown=None if not day_start else pnl_parts(R2(cur_eq - r2(day_start)), realized_since())),
         risk=dict(halted=bool(risk.get("halted")), day=risk.get("day"), day_start=day_start, kill=KILL.exists(),
                   fx_stale=bool(fx[3]) if fx else True, open_n=len(positions), last_halt=dict(t=ep(halt["ts"]), reason=halt["reason"]) if halt else None,
