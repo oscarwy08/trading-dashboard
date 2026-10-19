@@ -59,7 +59,7 @@ check("newssent" not in (Path(__file__).resolve().parent.parent / "scripts" / "c
 # --- weights: agree to keep, disagree or a perfect fit to drop ---
 check(signalcomb.decide_weight(0.08, 0.06, 40, 20)[1] is True, "two windows that agree are kept")
 w, kept = signalcomb.decide_weight(0.08, 0.06, 40, 20)
-check(kept and abs(w - 0.06) < 1e-9, "the weight is the weaker correlation")
+check(kept and abs(w - 1.0) < 1e-9, "a kept signal gets the same weight as every other kept signal")
 check(signalcomb.decide_weight(0.08, -0.06, 40, 20)[1] is False, "a sign change is dropped")
 check(signalcomb.decide_weight(0.01, 0.01, 40, 20)[1] is False, "a tiny correlation is dropped")
 check(signalcomb.decide_weight(0.9, 0.9, 40, 20)[1] is False, "a perfect correlation is dropped")

@@ -1,10 +1,12 @@
 """Per-asset composite from signals that have kept an edge out of sample.
 
-Each signal is coded so that a higher number is the bullish reading. The weight is the
-rank correlation with the next five daily returns. An older window and a newer window
-both have to agree on the sign, and both have to clear a small bar. A correlation that
-is suspiciously perfect is dropped: that is leakage or a one-off, not an edge. A signal
-with no history, or no agreement, gets weight zero and does not tilt the book.
+Each signal is coded so that a higher number is the bullish reading. An older window
+and a newer window both have to agree on the sign of its rank correlation with the
+next five daily returns, and both have to clear a small bar. A kept signal then gets
+the same weight as every other kept signal: the size of the correlation is too noisy
+to use as a bet size. A correlation that is suspiciously perfect is dropped: that is
+leakage or a one-off, not an edge. A signal with no history, or no agreement, gets
+weight zero and does not tilt the book.
 
 Nothing here fetches the network. News is read from the hourly file. Funding and insider
 marks are read from those books' own databases when they already exist.
@@ -18,7 +20,6 @@ from common import DATA
 HORIZON = 5
 IC_MIN = 0.03
 IC_CAP = 0.50
-WEIGHT_CAP = 0.15
 TRAIN_N = 30
 CONFIRM_N = 15
 SIGNALS = ("news", "routine", "funding", "unlock", "insider", "trend", "momentum", "vol", "forecast")
@@ -82,9 +83,11 @@ def spearman(xs, ys):
 
 
 def decide_weight(train_ic, confirm_ic, train_n, confirm_n, ic_min=IC_MIN, ic_cap=IC_CAP):
-    """(weight, kept). Both windows must agree. The weight is the weaker of the two, and it is capped.
+    """(weight, kept). Both windows must agree. A kept signal gets weight +1 or -1.
 
-    A perfect correlation is rejected. Flipping a signal that only worked in one window is rejected.
+    Equal weights beat fitted magnitudes out of sample when the correlations
+    themselves are noisy (DeMiguel, Garlappi and Uppal, 2009). The composite
+    then averages the kept signals. A perfect correlation is still rejected.
     """
     if train_ic is None or confirm_ic is None:
         return 0.0, False
@@ -96,8 +99,7 @@ def decide_weight(train_ic, confirm_ic, train_n, confirm_n, ic_min=IC_MIN, ic_ca
         return 0.0, False
     if abs(train_ic) > ic_cap or abs(confirm_ic) > ic_cap:
         return 0.0, False
-    mag = min(abs(train_ic), abs(confirm_ic), WEIGHT_CAP)
-    return math.copysign(mag, confirm_ic), True
+    return math.copysign(1.0, confirm_ic), True
 
 
 def _vol(prices, end, n=30):
@@ -450,8 +452,8 @@ def dashboard_view(con, closes):
                 headlines=newssent.latest(8),
                 note=("A signal is used only when an older window and a later window agree on its rank "
                       "correlation with the next five daily returns, and neither correlation is tiny or perfect. "
-                      "The weight is the weaker of those two. News is scored by a finance lexicon, hourly, "
-                      "outside this cycle."))
+                      "Each kept signal has the same weight. The sign is the later window's. News is scored "
+                      "by a finance lexicon, hourly, outside this cycle."))
 
 
 def book_snapshot(closes, con):
