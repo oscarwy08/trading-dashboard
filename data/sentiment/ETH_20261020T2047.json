@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-20T20:55:00Z",
+ "asset": "ETH",
+ "score": 0.12,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,441 (+1.8% 24h). New today: JPMorgan put its JPM Coin (JPMD) deposit token on Ethereum mainnet for institutional clients, and Bitwise data show a record 43.8M ETH staked (35.9% of supply). Optimum's faster block propagation went live. Bullish price targets on X are opinion, not news. Mildly better than this morning.",
+ "sources": [
+  "https://x.com/i/trending/2112605679714209899",
+  "https://x.com/i/trending/2112595603171475910",
+  "https://x.com/i/trending/2112529717425312223"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "JPM Coin (JPMD) live on Ethereum mainnet (20 Oct); record staking per Bitwise Q4 report",
+ "volume": 60700,
+ "buzz_level": 60700,
+ "buzz_change": 1.42,
+ "price_runup_24h_pct": 1.8,
+ "carried_over": false
+}

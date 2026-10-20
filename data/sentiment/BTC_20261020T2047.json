@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-20T20:55:00Z",
+ "asset": "BTC",
+ "score": 0.18,
+ "confidence": 0.55,
+ "summary": "BTC ~$82.7k (+1.0% 24h). New since midday: a false US-Iran peace-deal report briefly pushed BTC to $83.1k before denials reversed it, which shows the range is still headline-driven rather than a real breakout. JPMorgan Asset Management added BTC to its long-term return forecasts for the first time (10% a year base case), a slow-burn positive. FINMA's Swiss retail ETF and the 19 Oct ETF inflows were already counted. Still a 28-day tight range; $80k support, $86k needed for confirmation. Slightly trimmed from midday because the spike faded.",
+ "sources": [
+  "https://x.com/i/trending/2112626920496247065",
+  "https://x.com/i/trending/2112429980550639631",
+  "https://x.com/i/trending/2112466965210022222"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "JPMorgan AM 2027 long-term assumptions include BTC (20 Oct); US-Iran deal report denied (20 Oct, not a catalyst)",
+ "volume": 106000,
+ "buzz_level": 106000,
+ "buzz_change": 1.43,
+ "price_runup_24h_pct": 1.0,
+ "carried_over": false
+}

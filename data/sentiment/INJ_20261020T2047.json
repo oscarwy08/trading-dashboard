@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-20T20:55:00Z",
+ "asset": "INJ",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "INJ ~$8.62 (+1.0% 24h). New: Injective partnered with BDACS Korea to launch KRW1, Korea's first bank-reserve-backed won stablecoin, as the settlement option for real-world assets on Injective; a ~$245k buyback and burn is due. Buzz about flat.",
+ "sources": [
+  "https://x.com/i/trending/2112579117157949720"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "KRW1 won stablecoin with BDACS Korea on Injective (20 Oct); buyback and burn upcoming",
+ "volume": 8800,
+ "buzz_level": 8800,
+ "buzz_change": 1.07,
+ "price_runup_24h_pct": 1.0,
+ "carried_over": false
+}

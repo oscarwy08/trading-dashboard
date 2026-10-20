@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-20T20:55:00Z",
+ "asset": "MON",
+ "score": -0.1,
+ "confidence": 0.4,
+ "summary": "MON ~$0.0218 (+5.2% 24h). New: Category Labs cut Monad block ZK-proving time to 13s on one GPU, and ecosystem DeFi TVL is cited at about $1B. These are steady progress notes, not a market catalyst. Buzz roughly flat (the 'monad' term is noisy). Improved from -0.3 (18 Oct) as the selling has eased.",
+ "sources": [
+  "https://x.com/i/trending/2112572569409016006"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Category Labs ZK proving benchmark (20 Oct)",
+ "volume": 78100,
+ "buzz_level": 78100,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": 5.2,
+ "carried_over": false
+}

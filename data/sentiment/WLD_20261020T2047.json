@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-20T20:55:00Z",
+ "asset": "WLD",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "WLD ~$0.593, up 15.9% in 24h and buzz up ~1.6x. Most posts are price-chasing recaps and leveraged-futures talk (Binance open interest +20% in 24h), plus an unconfirmed claim about identity-verification deals. A Worldcoin-linked wallet has sold over $3M of WLD and moved another 250k tokens. No verified dated catalyst found, so the run looks leverage-driven and prone to giving back. Lowered from 0.15.",
+ "sources": [
+  "https://x.com/EntitledTrader/status/2112617316940730389",
+  "https://x.com/FuturesWire/status/2112490373649948928",
+  "https://x.com/stobixcom/status/2112621507964760558"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No verified dated event; linked-wallet selling over $3M reported (20 Oct)",
+ "volume": 2290,
+ "buzz_level": 2290,
+ "buzz_change": 1.61,
+ "price_runup_24h_pct": 15.9,
+ "carried_over": false
+}

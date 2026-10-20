@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-20T20:55:00Z",
+ "asset": "XRP",
+ "score": 0.12,
+ "confidence": 0.5,
+ "summary": "XRP ~$1.33 (+2.2% 24h), led majors today while holding the $1.26-1.30 support zone. New: Evernorth (Nasdaq XRPN, ~473M XRP) filed a prospectus for 11.5M warrant shares, which could fund more buying but commits to none. The official @XRP X account (19 Oct) and Ripple Swell next week are known. Buzz is lower than recent days.",
+ "sources": [
+  "https://x.com/i/trending/2112598863890546926",
+  "https://x.com/i/trending/2112637283748966756",
+  "https://x.com/i/trending/2112221951645130922"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Evernorth prospectus for 11.5M warrant shares (filed 19 Oct); Ripple Swell 2026 next week",
+ "volume": 33700,
+ "buzz_level": 33700,
+ "buzz_change": 0.92,
+ "price_runup_24h_pct": 2.2,
+ "carried_over": false
+}
