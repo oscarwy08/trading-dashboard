@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-20T07:24:28+00:00",
+  "generated": "2026-10-20T08:24:41+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 7,
         "avg_dt_s": 141418.42857142858,
         "avg_price_pct": -3.3639100435110327,
-        "missed": 70
+        "missed": 71
       },
       "entries": {
         "pairs": 1,
@@ -21,9 +21,9 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 5,
-        "avg_dt_s": 66241.2,
-        "avg_price_pct": -2.2263680626603692,
+        "pairs": 6,
+        "avg_dt_s": 55272.666666666664,
+        "avg_price_pct": -1.8664821053094764,
         "missed": 51
       },
       "entries": {
@@ -45,7 +45,7 @@
         "pairs": 1,
         "avg_dt_s": 255441.0,
         "avg_price_pct": -7.138918365357617,
-        "missed": 93
+        "missed": 95
       }
     },
     {
@@ -60,15 +60,15 @@
         "pairs": 1,
         "avg_dt_s": 255462.0,
         "avg_price_pct": -7.104671239547312,
-        "missed": 108
+        "missed": 110
       }
     },
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 5,
-        "avg_dt_s": 132442.8,
-        "avg_price_pct": -4.018079636446901,
+        "pairs": 6,
+        "avg_dt_s": 110442.16666666667,
+        "avg_price_pct": -3.3595750834649194,
         "missed": 56
       },
       "entries": {
@@ -90,7 +90,7 @@
         "pairs": 1,
         "avg_dt_s": 255457.0,
         "avg_price_pct": -7.5648866297367094,
-        "missed": 94
+        "missed": 96
       }
     },
     {
@@ -99,21 +99,21 @@
         "pairs": 11,
         "avg_dt_s": 32571.090909090908,
         "avg_price_pct": -0.6882777851281477,
-        "missed": 61
+        "missed": 62
       },
       "entries": {
         "pairs": 7,
         "avg_dt_s": 367744.5714285714,
         "avg_price_pct": 3.3804618488702074,
-        "missed": 246
+        "missed": 248
       }
     },
     {
       "name": "entry_watch",
       "exits": {
-        "pairs": 7,
-        "avg_dt_s": 96086.71428571429,
-        "avg_price_pct": -2.9170302244911275,
+        "pairs": 8,
+        "avg_dt_s": 84133.75,
+        "avg_price_pct": -2.6003532615446976,
         "missed": 42
       },
       "entries": {
@@ -126,9 +126,9 @@
     {
       "name": "risk_giveback_15",
       "exits": {
-        "pairs": 7,
-        "avg_dt_s": 171551.14285714287,
-        "avg_price_pct": -2.3586526993706043,
+        "pairs": 8,
+        "avg_dt_s": 150165.125,
+        "avg_price_pct": -2.11177292706424,
         "missed": 54
       },
       "entries": {
@@ -141,9 +141,9 @@
     {
       "name": "day_trail_arm",
       "exits": {
-        "pairs": 9,
-        "avg_dt_s": 189782.44444444444,
-        "avg_price_pct": 1.6250488285217244,
+        "pairs": 10,
+        "avg_dt_s": 170851.2,
+        "avg_price_pct": 1.424182493577583,
         "missed": 36
       },
       "entries": {
@@ -165,15 +165,15 @@
         "pairs": 0,
         "avg_dt_s": null,
         "avg_price_pct": null,
-        "missed": 15
+        "missed": 17
       }
     },
     {
       "name": "no_risk_clock",
       "exits": {
-        "pairs": 7,
-        "avg_dt_s": 171574.42857142858,
-        "avg_price_pct": -2.3586526993706043,
+        "pairs": 8,
+        "avg_dt_s": 150187.5,
+        "avg_price_pct": -2.11177292706424,
         "missed": 54
       },
       "entries": {
@@ -186,9 +186,9 @@
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 7,
-        "avg_dt_s": 171574.57142857142,
-        "avg_price_pct": -2.3586526993706043,
+        "pairs": 8,
+        "avg_dt_s": 150187.875,
+        "avg_price_pct": -2.11177292706424,
         "missed": 55
       },
       "entries": {
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 9,
-        "avg_dt_s": 262257.1111111111,
-        "avg_price_pct": 1.4672908197164962,
-        "missed": 72
+        "pairs": 11,
+        "avg_dt_s": 243766.72727272726,
+        "avg_price_pct": 3.5455478056593566,
+        "missed": 71
       },
       "entries": {
         "pairs": 3,
@@ -216,9 +216,9 @@
     {
       "name": "sent_split",
       "exits": {
-        "pairs": 8,
-        "avg_dt_s": 197300.125,
-        "avg_price_pct": -3.074901739503452,
+        "pairs": 9,
+        "avg_dt_s": 175432.33333333334,
+        "avg_price_pct": -2.775869826327478,
         "missed": 51
       },
       "entries": {
@@ -231,9 +231,9 @@
     {
       "name": "best_of",
       "exits": {
-        "pairs": 8,
-        "avg_dt_s": 14635.0,
-        "avg_price_pct": 0.17606340367656612,
+        "pairs": 9,
+        "avg_dt_s": 13064.444444444445,
+        "avg_price_pct": 0.11387696761031561,
         "missed": 8
       },
       "entries": {
@@ -1712,6 +1712,20 @@
       "dt_s": 10326.0,
       "price_diff": 5.20712364000002,
       "price_pct": 1.1913140502961166
+    },
+    {
+      "asset": "AKE",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-20T08:06:53+00:00",
+      "shadow_price": 0.025283416633319997,
+      "trigger": "[burst 24h] stop-loss -2.0% <= -2.0% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [],
@@ -2431,6 +2445,20 @@
       "asset": "RAY",
       "price": 1.4493197800326056,
       "reason": "[burst 4h] 4h-range break +0.21% (range 2.0%); vol x3.3, RSI 80, BTC 1h +0.30%, 4h -0.45%; confidence 0.56 >= 0.56, EV +0.47% after costs; target +4.8% / stop -1.6% / max 6h"
+    },
+    {
+      "ts": "2026-10-20T07:49:40+00:00",
+      "sleeve": "day",
+      "asset": "CARDS",
+      "price": 0.26220696829199996,
+      "reason": "[momentum] DAY score 0.796 >= 0.35; target +10.6% / stop -5.0% (ATR 4.23%); EV +0.31%; 4h +7.6%, 24h +18.5%, EMA6/24 up, RSI 73, sentiment +0.10 (conf 0.35, weight x0.93)"
+    },
+    {
+      "ts": "2026-10-20T07:55:47+00:00",
+      "sleeve": "day",
+      "asset": "AKE",
+      "price": 0.02569750867476,
+      "reason": "[burst 24h] 24h-high break +2.16% (high $0.03349); vol x5.9, RSI 80, BTC 1h -0.36%, 4h -0.66%; confidence 0.66 >= 0.55, EV +0.59% after costs; target +6.0% / stop -2.0% / max 6h"
     }
   ]
 }
