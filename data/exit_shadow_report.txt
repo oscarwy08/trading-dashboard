@@ -343,7 +343,8 @@ QNT day
 
 AKT day
   shadow  2026-10-20T15:13:52+00:00  £0.538758  [burst 4h] stop-loss -1.5% <= -1.5% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-20T20:18:12+00:00  £0.548522  [burst 4h] max hold 6h reached (6.1h), +0.3%; P&L £+0.01
+  cycle was 18260s later, price £+0.0097642 (+1.81%)
 
 ETH day
   shadow  2026-10-20T15:14:41+00:00  £1823.48  [burst 4h] stop-loss -1.6% <= -1.5% (ATR-scaled)
@@ -621,7 +622,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 14 pairs, avg time gap 83991s, avg price gap -0.81%, missed moves 70
+  exits: 15 pairs, avg time gap 79609s, avg price gap -0.63%, missed moves 69
   entries: 3 pairs, avg time gap 260054s, avg price gap -0.78%, missed moves 47
 ev_exit
   exits: 14 pairs, avg time gap 113186s, avg price gap -0.57%, missed moves 50
@@ -648,7 +649,7 @@ risk_giveback_15
   exits: 17 pairs, avg time gap 170377s, avg price gap -0.36%, missed moves 53
   entries: 4 pairs, avg time gap 216541s, avg price gap -5.19%, missed moves 224
 day_trail_arm
-  exits: 18 pairs, avg time gap 155082s, avg price gap -1.08%, missed moves 36
+  exits: 19 pairs, avg time gap 146934s, avg price gap -1.05%, missed moves 36
   entries: 9 pairs, avg time gap 360202s, avg price gap -2.11%, missed moves 309
 day_ev_blend
   exits: 5 pairs, avg time gap 226s, avg price gap -0.18%, missed moves 27
@@ -660,7 +661,7 @@ day_capital_caution
   exits: 16 pairs, avg time gap 146691s, avg price gap +1.61%, missed moves 54
   entries: 4 pairs, avg time gap 347396s, avg price gap -0.91%, missed moves 150
 partial_take
-  exits: 26 pairs, avg time gap 190510s, avg price gap +1.56%, missed moves 69
+  exits: 27 pairs, avg time gap 183459s, avg price gap +1.49%, missed moves 69
   entries: 11 pairs, avg time gap 273939s, avg price gap -2.09%, missed moves 120
 sent_split
   exits: 18 pairs, avg time gap 161355s, avg price gap -0.33%, missed moves 50

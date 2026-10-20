@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-20T20:17:42+00:00",
+  "generated": "2026-10-20T21:22:01+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 14,
-        "avg_dt_s": 83991.07142857143,
-        "avg_price_pct": -0.8097810824690294,
-        "missed": 70
+        "pairs": 15,
+        "avg_dt_s": 79609.0,
+        "avg_price_pct": -0.6349722186319519,
+        "missed": 69
       },
       "entries": {
         "pairs": 3,
@@ -141,9 +141,9 @@
     {
       "name": "day_trail_arm",
       "exits": {
-        "pairs": 18,
-        "avg_dt_s": 155082.33333333334,
-        "avg_price_pct": -1.082907726805631,
+        "pairs": 19,
+        "avg_dt_s": 146933.52631578947,
+        "avg_price_pct": -1.051838740952169,
         "missed": 36
       },
       "entries": {
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 26,
-        "avg_dt_s": 190510.11538461538,
-        "avg_price_pct": 1.5551282335229026,
+        "pairs": 27,
+        "avg_dt_s": 183459.14814814815,
+        "avg_price_pct": 1.4881490283878398,
         "missed": 69
       },
       "entries": {
@@ -1789,13 +1789,13 @@
       "shadow_ts": "2026-10-20T15:13:52+00:00",
       "shadow_price": 0.5387582916,
       "trigger": "[burst 4h] stop-loss -1.5% <= -1.5% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-20T20:18:12+00:00",
+      "cycle_price": 0.5485224876,
+      "cycle_reason": "[burst 4h] max hold 6h reached (6.1h), +0.3%; P&L \u00a3+0.01",
+      "dt_s": 18260.0,
+      "price_diff": 0.009764196000000003,
+      "price_pct": 1.8123518750871328
     },
     {
       "asset": "ETH",
