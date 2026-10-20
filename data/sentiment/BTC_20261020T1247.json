@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-20T12:56:00Z",
+ "asset": "BTC",
+ "score": 0.2,
+ "confidence": 0.55,
+ "summary": "BTC ~$81.5k (about -0.7% 24h), still pinned in a tight range near $81-82k. New since this morning: Switzerland's FINMA approved the country's first retail spot Bitcoin ETF on 20 Oct. The 19 Oct ETF inflow (+$527M, IBIT +$665M), the PBIT filing and Sparkassen's rollout were already counted. Analysts note a 28-day tight range and want a break above $86k for confirmation, with $80k as the line to hold. Marginally more positive than this morning.",
+ "sources": [
+  "https://x.com/i/trending/2112519855161155617",
+  "https://x.com/i/trending/2112507803185172554",
+  "https://x.com/i/trending/2112466965210022222"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "FINMA approved Switzerland's first retail spot BTC ETF (20 Oct); US spot BTC ETF net +$527M on 19 Oct (already counted this morning)",
+ "volume": 164911,
+ "buzz_level": 164911,
+ "buzz_change": 1.11,
+ "price_runup_24h_pct": -0.7,
+ "carried_over": false
+}

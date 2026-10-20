@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-20T12:56:00Z",
+ "asset": "MSFT",
+ "score": -0.03,
+ "confidence": 0.35,
+ "summary": "Microsoft pulled out as anchor tenant of Nscale's planned GBP 2bn Loughton (Essex) AI data centre after grid power was pushed to the 2030s; Nscale says other Microsoft contracts are unaffected. It's a single-site, UK-specific setback rather than a change to Microsoft's AI spend, so only a slight negative. Tech led Monday's rebound (Nasdaq +1.1%). Earnings season for big tech is the bigger driver ahead.",
+ "sources": [
+  "https://x.com/i/trending/2112117628160414015",
+  "https://x.com/i/trending/2112496630352281688",
+  "https://x.com/i/trending/2112378798318686538"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "Microsoft exits Nscale Loughton UK data centre lease over grid delays (reported 19-20 Oct)",
+ "volume": 2700,
+ "buzz_level": 2700,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.9,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-20T12:56:00Z",
+ "asset": "CRM",
+ "score": -0.1,
+ "confidence": 0.45,
+ "summary": "Salesforce announced on 20 Oct it will buy Braze for $47.50 a share in cash (about $5.66bn enterprise value, closing in fiscal 2028), folding Braze into Marketing Cloud and Agentforce. Reports have CRM shares dipping roughly 2.6-3% on the news before the US open, the usual acquirer discount, while Braze jumps on a ~50% premium. Strategically sensible but adds cost and integration risk, so a small negative for the near term. Mentions are only modestly above recent days.",
+ "sources": [
+  "https://x.com/i/trending/2112519853651185833"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Salesforce to acquire Braze for ~$5.66bn cash, announced 20 Oct; CRM reported -2.6% to -3% pre-market",
+ "volume": 1260,
+ "buzz_level": 1260,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.6,
+ "carried_over": false
+}
