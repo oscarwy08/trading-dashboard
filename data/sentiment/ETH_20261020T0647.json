@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-20T06:58:00Z",
+ "asset": "ETH",
+ "score": 0.06,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,398 (-1.3% 24h). New since last night: spot ETH ETFs lost a net $103M on 19 Oct even as BTC ETFs saw big inflows, while BitMine disclosed another 12,535 ETH bought (now 6.04M ETH). Glamsterdam is confirmed for the Hoodi testnet on 26 Oct (mainnet date still undecided). JPM Coin on mainnet was already counted. Slightly less positive than last night because of the ETF outflows.",
+ "sources": [
+  "https://x.com/i/trending/2112425431886438899",
+  "https://x.com/i/trending/2112165372572885297",
+  "https://x.com/i/trending/2112414669654700287"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "ETH ETF net outflow -$103M on 19 Oct; BitMine +12,535 ETH disclosed 19 Oct; Glamsterdam on Hoodi testnet 26 Oct",
+ "volume": 77194,
+ "buzz_level": 77194,
+ "buzz_change": 1.25,
+ "price_runup_24h_pct": -1.3,
+ "carried_over": false
+}

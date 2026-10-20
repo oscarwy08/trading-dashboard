@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-20T06:58:00Z",
+ "asset": "CARDS",
+ "score": 0.1,
+ "confidence": 0.35,
+ "summary": "CARDS (Collector Crypt) ~$0.34, up ~18.6% in 24h. Real product news: Pump.fun launched in-app gacha packs (graded Pokemon cards, watches) powered by Collector Crypt's tokenized collectibles. But the price has already run hard, mentions are up ~1.3x, and users are already posting about losses on the packs, so much of the move looks priced in. Kept small.",
+ "sources": [
+  "https://x.com/i/trending/2112305668942164347"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Pump.fun gacha packs powered by Collector Crypt launched (reported 19-20 Oct)",
+ "volume": 1158,
+ "buzz_level": 1158,
+ "buzz_change": 1.29,
+ "price_runup_24h_pct": 18.6,
+ "carried_over": false
+}

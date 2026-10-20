@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-20T06:58:00Z",
+ "asset": "HYPE",
+ "score": 0.08,
+ "confidence": 0.45,
+ "summary": "HYPE ~$79 (-1.4% 24h). New since its last print: Multicoin Capital named HYPE its largest hedge-fund holding, and protocol revenue (~$2.55M a day) keeps funding buybacks and burns. The Elysium L2 date (9 Nov) was already known. Mentions are about 2x their recent level, but the price hasn't run, so this reads as news rather than a chase. Arthur Hayes calling it a dangerous trade and the retail-loss story keep it modest.",
+ "sources": [
+  "https://x.com/i/trending/2112266057989619974",
+  "https://x.com/i/trending/2112339043564339686"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Multicoin Capital disclosed HYPE as top holding (19 Oct); Elysium L2 mainnet scheduled 9 Nov",
+ "volume": 9123,
+ "buzz_level": 9123,
+ "buzz_change": 2.15,
+ "price_runup_24h_pct": -1.4,
+ "carried_over": false
+}

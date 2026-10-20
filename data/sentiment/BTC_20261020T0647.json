@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-10-20T06:58:00Z",
+ "asset": "BTC",
+ "score": 0.18,
+ "confidence": 0.55,
+ "summary": "BTC ~$81.8k (-1.2% 24h), holding the $81k area. New overnight: US spot BTC ETFs took in a net $527M on 19 Oct, led by BlackRock's IBIT (+$665M, its biggest day in weeks), which breaks the three-week outflow streak that was last night's main offset. BlackRock also filed for a downside-protected BTC ETF (PBIT) on 19 Oct, and Strategy (+267 BTC) and Strive (+1,223 BTC) disclosed more buying. Retail interest is quieter than institutions. A bit more positive than last night.",
+ "sources": [
+  "https://x.com/i/trending/2112425431886438899",
+  "https://x.com/i/trending/2112311535410585938",
+  "https://x.com/i/trending/2112363181788086372",
+  "https://x.com/i/trending/2112153447092895868"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "US spot BTC ETF net inflow +$527M on 19 Oct (IBIT +$665M); BlackRock PBIT filing 19 Oct; Strategy/Strive purchases disclosed 19 Oct for 12-18 Oct",
+ "volume": 144616,
+ "buzz_level": 144616,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -1.2,
+ "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-20T06:58:00Z",
+ "asset": "KNTQ",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "KNTQ (Kinetiq) ~$0.356, up ~16.7% in 24h. Kinetiq set 9 Nov for the mainnet of Elysium, its Hyperliquid L2 using HYPE as gas. That's a real dated event, but mentions are about 2.5x normal after the run, and posts are openly about chasing a breakout above $0.40, with some calling the move manufactured. Buzz spike after a run-up, so kept near neutral.",
+ "sources": [
+  "https://x.com/coincamps/status/2112410157070406093",
+  "https://x.com/i/trending/2112339043564339686",
+  "https://x.com/0xunser/status/2112401465868472447"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Elysium (Kinetiq) mainnet date 9 Nov announced 19 Oct",
+ "volume": 225,
+ "buzz_level": 225,
+ "buzz_change": 2.45,
+ "price_runup_24h_pct": 16.7,
+ "carried_over": false
+}
