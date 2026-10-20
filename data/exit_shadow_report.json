@@ -1,21 +1,21 @@
 {
   "status": "ok",
-  "generated": "2026-10-20T11:42:28+00:00",
+  "generated": "2026-10-20T12:45:49+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 9,
-        "avg_dt_s": 120061.55555555556,
-        "avg_price_pct": -1.3716141330131428,
+        "pairs": 10,
+        "avg_dt_s": 108121.6,
+        "avg_price_pct": -1.2375757678067685,
         "missed": 69
       },
       "entries": {
-        "pairs": 2,
-        "avg_dt_s": 349854.5,
-        "avg_price_pct": -2.224793639263793,
-        "missed": 46
+        "pairs": 3,
+        "avg_dt_s": 260054.33333333334,
+        "avg_price_pct": -0.7789594097227175,
+        "missed": 45
       }
     },
     {
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 17,
-        "avg_dt_s": 179137.0588235294,
-        "avg_price_pct": 1.9864413397353058,
+        "pairs": 18,
+        "avg_dt_s": 169742.77777777778,
+        "avg_price_pct": 1.8256100817912264,
         "missed": 69
       },
       "entries": {
@@ -1726,6 +1726,20 @@
       "dt_s": 1428.0,
       "price_diff": -9.837803015999569e-05,
       "price_pct": -0.38910101267859204
+    },
+    {
+      "asset": "TIA",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-20T12:15:52+00:00",
+      "shadow_price": 0.48099931679999997,
+      "trigger": "[burst 24h] stop-loss -2.0% <= -2.0% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-10-20T12:26:54+00:00",
+      "cycle_price": 0.4808490984,
+      "cycle_reason": "[burst 24h] stop-loss -2.1% <= -2.0% (ATR-scaled); P&L \u00a3-0.10",
+      "dt_s": 662.0,
+      "price_diff": -0.00015021839999995734,
+      "price_pct": -0.031230480949397756
     }
   ],
   "main_exit_missed": [],
@@ -2380,13 +2394,13 @@
       "shadow_ts": "2026-10-19T14:06:00+00:00",
       "shadow_price": 0.8458847170360313,
       "trigger": "[momentum] price holds \u00a30.84581; score 0.41 >= 0.35",
-      "status": "cycle missed",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-20T12:26:54+00:00",
+      "cycle_price": 0.8637558,
+      "cycle_reason": "[burst 4h] 4h-range break +0.67% (range 1.1%); vol x6.2, RSI 49, BTC 1h +0.22%, 4h +0.20%; confidence 0.64 >= 0.58, EV +0.30% after costs; target +3.0% / stop -1.5% / max 6h",
+      "dt_s": 80454.0,
+      "price_diff": 0.017871082963968665,
+      "price_pct": 2.112709049359433
     },
     {
       "asset": "KITE",
