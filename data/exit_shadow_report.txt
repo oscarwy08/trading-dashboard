@@ -371,6 +371,11 @@ PONS day
   shadow  2026-10-21T11:53:35+00:00  £0.214697  [burst 4h] stop-loss -1.5% <= -1.5% (ATR-scaled)
   cycle   no sell yet
 
+ADA day
+  shadow  2026-10-21T13:54:07+00:00  £0.168444  [burst 4h] max hold 6h reached (6.0h), -0.3%
+  cycle   2026-10-21T13:58:30+00:00  £0.168662  [burst 4h] max hold 6h reached (6.1h), -0.1%; P&L £-0.01
+  cycle was 263s later, price £+0.000217765 (+0.13%)
+
 Shadow entries vs the 5-minute cycle
 
 KNTQ risk
@@ -642,11 +647,12 @@ Cycle buys with no shadow entry
   IQE.L day  2026-10-21T07:45:14+00:00  £0.40775  [momentum] DAY score 0.735 >= 0.35; target +4.6% / stop -2.2% (ATR 1.84%); EV +0.52%; 4h +10.7%, 24h +4.2%, EMA6/24 up, RSI 62, no fresh sentiment
   ADA day  2026-10-21T07:54:04+00:00  £0.168653  [burst 4h] 4h-range break +0.25% (range 1.4%); vol x3.7, RSI 62, BTC 1h +0.48%, 4h +0.50%; confidence 0.62 >= 0.55, EV +0.37% after costs; target +3.0% / stop -1.5% / max 6h
   IQE.L day  2026-10-21T09:16:19+00:00  £0.39935  [momentum] DAY score 0.587 >= 0.35; target +5.2% / stop -2.5% (ATR 2.07%); EV +0.41%; 4h +7.5%, 24h +0.8%, EMA6/24 up, RSI 56, no fresh sentiment
+  HQ day  2026-10-21T13:33:08+00:00  £10.3869  [momentum] DAY score 0.693 >= 0.35; target +6.8% / stop -3.3% (ATR 2.74%); EV +0.33%; 4h +4.7%, 24h +3.3%, EMA6/24 up, RSI 58, no fresh sentiment
 
 Per book
 
 main
-  exits: 19 pairs, avg time gap 133732s, avg price gap -1.81%, missed moves 69
+  exits: 20 pairs, avg time gap 127058s, avg price gap -1.71%, missed moves 69
   entries: 5 pairs, avg time gap 426614s, avg price gap -5.31%, missed moves 45
 ev_exit
   exits: 16 pairs, avg time gap 135376s, avg price gap -2.41%, missed moves 50

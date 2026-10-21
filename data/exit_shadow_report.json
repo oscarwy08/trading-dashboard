@@ -1,14 +1,14 @@
 {
   "status": "ok",
-  "generated": "2026-10-21T13:32:24+00:00",
+  "generated": "2026-10-21T14:32:31+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 19,
-        "avg_dt_s": 133731.84210526315,
-        "avg_price_pct": -1.8083598194498893,
+        "pairs": 20,
+        "avg_dt_s": 127058.4,
+        "avg_price_pct": -1.7114778048781556,
         "missed": 69
       },
       "entries": {
@@ -1866,6 +1866,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "ADA",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-21T13:54:07+00:00",
+      "shadow_price": 0.16844422182,
+      "trigger": "[burst 4h] max hold 6h reached (6.0h), -0.3%",
+      "status": "matched",
+      "cycle_ts": "2026-10-21T13:58:30+00:00",
+      "cycle_price": 0.16866198730499998,
+      "cycle_reason": "[burst 4h] max hold 6h reached (6.1h), -0.1%; P&L \u00a3-0.01",
+      "dt_s": 263.0,
+      "price_diff": 0.00021776548499999326,
+      "price_pct": 0.12928047198478446
     }
   ],
   "main_exit_missed": [],
@@ -2683,6 +2697,13 @@
       "asset": "IQE.L",
       "price": 0.39935000000000004,
       "reason": "[momentum] DAY score 0.587 >= 0.35; target +5.2% / stop -2.5% (ATR 2.07%); EV +0.41%; 4h +7.5%, 24h +0.8%, EMA6/24 up, RSI 56, no fresh sentiment"
+    },
+    {
+      "ts": "2026-10-21T13:33:08+00:00",
+      "sleeve": "day",
+      "asset": "HQ",
+      "price": 10.3868898,
+      "reason": "[momentum] DAY score 0.693 >= 0.35; target +6.8% / stop -3.3% (ATR 2.74%); EV +0.33%; 4h +4.7%, 24h +3.3%, EMA6/24 up, RSI 58, no fresh sentiment"
     }
   ]
 }
