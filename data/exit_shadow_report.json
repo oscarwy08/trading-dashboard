@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-21T12:32:03+00:00",
+  "generated": "2026-10-21T13:32:24+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 18,
-        "avg_dt_s": 140280.44444444444,
-        "avg_price_pct": -1.94350525250632,
-        "missed": 70
+        "pairs": 19,
+        "avg_dt_s": 133731.84210526315,
+        "avg_price_pct": -1.8083598194498893,
+        "missed": 69
       },
       "entries": {
         "pairs": 5,
@@ -45,7 +45,7 @@
         "pairs": 2,
         "avg_dt_s": 130959.5,
         "avg_price_pct": -7.1096060815958655,
-        "missed": 133
+        "missed": 134
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 2,
         "avg_dt_s": 130974.0,
         "avg_price_pct": -7.092482518690714,
-        "missed": 148
+        "missed": 149
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 2,
         "avg_dt_s": 130976.0,
         "avg_price_pct": -7.322590213785412,
-        "missed": 134
+        "missed": 135
       }
     },
     {
@@ -192,10 +192,10 @@
         "missed": 54
       },
       "entries": {
-        "pairs": 7,
-        "avg_dt_s": 269901.14285714284,
-        "avg_price_pct": -0.3929222557329309,
-        "missed": 191
+        "pairs": 8,
+        "avg_dt_s": 246526.75,
+        "avg_price_pct": 0.5712292402102441,
+        "missed": 190
       }
     },
     {
@@ -1817,13 +1817,13 @@
       "shadow_ts": "2026-10-21T08:51:36+00:00",
       "shadow_price": 3.907955037,
       "trigger": "[burst 24h] trailing stop +1.2% (peak +2.2%, gives back 40% of the gain)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-21T13:15:53+00:00",
+      "cycle_price": 3.932350758,
+      "cycle_reason": "[burst 24h] max hold 6h reached (6.1h), +1.8%; P&L \u00a3+0.09",
+      "dt_s": 15857.0,
+      "price_diff": 0.024395721000000314,
+      "price_pct": 0.6242579755658615
     },
     {
       "asset": "IQE.L",
