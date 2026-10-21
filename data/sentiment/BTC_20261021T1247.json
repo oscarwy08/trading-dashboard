@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-21T12:55:00Z",
+ "asset": "BTC",
+ "score": 0.2,
+ "confidence": 0.55,
+ "summary": "BTC ~$83.5k (+2.4% 24h). New since this morning: US spot BTC ETFs took a modest +$23.2M on 20 Oct (IBIT ~$29.9M) after +$527M the day before, and Switzerland's FINMA approved the first retail spot Bitcoin ETF (BIT Asset Management, SIX listing). Over $2B of shorts sit above $84k, so a squeeze is possible, but flows have thinned. Held at 0.2.",
+ "sources": [
+  "https://x.com/i/trending/2112843677026381935",
+  "https://x.com/i/trending/2112519855161155617",
+  "https://x.com/i/trending/2112822340652540248"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "FINMA approved first Swiss retail spot BTC ETF (20 Oct); US spot BTC ETF net inflow +$23.2M (20 Oct)",
+ "volume": 148000,
+ "buzz_level": 148000,
+ "buzz_change": 1.07,
+ "price_runup_24h_pct": 2.39,
+ "carried_over": false
+}

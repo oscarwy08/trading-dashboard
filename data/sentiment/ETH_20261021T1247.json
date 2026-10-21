@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-21T12:55:00Z",
+ "asset": "ETH",
+ "score": 0.08,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,467 (+3.0% 24h). New: US spot ETH ETFs had a fifth straight day of outflows (-$26.1M on 20 Oct), while BTC ETFs took inflows. Chart talk of an inverse head and shoulders is not counted. The Drift exploiter's Tornado Cash moves from this morning still weigh. Trimmed from 0.1.",
+ "sources": [
+  "https://x.com/i/trending/2112822340652540248",
+  "https://x.com/i/trending/2112878225806532682"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "Fifth straight day of US spot ETH ETF outflows (-$26.1M, 20 Oct)",
+ "volume": 60700,
+ "buzz_level": 60700,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 2.99,
+ "carried_over": false
+}

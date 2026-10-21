@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-21T12:55:00Z",
+ "asset": "XRP",
+ "score": 0.12,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.36 (+4.4% 24h). Evernorth (XRPN) filed a prospectus supplement on 19 Oct for warrants worth up to ~$132M to buy more XRP, and the XRPL fixCleanup3_4_0 amendment is due 23 Oct. Most other X chatter is price-target hype and cycle charts, which isn't counted. Trimmed slightly from 0.14 because the price has already run.",
+ "sources": [
+  "https://x.com/i/trending/2112637283748966756",
+  "https://x.com/i/trending/2112801175141536032",
+  "https://x.com/i/trending/2112871174434869684"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Evernorth $132M warrant prospectus (19 Oct); XRPL fixCleanup3_4_0 upgrade due 23 Oct",
+ "volume": 52000,
+ "buzz_level": 52000,
+ "buzz_change": 1.08,
+ "price_runup_24h_pct": 4.36,
+ "carried_over": false
+}

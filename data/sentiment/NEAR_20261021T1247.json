@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-21T12:55:00Z",
+ "asset": "NEAR",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "NEAR ~$5.26 (+11.9% 24h). Real catalyst: NEAR Protocol launched NEAR Business on 20 Oct, a free multisig treasury and payroll tool across 35+ chains using NEAR Intents for confidential payments. Mentions rose about 2.6x over the last three days, and the price has already jumped, so the score stays modest despite the good news.",
+ "sources": [
+  "https://x.com/i/trending/2112602588499820782"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "NEAR Business confidential multisig treasury launched (20 Oct)",
+ "volume": 2200,
+ "buzz_level": 2200,
+ "buzz_change": 1.21,
+ "price_runup_24h_pct": 11.85,
+ "carried_over": false
+}

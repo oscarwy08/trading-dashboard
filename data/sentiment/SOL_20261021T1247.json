@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-21T12:55:00Z",
+ "asset": "SOL",
+ "score": 0.22,
+ "confidence": 0.5,
+ "summary": "SOL ~$107 (+2.3% 24h). Alpenglow consensus upgrade activated on mainnet-beta (finality ~150ms, confirmed by Anza), and R3 is bringing its Corda platform to Solana; Solana's monthly active users hit a one-year high of 53.6M. Solana ETFs saw a small -$2.65M outflow on 20 Oct. Alpenglow was partly priced in from this morning's score, so held at 0.22.",
+ "sources": [
+  "https://x.com/i/trending/2112183544978047107",
+  "https://x.com/i/trending/2112846856686584009",
+  "https://x.com/i/trending/2112822340652540248"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Alpenglow activated on Solana mainnet-beta; R3 Corda integration on Solana",
+ "volume": 309000,
+ "buzz_level": 309000,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": 2.26,
+ "carried_over": false
+}
