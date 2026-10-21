@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-21T18:44:58+00:00",
+  "generated": "2026-10-21T19:48:59+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 23,
-        "avg_dt_s": 134167.65217391305,
-        "avg_price_pct": -2.719257888881824,
-        "missed": 70
+        "pairs": 24,
+        "avg_dt_s": 128620.29166666667,
+        "avg_price_pct": -2.6153061650557334,
+        "missed": 69
       },
       "entries": {
         "pairs": 6,
@@ -96,16 +96,16 @@
     {
       "name": "midnight_crypto",
       "exits": {
-        "pairs": 23,
-        "avg_dt_s": 147489.52173913043,
-        "avg_price_pct": -3.89918978970954,
-        "missed": 62
+        "pairs": 24,
+        "avg_dt_s": 141527.95833333334,
+        "avg_price_pct": -3.5962816967998443,
+        "missed": 61
       },
       "entries": {
         "pairs": 16,
         "avg_dt_s": 351276.9375,
         "avg_price_pct": 4.311654735277014,
-        "missed": 312
+        "missed": 349
       }
     },
     {
@@ -186,10 +186,10 @@
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 20,
-        "avg_dt_s": 170294.75,
-        "avg_price_pct": -0.7058287014514748,
-        "missed": 55
+        "pairs": 21,
+        "avg_dt_s": 162399.42857142858,
+        "avg_price_pct": -0.7360020875034037,
+        "missed": 54
       },
       "entries": {
         "pairs": 8,
@@ -210,7 +210,7 @@
         "pairs": 13,
         "avg_dt_s": 304504.3846153846,
         "avg_price_pct": -1.792284956757264,
-        "missed": 140
+        "missed": 182
       }
     },
     {
@@ -1929,13 +1929,13 @@
       "shadow_ts": "2026-10-21T18:28:23+00:00",
       "shadow_price": 0.166729038,
       "trigger": "[burst 24h] trailing stop +2.0% (peak +3.4%, gives back 40% of the gain)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-21T18:45:34+00:00",
+      "cycle_price": 0.1663548705,
+      "cycle_reason": "[burst 24h] trailing stop +1.8% (peak +3.0%, gives back 40% of the gain); P&L \u00a3+0.09",
+      "dt_s": 1031.0,
+      "price_diff": -0.00037416749999999444,
+      "price_pct": -0.22441651705565197
     }
   ],
   "main_exit_missed": [],
