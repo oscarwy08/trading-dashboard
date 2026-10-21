@@ -386,6 +386,10 @@ STRK day
   shadow  2026-10-21T15:56:53+00:00  £0.0472349  [burst 24h] stop-loss -2.1% <= -2.0% (ATR-scaled)
   cycle   no sell yet
 
+HQ day
+  shadow  2026-10-21T16:44:09+00:00  £10.6638  [momentum] trailing stop +2.2% (peak +5.2%, gives back 40% of the gain) [gap fill]
+  cycle   no sell yet
+
 Shadow entries vs the 5-minute cycle
 
 KNTQ risk
@@ -753,26 +757,26 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 22 pairs, avg time gap 140060s, avg price gap -2.88%, missed moves 69
+  exits: 22 pairs, avg time gap 140060s, avg price gap -2.88%, missed moves 70
   entries: 6 pairs, avg time gap 445937s, avg price gap -8.21%, missed moves 62
 ev_exit
   exits: 18 pairs, avg time gap 144889s, avg price gap -2.09%, missed moves 50
   entries: 9 pairs, avg time gap 277587s, avg price gap -2.00%, missed moves 303
 review_leftovers
   exits: 4 pairs, avg time gap 84414s, avg price gap -1.23%, missed moves 41
-  entries: 2 pairs, avg time gap 130960s, avg price gap -7.11%, missed moves 140
+  entries: 2 pairs, avg time gap 130960s, avg price gap -7.11%, missed moves 142
 all_combined
   exits: 4 pairs, avg time gap 84426s, avg price gap -1.23%, missed moves 43
-  entries: 2 pairs, avg time gap 130974s, avg price gap -7.09%, missed moves 155
+  entries: 2 pairs, avg time gap 130974s, avg price gap -7.09%, missed moves 157
 burst_runner
   exits: 18 pairs, avg time gap 165047s, avg price gap -3.06%, missed moves 55
   entries: 7 pairs, avg time gap 193262s, avg price gap -3.74%, missed moves 252
 everything
   exits: 4 pairs, avg time gap 84438s, avg price gap -1.23%, missed moves 43
-  entries: 2 pairs, avg time gap 130976s, avg price gap -7.32%, missed moves 140
+  entries: 2 pairs, avg time gap 130976s, avg price gap -7.32%, missed moves 142
 midnight_crypto
-  exits: 23 pairs, avg time gap 147490s, avg price gap -3.90%, missed moves 61
-  entries: 15 pairs, avg time gap 338270s, avg price gap +6.44%, missed moves 309
+  exits: 23 pairs, avg time gap 147490s, avg price gap -3.90%, missed moves 62
+  entries: 16 pairs, avg time gap 351277s, avg price gap +4.31%, missed moves 310
 entry_watch
   exits: 21 pairs, avg time gap 118449s, avg price gap -3.31%, missed moves 41
   entries: 5 pairs, avg time gap 159384s, avg price gap +9.39%, missed moves 254

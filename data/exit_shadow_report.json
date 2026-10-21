@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-21T16:38:53+00:00",
+  "generated": "2026-10-21T17:40:55+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 22,
         "avg_dt_s": 140060.45454545456,
         "avg_price_pct": -2.87794823949288,
-        "missed": 69
+        "missed": 70
       },
       "entries": {
         "pairs": 6,
@@ -45,7 +45,7 @@
         "pairs": 2,
         "avg_dt_s": 130959.5,
         "avg_price_pct": -7.1096060815958655,
-        "missed": 140
+        "missed": 142
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 2,
         "avg_dt_s": 130974.0,
         "avg_price_pct": -7.092482518690714,
-        "missed": 155
+        "missed": 157
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 2,
         "avg_dt_s": 130976.0,
         "avg_price_pct": -7.322590213785412,
-        "missed": 140
+        "missed": 142
       }
     },
     {
@@ -99,13 +99,13 @@
         "pairs": 23,
         "avg_dt_s": 147489.52173913043,
         "avg_price_pct": -3.89918978970954,
-        "missed": 61
+        "missed": 62
       },
       "entries": {
-        "pairs": 15,
-        "avg_dt_s": 338269.6666666667,
-        "avg_price_pct": 6.4360476397620685,
-        "missed": 309
+        "pairs": 16,
+        "avg_dt_s": 351276.9375,
+        "avg_price_pct": 4.311654735277014,
+        "missed": 310
       }
     },
     {
@@ -1901,6 +1901,20 @@
       "shadow_ts": "2026-10-21T15:56:53+00:00",
       "shadow_price": 0.047234905199999996,
       "trigger": "[burst 24h] stop-loss -2.1% <= -2.0% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "HQ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-21T16:44:09+00:00",
+      "shadow_price": 10.663773749999999,
+      "trigger": "[momentum] trailing stop +2.2% (peak +5.2%, gives back 40% of the gain) [gap fill]",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
