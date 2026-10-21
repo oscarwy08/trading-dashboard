@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-21T07:01:00Z",
+ "asset": "HYPE",
+ "score": 0.02,
+ "confidence": 0.45,
+ "summary": "HYPE ~$80.9 (+2.2% 24h). New: on-chain investigator ZachXBT reported that FreedomXMR, a service launched on Hyperliquid Core in August, funnelled over $20M linked to ransomware and hacks; Hyperliquid has not responded publicly. It's a compliance and reputation negative for a permissionless venue rather than a protocol fault. Lowered from 0.08.",
+ "sources": [
+  "https://x.com/i/trending/2112588457151447072"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "ZachXBT report on FreedomXMR illicit flows on Hyperliquid Core (20 Oct)",
+ "volume": 13500,
+ "buzz_level": 13500,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": 2.2,
+ "carried_over": false
+}

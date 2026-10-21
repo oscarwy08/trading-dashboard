@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-21T07:01:00Z",
+ "asset": "SOL",
+ "score": 0.22,
+ "confidence": 0.5,
+ "summary": "SOL ~$106 (+1.0% 24h). Dated upgrade: Anza is activating Alpenglow on mainnet-beta today (21 Oct, around 14:00-14:50 UTC, epoch 1064), replacing TowerBFT and cutting finality from ~12.8s to ~150ms after smooth testnet runs. Tokenised-stock holders on Solana reached 1.4M addresses. Mentions of Alpenglow rose from ~280/day to ~440 yesterday ahead of the switch, but price has not run up. Execution risk on a consensus change is a small offset.",
+ "sources": [
+  "https://x.com/i/trending/2112183544978047107",
+  "https://x.com/i/trending/2112073539176308747"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Alpenglow consensus upgrade activating on Solana mainnet 21 Oct ~14:00 UTC",
+ "volume": 441,
+ "buzz_level": 441,
+ "buzz_change": 1.55,
+ "price_runup_24h_pct": 1.0,
+ "carried_over": false
+}

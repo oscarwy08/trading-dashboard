@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-21T07:01:00Z",
+ "asset": "ETH",
+ "score": 0.1,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,441 (+1.5% 24h). New overnight: the exploiter behind April's $285M Drift Protocol hack moved about 25,700 ETH (~$61.6M) into Tornado Cash and still holds about 81,900 ETH (~$195M). Observers read it as laundering rather than an imminent sale, but it is a supply overhang. JPM Coin on Ethereum, record staking and Optimum's faster block propagation were already counted last night. Trimmed slightly from 0.12.",
+ "sources": [
+  "https://x.com/i/trending/2112491665822974108",
+  "https://x.com/i/trending/2112592164316426507"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "Drift exploiter deposited ~25.7k ETH into Tornado Cash (20 Oct), still holds ~81.9k ETH",
+ "volume": 60700,
+ "buzz_level": 60700,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.5,
+ "carried_over": false
+}

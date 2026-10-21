@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-21T07:01:00Z",
+ "asset": "XRP",
+ "score": 0.14,
+ "confidence": 0.5,
+ "summary": "XRP ~$1.33 (+2.5% 24h), led majors yesterday and holds the $1.26-1.30 support zone. New: Ripple formally endorsed the SEC's Regulation Crypto Assets proposal as the comment period closed, alongside a coalition (Chainlink, Hedera, Stellar, Avalanche, Cardano) pushing a 'digital commodity' classification. Regulatory clarity is a slow-burn positive, not an immediate price event. Evernorth's warrant prospectus already counted. Nudged up from 0.12.",
+ "sources": [
+  "https://x.com/i/trending/2112701069851869395",
+  "https://x.com/i/trending/2112598863890546926"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Ripple comment letter backing SEC Regulation Crypto Assets as comment period closed (20-21 Oct)",
+ "volume": 33700,
+ "buzz_level": 33700,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": 2.5,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-21T07:01:00Z",
+ "asset": "CVX",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "Convex Finance (CVX) ~$2.59, up ~23% in 24h and on 1h top-gainer scanner lists. No dated catalyst found: posts are price recaps and a report of Binance futures open interest up ~65% in 24h, so the move looks leverage-driven. X mentions roughly doubled (31 yesterday vs ~13/day before). Price-chasing recaps are not counted as bullish; a buzz spike after a run-up is a giveback risk.",
+ "sources": [
+  "https://x.com/EntitledTrader/status/2112727752293892449",
+  "https://x.com/DyorNetCrypto/status/2112786538631184737"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none (no dated event; futures OI +65% is leverage, not a catalyst)",
+ "volume": 31,
+ "buzz_level": 31,
+ "buzz_change": 2.4,
+ "price_runup_24h_pct": 23.4,
+ "carried_over": false
+}
