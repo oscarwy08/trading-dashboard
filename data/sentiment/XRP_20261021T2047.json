@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-21T20:59:00Z",
+ "asset": "XRP",
+ "score": 0.18,
+ "confidence": 0.5,
+ "summary": "XRP ~$1.38 (+4.4% 24h). New: SEC cleared Evernorth's prospectus that could raise ~$132M for XRP buying (~19 Oct), Grayscale's XRP Trust ETF got in-kind swaps and a new custodian (21 Oct), and an XRP Ledger upgrade is due 23 Oct. Ripple's new @XRP account passing 100k followers is hype, not counted. Mentions are below the weekend spike. Up from 0.12.",
+ "sources": [
+  "https://x.com/i/trending/2112637283748966756",
+  "https://x.com/i/trending/2112946151330918583",
+  "https://x.com/i/trending/2112801175141536032"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Evernorth SEC prospectus (~$132M potential XRP purchases); Grayscale XRP Trust in-kind (21 Oct); XRPL upgrade 23 Oct",
+ "volume": 57000,
+ "buzz_level": 57000,
+ "buzz_change": 0.55,
+ "price_runup_24h_pct": 4.36,
+ "carried_over": false
+}

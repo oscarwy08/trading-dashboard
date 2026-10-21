@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-21T20:59:00Z",
+ "asset": "ZEC",
+ "score": 0.0,
+ "confidence": 0.35,
+ "summary": "ZEC (+9.5% 24h, already run up). New: Grayscale added in-kind swaps for its Zcash product (21 Oct). Trader Gainzy publicly rotated out of ZEC into Pearl, which is opinion, not news. Neutral; up from -0.1 (18 Oct).",
+ "sources": [
+  "https://x.com/i/trending/2112946151330918583",
+  "https://x.com/i/trending/2112572572890234890"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Grayscale in-kind for Zcash product (21 Oct)",
+ "volume": 2500,
+ "buzz_level": 2500,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 9.45,
+ "carried_over": false
+}

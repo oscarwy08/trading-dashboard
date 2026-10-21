@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-21T20:59:00Z",
+ "asset": "HYPE",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "HYPE (+1.0% 24h). New: Grayscale's Hyperliquid product got in-kind swaps (21 Oct), but ZachXBT reported that FreedomXMR, a Monero swap on Hyperliquid Core, took >$20M mostly from hacks and ransomware, with no action from Hyperliquid yet. Roughly balanced; down from 0.02.",
+ "sources": [
+  "https://x.com/i/trending/2112946151330918583",
+  "https://x.com/i/trending/2112588457151447072"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "ZachXBT report on illicit-fund swap service on Hyperliquid Core (21 Oct); Grayscale in-kind (21 Oct)",
+ "volume": 13500,
+ "buzz_level": 13500,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.97,
+ "carried_over": false
+}

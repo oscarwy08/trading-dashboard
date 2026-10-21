@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-21T20:59:00Z",
+ "asset": "SOL",
+ "score": 0.28,
+ "confidence": 0.55,
+ "summary": "SOL ~$106 (+1.7% 24h). New since midday: the Alpenglow upgrade went live on mainnet at ~13:54 UTC, cutting finality from ~12.8s to ~150ms. Also R3 is bringing Corda to Solana, tokenized META shares launched on Solana via Backpack, and Grayscale's Solana Staking ETF got in-kind swaps. Up from 0.22.",
+ "sources": [
+  "https://x.com/i/trending/2112905937057161320",
+  "https://x.com/i/trending/2112846856686584009",
+  "https://x.com/i/trending/2112952165958607152"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "Alpenglow consensus upgrade activated on mainnet (21 Oct, epoch 1064); R3 Corda integration",
+ "volume": 310000,
+ "buzz_level": 310000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.72,
+ "carried_over": false
+}

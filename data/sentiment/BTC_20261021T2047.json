@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-21T20:59:00Z",
+ "asset": "BTC",
+ "score": 0.22,
+ "confidence": 0.55,
+ "summary": "BTC ~$84k (+2.4% 24h). New tonight: Grayscale opened in-kind swaps for its Bitcoin Mini Trust ETF (21 Oct), Saylor publicly called a new bull market, and CryptoQuant data shows fresh capital inflows and whale accumulation (1,090 BTC moved from Wintermute to new wallets). Shorts cluster above $84k. Nudged up slightly from 0.2.",
+ "sources": [
+  "https://x.com/i/trending/2112946151330918583",
+  "https://x.com/i/trending/2112891431933337684",
+  "https://x.com/i/trending/2112816270827560996"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Grayscale in-kind creations live for BTC Mini Trust ETF (21 Oct)",
+ "volume": 150000,
+ "buzz_level": 150000,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": 2.4,
+ "carried_over": false
+}

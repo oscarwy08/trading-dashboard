@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-21T20:59:00Z",
+ "asset": "NEAR",
+ "score": 0.12,
+ "confidence": 0.4,
+ "summary": "NEAR ~$5.2 (+7.4% 24h, already run up). New: NEAR Business confidential multisig treasury launched (21 Oct), but an engineer's critique of NEAR's Confidential Intents (permissioned private chain, closed code) spread via the ICP founder. Mixed; trimmed from 0.15.",
+ "sources": [
+  "https://x.com/i/trending/2112602588499820782",
+  "https://x.com/i/trending/2112971190918905976"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "NEAR Business treasury product launch (21 Oct)",
+ "volume": 2400,
+ "buzz_level": 2400,
+ "buzz_change": 1.09,
+ "price_runup_24h_pct": 7.37,
+ "carried_over": false
+}

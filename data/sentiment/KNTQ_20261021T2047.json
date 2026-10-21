@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-21T20:59:00Z",
+ "asset": "KNTQ",
+ "score": 0.05,
+ "confidence": 0.3,
+ "summary": "KNTQ (+20.3% 24h, already run up). Only new item: Kinetiq Foundation opened a governance vote on the date of the next KNTQ rewards distribution (timing only, no new tokens). X mentions jumped ~9x today, but most of it is one account reposting the same text, so the buzz looks like spam, not real interest. Held at 0.05.",
+ "sources": [
+  "https://x.com/HdStudioxx/status/2112970081546485931"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Governance vote on next rewards-distribution date (21 Oct); not a token event",
+ "volume": 596,
+ "buzz_level": 596,
+ "buzz_change": 9.3,
+ "price_runup_24h_pct": 20.32,
+ "carried_over": false
+}
