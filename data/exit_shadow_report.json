@@ -1,14 +1,14 @@
 {
   "status": "ok",
-  "generated": "2026-10-21T17:40:55+00:00",
+  "generated": "2026-10-21T18:44:58+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 22,
-        "avg_dt_s": 140060.45454545456,
-        "avg_price_pct": -2.87794823949288,
+        "pairs": 23,
+        "avg_dt_s": 134167.65217391305,
+        "avg_price_pct": -2.719257888881824,
         "missed": 70
       },
       "entries": {
@@ -45,7 +45,7 @@
         "pairs": 2,
         "avg_dt_s": 130959.5,
         "avg_price_pct": -7.1096060815958655,
-        "missed": 142
+        "missed": 143
       }
     },
     {
@@ -105,7 +105,7 @@
         "pairs": 16,
         "avg_dt_s": 351276.9375,
         "avg_price_pct": 4.311654735277014,
-        "missed": 310
+        "missed": 312
       }
     },
     {
@@ -189,7 +189,7 @@
         "pairs": 20,
         "avg_dt_s": 170294.75,
         "avg_price_pct": -0.7058287014514748,
-        "missed": 54
+        "missed": 55
       },
       "entries": {
         "pairs": 8,
@@ -1915,6 +1915,20 @@
       "shadow_ts": "2026-10-21T16:44:09+00:00",
       "shadow_price": 10.663773749999999,
       "trigger": "[momentum] trailing stop +2.2% (peak +5.2%, gives back 40% of the gain) [gap fill]",
+      "status": "matched",
+      "cycle_ts": "2026-10-21T17:59:35+00:00",
+      "cycle_price": 10.746090599999999,
+      "cycle_reason": "[momentum] trailing stop +2.9% (peak +5.7%, gives back 40% of the gain); P&L \u00a3+0.22",
+      "dt_s": 4526.0,
+      "price_diff": 0.08231684999999977,
+      "price_pct": 0.7719298245614015
+    },
+    {
+      "asset": "ENA",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-21T18:28:23+00:00",
+      "shadow_price": 0.166729038,
+      "trigger": "[burst 24h] trailing stop +2.0% (peak +3.4%, gives back 40% of the gain)",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
