@@ -759,6 +759,7 @@ Cycle buys with no shadow entry
   IQE.L day  2026-10-21T09:16:19+00:00  £0.39935  [momentum] DAY score 0.587 >= 0.35; target +5.2% / stop -2.5% (ATR 2.07%); EV +0.41%; 4h +7.5%, 24h +0.8%, EMA6/24 up, RSI 56, no fresh sentiment
   HQ day  2026-10-21T13:33:08+00:00  £10.3869  [momentum] DAY score 0.693 >= 0.35; target +6.8% / stop -3.3% (ATR 2.74%); EV +0.33%; 4h +4.7%, 24h +3.3%, EMA6/24 up, RSI 58, no fresh sentiment
   ENA day  2026-10-21T15:26:50+00:00  £0.163062  [burst 24h] 24h-high break +0.41% (high $0.2171); vol x3.8, RSI 77, BTC 1h +0.62%, 4h +1.31%; confidence 0.67 >= 0.56, EV +0.41% after costs; target +4.7% / stop -1.6% / max 6h
+  XMR day  2026-10-22T08:46:24+00:00  £476.531  [burst 24h] 24h-high break +1.28% (high $629.27); vol x3.4, RSI 61, BTC 1h -0.36%, 4h -1.11%; confidence 0.62 >= 0.55, EV +0.91% after costs; target +6.3% / stop -2.1% / max 6h
 
 Per book
 
@@ -782,7 +783,7 @@ everything
   entries: 2 pairs, avg time gap 130976s, avg price gap -7.32%, missed moves 142
 midnight_crypto
   exits: 28 pairs, avg time gap 143160s, avg price gap -2.32%, missed moves 61
-  entries: 19 pairs, avg time gap 384132s, avg price gap +5.06%, missed moves 349
+  entries: 20 pairs, avg time gap 368855s, avg price gap +5.21%, missed moves 348
 entry_watch
   exits: 21 pairs, avg time gap 118449s, avg price gap -3.31%, missed moves 41
   entries: 5 pairs, avg time gap 159384s, avg price gap +9.39%, missed moves 254

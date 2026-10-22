@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-22T08:35:13+00:00",
+  "generated": "2026-10-22T09:41:58+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -102,10 +102,10 @@
         "missed": 61
       },
       "entries": {
-        "pairs": 19,
-        "avg_dt_s": 384132.36842105264,
-        "avg_price_pct": 5.064189133851511,
-        "missed": 349
+        "pairs": 20,
+        "avg_dt_s": 368854.65,
+        "avg_price_pct": 5.207174823956626,
+        "missed": 348
       }
     },
     {
@@ -3019,6 +3019,13 @@
       "asset": "ENA",
       "price": 0.1630621965,
       "reason": "[burst 24h] 24h-high break +0.41% (high $0.2171); vol x3.8, RSI 77, BTC 1h +0.62%, 4h +1.31%; confidence 0.67 >= 0.56, EV +0.41% after costs; target +4.7% / stop -1.6% / max 6h"
+    },
+    {
+      "ts": "2026-10-22T08:46:24+00:00",
+      "sleeve": "day",
+      "asset": "XMR",
+      "price": 476.53098428000004,
+      "reason": "[burst 24h] 24h-high break +1.28% (high $629.27); vol x3.4, RSI 61, BTC 1h -0.36%, 4h -1.11%; confidence 0.62 >= 0.55, EV +0.91% after costs; target +6.3% / stop -2.1% / max 6h"
     }
   ]
 }
