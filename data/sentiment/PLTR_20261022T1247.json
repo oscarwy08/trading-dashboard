@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-22T12:58:00Z",
+ "asset": "PLTR",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "PLTR closed $201.72 on 21 Oct (+4.7%), reclaiming $200 on volume; new NVIDIA Nemotron sovereign-AI customer results cited. Fresh negative: UK MPs (Corbyn, Maskell, Adam) accuse Palantir of intimidation over letters about their NHS-contract criticism, with the \u00a3330M NHS platform under review Feb 2027. Valuation (~170x earnings) flagged. Trimmed from 0.15.",
+ "sources": [
+  "https://x.com/i/trending/2113014998993949034",
+  "https://x.com/i/trending/2113227865500025060",
+  "https://x.com/i/trending/2113018474440049123"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No hard catalyst; UK political/NHS-contract scrutiny story 22 Oct",
+ "volume": 7400,
+ "buzz_level": 7400,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 4.7,
+ "carried_over": false
+}

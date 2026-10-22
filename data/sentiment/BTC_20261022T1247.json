@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-22T12:58:00Z",
+ "asset": "BTC",
+ "score": 0.15,
+ "confidence": 0.55,
+ "summary": "BTC ~$81.6k (-2.2% 24h), slipping from this morning's $82.4k. Supportive: US spot ETFs took ~$528M on 21 Oct (third straight inflow day, >$1B over three days, IBIT $235M, FBTC $213M) and JPMorgan AM's new long-term assumptions put BTC's base-case return at 10%/yr, ahead of US large caps. Range $80k-$85k; Fed decision 28 Oct is the next macro event. Nudged up from 0.12 on the institutional flow, still range-bound.",
+ "sources": [
+  "https://x.com/i/trending/2113125830469820504",
+  "https://x.com/i/trending/2113201727927153083",
+  "https://x.com/i/trending/2112843677026381935"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "21 Oct ETF inflows ~$528M; JPMorgan 2027 long-term capital market assumptions (published ~22 Oct)",
+ "volume": 162000,
+ "buzz_level": 162000,
+ "buzz_change": 0.98,
+ "price_runup_24h_pct": -2.2,
+ "carried_over": false
+}

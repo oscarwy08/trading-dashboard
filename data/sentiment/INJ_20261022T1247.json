@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-22T12:58:00Z",
+ "asset": "INJ",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "INJ ~$8.09 (-7.3% 24h). Injective signed an MoU with Korean custodian BDACS making KRW1 the exclusive won stablecoin for settling tokenized/RWA assets on Injective. Positive but an MoU, not live volume; price still weak with the alt market. Buzz below recent average.",
+ "sources": [
+  "https://x.com/i/trending/2112579117157949720"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Injective x BDACS KRW1 stablecoin MoU (announced ~21-22 Oct)",
+ "volume": 7300,
+ "buzz_level": 7300,
+ "buzz_change": 0.78,
+ "price_runup_24h_pct": -7.3,
+ "carried_over": false
+}

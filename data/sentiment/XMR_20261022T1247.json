@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T12:58:00Z",
+ "asset": "XMR",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "XMR ~$630 (+9.2% 24h; headlines say +12% to ~$650 intraday), breaking a long-term range. Narrative is hack-driven demand (Railway breach drained ~$371k, LiteLLM supply-chain attack) rather than a protocol event. Buzz up ~1.5x after a 45% multi-month run, so overheat risk is high; kept near neutral despite the move.",
+ "sources": [
+  "https://x.com/i/trending/2113171471417942396",
+  "https://x.com/i/trending/2113236423738278226"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No XMR-specific dated catalyst; rally attributed to third-party hacks",
+ "volume": 6900,
+ "buzz_level": 6900,
+ "buzz_change": 1.48,
+ "price_runup_24h_pct": 9.2,
+ "carried_over": false
+}

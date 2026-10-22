@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-22T12:58:00Z",
+ "asset": "AERO",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "AERO ~$0.81 (-5.9% 24h). Aerodrome and Velodrome merged into 'Aero', live from 00:00 UTC 22 Oct on seven chains (Ethereum, Base, Optimism, Arbitrum, Arc, Ink, Robinhood Chain); AERO migrates 1:1, VELO at ~0.044. Real upgrade, but the token sold the news (-7.8% on the day per X). Buzz ~1.8x on the launch.",
+ "sources": [
+  "https://x.com/i/trending/2113085299215806968"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "Aero merger/multichain launch live 22 Oct 00:00 UTC",
+ "volume": 880,
+ "buzz_level": 880,
+ "buzz_change": 1.84,
+ "price_runup_24h_pct": -5.9,
+ "carried_over": false
+}

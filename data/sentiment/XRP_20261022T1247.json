@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-22T12:58:00Z",
+ "asset": "XRP",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.32 (-2.4% 24h). X chatter is loud and target-heavy ('$10,000', '11% screen gain') but that is price-chasing, not news. Only dated item: SEC cleared Evernorth's (XRPN) prospectus ~19 Oct, allowing up to ~$132M raise for XRP treasury buying. Resistance $1.35-$1.39, support ~$1.26-$1.28. Trimmed from 0.18; mention volume falling.",
+ "sources": [
+  "https://x.com/i/trending/2113207865632600290",
+  "https://x.com/i/trending/2112637283748966756",
+  "https://x.com/i/trending/2112837795299701122"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "SEC cleared Evernorth XRPN prospectus ~19 Oct (up to ~$132M for XRP purchases)",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 0.62,
+ "price_runup_24h_pct": -2.4,
+ "carried_over": false
+}
