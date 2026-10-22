@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-22T13:59:50+00:00",
+  "generated": "2026-10-22T15:06:26+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -39,13 +39,13 @@
         "pairs": 5,
         "avg_dt_s": 67752.4,
         "avg_price_pct": -1.0539499895686846,
-        "missed": 41
+        "missed": 42
       },
       "entries": {
-        "pairs": 2,
-        "avg_dt_s": 130959.5,
-        "avg_price_pct": -7.1096060815958655,
-        "missed": 143
+        "pairs": 3,
+        "avg_dt_s": 152381.66666666666,
+        "avg_price_pct": -9.154968617167855,
+        "missed": 142
       }
     },
     {
@@ -54,13 +54,13 @@
         "pairs": 5,
         "avg_dt_s": 67764.4,
         "avg_price_pct": -1.0539499895686846,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
-        "pairs": 2,
-        "avg_dt_s": 130974.0,
-        "avg_price_pct": -7.092482518690714,
-        "missed": 157
+        "pairs": 3,
+        "avg_dt_s": 152396.0,
+        "avg_price_pct": -9.143552908564422,
+        "missed": 156
       }
     },
     {
@@ -84,13 +84,13 @@
         "pairs": 5,
         "avg_dt_s": 67776.8,
         "avg_price_pct": -1.0539499895686846,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
-        "pairs": 2,
-        "avg_dt_s": 130976.0,
-        "avg_price_pct": -7.322590213785412,
-        "missed": 142
+        "pairs": 3,
+        "avg_dt_s": 152402.66666666666,
+        "avg_price_pct": -9.296958038627553,
+        "missed": 141
       }
     },
     {
@@ -201,16 +201,16 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 36,
-        "avg_dt_s": 176360.30555555556,
-        "avg_price_pct": 0.581146632824924,
-        "missed": 70
+        "pairs": 38,
+        "avg_dt_s": 182496.63157894736,
+        "avg_price_pct": 0.9943789233287369,
+        "missed": 69
       },
       "entries": {
         "pairs": 18,
         "avg_dt_s": 277157.44444444444,
         "avg_price_pct": -0.5660474228852297,
-        "missed": 177
+        "missed": 178
       }
     },
     {
