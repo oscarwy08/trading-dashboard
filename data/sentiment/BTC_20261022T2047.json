@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "BTC",
+ "score": 0.08,
+ "confidence": 0.55,
+ "summary": "BTC ~$81.2k (-4.1% 24h). Crypto shed ~$100B today with ~$210M of long liquidations; price is testing the ~$81k ETF cost-basis zone Glassnode flags as key support, with $75-76k named if it closes below the 50-day. Offsetting: $528M US spot ETF inflows on 21 Oct (~$1.07B over three days), hashrate back near records, whale accumulation. Fed 27-28 Oct is next. Trimmed from 0.15 on the breakdown.",
+ "sources": [
+  "https://x.com/i/trending/2113337986616033641",
+  "https://x.com/i/trending/2113328977540477027",
+  "https://x.com/i/trending/2113310072868577665"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "21 Oct spot ETF inflows ~$528M (dated, already priced in part)",
+ "volume": 96800,
+ "buzz_level": 96800,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -4.1,
+ "carried_over": false
+}

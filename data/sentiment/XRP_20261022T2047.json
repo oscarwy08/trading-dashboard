@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.30 (-6.7% 24h), back from the $1.40 tag. Dated items: Ripple-Arf partnership (22 Oct) for RLUSD working-capital loans on the XRP Ledger; Ripple Swell conference 27-29 Oct. Record 8.24M non-empty wallets. Price-target chatter ignored. Trimmed from 0.10; mentions falling.",
+ "sources": [
+  "https://x.com/i/trending/2113267945447231861",
+  "https://x.com/i/trending/2113316457568211039"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Ripple x Arf RLUSD liquidity on XRPL announced 22 Oct; Swell 27-29 Oct",
+ "volume": 21200,
+ "buzz_level": 21200,
+ "buzz_change": 0.74,
+ "price_runup_24h_pct": -6.7,
+ "carried_over": false
+}

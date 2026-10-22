@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "HYPE",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "HYPE ~$77 (-5.5% 24h). Hyperliquid did ~$68.5M revenue in the past month (~$2.3M/day, HIP-3 markets 37% of weekly volume) feeding buybacks; a live vote on Season 2 distribution of 38.8M HYPE. Unlock/competition concerns linger. Roughly unchanged from 0.08.",
+ "sources": [
+  "https://x.com/i/trending/2113347491156357374",
+  "https://x.com/i/trending/2112946151330918583"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Season 2 HYPE distribution governance vote live (22 Oct)",
+ "volume": 50600,
+ "buzz_level": 50600,
+ "buzz_change": 0.97,
+ "price_runup_24h_pct": -5.5,
+ "carried_over": false
+}

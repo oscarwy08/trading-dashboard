@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "ZEC",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "ZEC ~$1,207 (-11.1% 24h), giving back yesterday's break above $1,300. NU7 upgrade talk has no dated activation; included in Grayscale in-kind list (21 Oct, minor). Mentions cooling. Slightly negative.",
+ "sources": [
+  "https://x.com/i/trending/2113035836950282379",
+  "https://x.com/i/trending/2112946151330918583"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 5500,
+ "buzz_level": 5500,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": -11.1,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "XMR",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "XMR ~$630-650, up >20% this week on a privacy-coin narrative tied to the Railway breach/LiteLLM credential thefts. No protocol or listing catalyst; this is narrative plus price chasing, and buzz is up ~1.7x after the run-up. Box price is ~9h old (CoinGecko budget spent), so runup figure is stale. Held at 0.05.",
+ "sources": [
+  "https://x.com/i/trending/2113335040709210441",
+  "https://x.com/i/trending/2113171471417942396"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 4500,
+ "buzz_level": 4500,
+ "buzz_change": 1.67,
+ "price_runup_24h_pct": 9.2,
+ "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "ETH",
+ "score": -0.02,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,380 (-4.6% 24h) after rejection at $2,500-2,550; analysts warn of a 7-10% drop on a weekly close below $2,400. Whales withdrew ~24k ETH from exchanges and one whale rotated ~$159M BTC into ETH over 11 days; ETH ETFs +$15M ended a five-day outflow run. Net slightly negative on price structure.",
+ "sources": [
+  "https://x.com/i/trending/2113274914085929469",
+  "https://x.com/i/trending/2113253047556321749",
+  "https://x.com/i/trending/2113184918859563439"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 54100,
+ "buzz_level": 54100,
+ "buzz_change": 0.98,
+ "price_runup_24h_pct": -4.6,
+ "carried_over": false
+}

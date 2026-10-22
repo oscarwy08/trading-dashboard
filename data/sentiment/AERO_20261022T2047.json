@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "AERO",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "AERO ~$0.79 (-5.0% 24h). Dated upgrade: Aero launched 22 Oct, merging Aerodrome and Velodrome into one DEX across seven chains (Base, Ethereum, OP, Arbitrum, Arc, Ink, Robinhood Chain); VELO converts at ~0.044 AERO, Aerodrome holders get 94.5% of supply. Incentives still exceed revenue ($14.6M vs $8.3M). Sell-the-news so far.",
+ "sources": [
+  "https://x.com/i/trending/2113085299215806968"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Aero unified launch 22 Oct (Aerodrome + Velodrome merger)",
+ "volume": 4300,
+ "buzz_level": 4300,
+ "buzz_change": 1.16,
+ "price_runup_24h_pct": -5.0,
+ "carried_over": false
+}

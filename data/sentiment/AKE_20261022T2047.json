@@ -1,0 +1,15 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "AKE",
+ "score": 0.0,
+ "confidence": 0.25,
+ "summary": "AKE up ~20% in 24h (Day pot traded it repeatedly today). No dated news found; mention count is small but ~3.4x its recent level, which is price-chasing after the run-up, not a bullish catalyst. Neutral, low confidence.",
+ "sources": [],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 70,
+ "buzz_level": 70,
+ "buzz_change": 3.4,
+ "price_runup_24h_pct": 20.0,
+ "carried_over": false
+}

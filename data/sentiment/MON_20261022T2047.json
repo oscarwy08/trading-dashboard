@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "MON",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "MON ~$0.0208 (-7.6% 24h), falling with the market. Only news: Category Labs draft proposal for protocol-level scheduled transactions (forum draft, not shipped), so no real catalyst. Slightly negative on price.",
+ "sources": [
+  "https://x.com/i/trending/2113335032437936462"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 72700,
+ "buzz_level": 72700,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": -7.6,
+ "carried_over": false
+}

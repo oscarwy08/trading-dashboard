@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-22T20:58:00Z",
+ "asset": "SOL",
+ "score": 0.18,
+ "confidence": 0.5,
+ "summary": "SOL ~$103 (-4.9% 24h), compressing in $104-105 then slipping with the market. Dated adoption news: J.P. Morgan AM launched tokenized MMFs (MONY, JLTXX) on Solana (22 Oct); Grayscale in-kind creations incl. SOL staking ETF (21 Oct); Solana stablecoin holders at a record 14.2M. Down from 0.28 on price weakness.",
+ "sources": [
+  "https://x.com/i/trending/2113363401766293926",
+  "https://x.com/i/trending/2112946151330918583",
+  "https://x.com/i/trending/2113243660036776152"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "J.P. Morgan tokenized funds live on Solana 22 Oct; Grayscale in-kind 21 Oct",
+ "volume": 136100,
+ "buzz_level": 136100,
+ "buzz_change": 1.01,
+ "price_runup_24h_pct": -4.9,
+ "carried_over": false
+}
