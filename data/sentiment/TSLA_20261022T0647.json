@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T06:58:00Z",
+ "asset": "TSLA",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "TSLA Q3 results after the 21 Oct close: revenue flat at ~$28.0B, net income -43% to $787M, gross margin 19.6%, FCF +$1.5B. Positives: FSD paid users 1.74M (+67%), Cybercab launch in Dallas next month, Optimus early production. Mixed print; mentions doubled vs prior days on earnings.",
+ "sources": [
+  "https://x.com/i/trending/2112891429106446520",
+  "https://x.com/i/trending/2113041959728066952"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Q3 earnings 21 Oct: mixed (flat revenue, lower profit, strong FSD/robotaxi updates)",
+ "volume": 28369,
+ "buzz_level": 28369,
+ "buzz_change": 2.04,
+ "price_runup_24h_pct": 3.4,
+ "carried_over": false
+}

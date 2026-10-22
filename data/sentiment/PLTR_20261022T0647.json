@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T06:58:00Z",
+ "asset": "PLTR",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "PLTR closed $201.72 (+4.7%) on 21 Oct, reclaiming $200 on heavy volume. Real news: expanded NVIDIA partnership (Nemotron open models inside Foundry/AIP) with named customer savings. Much of the buzz is breakout recap; valuation ~170x earnings flagged by skeptics. Buzz up ~45% vs prior days after a run-up.",
+ "sources": [
+  "https://x.com/i/trending/2113014998993949034",
+  "https://x.com/i/trending/2113018474440049123"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Palantir x NVIDIA sovereign-AI partnership announced (21-22 Oct)",
+ "volume": 8620,
+ "buzz_level": 8620,
+ "buzz_change": 1.45,
+ "price_runup_24h_pct": 4.7,
+ "carried_over": false
+}

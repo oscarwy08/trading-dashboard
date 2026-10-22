@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T06:58:00Z",
+ "asset": "ETH",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,430 (-0.5% 24h). Followed BTC below $2,450 in the overnight liquidation wave after briefly reclaiming $2,500. Small positive: Optimum's mump2p block-propagation layer live on mainnet (20 Oct) with 1.4M ETH of validators using it. Trimmed from 0.1.",
+ "sources": [
+  "https://x.com/i/trending/2113158302494535961",
+  "https://x.com/i/trending/2112592164316426507"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Optimum mump2p live on Ethereum mainnet (20 Oct), minor infrastructure upgrade",
+ "volume": 60000,
+ "buzz_level": 60000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.5,
+ "carried_over": false
+}

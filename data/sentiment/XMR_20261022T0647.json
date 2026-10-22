@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T06:58:00Z",
+ "asset": "XMR",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "XMR ~$649 (+12.4% 24h), top of scanner 'bullish trend' lists. News: ZachXBT showed FreedomXMR (a Monero swap service on Hyperliquid Core) took >$20M mostly from hacks/ransomware; privacy-coin narrative is lifting XMR and ZEC but illicit-use headlines are a delisting/regulatory risk. Mentions up ~23% vs prior days on a coin that has already run hard: treat as overheated rather than bullish.",
+ "sources": [
+  "https://x.com/i/trending/2112588457151447072",
+  "https://x.com/DyorNetCrypto/status/2113118932504604768"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "ZachXBT report on FreedomXMR illicit flows (21 Oct): regulatory-risk headline",
+ "volume": 4951,
+ "buzz_level": 4951,
+ "buzz_change": 1.23,
+ "price_runup_24h_pct": 12.4,
+ "carried_over": false
+}

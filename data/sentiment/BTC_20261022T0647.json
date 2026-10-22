@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-22T06:58:00Z",
+ "asset": "BTC",
+ "score": 0.12,
+ "confidence": 0.55,
+ "summary": "BTC ~$82.4k (-0.4% 24h). Overnight it tested ~$84.9k then fell ~$1.5k in an hour on reports of fresh US-Israeli strikes on Iran, liquidating $60-70M of longs; oil and yields rose. Offsetting: spot ETFs still saw net inflows (~$549M on 21 Oct, led by IBIT). Traders watch $82.6k support / $84k resistance. Trimmed from 0.22 on geopolitical risk.",
+ "sources": [
+  "https://x.com/i/trending/2113138257626370314",
+  "https://x.com/i/trending/2113158302494535961",
+  "https://x.com/i/trending/2112843677026381935"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No asset-specific dated catalyst; geopolitical shock (Iran strikes, 22 Oct) noted in summary only",
+ "volume": 172793,
+ "buzz_level": 172793,
+ "buzz_change": 1.19,
+ "price_runup_24h_pct": -0.4,
+ "carried_over": false
+}

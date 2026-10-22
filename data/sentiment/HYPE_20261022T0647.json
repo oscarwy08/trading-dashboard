@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T06:58:00Z",
+ "asset": "HYPE",
+ "score": 0.08,
+ "confidence": 0.45,
+ "summary": "HYPE ~$78.7 (-2.6% 24h). New: Hyperliquid opened community polls (21 Oct) on whether Season 2 rewards start 1 Nov or 1 Dec and how a 38.8M HYPE pool is split. Mild positive for engagement; also named in the ZachXBT FreedomXMR report (illicit swaps on Hyperliquid Core), a small reputational negative.",
+ "sources": [
+  "https://x.com/i/trending/2113056301005828481",
+  "https://x.com/i/trending/2112588457151447072"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Season 2 rewards (38.8M HYPE) start date vote: 1 Nov or 1 Dec",
+ "volume": 19508,
+ "buzz_level": 19508,
+ "buzz_change": 1.36,
+ "price_runup_24h_pct": -2.6,
+ "carried_over": false
+}

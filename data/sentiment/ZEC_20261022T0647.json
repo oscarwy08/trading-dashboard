@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-22T06:58:00Z",
+ "asset": "ZEC",
+ "score": 0.0,
+ "confidence": 0.45,
+ "summary": "ZEC ~$1,264 (flat 24h after a double-digit rebound through $1,300 on 21 Oct). Coverage is mostly price-chasing (top-10 best performer, short liquidations) plus anticipation of the NU7 upgrade with no confirmed date. Buzz is up ~66% vs the prior two days after the run-up: overheat risk, so held at neutral.",
+ "sources": [
+  "https://x.com/i/trending/2113035836950282379",
+  "https://x.com/i/trending/2112946151330918583"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "NU7 upgrade anticipated but undated; Grayscale in-kind creations (21 Oct) already counted last run",
+ "volume": 11780,
+ "buzz_level": 11780,
+ "buzz_change": 1.66,
+ "price_runup_24h_pct": 0.2,
+ "carried_over": false
+}
