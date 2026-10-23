@@ -838,8 +838,8 @@ everything
   exits: 9 pairs, avg time gap 97117s, avg price gap -2.80%, missed moves 43
   entries: 5 pairs, avg time gap 137002s, avg price gap -11.70%, missed moves 139
 midnight_crypto
-  exits: 36 pairs, avg time gap 157859s, avg price gap -3.18%, missed moves 63
-  entries: 24 pairs, avg time gap 341951s, avg price gap +2.48%, missed moves 346
+  exits: 39 pairs, avg time gap 158426s, avg price gap -3.29%, missed moves 62
+  entries: 27 pairs, avg time gap 338655s, avg price gap +1.26%, missed moves 353
 entry_watch
   exits: 31 pairs, avg time gap 109503s, avg price gap -4.01%, missed moves 41
   entries: 8 pairs, avg time gap 143885s, avg price gap +2.59%, missed moves 252
