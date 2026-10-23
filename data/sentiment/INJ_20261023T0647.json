@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "INJ",
+ "score": 0.12,
+ "confidence": 0.45,
+ "summary": "INJ near $8. Partnership with BDACS to use the won-backed KRW1 stablecoin as settlement asset for RWAs on Injective (22 Oct); affiliate holds SEC transfer-agent status; three INJ ETF filings pending; community buyback burns ongoing. Price still pressured.",
+ "sources": [
+  "https://x.com/i/trending/2112579117157949720",
+  "https://x.com/i/trending/2113502085962514891"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Injective-BDACS KRW1 partnership announced 22 Oct",
+ "volume": 12560,
+ "buzz_level": 12560,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": -1.1,
+ "carried_over": false
+}

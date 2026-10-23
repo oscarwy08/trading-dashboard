@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "XRP",
+ "score": 0.08,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.32 (-1.2% 24h). Ripple and Swiss PayFi firm Arf announced revolving RLUSD liquidity on the XRP Ledger for licensed payment firms (Arf ~$10B annual settlement). Utility-positive but indirect for XRP price; mention volume has cooled well below last week's.",
+ "sources": [
+  "https://x.com/i/trending/2113267945447231861"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Ripple-Arf RLUSD liquidity partnership on XRPL (announced 22-23 Oct)",
+ "volume": 48853,
+ "buzz_level": 48853,
+ "buzz_change": 0.71,
+ "price_runup_24h_pct": -1.2,
+ "carried_over": false
+}

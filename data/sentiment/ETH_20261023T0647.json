@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "ETH",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,400 (-1.1% 24h). Spot ETH ETFs saw $110.6M outflows on 22 Oct, mostly BlackRock. Network news is minor (Optimum mump2p propagation layer live on mainnet). Tracks BTC; no ETH-specific bullish catalyst.",
+ "sources": [
+  "https://x.com/i/trending/2113500530332799153",
+  "https://x.com/i/trending/2113337980429484543"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "22 Oct spot ETH ETF outflow $110.6M",
+ "volume": 32338,
+ "buzz_level": 32338,
+ "buzz_change": 0.96,
+ "price_runup_24h_pct": -1.1,
+ "carried_over": false
+}

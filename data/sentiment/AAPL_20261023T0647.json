@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "AAPL",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "AAPL closed at a record $348.22 on 22 Oct (+1.2%) while the Nasdaq fell 2.6% on AI-capex fears; seen as the low-capex safe haven in big tech. Dated event: iPhone Duo foldable launch on 23 Oct. Record-close chatter itself is not counted as news.",
+ "sources": [
+  "https://x.com/i/trending/2113401784047632739",
+  "https://x.com/i/trending/2113469566844297660"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "iPhone Duo foldable launch 23 Oct",
+ "volume": 3028,
+ "buzz_level": 3028,
+ "buzz_change": 0.86,
+ "price_runup_24h_pct": 1.2,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "MSFT",
+ "score": -0.1,
+ "confidence": 0.4,
+ "summary": "No Microsoft-specific news. Big-tech/AI selloff on 22 Oct (Nasdaq -2.6%, Meta -7% on negative free cash flow from AI capex) weighs on hyperscalers; Tom Lee calls a bottom near with 10y yield back under 5%. Sector headwind only.",
+ "sources": [
+  "https://x.com/i/trending/2113469566844297660",
+  "https://x.com/i/trending/2113463851563843929"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none (sector selloff only)",
+ "volume": 2187,
+ "buzz_level": 2187,
+ "buzz_change": 0.83,
+ "price_runup_24h_pct": -2.2,
+ "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "BTC",
+ "score": 0.05,
+ "confidence": 0.55,
+ "summary": "BTC ~$81.7k (-0.9% 24h), holding the $80-81.5k ETF/corporate cost-basis support after yesterday's ~$100B crypto drawdown. US spot BTC ETFs flipped to a $635.5M outflow on 22 Oct (largest since late June; IBIT -$254M, FBTC -$217.5M) after three days of $1B+ inflows. Offsets: hashrate at a 7-month high (~1 ZH/s), talk of rotation from AI stocks into BTC. Fed 27-28 Oct next. Trimmed from 0.08.",
+ "sources": [
+  "https://x.com/i/trending/2113500530332799153",
+  "https://x.com/i/trending/2113328977540477027",
+  "https://x.com/i/trending/2113428903847203183"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "22 Oct US spot BTC ETF net outflow $635.5M (largest since June)",
+ "volume": 84038,
+ "buzz_level": 84038,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": -0.9,
+ "carried_over": false
+}

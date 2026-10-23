@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "MON",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "MON ~$0.0218 (+1.5% 24h). Only news is a Category Labs research draft proposing protocol-level scheduled transactions on Monad (forum proposal, not shipped). Mentions slightly below recent average. Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2113335032437936462"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none (research proposal only)",
+ "volume": 2607,
+ "buzz_level": 2607,
+ "buzz_change": 0.88,
+ "price_runup_24h_pct": 1.7,
+ "carried_over": false
+}

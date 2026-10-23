@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "SOL",
+ "score": 0.2,
+ "confidence": 0.5,
+ "summary": "SOL ~$104 (flat 24h), holding $100-103 support after rejections at $108. Dated catalysts: Alpenglow consensus upgrade activated 21 Oct (finality ~150ms), and J.P. Morgan AM launched tokenized money market funds MONY and JLTXX on Solana on 22 Oct. Some traders (Ansem) turning cautious short-term.",
+ "sources": [
+  "https://x.com/i/trending/2113363401766293926",
+  "https://x.com/i/trending/2112905937057161320",
+  "https://x.com/i/trending/2113401786073542943"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "JPM tokenized MMFs on Solana 22 Oct; Alpenglow live 21 Oct",
+ "volume": 115867,
+ "buzz_level": 115867,
+ "buzz_change": 1.11,
+ "price_runup_24h_pct": -0.2,
+ "carried_over": false
+}

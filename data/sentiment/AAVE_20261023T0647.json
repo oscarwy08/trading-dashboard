@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-23T07:00:00Z",
+ "asset": "AAVE",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "AAVE ~$149 (flat 24h). Aave V4 added seven Coinbase tokenized US stocks (AAPLc, TSLAc, NVDAc etc.) as collateral on Base for 24/7 USDC borrowing (~$9.6M deposited so far), plus Sentora-curated markets on Ethereum V4. Real product launch, small so far.",
+ "sources": [
+  "https://x.com/i/trending/2113393617524166762"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Aave V4 tokenized-stock lending market live on Base (22-23 Oct)",
+ "volume": 3372,
+ "buzz_level": 3372,
+ "buzz_change": 0.73,
+ "price_runup_24h_pct": 0.1,
+ "carried_over": false
+}
