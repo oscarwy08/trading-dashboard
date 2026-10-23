@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-23T20:55:00Z",
+ "asset": "ETH",
+ "score": -0.02,
+ "confidence": 0.4,
+ "summary": "ETH ~$2,400 (+0.8% 24h), defending $2,350-2,400 support inside a $2,350-2,550 range. A dormant 2017 whale moved 3,000 ETH to Kraken (possible sell pressure); CME research frames ETH as a staking infrastructure layer alongside new ETH/BTC ratio futures. Mixed, no clear catalyst. Up slightly from -0.08.",
+ "sources": [
+  "https://x.com/i/trending/2113720973044093040",
+  "https://x.com/i/trending/2113537462350037302",
+  "https://x.com/i/trending/2113711358466490567"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 53500,
+ "buzz_level": 53500,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.8,
+ "carried_over": false
+}

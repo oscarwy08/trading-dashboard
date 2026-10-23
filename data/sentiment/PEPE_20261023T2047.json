@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-23T20:55:00Z",
+ "asset": "PEPE",
+ "score": 0.0,
+ "confidence": 0.3,
+ "summary": "PEPE back above a $2B market cap and the top-100's best gainer today (+10-14% per X recaps; the bot's own price shows +6.4% over 24h). Reasons cited are a chart breakout, whale transfers and a recent Brian Armstrong post: no dated catalyst, so this is price-chasing and not counted as bullish. Mentions roughly flat (~1.03x).",
+ "sources": [
+  "https://x.com/i/trending/2113688923763319020"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 20900,
+ "buzz_level": 20900,
+ "buzz_change": 1.03,
+ "price_runup_24h_pct": 6.4,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-23T20:55:00Z",
+ "asset": "SOL",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "SOL ~$103.6 (+0.5% 24h). Dated institutional news: J.P. Morgan added its tokenized money-market funds (MONY, JLTXX) to Solana, and Securitize-backed tokenized US stocks went live on Solana. Mentions steady (~0.95x). Positive fundamentals, no price chase. Trimmed from 0.20 as the morning's move hasn't followed through.",
+ "sources": [
+  "https://x.com/i/trending/2113363401766293926",
+  "https://x.com/solana/status/2113646520411332817"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "J.P. Morgan tokenized MMFs (MONY, JLTXX) launched on Solana, 23 Oct 2026",
+ "volume": 128000,
+ "buzz_level": 128000,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": 0.5,
+ "carried_over": false
+}

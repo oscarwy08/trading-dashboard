@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-23T20:55:00Z",
+ "asset": "XMR",
+ "score": -0.1,
+ "confidence": 0.35,
+ "summary": "XMR ~$614 (-2.5% 24h). Kraken is limiting some accounts and sending source-of-funds questionnaires to users withdrawing Monero, following earlier regional deposit/withdrawal caps. Exchange-access friction is a mild negative even though the community frames it as proof of privacy demand. Mentions up ~1.2x. Down from 0.05.",
+ "sources": [
+  "https://x.com/i/trending/2113671674948198595"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Kraken compliance reviews and account limits for Monero withdrawers reported 23 Oct 2026",
+ "volume": 3800,
+ "buzz_level": 3800,
+ "buzz_change": 1.17,
+ "price_runup_24h_pct": -2.5,
+ "carried_over": false
+}

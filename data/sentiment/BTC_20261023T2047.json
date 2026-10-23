@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-23T20:55:00Z",
+ "asset": "BTC",
+ "score": 0.06,
+ "confidence": 0.5,
+ "summary": "BTC ~$81.3k, flat over 24h and holding the $80-82k range after Wednesday's tech-led sell-off. New since midday: Nasdaq approved Franklin Templeton's two equity-plus-5%-bitcoin dividend ETFs (FBEQ, FIBT), effective 27 Oct, which reinvest stock dividends into BTC; small but steady future demand. Futures data shows retail mostly absent. Nudged up from 0.03.",
+ "sources": [
+  "https://x.com/i/trending/2113730221656666541",
+  "https://x.com/i/trending/2113587733725692008",
+  "https://x.com/i/trending/2113636465456632240"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Franklin Templeton FBEQ/FIBT bitcoin dividend ETFs approved on Nasdaq, effective 27 Oct 2026",
+ "volume": 85000,
+ "buzz_level": 85000,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": 0.1,
+ "carried_over": false
+}

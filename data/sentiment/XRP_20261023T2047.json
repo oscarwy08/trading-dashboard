@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-23T20:55:00Z",
+ "asset": "XRP",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.31, sitting just under multi-month resistance near $1.32. New dated news: Ripple and Swiss-regulated Arf launched RLUSD-denominated working-capital liquidity for payment firms on the XRP Ledger (Arf settles ~$10B a year). Swell 2026 conference coming up. Mentions are down (~0.8x the last three days), so this isn't hype-driven.",
+ "sources": [
+  "https://x.com/i/trending/2113267945447231861",
+  "https://x.com/i/trending/2113560628635771141"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Ripple x Arf RLUSD liquidity on XRP Ledger announced 23 Oct 2026",
+ "volume": 21400,
+ "buzz_level": 21400,
+ "buzz_change": 0.81,
+ "price_runup_24h_pct": 0.6,
+ "carried_over": false
+}
