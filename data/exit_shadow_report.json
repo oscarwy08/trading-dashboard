@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-23T21:00:20+00:00",
+  "generated": "2026-10-23T22:04:14+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -186,10 +186,10 @@
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 35,
-        "avg_dt_s": 180368.05714285714,
-        "avg_price_pct": -2.84162037548669,
-        "missed": 55
+        "pairs": 36,
+        "avg_dt_s": 175538.19444444444,
+        "avg_price_pct": -2.6763068031858035,
+        "missed": 54
       },
       "entries": {
         "pairs": 10,
