@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-23T11:07:27+00:00",
+  "generated": "2026-10-23T12:12:11+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -3236,6 +3236,13 @@
       "asset": "BTW",
       "price": 1.2883309926431308,
       "reason": "[momentum] DAY score 0.468 >= 0.35; target +12.0% / stop -5.0% (ATR 5.69%); EV +0.60%; 4h +5.1%, 24h +7.3%, EMA6/24 down, RSI 59, no fresh sentiment"
+    },
+    {
+      "ts": "2026-10-23T12:02:09+00:00",
+      "sleeve": "day",
+      "asset": "BTW",
+      "price": 1.3363195335829519,
+      "reason": "[momentum] DAY score 0.678 >= 0.35; target +11.9% / stop -5.0% (ATR 4.75%); EV +0.78%; 4h +2.5%, 24h +4.3%, EMA6/24 up, RSI 51, no fresh sentiment"
     }
   ]
 }

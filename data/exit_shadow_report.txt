@@ -823,6 +823,7 @@ Cycle buys with no shadow entry
   AKE day  2026-10-22T17:10:47+00:00  £0.0219298  [momentum] DAY score 0.757 >= 0.35; target +12.0% / stop -5.0% (ATR 6.83%); EV +0.32%; 4h +1.8%, 24h +12.6%, EMA6/24 up, RSI 73, no fresh sentiment
   AKE day  2026-10-23T07:36:44+00:00  £0.0245166  [momentum] DAY score 0.604 >= 0.35; target +12.0% / stop -5.0% (ATR 5.47%); EV +0.68%; 4h +0.5%, 24h +54.0%, EMA6/24 up, RSI 57, sentiment +0.00 (conf 0.25, weight x0.11)
   BTW day  2026-10-23T10:01:08+00:00  £1.28833  [momentum] DAY score 0.468 >= 0.35; target +12.0% / stop -5.0% (ATR 5.69%); EV +0.60%; 4h +5.1%, 24h +7.3%, EMA6/24 down, RSI 59, no fresh sentiment
+  BTW day  2026-10-23T12:02:09+00:00  £1.33632  [momentum] DAY score 0.678 >= 0.35; target +11.9% / stop -5.0% (ATR 4.75%); EV +0.78%; 4h +2.5%, 24h +4.3%, EMA6/24 up, RSI 51, no fresh sentiment
 
 Per book
 
