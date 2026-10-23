@@ -816,6 +816,7 @@ Cycle buys with no shadow entry
   AKE day  2026-10-22T15:57:44+00:00  £0.0229089  [momentum] DAY score 0.9 >= 0.35; target +12.0% / stop -5.0% (ATR 6.13%); EV +1.05%; 4h +7.6%, 24h +13.4%, EMA6/24 up, RSI 72, no fresh sentiment
   AKE day  2026-10-22T16:39:18+00:00  £0.0217978  [momentum] DAY score 0.675 >= 0.35; target +12.0% / stop -5.0% (ATR 6.99%); EV +0.47%; 4h +1.1%, 24h +9.3%, EMA6/24 up, RSI 68, no fresh sentiment
   AKE day  2026-10-22T17:10:47+00:00  £0.0219298  [momentum] DAY score 0.757 >= 0.35; target +12.0% / stop -5.0% (ATR 6.83%); EV +0.32%; 4h +1.8%, 24h +12.6%, EMA6/24 up, RSI 73, no fresh sentiment
+  AKE day  2026-10-23T07:36:44+00:00  £0.0245166  [momentum] DAY score 0.604 >= 0.35; target +12.0% / stop -5.0% (ATR 5.47%); EV +0.68%; 4h +0.5%, 24h +54.0%, EMA6/24 up, RSI 57, sentiment +0.00 (conf 0.25, weight x0.11)
 
 Per book
 
@@ -838,8 +839,8 @@ everything
   exits: 9 pairs, avg time gap 97117s, avg price gap -2.80%, missed moves 43
   entries: 5 pairs, avg time gap 137002s, avg price gap -11.70%, missed moves 139
 midnight_crypto
-  exits: 39 pairs, avg time gap 158426s, avg price gap -3.29%, missed moves 62
-  entries: 27 pairs, avg time gap 338655s, avg price gap +1.26%, missed moves 353
+  exits: 41 pairs, avg time gap 150944s, avg price gap -3.13%, missed moves 61
+  entries: 29 pairs, avg time gap 338806s, avg price gap +1.70%, missed moves 358
 entry_watch
   exits: 31 pairs, avg time gap 109503s, avg price gap -4.01%, missed moves 41
   entries: 8 pairs, avg time gap 143885s, avg price gap +2.59%, missed moves 252
@@ -860,7 +861,7 @@ day_capital_caution
   entries: 10 pairs, avg time gap 263759s, avg price gap -0.82%, missed moves 248
 partial_take
   exits: 43 pairs, avg time gap 173529s, avg price gap +0.27%, missed moves 69
-  entries: 19 pairs, avg time gap 268313s, avg price gap -1.55%, missed moves 177
+  entries: 20 pairs, avg time gap 287171s, avg price gap -1.33%, missed moves 176
 sent_split
   exits: 33 pairs, avg time gap 133346s, avg price gap -2.17%, missed moves 50
   entries: 12 pairs, avg time gap 225993s, avg price gap -0.27%, missed moves 296
