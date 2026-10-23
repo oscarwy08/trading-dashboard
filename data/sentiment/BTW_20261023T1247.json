@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-23T13:00:00Z",
+ "asset": "BTW",
+ "score": -0.1,
+ "confidence": 0.2,
+ "summary": "BTW ~$1.78 (+9% 24h), extremely volatile (24h range ~$2.0-2.67 per feed). Reportedly listed on OKX on 22 Oct; a trader account with a public short call (from $1.81) frames the move as an engineered squeeze to wipe out shorts, and copy-pasted promo posts expect a final pump then a fall. Mention count can't be measured (ticker clashes with 'btw'). Low confidence, mildly bearish. Held in the Day pot.",
+ "sources": [
+  "https://x.com/ArslanOnChain/status/2113592149237453212",
+  "https://x.com/Wealthfrontiers/status/2113529130897535132"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "22 Oct: OKX listing (reported by one trader account, not independently confirmed)",
+ "volume": 0,
+ "buzz_level": 0,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 8.9,
+ "carried_over": false
+}

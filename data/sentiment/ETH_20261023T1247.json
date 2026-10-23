@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-23T13:00:00Z",
+ "asset": "ETH",
+ "score": -0.08,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,397 (-2.9% 24h), testing the $2,375-2,390 support after a rejection at $2,500; a break could open $2,330 or lower. Whales buying the dip, but a 2017-era wallet sent its full 3,000 ETH (~$7.2M) to a Kraken deposit address today, a likely sale. Optimum's mump2p propagation protocol went live on mainnet (infrastructure, not price-moving). Slightly weaker than this morning's -0.05.",
+ "sources": [
+  "https://x.com/i/trending/2113274914085929469",
+  "https://x.com/i/trending/2113537462350037302",
+  "https://x.com/i/trending/2113337980429484543"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "23 Oct: dormant 2017 wallet moved 3,000 ETH to Kraken deposit address",
+ "volume": 77000,
+ "buzz_level": 77000,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": -2.9,
+ "carried_over": false
+}

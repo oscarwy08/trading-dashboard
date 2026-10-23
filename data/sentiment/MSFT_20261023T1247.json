@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-23T13:00:00Z",
+ "asset": "MSFT",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "MSFT ~$521 pre-market (-2.2% vs a day ago). New today: a peer-reviewed Science study shows Microsoft's MAI-DxO multi-agent system diagnosing 83% of hard NEJM cases vs 36% for doctors with references, with hospital trials planned; IREN also said Microsoft accepted its first liquid-cooled data centre. Positive but not revenue-moving. Sector headwind persists (AI capex worries, hedge-fund shorts at a five-year high). Up from -0.1.",
+ "sources": [
+  "https://x.com/i/trending/2113360225780863387",
+  "https://x.com/i/trending/2113279730132844614",
+  "https://x.com/i/trending/2113593096323948587"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "23 Oct: MAI-DxO diagnosis study published in Science",
+ "volume": 2200,
+ "buzz_level": 2200,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.2,
+ "carried_over": false
+}

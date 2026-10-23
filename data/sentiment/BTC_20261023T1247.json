@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-23T13:00:00Z",
+ "asset": "BTC",
+ "score": 0.03,
+ "confidence": 0.5,
+ "summary": "BTC ~$81.6k (-3% 24h). Bounced off an ~$80.9k intraday low and is holding the $80k floor, but posted its first daily close below the 50-day moving average in two months; traders want a close back above $82k. No new dated event since this morning (22 Oct ETF outflow of $635M already counted). Trimmed from 0.05.",
+ "sources": [
+  "https://x.com/i/trending/2113587733725692008",
+  "https://x.com/i/trending/2113328977540477027"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 150000,
+ "buzz_level": 150000,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": -3.0,
+ "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-23T13:00:00Z",
+ "asset": "AKE",
+ "score": -0.15,
+ "confidence": 0.25,
+ "summary": "AKE +45% in 24h and among Bybit's top perp movers all night. No dated news. X chatter is mostly copy-pasted promo posts calling for 'one final pump to liquidate shorts' before a return to a $10-20M market cap, and one caller notes AKE fell over 23% after its OKX listing. Mentions are cooling (about 0.7x the last three days) after yesterday's spike. Price-chasing, not news; mildly bearish, low confidence. Held in the Day pot.",
+ "sources": [
+  "https://x.com/ArslanOnChain/status/2113592149237453212",
+  "https://x.com/Wealthfrontiers/status/2113529130897535132",
+  "https://x.com/TheHandFx/status/2113601346049921318"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 5700,
+ "buzz_level": 5700,
+ "buzz_change": 0.7,
+ "price_runup_24h_pct": 44.8,
+ "carried_over": false
+}
