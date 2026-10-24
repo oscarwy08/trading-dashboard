@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "WLD",
+ "score": -0.4,
+ "confidence": 0.65,
+ "summary": "WLD ~$0.475, -14% in 24h, lost the $0.50 level. Dated supply catalysts: a ~100M WLD scheduled unlock today, and an institution that also backed Aave moved ~19.7M WLD (~$10m) to exchanges to sell (Lookonchain). Funding flipped negative. Top traders were heavily long into it. Down from 0.05.",
+ "sources": [
+  "https://x.com/detaaqua/status/2113847516609310910",
+  "https://x.com/RoflexCoin/status/2113874713751462155",
+  "https://x.com/pairpetuals/status/2113883888737226986"
+ ],
+ "catalyst_score": -0.5,
+ "catalyst_note": "~100M WLD unlock on 24 Oct plus ~19.7M WLD institutional exchange deposit",
+ "volume": 2500,
+ "buzz_level": 2500,
+ "buzz_change": 0.8,
+ "price_runup_24h_pct": -14.4,
+ "carried_over": false
+}

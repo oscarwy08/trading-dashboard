@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.29, -2.8% from above $1.32 resistance. New: central banks of Malaysia and Thailand joined Singapore's BLOOM cross-border stablecoin initiative, where Ripple is an industry member (small, indirect). Swell 2026 ahead. Otherwise drifting with the risk-off market. Nudged down from 0.10.",
+ "sources": [
+  "https://x.com/i/trending/2113864901546377363",
+  "https://x.com/i/trending/2113557673874805090"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "BNM and Bank of Thailand joined MAS BLOOM initiative (Ripple a member), 24 Oct",
+ "volume": 30000,
+ "buzz_level": 30000,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": -2.8,
+ "carried_over": false
+}

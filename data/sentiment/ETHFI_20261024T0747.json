@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "ETHFI",
+ "score": -0.15,
+ "confidence": 0.45,
+ "summary": "ETHFI ~$0.645, -1.9%. New: Arthur Hayes' Maelstrom sold its ETHFI as part of exiting its entire directional book (ETH, ENA, UNI, PENDLE, AERO too), waiting for an all-clear on macro.",
+ "sources": [
+  "https://x.com/i/trending/2113886476173734217"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Maelstrom sold ETHFI position, announced 24 Oct",
+ "volume": 1200,
+ "buzz_level": 1200,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.9,
+ "carried_over": false
+}

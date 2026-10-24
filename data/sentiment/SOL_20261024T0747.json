@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "SOL",
+ "score": 0.12,
+ "confidence": 0.5,
+ "summary": "SOL ~$102, -2.3% with the market. New: J.P. Morgan brought its MONY and JLTXX tokenized money funds to Solana, and tokenized AAPL/NVDA stocks (Backpack, Securitize) went live for 24/7 trading. Alpenglow (150ms finality) live since 21 Oct. Good fundamentals but macro risk-off dominates. Down from 0.15.",
+ "sources": [
+  "https://x.com/i/trending/2113363401766293926",
+  "https://x.com/i/trending/2113714642845323290",
+  "https://x.com/i/trending/2113625024846553338"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "J.P. Morgan MONY/JLTXX funds launched on Solana; tokenized AAPL/NVDA live",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": -2.3,
+ "carried_over": false
+}

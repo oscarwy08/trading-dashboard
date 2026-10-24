@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "KMNO",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "KMNO ~$0.0435, +12% in 24h while BTC was flat, testing $0.0425 resistance that rejected on 17 and 22 Oct. The move is leverage-driven (Binance open interest +24% in 24h) with no dated news; most posts are price recaps and spammy 'airdrop' bots, not counted as bullish. Mention count normal (~600/day, below last week).",
+ "sources": [
+  "https://x.com/EntitledTrader/status/2113825868648681839",
+  "https://x.com/Apesuperint/status/2113766795479789926"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 600,
+ "buzz_level": 600,
+ "buzz_change": 0.8,
+ "price_runup_24h_pct": 12.4,
+ "carried_over": false
+}

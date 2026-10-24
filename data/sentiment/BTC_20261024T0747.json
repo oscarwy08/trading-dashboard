@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "BTC",
+ "score": 0.0,
+ "confidence": 0.5,
+ "summary": "BTC ~$80.7k, slipped 1.4% overnight and sitting just above the $80k support. New since last night: oil spiked (Brent ~$117) on US-Iran tensions, driving a risk-off week where crypto lost ~$140bn; Arthur Hayes' Maelstrom sold its whole directional book to wait for an all-clear. FOMC 28 Oct and midterms 3 Nov ahead. Cut from 0.06 to neutral.",
+ "sources": [
+  "https://x.com/i/trending/2113867769221427263",
+  "https://x.com/i/trending/2113886476173734217",
+  "https://x.com/i/trending/2113587733725692008"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.4,
+ "carried_over": false
+}

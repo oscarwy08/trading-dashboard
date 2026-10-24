@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "ETH",
+ "score": -0.12,
+ "confidence": 0.55,
+ "summary": "ETH ~$2,376, -1.2% overnight. New: Maelstrom (Arthur Hayes) sold 6,400 ETH (~$15.2m) as part of exiting its whole directional book on macro risk; core devs postponed the Glamsterdam upgrade on the Hoodi testnet (was 26 Oct) after ChainSecurity flagged EIP-8037 contract risks. Mainnet unaffected, but timeline slips. Down from -0.02.",
+ "sources": [
+  "https://x.com/i/trending/2113886476173734217",
+  "https://x.com/i/trending/2113500526587330766",
+  "https://x.com/i/trending/2113867769221427263"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Glamsterdam Hoodi testnet fork postponed from 26 Oct (ACDE #248); Maelstrom sold 6,400 ETH on 24 Oct",
+ "volume": 60000,
+ "buzz_level": 60000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -1.2,
+ "carried_over": false
+}

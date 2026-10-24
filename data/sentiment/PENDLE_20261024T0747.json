@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "PENDLE",
+ "score": -0.15,
+ "confidence": 0.45,
+ "summary": "PENDLE ~$2.01, -3.4%. New: Arthur Hayes' Maelstrom sold its PENDLE alongside ETH, ENA, UNI, ETHFI as it exited its directional book on macro and geopolitical risk; likely weighs on DeFi names short term.",
+ "sources": [
+  "https://x.com/i/trending/2113886476173734217"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Maelstrom sold PENDLE position, announced 24 Oct",
+ "volume": 1500,
+ "buzz_level": 1500,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -3.4,
+ "carried_over": false
+}

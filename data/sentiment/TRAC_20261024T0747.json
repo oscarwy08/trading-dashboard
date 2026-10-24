@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "TRAC",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "TRAC ~$0.41, +8% overnight bouncing off $0.379 support toward $0.42-0.43 resistance, against a red market. No new dated catalyst (DKG v10.0.25 shipped 20 Oct; 361k TRAC staking pool on 5 Nov). Mention count steady ~1,400/day. Mostly price-chasing posts.",
+ "sources": [
+  "https://x.com/habibiCEO_onsol/status/2113804318940017150",
+  "https://x.com/CryptoRazAI/status/2113811032649203795"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 1400,
+ "buzz_level": 1400,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 8.4,
+ "carried_over": false
+}

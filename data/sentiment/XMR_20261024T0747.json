@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-24T06:58:00Z",
+ "asset": "XMR",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "XMR ~$583, -5% after Thursday's 10% surge to ~$612; giving back gains in the risk-off tape. No new dated event since last night. Slightly less negative read than -0.10 as the pullback looks like profit-taking.",
+ "sources": [
+  "https://x.com/i/trending/2113634047066882381",
+  "https://x.com/i/trending/2113867769221427263"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 3500,
+ "buzz_level": 3500,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": -5.0,
+ "carried_over": false
+}
