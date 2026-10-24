@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-24T07:45:48+00:00",
+  "generated": "2026-10-24T08:53:23+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 36,
         "avg_dt_s": 154432.5,
         "avg_price_pct": -5.363242043787622,
-        "missed": 69
+        "missed": 70
       },
       "entries": {
         "pairs": 7,
@@ -201,16 +201,16 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 49,
-        "avg_dt_s": 169972.08163265305,
-        "avg_price_pct": 0.30614762120165595,
+        "pairs": 50,
+        "avg_dt_s": 166576.98,
+        "avg_price_pct": 0.2957719348772587,
         "missed": 68
       },
       "entries": {
-        "pairs": 23,
-        "avg_dt_s": 296076.95652173914,
-        "avg_price_pct": -1.2218529557888007,
-        "missed": 188
+        "pairs": 24,
+        "avg_dt_s": 297834.75,
+        "avg_price_pct": -0.975741911769041,
+        "missed": 187
       }
     },
     {
@@ -2104,6 +2104,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "TRAC",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-24T08:44:31+00:00",
+      "shadow_price": 0.3078997707984885,
+      "trigger": "[burst 4h] stop-loss -2.3% <= -2.2% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [],
@@ -3544,6 +3558,13 @@
       "asset": "AKE",
       "price": 0.025659050064660002,
       "reason": "[momentum] DAY score 0.777 >= 0.35; target +12.0% / stop -5.0% (ATR 6.32%); EV +0.69%; 4h +2.7%, 24h +10.8%, EMA6/24 up, RSI 57, sentiment -0.15 (conf 0.25, weight x0.86)"
+    },
+    {
+      "ts": "2026-10-24T08:42:57+00:00",
+      "sleeve": "day",
+      "asset": "TRAC",
+      "price": 0.31350746453571204,
+      "reason": "[burst 4h] 4h-range break +0.33% (range 3.7%); vol x3.8, RSI 67, BTC 1h -0.20%, 4h -0.26%; confidence 0.58 >= 0.55, EV +0.48% after costs; target +6.8% / stop -2.2% / max 6h"
     }
   ]
 }
