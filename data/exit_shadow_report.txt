@@ -71,7 +71,8 @@ KNTQ risk
 
 TRAC day
   shadow  2026-10-13T10:56:46+00:00  £0.33114  [momentum] stop-loss -3.1% <= -3.0% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-24T09:16:55+00:00  £0.308034  [burst 4h] stop-loss -2.3% <= -2.2% (ATR-scaled); P&L £-0.11
+  cycle was 944409s later, price £-0.0231064 (-6.98%)
 
 TRAC day
   shadow  2026-10-13T12:30:38+00:00  £0.317745  [momentum] stop-loss -3.9% <= -3.6% (ATR-scaled)
@@ -939,7 +940,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 36 pairs, avg time gap 154432s, avg price gap -5.36%, missed moves 70
+  exits: 37 pairs, avg time gap 175783s, avg price gap -5.41%, missed moves 69
   entries: 7 pairs, avg time gap 479826s, avg price gap -11.20%, missed moves 81
 ev_exit
   exits: 32 pairs, avg time gap 148054s, avg price gap -3.07%, missed moves 49
@@ -978,8 +979,8 @@ day_capital_caution
   exits: 36 pairs, avg time gap 175538s, avg price gap -2.68%, missed moves 54
   entries: 10 pairs, avg time gap 263759s, avg price gap -0.82%, missed moves 272
 partial_take
-  exits: 50 pairs, avg time gap 166577s, avg price gap +0.30%, missed moves 68
-  entries: 24 pairs, avg time gap 297835s, avg price gap -0.98%, missed moves 187
+  exits: 51 pairs, avg time gap 181869s, avg price gap +0.07%, missed moves 68
+  entries: 24 pairs, avg time gap 297835s, avg price gap -0.98%, missed moves 189
 sent_split
   exits: 37 pairs, avg time gap 145148s, avg price gap -3.36%, missed moves 50
   entries: 12 pairs, avg time gap 225993s, avg price gap -0.27%, missed moves 306
