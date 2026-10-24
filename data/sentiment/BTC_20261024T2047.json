@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-24T20:58:00Z",
+ "asset": "BTC",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "BTC ~$80.5k, -1.0% in 24h. New since midday: a fast hourly drop took BTC below $80k, with ~$200m liquidated in an hour and $670-800m across the day, tied to US-Iran tension headlines and continued BlackRock ETF outflows; it has bounced back to ~$80.5k. Some large longs (a $36m perp long at $80.4k) are buying the box. Nudged from -0.05 to -0.10.",
+ "sources": [
+  "https://x.com/i/trending/2114040161508159895",
+  "https://x.com/i/trending/2113328977540477027",
+  "https://x.com/i/trending/2114034892350881905"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.0,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-24T20:58:00Z",
+ "asset": "MON",
+ "score": 0.12,
+ "confidence": 0.45,
+ "summary": "MON ~$0.0215, +2.6% in 24h while most alts fell. New: Pump.fun announced on 24 Oct (16:01 UTC) that Monad is live in its app, letting users buy any Monad token straight from USDC with no bridging. Funding-arb posts suggest perps positioning is neutral. Up from 0.0.",
+ "sources": [
+  "https://x.com/Pumpfun/status/2114024480779485287"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "Pump.fun app integration of Monad tokens live 24 Oct 2026",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": 2.6,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-24T20:58:00Z",
+ "asset": "IRYS",
+ "score": -0.25,
+ "confidence": 0.4,
+ "summary": "IRYS ~$0.045, +116% in 24h after a 5,000% 48-hour swing: Binance perps ran from $0.01 to ~$0.50 then fell 84%+ from the peak, with traders calling it a 'crime pump'. The buzz is about the price spike itself, not a dated project event, so it is not counted as bullish. High risk of further unwind.",
+ "sources": [
+  "https://x.com/i/trending/2113759272223784985"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 5200,
+ "buzz_level": 5200,
+ "buzz_change": 1.6,
+ "price_runup_24h_pct": 115.7,
+ "carried_over": false
+}

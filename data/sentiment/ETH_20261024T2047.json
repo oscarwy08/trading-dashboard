@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-24T20:58:00Z",
+ "asset": "ETH",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,344, -1.7% in 24h, lost $2,350 after testing $2,300. New: a $111m 10x long sits ~$37 from liquidation and a whale's ~93k ETH (~$214m) position is at risk below ~$2,256, so a further dip could trigger forced selling. The institution that dumped WLD/AAVE also sent 6,000 ETH (~$14m) to exchanges. Down from -0.08.",
+ "sources": [
+  "https://x.com/i/trending/2114048681041399881",
+  "https://x.com/Altcoin_Bbokun/status/2114068062445953388"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 50000,
+ "buzz_level": 50000,
+ "buzz_change": 0.84,
+ "price_runup_24h_pct": -1.7,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-24T20:58:00Z",
+ "asset": "XRP",
+ "score": 0.08,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.29, -1.2% in 24h, held $1.24-1.25 support during the dip. New: Franklin Templeton issued two batches (~$150m) of tokenized sgBENJI money-fund shares on the XRP Ledger on Thursday 22 Oct, taking its XRPL holdings to ~$200m, second only to RLUSD. Up from 0.05.",
+ "sources": [
+  "https://x.com/i/trending/2113978026677408018",
+  "https://x.com/i/trending/2114048680907129034"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Franklin Templeton issued ~$150m sgBENJI tokenized fund shares on XRPL, 22 Oct 2026",
+ "volume": 30000,
+ "buzz_level": 30000,
+ "buzz_change": 0.71,
+ "price_runup_24h_pct": -1.2,
+ "carried_over": false
+}
