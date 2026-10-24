@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-24T12:55:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "BTC ~$80.7k, -1.2% in 24h, holding the $80-80.5k bid zone. New since this morning: exchanges took in ~32,380 BTC (~$2.6bn) in one day, the largest inflow since April, and US spot ETFs saw another ~$138m of outflows. Analysts see a possible higher low if $80k holds, with longs at risk near $72k. FOMC 28 Oct ahead. Nudged from 0.0 to -0.05.",
+ "sources": [
+  "https://x.com/i/trending/2113963041993670929",
+  "https://x.com/i/trending/2113708365172146687"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.2,
+ "carried_over": false
+}

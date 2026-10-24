@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-24T12:55:00Z",
+ "asset": "ETH",
+ "score": -0.08,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,367, -1.3% in 24h with the market. New since this morning: Optimum's mump2p block-propagation protocol went live on Ethereum, adopted by ether.fi, Blockdaemon, Everstake and Stakefish (~1.4m ETH staked, 2-4x faster block delivery). Small positive against the Maelstrom selling and Glamsterdam testnet delay noted earlier. Nudged from -0.12 to -0.08.",
+ "sources": [
+  "https://x.com/i/trending/2113952303464251715"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "2026-10-24 Optimum mump2p launched on Ethereum mainnet validators (infrastructure upgrade, small)",
+ "volume": 60000,
+ "buzz_level": 60000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.3,
+ "carried_over": false
+}
