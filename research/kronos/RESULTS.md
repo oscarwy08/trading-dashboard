@@ -1,11 +1,12 @@
 # Kronos walk-forward replay — results (evaluation only)
 
-Script: `scripts/kronos_replay.py` (fetch → forecast → daycheck → report). No data, forecasts or weights are committed;
+Script: `research/kronos/kronos_replay.py` (fetch → forecast → daycheck → report). No data, forecasts or weights are committed;
 they live outside the repo (`KRONOS_WORK`, default `/workspace/kronos_eval`). Nothing here is wired into trading.
 
 ## Setup
 - **Model**: Kronos-mini (`NeoQuasar/Kronos-mini` + `Kronos-Tokenizer-2k`, 4.1M params), CPU only. Kronos-small (24.7M) on BTC/ETH/SOL/XRP as a check (see below).
-- **Data**: Binance 1h candles, 20 coins, 240 days (28 Feb – 25 Oct 2026): BTC, ETH, SOL, XRP + Day-pot alts ADA, DOT, NEAR, TIA, STX, STRK, ENA, CRV, QNT, RAY, ZRO, WLD, DOGE, AVAX, LINK, SUI. (AKE, BTW, CARDS, XMR, TRAC, AKT are not on Binance.) Kronos was released in 2025, so the whole window is after its training data.
+- **Data**: Binance public-mirror 1h candles (USDT pairs), 20 coins, 240 days (28 Feb – 25 Oct 2026): BTC, ETH, SOL, XRP + Day-pot alts ADA, DOT, NEAR, TIA, STX, STRK, ENA, CRV, QNT, RAY, ZRO, WLD, DOGE, AVAX, LINK, SUI. (AKE, BTW, CARDS, XMR, TRAC, AKT are not on Binance.) Kronos was released in 2025, so the whole window is after its training data.
+- **Why not Kraken candles**: Kraken's public OHLC endpoint only returns the latest 720 bars (30 days at 1h), too short for an in/out-of-sample split. `kraken_check.py` compares the two over Kraken's 30-day window for BTC, ETH, SOL, XRP, ADA, DOGE, LINK, AVAX, DOT, SUI: hourly-return correlation 0.996–0.999, mean price gap 0.08% (USDT vs USD). So the Binance history works as a stand-in for what the bot sees on Kraken.
 - **Walk-forward**: every 8 hours (fixed UTC grid), Kronos sees only the last 512 closed bars and forecasts the next 4 hourly closes (3 sampled paths averaged, T=1.0, top_p=0.9). 656 forecasts per coin, 13,120 in total.
 - **Split**: in-sample 20 Mar – 7 Jul 2026, out-of-sample 7 Jul – 24 Oct 2026. Kronos is not fitted on this data; the only choice made in-sample is the entry threshold, which is then applied unchanged out-of-sample.
 - **Trade test**: long-only, no shorting. At each grid time buy (equal weight) every coin whose forecast return beats the threshold, hold 1h or 4h, pay 0.5% round trip (the Day book's own trades log 0.39–0.56% costs). Compared with equal-weight buy-and-hold and with 500 random runs taking the same number of entries at the same times.
@@ -44,8 +45,29 @@ Kronos is also biased bullish: about a quarter of all forecasts call for more th
 - a "Kronos > 0.5% cost" filter would have kept 1 trade (NEAR, +£0.09).
 That is far too few trades to show anything, and no separation is visible.
 
-## Kronos-small check
-SMALL_PLACEHOLDER
+## Kronos-small check (BTC, ETH, SOL, XRP; 4h horizon, every 8h, 3 paths; 2,624 forecasts)
+| period | hit-rate | went up | corr | long-only >0.5%: entries / avg net / total | random same entries | buy-and-hold |
+|---|---|---|---|---|---|---|
+| in-sample | 50.0% | 49.1% | +0.055 | 190 / −0.45% / −42.4% | −47.0% | −15.4% |
+| out-of-sample | 49.7% | 49.7% | +0.002 | 198 / −0.47% / −49.4% | −49.9% | +22.3% |
+
+At 1h: hit-rate 54.3% in-sample but 49.5% out-of-sample, correlation +0.067 falling to −0.040. The bigger model's small in-sample tilt does not survive into the later half.
+
+## Longer horizons (Kronos-mini, 10 coins, every 12h, 1 path; 4,370 forecasts per horizon)
+Coins: BTC, ETH, SOL, XRP, ADA, DOGE, LINK, AVAX, DOT, SUI. Held positions do not overlap (12h step).
+
+| horizon | period | hit-rate | went up | corr | long-only >0.5%: entries / avg net / total | random same entries (mean) | beats random | buy-and-hold |
+|---|---|---|---|---|---|---|---|---|
+| 4h | in-sample | 51.3% | 46.0% | +0.031 | 635 / −0.64% / −75.4% | −73.7% | 10% | −20.5% |
+| 4h | out-of-sample | 49.5% | 51.5% | −0.006 | 668 / −0.50% / −62.1% | −60.1% | 26% | +24.9% |
+| 8h | in-sample | 50.1% | 47.0% | −0.030 | 754 / −0.68% / −73.4% | −73.3% | 56% | −20.5% |
+| 8h | out-of-sample | 52.2% | 50.7% | +0.033 | 679 / −0.41% / −62.9% | −59.3% | 18% | +24.9% |
+| 12h | in-sample | 49.9% | 47.9% | −0.004 | 759 / −0.61% / −69.8% | −72.4% | 87% | −20.5% |
+| 12h | out-of-sample | 52.5% | 50.9% | −0.020 | 739 / −0.33% / −59.2% | −54.3% | 15% | +24.9% |
+
+Out-of-sample at the in-sample-chosen 1.5% threshold, 12h: 281 entries, −0.36% per trade, −51.5% vs random −39.9% (beats only 4% of random runs).
+
+SMALL_H12
 
 ## VPS feasibility (measured on this box, 1 CPU thread)
 | | Kronos-mini | Kronos-small |
@@ -53,7 +75,9 @@ SMALL_PLACEHOLDER
 | params | 4.1M | 24.7M |
 | process RAM (torch + model) | ~550–750 MB | ~740 MB+ |
 | CPU per forecast, 512 bars → 4h, 1 path | ~0.26 s | ~0.5–0.6 s (2 threads) |
-| CPU per forecast, 3 paths averaged | ~0.7 s | SMALL_CPU |
+| CPU per forecast, 3 paths averaged, 4h | ~0.7 s | ~2.9 s |
+| CPU per forecast, 1 path, 12h | ~0.5 s | SMALL12_CPU |
+| peak RSS in the replay process | 470 MB (1 path) – 734 MB (3 paths) | ~1.05–1.08 GB |
 | load time | ~6 s (first download), 0.2 s cached | ~6 s |
 
 20 coins once an hour would be about 15 CPU-seconds an hour with mini: the CPU cost is light. The real cost is RAM (about 0.6–0.75 GB resident while it runs) and a CPU torch install (~700 MB on disk). Mini would fit a VPS with ≥ 2 GB free, run as a short separate job, not inside the 5-minute cycle.
@@ -63,8 +87,11 @@ No edge. Over 13,120 walk-forward forecasts, Kronos-mini's direction calls are a
 
 ## Reproduce
 ```
-python3 scripts/kronos_replay.py fetch --coins BTC,ETH,SOL,XRP,ADA --days 240
-python3 scripts/kronos_replay.py forecast --model mini --coins BTC,ETH --threads 1   # one process per coin group
-python3 scripts/kronos_replay.py daycheck --model mini
-python3 scripts/kronos_replay.py report --model mini --horizons 1,4 --cost 0.005
+python3 research/kronos/kronos_replay.py fetch --coins BTC,ETH,SOL,XRP,ADA --days 240
+python3 research/kronos/kronos_replay.py forecast --model mini --coins BTC,ETH --threads 1   # one process per coin group
+python3 research/kronos/kronos_replay.py daycheck --model mini
+python3 research/kronos/kronos_replay.py report --model mini --horizons 1,4 --cost 0.005
+KRONOS_WORK=/workspace/kronos_h12 python3 research/kronos/kronos_replay.py forecast --model mini --coins BTC,ETH --horizon 12 --step 12 --samples 1
+KRONOS_WORK=/workspace/kronos_h12 python3 research/kronos/kronos_replay.py report --model mini --horizons 4,8,12 --step 12
+python3 research/kronos/kraken_check.py   # Binance vs Kraken candle cross-check
 ```
