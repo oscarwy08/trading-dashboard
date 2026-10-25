@@ -1,0 +1,33 @@
+# Risk EV fix. The main book's Risk entry EV is a fixed 3.5% win (the trail lock at the arm) against an
+# ATR-scaled 8% loss at a 50% chance, about -0.95% on every candidate, so it can never clear the 0.3% hurdle,
+# never trades, and never measures itself. On this book each setup starts from a replay of the pot's own
+# entry rules and exits on past prices (scripts/risk_ev_replay.py). Live closes then move p (weight n vs
+# ev_prior_n) and the measured expectancy is blended in, as on the main book. The stop, trail, max hold,
+# confidence threshold and 0.3% hurdle are unchanged.
+#
+# p = share of replayed trades that made money after costs; win / loss = the average price move of those
+# winners / losers before costs (the live round-trip cost is subtracted once). Each row is the WORSE of the
+# two halves (in-sample vs held-out), so a setup only clears the hurdle if it cleared it in both.
+# Replay, 0.5% round trip:
+#   crypto breakout  2025 (in-sample)  n 285  p 0.365  win 11.45  loss 9.74   EV -2.51%
+#                    2026 (held out)   n 276  p 0.478  win 12.13  loss 9.58   EV +0.30%
+#   crypto dip       2025 (in-sample)  n 1744 p 0.401  win 10.76  loss 10.05  EV -2.21%
+#                    2026 (held out)   n 997  p 0.394  win 11.08  loss 9.17   EV -1.69%
+#   crypto control   (no setup, buy once a day, same exits)   2025 EV -2.40%  2026 EV -1.55%
+#   stock breakout   2023-25 (in-sample) n 296 p 0.466 win 16.40 loss 10.01  EV +1.81%
+#                    2026 (held out)     n 85  p 0.435 win 17.87 loss 10.60  EV +1.29%
+#   stock control    2023-25 EV +0.42%  2026 EV -0.44%
+#   stock dip        not replayed (needs intraday stock sessions); keeps the main model, so it does not trade.
+# Crypto: Binance 15-minute bars, 66 coins the RISK screen has scored, 2025-01-01 to 2026-10-24.
+# Stocks: Yahoo daily bars, the 44 RISK stocks, 2023-01-03 to 2026-10-23 (today's hand-picked themes:
+# selection bias, and daily bars only).
+variant_rules:
+  risk_ev_fix: true
+riskpot:
+  ev_prior_empirical:
+    min_n: 30                   # fewer replayed trades than this: that setup keeps the main model
+    breakout:
+      crypto: {p: 0.365, win: 11.45, loss: 9.74, n: 285, period: "2025 in-sample (worse half)"}
+      stock: {p: 0.435, win: 17.87, loss: 10.60, n: 85, period: "2026 held-out (worse half)"}
+    dip:
+      crypto: {p: 0.401, win: 10.76, loss: 10.05, n: 1744, period: "2025 in-sample (worse half)"}

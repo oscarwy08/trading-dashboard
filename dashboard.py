@@ -1043,6 +1043,7 @@ BOOK_MENU = {
     "best_of_plus": "Best of plus trend",
     "trend_carry_unlock": "Trend, funding and unlocks",
     "insider_rs_stocks": "Insider relative strength",
+    "risk_ev_fix": "Risk EV fix",
 }
 _BOOK_NAME = re.compile(r"^[a-z0-9_]+$")
 

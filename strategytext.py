@@ -322,6 +322,8 @@ TWEAKS = [
           tweak="Missing sentiment counts as neutral. A hot run-up is penalised, and a quiet tape can earn a small bonus."),
     _card("best_of", "tweak", "Best of", "never",
           tweak="Sentiment split, the 15-minute entry watch, and the burst runner, together. No other main-rule change."),
+    _card("risk_ev_fix", "tweak", "Risk EV fix", "never",
+          tweak="A Risk entry's expected value starts from a replay of the pot's own setups and exits on past prices, not a 3.5% win and a coin flip."),
 ]
 
 

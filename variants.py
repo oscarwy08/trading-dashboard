@@ -37,6 +37,7 @@ LABELS = {
     "best_of_plus": "Best of plus trend",
     "trend_carry_unlock": "Trend, funding and unlocks",
     "insider_rs_stocks": "Insider relative strength",
+    "risk_ev_fix": "Risk EV fix",
 }
 BLURB = {
     "ev_exit": "EV exit is off. Live expected value rises when the trade falls, so it was selling winners between about +1% and +5%. This book was reset; sells before the reset are not counted. It follows the main book until the upside is taken from the current price and the chance is recomputed.",
@@ -62,6 +63,7 @@ BLURB = {
     "quiet_strength": "Within 10% of the 30-day high, buzz below the median, top quartile of volume over market cap. Sold on a 12% trail or into a hype spike. Held through nights and weekends.",
     "best_of_plus": "Sentiment split, the 15-minute entry watch and the burst runner may use 15% of the book. The other 85% is the BTC / VUSA trend. Nothing flattens at 22:00.",
     "trend_carry_unlock": "Once a week, the strongest of BTC, ETH and SOL above its 50-day average, sized like the vol-target book. Crypto is halved when BTC funding is in the top tenth of the past year or at 25% a year or more. An alt unlocking more than 1% of supply within 30 days is left out; if that feed is missing, only BTC and ETH are held. A resize under 10% of the position is skipped. Stocks follow the vol-sized VUSA trend. Held through nights and weekends. Unlock dates: Data: PatternPlus (https://pattern.plus).",
+    "risk_ev_fix": "Risk only. A Risk entry's expected value starts from a replay of the pot's own breakout and dip rules and its own exits (12% stop, trail from +15%, 7-day hold) on past prices: that setup's hit rate, average win and average loss. Live closes move it as they build. The 0.3% hurdle, the stop, the trail and the confidence threshold are unchanged. The main book still uses a 3.5% win and a 50% chance, which can never clear the hurdle.",
     "insider_rs_stocks": "Once a month, the strongest US and UK names by six-month return. An opportunistic insider buy (not someone who trades that same month in earlier years) tilts the weight. The crypto half stays in cash. Held through nights and weekends.",
 }
 INPUT_STATE = ("risk_screen", "day_excluded", "risk_only", "risk_only_stocks", "gas")
@@ -82,6 +84,7 @@ def rules_of(c):
              no_risk_clock=False,
              day_capital_caution=False, day_caution_raise=0.30,
              risk_ev_legacy_win=False,
+             risk_ev_fix=False,
              partial_take=False, partial_min_gbp=1.0,
              sent_split=False, sent_hot=0.3, sent_overheat=0.10, sent_quiet_bonus=0.05,
              sent_runup_24h_pct=15.0, sent_runup_4h_pct=5.0, sent_buzz_hot=3.0,
@@ -99,11 +102,26 @@ def active(R):
                 or R.get("midnight_crypto") or R.get("entry_watch")
                 or R.get("risk_giveback_15") or R.get("day_trail_arm") or R.get("day_ev_blend")
                 or R.get("no_risk_clock") or R.get("day_capital_caution") or R.get("partial_take")
-                or R.get("sent_split"))
+                or R.get("sent_split") or R.get("risk_ev_fix"))
 
 
 TABLE_BOOKS = ("risk_giveback_15", "day_trail_arm", "day_ev_blend", "no_risk_clock",
-               "day_capital_caution", "partial_take", "sent_split", "best_of")
+               "day_capital_caution", "partial_take", "sent_split", "best_of", "risk_ev_fix")
+
+
+def risk_ev_params(RP, R, setup, klass):
+    """The riskpot dict a Risk entry EV is computed with on this book.
+
+    Main book: RP itself. day_ev_blend: the legacy ATR-scaled win. risk_ev_fix: RP plus the replayed
+    prior for this setup and market (riskpot.empirical_prior); a setup with no prior keeps RP."""
+    if R.get("risk_ev_legacy_win"):
+        return dict(RP, _legacy_arm_win=True)
+    if R.get("risk_ev_fix"):
+        import riskpot
+        prior = riskpot.empirical_prior(RP, setup, klass)
+        if prior:
+            return dict(RP, _ev_prior=prior)
+    return RP
 
 
 def blend_ev(model, n, exp, prior_n=10):

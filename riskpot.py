@@ -139,6 +139,13 @@ def setup_ev(R, conf, atr, rt_cost, ss):
     stop = float(R.get("stop_loss_pct", 12))
     win_prior, loss_prior = float(R.get("ev_win_pct", 12)), float(R.get("ev_loss_pct", 8))
     ref = float(R.get("ev_atr_ref_pct", 4)) or 4.0
+    prior = R.get("_ev_prior")
+    if prior:
+        # risk_ev_fix paper book: the win, the loss and the starting hit rate come from a replay of this pot's own
+        # entry and exit rules on past prices (config riskpot.ev_prior_empirical), not from the 3.5% arm lock and
+        # a 50% coin flip. Live closes still move p (daypot.hit_p, weight n vs ev_prior_n) and the measured
+        # expectancy is still blended in (expected_value). The stop and trail RULES are unchanged.
+        return _empirical_ev(R, prior, conf, rt_cost, ss)
     if R.get("_legacy_arm_win"):
         target = float(R.get("trail_after_pct", 15)) * (1 - float(R.get("trail_pct", 10)) / 100)
         if atr and atr > 0:
@@ -157,6 +164,35 @@ def setup_ev(R, conf, atr, rt_cost, ss):
     p = daypot.hit_p(conf, ss, float(R.get("ev_prior_n", 10)), float(R.get("ev_conf_full_n", 30)))
     ev = daypot.expected_value(dict(p=p, n=n, exp=(ss or {}).get("exp")), win, loss, rt_cost, int(R.get("ev_prior_n", 10)))
     return ev, round(win, 3), round(loss, 3), round(p, 3)
+
+def _empirical_ev(R, prior, conf, rt_cost, ss):
+    """setup_ev for a measured prior: dict(p, win, loss) in % (win and loss are price moves before costs; the
+    live round-trip cost is subtracted once). With no closes p is the replayed hit rate. Confidence moves p
+    around that rate (not around 0.5) only as closes build, the same shrink as daypot.hit_p."""
+    import daypot
+    p0 = max(0.05, min(0.95, float(prior["p"])))
+    win, loss = float(prior["win"]), float(prior["loss"])
+    n = int((ss or {}).get("n") or 0)
+    prior_n, full_n = float(R.get("ev_prior_n", 10)), float(R.get("ev_conf_full_n", 30))
+    c = 0.5 if conf is None else max(0.0, min(1.0, float(conf)))
+    shrink = min(1.0, n / full_n) if full_n else 1.0
+    p_rank = max(0.0, min(1.0, p0 + (c - 0.5) * shrink))
+    wins = (ss or {}).get("wins")
+    p = (wins + prior_n * p_rank) / (n + prior_n) if n and wins is not None else p_rank
+    p = max(0.05, min(0.95, p))
+    ev = daypot.expected_value(dict(p=p, n=n, exp=(ss or {}).get("exp")), win, loss, rt_cost, int(prior_n))
+    return ev, round(win, 3), round(loss, 3), round(p, 3)
+
+def empirical_prior(R, setup, klass):
+    """The replayed prior for one setup and market from riskpot.ev_prior_empirical, or None when there is none
+    (that setup then keeps the main model). A prior with too few replayed trades is not used."""
+    E = (R or {}).get("ev_prior_empirical") or {}
+    row = (E.get(setup or "breakout") or {}).get(klass or "crypto")
+    if not row or int(row.get("n") or 0) < int(E.get("min_n", 30)):
+        return None
+    if row.get("p") is None or row.get("win") is None or row.get("loss") is None:
+        return None
+    return dict(p=float(row["p"]), win=float(row["win"]), loss=float(row["loss"]), n=int(row["n"]))
 
 def threshold(R, dd):
     """Capital-based caution: conf_threshold (0.55) at no drawdown, rising linearly to conf_threshold_at_stop (0.85) as the

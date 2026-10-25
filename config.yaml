@@ -353,7 +353,7 @@ variants:
   run: [ev_exit, review_leftovers, all_combined, burst_runner, everything, midnight_crypto, entry_watch,
         risk_giveback_15, day_trail_arm, day_ev_blend, no_risk_clock, day_capital_caution, partial_take,
         sent_split, best_of, btc_trend, btc_trend_vol, majors_rotation, btc_core_satellite,
-        rs_rotation_veto, quiet_strength, best_of_plus, trend_carry_unlock, insider_rs_stocks,
+        rs_rotation_veto, quiet_strength, best_of_plus, trend_carry_unlock, insider_rs_stocks, risk_ev_fix,
         signal_engine, signal_purge, signal_equal, signal_multitest, signal_news,
         signal_funding_contrarian, signal_funding_carry, signal_basis, signal_dvol, signal_vrp,
         signal_stablecoin, signal_macro, signal_tsmom, signal_gold, signal_onchain, signal_gdelt,
@@ -398,6 +398,7 @@ variant_rules:
   day_capital_caution: false      # paper book: per-account Day loss tightens the hurdle and the size
   day_caution_raise: 0.30
   risk_ev_legacy_win: false       # day_ev_blend sets this so it does not inherit a later Risk-win fix
+  risk_ev_fix: false              # paper book: Risk entry EV starts from a replay of the pot's own rules (riskpot.ev_prior_empirical)
   partial_take: false             # paper book: at the trail arm sell half; buy it back on a dip only if fresh EV clears
   partial_min_gbp: 1              # that half may be £1. risk.min_trade_size stays £5 on every book, including this one
   sent_split: false               # paper book: missing sentiment is neutral; a dip needs the 48h uptrend; a hot run-up is penalised

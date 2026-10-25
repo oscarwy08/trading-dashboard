@@ -1448,7 +1448,7 @@ def _cycle():
     def pack(a, kind, setup, plain, bscore, ok, why, m, minfo, conf, parts, ss, vol, se, mkinfo, at_, block, trend_ok=False):
         q = px[a]
         size0, cap0 = riskpot.size(RP, conf, cash_for("risk", a) - gas_of(q["klass"]), req, mint)
-        rp_ev = dict(RP, _legacy_arm_win=True) if R.get("risk_ev_legacy_win") else RP
+        rp_ev = variants.risk_ev_params(RP, R, setup, q["klass"])
         rtc = rt_cost(a, size0); ev, ev_w, ev_l, ev_p = riskpot.setup_ev(rp_ev, conf, at_, rtc, ss)
         return dict(a=a, kind=kind, setup=setup, acct=acc(a), score=bscore, mom=m, ok=ok, why=why, plain=plain,
                     conf=conf, parts=parts, ev=ev, rt_cost=round(rtc, 3), ev_win=ev_w, ev_loss=ev_l, ev_p=ev_p,
@@ -1489,7 +1489,7 @@ def _cycle():
         conf2 = min(1.0, float(dip_r["conf"] or 0) + 0.12)
         if conf2 < thr_r or q.get("price_usd") is None or float(q["price_usd"]) >= float(dip_r["level"]):
             return
-        ev2, ev_w, ev_l, ev_p = riskpot.setup_ev(dict(RP, _legacy_arm_win=True) if R.get("risk_ev_legacy_win") else RP,
+        ev2, ev_w, ev_l, ev_p = riskpot.setup_ev(variants.risk_ev_params(RP, R, "dip", q["klass"]),
                                                 conf2, at_, chosen["rt_cost"], dss[q["klass"]])
         if ev2 <= evmin_r:
             return
