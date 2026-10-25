@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-25T07:58:00Z",
+ "asset": "XMR",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "XMR ~$609, +4.4% in 24h and one of the strongest large caps on a red tape (Santiment's weekly had XMR +6.6%). Posts say Kraken's co-CEO publicly withdrew the XMR buyer questionnaires on Friday, easing a regulatory worry, and privacy is the only sector above its Oct 2025 peak. Much of the chatter is price-chasing, and longs are paying high funding, so kept modest. Up from -0.05.",
+ "sources": [
+  "https://x.com/agent_pear/status/2114244076283556154",
+  "https://x.com/tokenticker/status/2114175870965571938",
+  "https://x.com/i/trending/2113634047066882381"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Kraken withdrew XMR buyer questionnaires 23 Oct 2026 (reported on X)",
+ "volume": 6000,
+ "buzz_level": 6000,
+ "buzz_change": 1.6,
+ "price_runup_24h_pct": 4.4,
+ "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-25T07:58:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "BTC ~$80.5k, -0.3% in 24h. Overnight it wicked to ~$79.15k on thin weekend liquidity (about $400m of longs liquidated in four hours) and has recovered above $80.5k. Peter Schiff calls a breakdown toward $75k, while others read retail bearishness as a contrarian signal; traders are watching $80k/$76k support into the Fed meeting. Electrum disclosed and patched (v4.8.3) a wallet flaw used in at least one theft, a user-security issue rather than a network one. Eased from -0.10 to -0.05 on the recovery.",
+ "sources": [
+  "https://x.com/i/trending/2114135268827505094",
+  "https://x.com/i/trending/2113708365172146687",
+  "https://x.com/i/trending/2114153700604420321"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.3,
+ "carried_over": false
+}
