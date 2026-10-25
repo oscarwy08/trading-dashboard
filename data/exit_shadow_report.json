@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-25T17:18:49+00:00",
+  "generated": "2026-10-25T18:26:23+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -45,7 +45,7 @@
         "pairs": 8,
         "avg_dt_s": 180365.25,
         "avg_price_pct": 0.5665212272919751,
-        "missed": 155
+        "missed": 156
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 9,
         "avg_dt_s": 273593.8888888889,
         "avg_price_pct": -0.03515224802569329,
-        "missed": 168
+        "missed": 169
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 9,
         "avg_dt_s": 273602.8888888889,
         "avg_price_pct": -0.07473930658738819,
-        "missed": 153
+        "missed": 154
       }
     },
     {
@@ -105,7 +105,7 @@
         "pairs": 34,
         "avg_dt_s": 348648.4705882353,
         "avg_price_pct": 2.769571464793714,
-        "missed": 359
+        "missed": 360
       }
     },
     {
@@ -201,16 +201,16 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 61,
-        "avg_dt_s": 180512.67213114753,
-        "avg_price_pct": -0.12180849325485371,
+        "pairs": 62,
+        "avg_dt_s": 177627.11290322582,
+        "avg_price_pct": -0.11798627460044232,
         "missed": 68
       },
       "entries": {
-        "pairs": 31,
-        "avg_dt_s": 320164.87096774194,
-        "avg_price_pct": -0.788359179369881,
-        "missed": 184
+        "pairs": 32,
+        "avg_dt_s": 320820.40625,
+        "avg_price_pct": -1.0326127624123806,
+        "missed": 183
       }
     },
     {
@@ -365,6 +365,21 @@
     },
     {
       "name": "insider_rs_stocks",
+      "exits": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      },
+      "entries": {
+        "pairs": 0,
+        "avg_dt_s": null,
+        "avg_price_pct": null,
+        "missed": 0
+      }
+    },
+    {
+      "name": "risk_ev_fix",
       "exits": {
         "pairs": 0,
         "avg_dt_s": null,
