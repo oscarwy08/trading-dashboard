@@ -67,7 +67,16 @@ Coins: BTC, ETH, SOL, XRP, ADA, DOGE, LINK, AVAX, DOT, SUI. Held positions do no
 
 Out-of-sample at the in-sample-chosen 1.5% threshold, 12h: 281 entries, −0.36% per trade, −51.5% vs random −39.9% (beats only 4% of random runs).
 
-SMALL_H12
+Kronos-small at longer horizons (BTC, ETH, SOL, XRP, every 12h, 1 path; 1,748 forecasts per horizon):
+
+| horizon | period | hit-rate | went up | corr | long-only >0.5%: entries / avg net / total | random same entries (mean) | buy-and-hold |
+|---|---|---|---|---|---|---|---|
+| 8h | in-sample | 51.0% | 48.1% | +0.006 | 232 / −0.45% / −49.8% | −53.6% | −13.1% |
+| 8h | out-of-sample | 47.4% | 51.9% | −0.120 | 216 / −0.64% / −56.0% | −51.2% | +24.8% |
+| 12h | in-sample | 52.1% | 49.9% | −0.027 | 275 / −0.35% / −55.6% | −56.6% | −13.1% |
+| 12h | out-of-sample | 48.5% | 52.9% | −0.043 | 252 / −0.45% / −51.7% | −52.8% | +24.8% |
+
+Out-of-sample, Kronos-small's direction calls are slightly *worse* than a coin flip and below the share of bars that went up, and its forecast is negatively correlated with what happened.
 
 ## VPS feasibility (measured on this box, 1 CPU thread)
 | | Kronos-mini | Kronos-small |
@@ -76,14 +85,14 @@ SMALL_H12
 | process RAM (torch + model) | ~550–750 MB | ~740 MB+ |
 | CPU per forecast, 512 bars → 4h, 1 path | ~0.26 s | ~0.5–0.6 s (2 threads) |
 | CPU per forecast, 3 paths averaged, 4h | ~0.7 s | ~2.9 s |
-| CPU per forecast, 1 path, 12h | ~0.5 s | SMALL12_CPU |
-| peak RSS in the replay process | 470 MB (1 path) – 734 MB (3 paths) | ~1.05–1.08 GB |
+| CPU per forecast, 1 path, 12h | ~0.5 s | ~2.9 s |
+| peak RSS in the replay process | 470 MB (1 path) – 734 MB (3 paths) | ~650 MB (1 path) – 1.08 GB (3 paths) |
 | load time | ~6 s (first download), 0.2 s cached | ~6 s |
 
 20 coins once an hour would be about 15 CPU-seconds an hour with mini: the CPU cost is light. The real cost is RAM (about 0.6–0.75 GB resident while it runs) and a CPU torch install (~700 MB on disk). Mini would fit a VPS with ≥ 2 GB free, run as a short separate job, not inside the 5-minute cycle.
 
 ## Verdict
-No edge. Over 13,120 walk-forward forecasts, Kronos-mini's direction calls are a coin flip, and its forecast returns do not correlate with realised returns, in-sample or out-of-sample. After costs, long-only entries on its signal lose about as much as random entries at the same times, and far trail buy-and-hold. Out-of-sample does not "clearly help after costs", so no paper book or forecast signal is sketched. Not worth deploying to the VPS for trading signals.
+No edge. Over about 21,900 walk-forward forecasts (Kronos-mini: 20 coins at 1h/4h plus 10 coins at 4h/8h/12h; Kronos-small: 4 majors at 1h/4h/8h/12h), direction calls are a coin flip and forecast returns do not correlate with realised returns, in-sample or out-of-sample. No horizon or model has an out-of-sample hit-rate above 52.5%, and none beats the share of bars that simply went up by more than about 1 point. After costs, long-only entries on its signal lose about as much as random entries at the same times, and far trail buy-and-hold. Out-of-sample does not "clearly help after costs", so no paper book or forecast signal is sketched. Not worth deploying to the VPS for trading signals.
 
 ## Reproduce
 ```
