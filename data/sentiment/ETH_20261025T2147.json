@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-25T21:58:00Z",
+ "asset": "ETH",
+ "score": -0.2,
+ "confidence": 0.55,
+ "summary": "ETH ~$2,339 (flat 24h), sitting on the $2,324 support it has revisited since 2021. Down ~15% over three weeks; open interest fell to ~$11.5bn after deleveraging, a pattern posts compare to July's rebound, but no buyers have shown up yet. Up slightly from -0.25.",
+ "sources": [
+  "https://x.com/i/trending/2114447186750828711"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 52000,
+ "buzz_level": 52000,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": 0.1,
+ "carried_over": false
+}

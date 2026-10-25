@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-25T21:58:00Z",
+ "asset": "BTC",
+ "score": -0.1,
+ "confidence": 0.6,
+ "summary": "BTC ~$80.4k (flat 24h), back above $80k after the Iran-headline liquidation dip. Strive (4th-largest public BTC holder, 36,818 BTC) activated its SATS perpetual swap, read as a sign of more buying; traders watch $77-78k support before this week's Fed meeting. Up from -0.2.",
+ "sources": [
+  "https://x.com/i/trending/2114455101175902297",
+  "https://x.com/i/trending/2114040161508159895"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Strive SATS swap activation 25 Oct (small positive) vs ongoing US-Iran tension selloff (negative)",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 0.92,
+ "price_runup_24h_pct": 0.1,
+ "carried_over": false
+}

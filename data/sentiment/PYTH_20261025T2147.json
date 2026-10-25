@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-25T21:58:00Z",
+ "asset": "PYTH",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "PYTH ~$0.075 (+7% 24h). Pyth Pro added 14 US Treasury yield indices, more commodity futures and 24/7 crypto feeds (announced 23 Oct); the DAO's rule of using all revenue to buy PYTH monthly (8 Oct) is still being cited. Mentions are below the last few days, so the move is not hype-driven.",
+ "sources": [
+  "https://x.com/PythNetwork/status/2113731782525018258",
+  "https://x.com/BSCNWire/status/2114289583945064450"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Pyth Pro US Treasury feeds launched 23 Oct 2026",
+ "volume": 450,
+ "buzz_level": 450,
+ "buzz_change": 0.65,
+ "price_runup_24h_pct": 7.0,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-25T21:58:00Z",
+ "asset": "GRASS",
+ "score": 0.0,
+ "confidence": 0.3,
+ "summary": "GRASS ~$0.708 (+10% 24h), the weekend's biggest mover. No dated news found; posts are price recaps and relative-strength lists, which are not counted as bullish. New file.",
+ "sources": [
+  "https://x.com/AltcoinSherpa/status/2114348025116340477"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 400,
+ "buzz_level": 400,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 10.3,
+ "carried_over": false
+}

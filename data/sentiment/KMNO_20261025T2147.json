@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-25T21:58:00Z",
+ "asset": "KMNO",
+ "score": -0.1,
+ "confidence": 0.4,
+ "summary": "KMNO ~$0.0432 (+8% 24h). An unlock of ~$9.2m (3.9% of circulating supply) is on this week's unlock lists, which is a supply headwind; little else beyond spam airdrop posts. Mentions are small but up on a raw count. Down from +0.05.",
+ "sources": [
+  "https://x.com/PrometeusCT/status/2114373195398529461"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Kamino token unlock ~$9.2m, 3.9% of circulating supply, listed for the week of 26 Oct 2026",
+ "volume": 45,
+ "buzz_level": 45,
+ "buzz_change": 1.45,
+ "price_runup_24h_pct": 8.0,
+ "carried_over": false
+}

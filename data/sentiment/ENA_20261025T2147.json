@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-25T21:58:00Z",
+ "asset": "ENA",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "ENA ~$0.206 (+8% 24h), one of Sunday's top movers. Arthur Hayes' Maelstrom sold two 14m ENA batches on Saturday (part of a ~$28.8m exit tracked by Lookonchain), while USDe went live on OKX's X Layer. Most posts are mover recaps, which are not counted as bullish. New file.",
+ "sources": [
+  "https://x.com/AltcoinView/status/2114411083851080028",
+  "https://x.com/Prompetir/status/2114421974466457908"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Hayes/Maelstrom sold 28m ENA 24 Oct (negative) vs USDe on OKX X Layer (positive)",
+ "volume": 1500,
+ "buzz_level": 1500,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 8.2,
+ "carried_over": false
+}

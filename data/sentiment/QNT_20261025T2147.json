@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-25T21:58:00Z",
+ "asset": "QNT",
+ "score": 0.15,
+ "confidence": 0.4,
+ "summary": "QNT ~$191 (+8% 24h). Posts tie the move to the OCC's final GENIUS Act stablecoin framework and Quant's role in The Clearing House tokenised-deposit project; much of the rest is chart hype and repeated promo posts. New file.",
+ "sources": [
+  "https://x.com/CynLummis/status/2114136331714543955",
+  "https://x.com/FundamentalWolf/status/2113966664010043536"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "OCC GENIUS Act framework final (reported 24-25 Oct 2026); Clearing House tokenised-deposit selection",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.14,
+ "price_runup_24h_pct": 8.0,
+ "carried_over": false
+}

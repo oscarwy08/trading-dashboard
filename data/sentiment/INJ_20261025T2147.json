@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-25T21:58:00Z",
+ "asset": "INJ",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "INJ ~$7.85 (+3.5% 24h). Injective announced Pentiv (linked to Pineapple Financial) will tokenize its real-estate portfolio on Injective, and the team met White House, SEC and CFTC staff. Up from +0.1.",
+ "sources": [
+  "https://x.com/i/trending/2113963039955329501"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Pentiv real-estate tokenization announcement and US regulator meetings (reported 25 Oct 2026)",
+ "volume": 12000,
+ "buzz_level": 12000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 3.5,
+ "carried_over": false
+}
