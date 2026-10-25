@@ -1075,23 +1075,31 @@ def open_ro(path):
     con.row_factory = sqlite3.Row
     return con
 
-def stamp_books(payloads):
-    """Mark each payload with its own identity and the catalog of files actually written.
-    payloads is an insertion-ordered mapping, main first, then variants.run."""
+def stamp_books(payloads, names=None, meta=None):
+    """Mark each payload with its own identity and the catalog of files published.
+    payloads is an insertion-ordered mapping, main first, then variants.run. names is the full published
+    order when some books kept last cycle's file (see plan_exports); those are listed but not rebuilt.
+    meta[name] adds 'exported' (epoch of that file's build) and 'sig' (book fingerprint) to the row."""
+    meta = meta or {}
     catalog = []
-    for name in payloads:
-        catalog.append(dict(name=name, label=book_menu_label(name), file=book_file(name), variant=name != "main"))
+    for name in (names if names is not None else list(payloads)):
+        row = dict(name=name, label=book_menu_label(name), file=book_file(name), variant=name != "main")
+        row.update(meta.get(name) or {})
+        catalog.append(row)
     for name, data in payloads.items():
         row = next(c for c in catalog if c["name"] == name)
         data["book"] = dict(name=name, label=row["label"], variant=row["variant"])
         data["books"] = catalog
     return catalog
 
-def write_book_files(out, payloads):
-    """Write one JSON per book and delete data_<name>.json files that are no longer published."""
+def write_book_files(out, payloads, names=None, meta=None):
+    """Write one JSON per rebuilt book and delete data_<name>.json files that are no longer published.
+    A book in names but not in payloads keeps the file already on disk."""
     out = Path(out)
-    catalog = stamp_books(payloads)
+    catalog = stamp_books(payloads, names, meta)
     for row in catalog:
+        if row["name"] not in payloads:
+            continue
         body = json.dumps(payloads[row["name"]], separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode()
         write_atomic(out / row["file"], body)
     keep = {row["file"] for row in catalog}
@@ -1100,14 +1108,86 @@ def write_book_files(out, payloads):
             p.unlink()
     return catalog
 
-def _variant_payloads(payloads, variant_report=None, strategies=None, engine=None):
+def export_cfg(c=None):
+    """dashboard.book_export in config.yaml. Only the JSON export of paper books is throttled; every
+    variant still trades every cycle, and data.json (main book + the variant comparison) is always rebuilt."""
+    d = ((c if c is not None else cfg()).get("dashboard") or {}).get("book_export") or {}
+    return dict(enabled=bool(d.get("enabled", False)),
+                every_cycles=max(1, int(d.get("every_cycles", 3) or 1)),
+                max_age_min=float(d.get("max_age_min", 45) or 0))
+
+def book_sig(con):
+    """Cheap fingerprint of what a book did: trades, open positions, transfers, loans and its reset stamp.
+    Prices and equity marks move every cycle and are not part of it."""
+    parts = []
+    for q in ("SELECT COUNT(*), COALESCE(MAX(id), 0) FROM trades",
+              "SELECT COUNT(*), ROUND(COALESCE(SUM(qty), 0), 8), ROUND(COALESCE(SUM(cost), 0), 4) FROM positions",
+              "SELECT COUNT(*) FROM transfers",
+              "SELECT COUNT(*), COALESCE(MAX(id), 0) FROM loans",
+              "SELECT value FROM state WHERE key='variant_reset'"):
+        try:
+            r = con.execute(q).fetchone()
+            parts.append(None if r is None else [x for x in r])
+        except sqlite3.Error:
+            parts.append(None)
+    return hashlib.sha1(json.dumps(parts, default=str).encode()).hexdigest()[:16]
+
+def prev_exports(out):
+    """{name: {'exported', 'sig', 'label', 'file'}} from the books catalog in the last published data.json."""
+    try:
+        d = json.loads((Path(out) / "data.json").read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    res = {}
+    gen = d.get("generated")
+    for row in d.get("books") or []:
+        if isinstance(row, dict) and row.get("name"):
+            ex, sig = row.get("exported"), row.get("sig")
+            if "exported" not in row and isinstance(gen, (int, float)):
+                # Catalog written before throttling: every file was rebuilt with that data.json. Its fingerprint
+                # is unknown, so the first cycles rotate through the books instead of rebuilding all of them at once.
+                ex, sig = gen, "?"
+            res[row["name"]] = dict(exported=ex, sig=sig, label=row.get("label"), file=row.get("file"))
+    return res
+
+def plan_exports(names, prev, sigs, now_ep, P, present):
+    """Which variant books to rebuild this cycle. Returns a set of names.
+
+    Always: a book with no earlier export, no file on disk, a changed fingerprint (it traded, a position
+    or loan moved, it was reset), or an export older than max_age_min. Besides those, the
+    ceil(n / every_cycles) books with the oldest export, so every book is rebuilt at least every
+    every_cycles cycles. A stored fingerprint of None or "?" is unknown and does not force a rebuild.
+    Throttling off: every book."""
+    names = list(names)
+    if not P.get("enabled"):
+        return set(names)
+    max_age = float(P.get("max_age_min") or 0) * 60
+    must, rest = set(), []
+    for name in names:
+        p = prev.get(name) or {}
+        ex, old = p.get("exported"), p.get("sig")
+        moved = old not in (None, "?") and old != sigs.get(name)
+        if (not isinstance(ex, (int, float)) or name not in present or moved
+                or (max_age > 0 and now_ep - ex >= max_age)):
+            must.add(name)
+        else:
+            rest.append((ex, names.index(name), name))
+    quota = -(-len(names) // max(1, int(P.get("every_cycles") or 1)))
+    rest.sort()
+    return must | {name for _, _, name in rest[:quota]}
+
+def _variant_payloads(payloads, variant_report=None, strategies=None, engine=None, plan=None):
     """Fill payloads with one build() per existing variant database. A failure skips that book.
 
     variant_report, the strategy rows and the signal view are computed once per cycle.
     Building them again inside every book reopened every database, including the signal books.
+    plan (optional): {'only': set of names to rebuild, 'export': dict stored in each rebuilt payload}.
+    Returns the published variant names in variants.run order: rebuilt books plus those that keep
+    last cycle's file (not in plan['only'] and the file is on disk).
     """
     import variants
     root = variants.dir_path()
+    published = []
     for name in list((cfg().get("variants") or {}).get("run") or []):
         path = root / f"{name}.db"
         if not path.exists():
@@ -1117,16 +1197,61 @@ def _variant_payloads(payloads, variant_report=None, strategies=None, engine=Non
         except ValueError as e:
             print(f"[dashboard] {e}, skipped")
             continue
+        if plan is not None and name not in plan["only"]:
+            published.append(name)
+            continue
         con = None
         try:
             con = open_ro(path)
             payloads[name] = build(con, variant_report, strategies, engine)
+            if plan is not None:
+                payloads[name]["export"] = dict(plan["export"])
+            published.append(name)
         except Exception as e:
             print(f"[dashboard] {name} export skipped: {e}")
             payloads.pop(name, None)
         finally:
             if con is not None:
                 con.close()
+    return published
+
+def _export_plan(out, now_ep):
+    """Throttle plan for the variant JSON files, or None when throttling is off.
+    Returns (plan, meta) where meta[name] is the catalog stamp for every variant that has a database."""
+    P = export_cfg()
+    if not P["enabled"]:
+        return None, {}
+    import variants
+    root = variants.dir_path()
+    names, sigs = [], {}
+    for name in list((cfg().get("variants") or {}).get("run") or []):
+        path = root / f"{name}.db"
+        if not path.exists() or not _BOOK_NAME.fullmatch(name or ""):
+            continue
+        names.append(name)
+        con = None
+        try:
+            con = open_ro(path)
+            sigs[name] = book_sig(con)
+        except Exception:
+            sigs[name] = None
+        finally:
+            if con is not None:
+                con.close()
+    prev = prev_exports(out)
+    present = {n for n in names if (Path(out) / book_file(n)).exists()}
+    # Every file carries the Book menu. A renamed book rebuilds them all. A new book is rebuilt on its own
+    # (no earlier export); a kept file lists it from its next rebuild, within every_cycles cycles.
+    changed_menu = any((prev.get(n) or {}).get("label") not in (None, book_menu_label(n)) for n in names)
+    only = set(names) if changed_menu else plan_exports(names, prev, sigs, now_ep, P, present)
+    meta = {}
+    for n in names:
+        if n in only:
+            meta[n] = dict(exported=now_ep, sig=sigs.get(n))
+        else:
+            meta[n] = dict(exported=(prev.get(n) or {}).get("exported"), sig=(prev.get(n) or {}).get("sig"))
+    export = dict(every_cycles=P["every_cycles"], max_age_min=P["max_age_min"])
+    return dict(only=only, export=export), meta
 
 def write_atomic(path, data):
     tmp = path.with_suffix(path.suffix + ".tmp"); tmp.write_bytes(data); os.replace(tmp, path)
@@ -1143,8 +1268,17 @@ def main():
     engine = _engine_view(con)
     print(f"[timing] dashboard strategies {time.perf_counter() - t_rows:.1f}s", flush=True)
     payloads = {"main": build(con, report, strategies, engine)}
-    _variant_payloads(payloads, report, strategies, engine)
-    catalog = write_book_files(OUT, payloads)
+    now_ep = int(now().timestamp())
+    plan, meta = _export_plan(OUT, now_ep)
+    t_books = time.perf_counter()
+    published = _variant_payloads(payloads, report, strategies, engine, plan)
+    names = ["main"] + published
+    meta = {n: meta[n] for n in published if n in meta}
+    meta["main"] = dict(exported=now_ep)
+    catalog = write_book_files(OUT, payloads, names, meta)
+    kept = [n for n in published if n not in payloads]
+    print(f"[timing] dashboard books {time.perf_counter() - t_books:.1f}s "
+          f"({len(published) - len(kept)} rebuilt, {len(kept)} kept)", flush=True)
     (OUT / ".nojekyll").touch()
     # static assets: copy templates, cache-bust js/css by content hash in index.html
     ver = {}

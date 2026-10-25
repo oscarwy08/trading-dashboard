@@ -364,6 +364,16 @@ variants:
     ev_exit: "2026-10-12-ev-off"
     all_combined: "2026-10-12-ev-off"
     everything: "2026-10-12-ev-off"
+# Dashboard export of the paper books (docs/data_<name>.json, about 10 s and 4 MB each on the VPS).
+# Every variant still trades every cycle, and docs/data.json (main book and the Variants comparison) is rebuilt
+# every cycle. Only a book's own page file is throttled: it is rebuilt when the book traded, a position, loan or
+# transfer moved, or it was reset; otherwise at least every every_cycles cycles (the oldest exports first) and
+# always once its export is max_age_min old. enabled: false rebuilds every book every cycle (the old behaviour).
+dashboard:
+  book_export:
+    enabled: true
+    every_cycles: 3
+    max_age_min: 45
 variant_rules:
   ev_exit: false
   ev_action: false              # off: ev_now rises as the trade falls. Do not sell or tighten on it until the upside

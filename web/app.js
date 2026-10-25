@@ -202,9 +202,17 @@ function table(el, cols, rows, st, onSort, opts = {}) {
 }
 
 /* ---------- header ---------- */
+function exportSlack(d) {
+  const ex = d && d.book && d.book.variant && d.export;
+  const m = ex && Number(ex.max_age_min);
+  return m > 0 ? m * 60 : 0;
+}
 function renderHeader() {
-  const age = Date.now() / 1000 - (D ? D.updated : 0);
-  $('#updated-ago').textContent = D ? `Updated ${ago(D.updated)}` : (loadErr ? 'Data unavailable' : 'Loading…');
+  // A paper book's own file is rebuilt every few cycles (dashboard.book_export); the book still trades every cycle.
+  // Its age gets that window as slack, so a file that is old by design is not shown as stalled.
+  const slack = exportSlack(D);
+  const age = Date.now() / 1000 - (D ? D.updated : 0) - slack;
+  $('#updated-ago').textContent = D ? `Updated ${ago(D.updated)}${slack ? ` (this book's page refreshes about every ${Math.round(slack / 60)} min)` : ''}` : (loadErr ? 'Data unavailable' : 'Loading…');
   $('#live-dot').className = 'dot ' + (!D ? 'bad' : age > 3600 ? 'bad' : age > 1500 ? 'warn' : 'ok');
   const al = $('#alert'); let msg = '';
   const file = bookFile(S.book || 'main') || (S.book || 'data.json');

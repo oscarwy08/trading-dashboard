@@ -51,7 +51,7 @@ site.mkdir()
 (site / "notes.txt").write_text("keep", encoding="utf-8")
 
 seen = []
-def fake_build(con, variant_report=None):
+def fake_build(con, variant_report=None, strategies=None, engine=None):
     path = con.execute("PRAGMA database_list").fetchone()[2] or ""
     if path.endswith("review_leftovers.db"):
         raise RuntimeError("boom")
