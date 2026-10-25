@@ -58,6 +58,9 @@ L = log("exit_watch")
 REST_S = 20
 QUIET_S = 45
 LIVE_S = 60
+POOL_S = 60          # pool quote for a CoinGecko-only coin between cycles, at most this often
+_POOL_LAST = {}
+_CG_LAST = {}         # last CoinGecko quote per coin from this loop (live_ttl_min apart)
 
 
 def _flag_on(name):
@@ -1037,7 +1040,19 @@ def _rest_once(con, c, plan, rate, deliver):
                 import collector
                 usd, src = None, "coingecko"
                 cid = (item.get("route") or {}).get("id") or pricesrc._cgid(con, item["asset"])
-                if cid and pricesrc.allow(con, c, now(), "live"):
+                # The 5-min cycle already prices this coin through CoinGecko. Between those, this loop (every
+                # REST_S) makes at most one CoinGecko call per live_ttl_min per coin and otherwise asks the free
+                # pool quote, at most once per POOL_S, instead of a CoinGecko call on every pass.
+                ttl = pricesrc.cfg_of(c)["live_ttl"]
+                t_now = now()
+                last_cg = _CG_LAST.get(item["asset"])
+                recent = bool(ttl) and (pricesrc.priced_within(con, item["asset"], t_now, ttl)
+                                        or (last_cg is not None and (t_now - last_cg).total_seconds() < ttl * 60))
+                last_pool = _POOL_LAST.get(item["asset"])
+                if recent and last_pool is not None and (t_now - last_pool).total_seconds() < POOL_S:
+                    continue
+                if cid and not recent and pricesrc.allow(con, c, t_now, "live"):
+                    if ttl: _CG_LAST[item["asset"]] = t_now
                     own = collector._BUDGET_CON is None
                     if own: collector.bind_budget(con, c)
                     try:
@@ -1047,6 +1062,7 @@ def _rest_once(con, c, plan, rate, deliver):
                     raw = ((d or {}).get(cid) or {}).get("usd")
                     if raw: usd = float(raw)
                 if not usd:
+                    _POOL_LAST[item["asset"]] = t_now
                     rows = pricesrc.backup_quotes(con, c, [item["asset"]], collector.get, ts, limit=1)
                     row = rows.get(item["asset"]) or {}
                     if row.get("usd"): usd, src = float(row["usd"]), row.get("source") or "geckoterminal"

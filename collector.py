@@ -267,8 +267,13 @@ def price_tracked(con, c, ts, status):
         for sym, row in pricesrc.parse_cg_simple(d, ids, ts).items():
             if _write_crypto(con, ts, sym, row): wrote.add(sym)
         return True
-    _pull(held_ids, "held")
-    _pull(other_ids, "fallback")
+    if held_ids and other_ids:
+        # One simple/price covers both lists (up to 250 ids); the fallback ids were only added because the
+        # fallback was allowed to spend this cycle.
+        _pull(dict(list(held_ids.items()) + list(other_ids.items())), "held")
+    else:
+        _pull(held_ids, "held")
+        _pull(other_ids, "fallback")
     # A Kraken-listed coin the first pass missed is asked again, without CoinGecko.
     # This is the path when the day budget is used up, and when the first ticker call failed.
     gap = [s for s in syms if s not in wrote and (routes.get(s) or {}).get("src") == "kraken" and (routes.get(s) or {}).get("pair")]
@@ -411,25 +416,44 @@ def kyber(con, c, ts, status):
     except Exception as e:
         L.error("kyberswap parse failed: %s %s", e, str(d)[:200]); status["kyberswap"] = "FAILED"
 
+def kraken_fx(d):
+    """GBP per USD from one Kraken Ticker call for XBT/GBP and XBT/USD (no CoinGecko call). None if either is missing."""
+    import pricesrc
+    res = (d or {}).get("result") if isinstance(d, dict) else None
+    got = {}
+    for k, t in (res or {}).items():
+        try: got[pricesrc.kraken_norm(k)] = float(t["c"][0])
+        except (TypeError, ValueError, KeyError, IndexError): continue
+    gbp, usd = got.get("BTCGBP"), got.get("BTCUSD")
+    if not gbp or not usd or gbp <= 0 or usd <= 0: return None
+    return gbp / usd
+
 def fxrate(con, c, ts, status):
-    """USD->GBP: primary = CoinGecko BTC price in GBP / USD (intraday); fallback = open.er-api.com (daily).
-    Both are free, keyless HTTPS. Both are fetched so the stored row carries a cross-check.
-    Fetched at most every fx.refresh_min (default 55) minutes - saves CoinGecko calls; the trader uses the last stored
+    """USD->GBP: primary = BTC on Kraken in GBP / USD (intraday, one public call); backup = the same cross from
+    CoinGecko when Kraken fails; cross-check = open.er-api.com (daily).
+    All are free, keyless HTTPS. The er-api rate is stored beside it as a cross-check.
+    Fetched at most every fx.refresh_min (default 55) minutes; the trader uses the last stored
     rate (new buys are blocked only if it is older than fx.max_age_h)."""
     last = con.execute("SELECT ts FROM fx WHERE pair='USDGBP' AND rate>0 ORDER BY ts DESC LIMIT 1").fetchone()
     if last and datetime.fromisoformat(last[0]) > datetime.fromisoformat(ts) - timedelta(minutes=float(c["fx"].get("refresh_min", 55))):
         status["fx"] = f"ok (last rate {last[0][11:16]} UTC, refreshed hourly)"; return
     cg = er = None
-    d = get(f"{CG}/simple/price", {"ids": "bitcoin", "vs_currencies": "gbp,usd"}, tries=2, purpose="fx")
-    try: cg = d["bitcoin"]["gbp"] / d["bitcoin"]["usd"]
-    except Exception as e: L.warning("fx coingecko parse failed: %s %s", e, str(d)[:200])
+    src_main = "kraken"
+    import pricesrc
+    cg = kraken_fx(get(f"{pricesrc.KRAKEN}/Ticker", {"pair": "XBTGBP,XBTUSD"}, tries=2))
+    if cg is None:
+        # Kraken down: the old CoinGecko cross (one call) is the backup.
+        src_main = "coingecko"
+        d = get(f"{CG}/simple/price", {"ids": "bitcoin", "vs_currencies": "gbp,usd"}, tries=2, purpose="fx")
+        try: cg = d["bitcoin"]["gbp"] / d["bitcoin"]["usd"]
+        except Exception as e: L.warning("fx coingecko parse failed: %s %s", e, str(d)[:200])
     d = get("https://open.er-api.com/v6/latest/USD", tries=2)
     try: er = float(d["rates"]["GBP"]) if d.get("result") == "success" else None
     except Exception as e: L.warning("fx er-api parse failed: %s %s", e, str(d)[:200])
     ok = lambda r: r is not None and 0.4 < r < 1.5          # sanity band for USD->GBP
     cg, er = (cg if ok(cg) else None), (er if ok(er) else None)
-    if cg and er and abs(cg / er - 1) > 0.03: L.warning("fx sources disagree: coingecko %.5f vs er-api %.5f", cg, er)
-    if cg: rate, src, alt, alt_src = cg, "coingecko", er, "open.er-api.com"
+    if cg and er and abs(cg / er - 1) > 0.03: L.warning("fx sources disagree: %s %.5f vs er-api %.5f", src_main, cg, er)
+    if cg: rate, src, alt, alt_src = cg, src_main, er, "open.er-api.com"
     elif er: rate, src, alt, alt_src = er, "open.er-api.com", None, None
     else:
         L.error("fx: all sources failed, keeping last stored rate"); status["fx"] = "FAILED (using last stored rate)"; return

@@ -19,7 +19,9 @@ def cfg_of(c):
     return dict(day_budget=int(d.get("day_budget", 300)), month_budget=int(d.get("month_budget", 9000)),
                 scan_min=float(d.get("scan_every_min", 180)), scan_min_tight=float(d.get("scan_every_min_tight", 360)),
                 fallback_min=float(d.get("fallback_every_min", 15)), fallback_min_tight=float(d.get("fallback_every_min_tight", 60)),
-                tight=float(d.get("tight_pct", 0.70)), reserve=float(d.get("reserve_pct", 0.30)))
+                tight=float(d.get("tight_pct", 0.70)), reserve=float(d.get("reserve_pct", 0.30)),
+                target=float(d.get("day_target") or 0), slack=float(d.get("pace_slack", 25)),
+                live_ttl=float(d.get("live_ttl_min") or 0))
 
 
 def day_key(now):
@@ -57,18 +59,40 @@ def reserve_line(c):
     return P["day_budget"] * (1 - P["reserve"])
 
 
+def day_frac(now):
+    """Share of the UK day already gone, 0..1."""
+    from common import LON
+    n = (now if now.tzinfo else now.replace(tzinfo=timezone.utc)).astimezone(LON)
+    mid = n.replace(hour=0, minute=0, second=0, microsecond=0)
+    return min(1.0, max(0.0, (n - mid).total_seconds() / 86400.0))
+
+
+def pace_line(c, now, purpose="fallback"):
+    """Calls the day may have spent by now, or None when pacing is off (no day_target).
+    Scan, meta, charts, FX and the fallback keep to day_target spread evenly over the UK day, plus pace_slack.
+    A pre-fill quote ('live') keeps to the full day_budget on the same clock. Held coins are not paced.
+    Keeps a busy morning from emptying the evening's budget."""
+    P = cfg_of(c)
+    if P["target"] <= 0 or purpose == "held": return None
+    top = P["day_budget"] if purpose == "live" else P["target"]
+    return top * day_frac(now) + P["slack"]
+
+
 def allow(con, c, now, purpose):
     """False when this CoinGecko call should not be sent.
 
     The last reserve_pct of the day budget is only for simple/price of held coins and armed entries
     ('held') and a quote immediately before a fill ('live'). Scan, category meta, charts/backfill,
     the FX cross-check and the general fallback cannot spend that slice. Nothing is sent once the
-    hard daily or monthly cap is reached."""
+    hard daily or monthly cap is reached. With day_target set, every purpose but 'held' also waits
+    while the day is ahead of pace_line."""
     if con is None or c is None: return True
     P = cfg_of(c)
     today, month = usage(con, now)
     if today >= P["day_budget"] or month >= P["month_budget"]: return False
     if purpose not in RESERVE_OK and today >= reserve_line(c): return False
+    line = pace_line(c, now, purpose)
+    if line is not None and today >= line: return False
     if purpose in ("scan", "meta", "chart", "fx") and tight(con, c, now): return False
     return True
 
@@ -153,16 +177,42 @@ def protected(con, now=None):
     return out
 
 
+def priced_within(con, sym, now, minutes):
+    """True when this coin already has a stored price (any source but backfill) fetched in the last `minutes`.
+    A CoinGecko quote for it would add nothing new, so live quotes and the exit watcher skip the call."""
+    if not minutes or minutes <= 0: return False
+    from common import iso
+    since = iso(now - timedelta(minutes=float(minutes)))
+    try:
+        r = con.execute("""SELECT 1 FROM prices WHERE asset=? AND klass='crypto' AND source!='backfill' AND price>0
+                           AND ts>=? LIMIT 1""", ((sym or "").upper(), since)).fetchone()
+    except Exception:
+        return False
+    return bool(r)
+
+
+def cg_only(con, routes=None):
+    """Tracked coins that only CoinGecko (or a pool backup) can price, as {cg id: symbol}."""
+    routes = routes if routes is not None else routes_of(con)
+    out = {}
+    for s in tracked(con):
+        r = routes.get(s) or {}
+        if r.get("src") != "coingecko": continue
+        cid = r.get("id") or _cgid(con, s)
+        if cid: out.setdefault(cid, s)
+    return out
+
+
 def kraken_norm(name):
-    """XXBTZUSD, XBTUSD and XBT/USD all become BTCUSD. Used only to match a ticker row to the pair we asked for."""
+    """XXBTZUSD, XBTUSD and XBT/USD all become BTCUSD. Used only to match a ticker row to the pair we asked for.
+
+    Kraken's ticker keys its oldest coins as X<asset>Z<fiat> (XXBTZUSD, XXMRZUSD, XETHZUSD) while the
+    altname we ask for is XMRUSD. Only that exact 8-letter form loses its prefixes. Any other name
+    keeps its leading X (XMR, XTZ, XCN, XDC, XPL and XAUT are real tickers)."""
     n = (name or "").upper().replace("/", "").replace("-", "")
+    if len(n) == 8 and n[0] in "XZ" and n[4] in "XZ" and n[5:] in ("USD", "GBP", "EUR"):
+        n = n[1:4] + n[5:]
     for a, b in _FROM: n = n.replace(a, b)
-    for a, b in (("ZUSD", "USD"), ("ZGBP", "GBP"), ("ZEUR", "EUR")):
-        if n.endswith(a):
-            n = n[:-len(a)] + b
-            break
-    if n.startswith("X") and not n.startswith(("XRP", "XLM", "XTZ")):
-        n = n[1:]
     return n
 
 
@@ -239,7 +289,7 @@ def parse_kraken_ticker(data, routes, fx, now_iso):
     res = (data or {}).get("result") or {}
     by = {}
     for sym, r in (routes or {}).items():
-        by[r.get("norm") or kraken_norm(r.get("pair"))] = sym
+        by[kraken_norm(r.get("pair")) if r.get("pair") else r.get("norm")] = sym
     out = {}
     for key, t in res.items():
         if not isinstance(t, dict): continue
@@ -280,7 +330,7 @@ def parse_coinbase_ticker(data, route, fx, now_iso):
 def parse_kraken_ohlc(data, route):
     """[(unix_seconds, close)] from OHLC. The pair key in the result is the internal name, matched loosely."""
     res = (data or {}).get("result") or {}
-    want = (route or {}).get("norm") or kraken_norm((route or {}).get("pair"))
+    want = kraken_norm((route or {}).get("pair")) if (route or {}).get("pair") else (route or {}).get("norm")
     rows = None
     for k, v in res.items():
         if k == "last" or not isinstance(v, list): continue

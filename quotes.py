@@ -59,17 +59,35 @@ def _prefetch_bound(con, c, symbols, px, ts, collector, pricesrc, usd_gbp, to_is
     cg = [s for s in crypto if (routes.get(s) or {}).get("src") == "coingecko"]
     for s in missed:
         if s not in cg: cg.append(s)
+    from common import now as now_fn
+    now = now_fn()
+    ttl = pricesrc.cfg_of(c)["live_ttl"]
+    recent = set()
     for s in cg:
+        # Already priced in the last live_ttl_min (this cycle's collector, or an earlier quote): no new call.
+        if pricesrc.priced_within(con, s, now, ttl):
+            recent.add(s); continue
         cid = (routes.get(s) or {}).get("id") or pricesrc._cgid(con, s)
         if cid: ids.setdefault(cid, s)
     if ids:
+        # The same call also re-prices every other CoinGecko-only coin and stands in for the scheduled
+        # fallback, so the collector does not spend a second call a few minutes later.
+        extra = {}
+        if pricesrc.allow(con, c, now, "fallback"):
+            for cid, s in pricesrc.cg_only(con, routes).items():
+                if cid not in ids: extra[cid] = s
+        ask = dict(list(ids.items()) + list(extra.items()))
+        ask = dict(list(ask.items())[:250])
         d = collector.get(f"{collector.CG}/simple/price",
-                          {"ids": ",".join(list(ids)[:250]), "vs_currencies": "usd", "include_last_updated_at": "true"},
+                          {"ids": ",".join(ask), "vs_currencies": "usd", "include_last_updated_at": "true"},
                           tries=2, purpose="live")
-        for sym, row in pricesrc.parse_cg_simple(d, ids, ts).items():
+        if d and extra:
+            pricesrc.mark(con, "cg_fallback_ts", ts); pricesrc.mark(con, "cg_held_ts", ts)
+        for sym, row in pricesrc.parse_cg_simple(d, ask, ts).items():
             if not collector._write_crypto(con, ts, sym, row): continue
-            _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
-    missed_cg = [s for s in cg if (routes.get(s) or {}).get("src") == "coingecko" and not con.execute(
+            if sym in px:
+                _apply(px, sym, row["usd"], ts, row.get("src_ts") or ts); n += 1
+    missed_cg = [s for s in cg if s not in recent and (routes.get(s) or {}).get("src") == "coingecko" and not con.execute(
         "SELECT 1 FROM prices WHERE ts=? AND asset=?", (ts, s)).fetchone()]
     if missed_cg:
         for sym, row in pricesrc.backup_quotes(con, c, missed_cg, collector.get, ts).items():

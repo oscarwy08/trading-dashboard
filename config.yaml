@@ -28,6 +28,9 @@ coingecko:                      # demo key: 100 calls/min but 10,000/month. Pric
   tight_pct: 0.70               # past this fraction of the day or month budget, drop scan/charts before fallback prices
   reserve_pct: 0.30             # the last 30% of day_budget is only for simple/price of held coins and armed entries.
                                 # Scan, category meta, charts/backfill, the FX cross-check and the general fallback cannot spend it.
+  day_target: 250               # spread over the UK day: by hour h, calls stop (except the held-coin quote) past
+  pace_slack: 25                # day_target x h/24 + pace_slack, so a busy morning cannot empty the evening's budget
+  live_ttl_min: 15              # a pre-fill or exit-watch quote skips CoinGecko when the coin was priced this recently (= fallback_every_min)
 
 dex:                            # free public pool prices for a coin with no Kraken, Coinbase or Kyber route, when CoinGecko is skipped or errors
   max_jump: 2                   # reject a pool price more than this many times the last good price (or below 1/this)
