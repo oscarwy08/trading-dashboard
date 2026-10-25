@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-25T13:56:00Z",
+ "asset": "XRP",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "XRP ~$1.296 (flat 24h) after slipping under $1.30 in the selloff. A viral 'BlackRock $6.5T XRP tokenization deal' claim is being debunked and was used to promote an unrelated token, so it is ignored. Down from +0.08.",
+ "sources": [
+  "https://x.com/i/trending/2114040161508159895",
+  "https://x.com/Jeff58279293/status/2114302887560094160"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Macro selloff 25 Oct; fake BlackRock tokenization claim ignored",
+ "volume": 30000,
+ "buzz_level": 30000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.2,
+ "carried_over": false
+}

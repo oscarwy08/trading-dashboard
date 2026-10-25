@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-25T13:56:00Z",
+ "asset": "WLD",
+ "score": -0.45,
+ "confidence": 0.55,
+ "summary": "WLD ~$0.449 (-6.7% 24h), testing $0.45 support. Worldcoin team wallet moved 10m WLD (~$4.9m) to OKX today, read as potential sell pressure, alongside ~$2.3m of long liquidations. Mentions running below the last three days. Roughly unchanged from -0.4.",
+ "sources": [
+  "https://x.com/CryptoAmb/status/2114342466933424316",
+  "https://x.com/PiEDawg_/status/2114343764470694328",
+  "https://x.com/GMDGlobal/status/2114296727041962273"
+ ],
+ "catalyst_score": -0.35,
+ "catalyst_note": "Team deposit of 10m WLD to OKX on 25 Oct 2026 (on-chain, reported by AMBCrypto)",
+ "volume": 1400,
+ "buzz_level": 1400,
+ "buzz_change": 0.6,
+ "price_runup_24h_pct": -6.7,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-25T13:56:00Z",
+ "asset": "ETH",
+ "score": -0.25,
+ "confidence": 0.55,
+ "summary": "ETH ~$2,330 (-2.2% 24h), dipped under $2,350 in the same Iran-headline liquidation wave. Optimum's faster-block protocol launch on mainnet is a minor positive but not price-moving. Down from -0.15.",
+ "sources": [
+  "https://x.com/i/trending/2114040161508159895",
+  "https://x.com/i/trending/2114215876014588129"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Macro selloff 25 Oct; Optimum mump2p mainnet launch (minor)",
+ "volume": 55000,
+ "buzz_level": 55000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.2,
+ "carried_over": false
+}

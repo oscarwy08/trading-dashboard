@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-25T13:56:00Z",
+ "asset": "SOL",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "SOL ~$100.8 (-1.9% 24h), briefly below $100 in the weekend liquidation wave. No SOL-specific news. Down from +0.12.",
+ "sources": [
+  "https://x.com/i/trending/2114040161508159895"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Macro selloff 25 Oct",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.9,
+ "carried_over": false
+}

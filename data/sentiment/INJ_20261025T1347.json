@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-25T13:56:00Z",
+ "asset": "INJ",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "INJ ~$7.66 (-1.1% 24h). Community posts note USDC on Injective up 43% in a month to ~$16.5m and possible further stablecoin inflows; nothing dated or official. Slightly down from +0.12.",
+ "sources": [
+  "https://x.com/Uwakmfonsam45/status/2114307053162246300"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 12000,
+ "buzz_level": 12000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.1,
+ "carried_over": false
+}

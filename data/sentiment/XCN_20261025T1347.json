@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-25T13:56:00Z",
+ "asset": "XCN",
+ "score": 0.0,
+ "confidence": 0.35,
+ "summary": "XCN ~$0.0041 (+3.8% 24h) with a sharp intraday impulse (+10% on Bybit, volume ~9x, RSI 83). Posts are scanner and leaderboard recaps only; no news or catalyst found. Not counted as bullish. Mentions are below their three-day average.",
+ "sources": [
+  "https://x.com/Neon_Unlimited/status/2114329856594821267",
+  "https://x.com/cryptolevier/status/2114324890215919722"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 135,
+ "buzz_level": 135,
+ "buzz_change": 0.8,
+ "price_runup_24h_pct": 3.8,
+ "carried_over": false
+}

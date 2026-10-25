@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-25T13:56:00Z",
+ "asset": "MON",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "MON ~$0.0209 (-2% 24h). Monad went live on the Pump.fun app on 24 Oct, driving memecoin activity on the chain, but price has not followed and posts flag the large ~16.6% supply cliff unlock on 24 Nov. Down from +0.12.",
+ "sources": [
+  "https://x.com/monad/status/2114024397887729753",
+  "https://x.com/Nasim2093/status/2114347804021903718"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Pump.fun integration live 24 Oct (positive) offset by 24 Nov cliff unlock of ~16.6% supply (negative)",
+ "volume": 110,
+ "buzz_level": 110,
+ "buzz_change": 1.15,
+ "price_runup_24h_pct": -2.0,
+ "carried_over": false
+}

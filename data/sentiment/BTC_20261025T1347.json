@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-25T13:56:00Z",
+ "asset": "BTC",
+ "score": -0.2,
+ "confidence": 0.6,
+ "summary": "BTC ~$80.2k (-1% 24h) after briefly breaking below $80k for the first time in over a month on reports of US military readiness against Iran; over $200m of leveraged longs liquidated within an hour. Macro-driven risk-off, not a crypto-specific failure. Down from -0.05.",
+ "sources": [
+  "https://x.com/i/trending/2114040161508159895"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "Weekend selloff tied to US-Iran tensions and US diplomat withdrawals from the Middle East (25 Oct 2026, X news summary)",
+ "volume": 76000,
+ "buzz_level": 76000,
+ "buzz_change": 0.89,
+ "price_runup_24h_pct": -1.0,
+ "carried_over": false
+}
