@@ -119,7 +119,7 @@ Each account divides its funds across three pots with distinct strategies:
 ### Data Sources
 - **Crypto Prices**: Kraken and Coinbase public markets when the coin is listed (GBP pairs converted with the stored FX rate), KyberSwap for Monad tokens, CoinGecko only for the rest and for the occasional top-300 screen
 - **Stock Prices**: Yahoo Finance (US, LSE, ASX tickers)
-- **FX Rates**: USD→GBP conversion (CoinGecko derived + open.er-api.com fallback)
+- **FX Rates**: USD→GBP conversion (Kraken BTC GBP/USD, CoinGecko cross only if Kraken fails, open.er-api.com cross-check)
 - **Gas Estimates**: Monad RPC (eth_gasPrice)
 - **Sentiment**: Owner's AI assistant (Grok Bot) scores ~3x daily from X/news analysis
 
