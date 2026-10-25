@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-25T07:58:00Z",
+ "asset": "IRYS",
+ "score": -0.4,
+ "confidence": 0.45,
+ "summary": "IRYS ~$0.039, -52% in 24h and about -68% from its squeeze peak, with a further -24% hourly dump around 01:00 UTC. Posts point to a scheduled unlock of ~77.6m IRYS (about 3.9% of float) due today, 25 Oct, on top of concentrated holdings and fading open interest after ~$55m of short liquidations drove the pump. Buzz is still elevated but bearish. Down from -0.25.",
+ "sources": [
+  "https://x.com/shelleymaeph/status/2114167897186853300",
+  "https://x.com/xdecow/status/2114161735653359684",
+  "https://x.com/babaugaa/status/2114183627567411523"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Token unlock of ~77.6m IRYS scheduled 25 Oct 2026 (reported on X, not verified on an official schedule)",
+ "volume": 8000,
+ "buzz_level": 8000,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": -52.3,
+ "carried_over": false
+}

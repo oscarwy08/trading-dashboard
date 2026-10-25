@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-25T07:58:00Z",
+ "asset": "ETH",
+ "score": -0.15,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,343, -1.4% in 24h, lagging BTC. New since last night: Arthur Hayes said Maelstrom sold its directional book, including 6,400 ETH ($15.2m), citing macro and geopolitical risk; a $111m 10x long and $214m of whale longs sit close to liquidation near $2,226-2,300, which adds downside risk if support breaks. Offsetting: staking hit a record ~36% of supply (44.1m ETH) with a small exit queue. Held at -0.15.",
+ "sources": [
+  "https://x.com/i/trending/2113886476173734217",
+  "https://x.com/i/trending/2114048681041399881",
+  "https://x.com/i/trending/2114100473812685283"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 55000,
+ "buzz_level": 55000,
+ "buzz_change": 0.98,
+ "price_runup_24h_pct": -1.4,
+ "carried_over": false
+}

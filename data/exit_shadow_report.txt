@@ -944,49 +944,49 @@ main
   entries: 7 pairs, avg time gap 479826s, avg price gap -11.20%, missed moves 81
 ev_exit
   exits: 32 pairs, avg time gap 148054s, avg price gap -3.07%, missed moves 49
-  entries: 12 pairs, avg time gap 270614s, avg price gap -1.68%, missed moves 315
+  entries: 13 pairs, avg time gap 282899s, avg price gap +0.88%, missed moves 314
 review_leftovers
   exits: 13 pairs, avg time gap 108006s, avg price gap -4.06%, missed moves 41
-  entries: 5 pairs, avg time gap 136980s, avg price gap -11.62%, missed moves 157
+  entries: 6 pairs, avg time gap 140409s, avg price gap -5.26%, missed moves 156
 all_combined
   exits: 13 pairs, avg time gap 107975s, avg price gap -4.11%, missed moves 43
-  entries: 5 pairs, avg time gap 136994s, avg price gap -11.61%, missed moves 171
+  entries: 6 pairs, avg time gap 140421s, avg price gap -5.29%, missed moves 170
 burst_runner
   exits: 32 pairs, avg time gap 159401s, avg price gap -3.68%, missed moves 55
-  entries: 10 pairs, avg time gap 210243s, avg price gap -2.84%, missed moves 264
+  entries: 11 pairs, avg time gap 230250s, avg price gap +0.30%, missed moves 263
 everything
   exits: 13 pairs, avg time gap 107989s, avg price gap -4.11%, missed moves 43
-  entries: 5 pairs, avg time gap 137002s, avg price gap -11.70%, missed moves 156
+  entries: 6 pairs, avg time gap 140427s, avg price gap -5.35%, missed moves 155
 midnight_crypto
-  exits: 51 pairs, avg time gap 138805s, avg price gap -3.21%, missed moves 61
-  entries: 30 pairs, avg time gap 340612s, avg price gap +2.68%, missed moves 359
+  exits: 53 pairs, avg time gap 153562s, avg price gap -3.37%, missed moves 61
+  entries: 32 pairs, avg time gap 328456s, avg price gap +3.15%, missed moves 360
 entry_watch
   exits: 35 pairs, avg time gap 124623s, avg price gap -5.16%, missed moves 41
-  entries: 8 pairs, avg time gap 143885s, avg price gap +2.59%, missed moves 268
+  entries: 9 pairs, avg time gap 175713s, avg price gap +5.79%, missed moves 267
 risk_giveback_15
   exits: 35 pairs, avg time gap 172270s, avg price gap -2.64%, missed moves 53
-  entries: 11 pairs, avg time gap 212131s, avg price gap -2.86%, missed moves 328
+  entries: 12 pairs, avg time gap 230315s, avg price gap -0.01%, missed moves 327
 day_trail_arm
   exits: 31 pairs, avg time gap 161322s, avg price gap -3.53%, missed moves 36
-  entries: 15 pairs, avg time gap 303690s, avg price gap -1.75%, missed moves 409
+  entries: 16 pairs, avg time gap 311605s, avg price gap +0.32%, missed moves 408
 day_ev_blend
   exits: 8 pairs, avg time gap 632s, avg price gap -0.24%, missed moves 27
   entries: 0 pairs, avg time gap n/a, avg price gap n/a, missed moves 31
 no_risk_clock
   exits: 35 pairs, avg time gap 172291s, avg price gap -2.64%, missed moves 53
-  entries: 10 pairs, avg time gap 168279s, avg price gap -1.94%, missed moves 323
+  entries: 11 pairs, avg time gap 192103s, avg price gap +1.09%, missed moves 322
 day_capital_caution
   exits: 36 pairs, avg time gap 175538s, avg price gap -2.68%, missed moves 54
-  entries: 10 pairs, avg time gap 263759s, avg price gap -0.82%, missed moves 272
+  entries: 11 pairs, avg time gap 269460s, avg price gap +2.11%, missed moves 271
 partial_take
-  exits: 56 pairs, avg time gap 177003s, avg price gap -0.10%, missed moves 68
-  entries: 27 pairs, avg time gap 289318s, avg price gap -0.84%, missed moves 188
+  exits: 57 pairs, avg time gap 173912s, avg price gap -0.11%, missed moves 68
+  entries: 29 pairs, avg time gap 294733s, avg price gap +0.18%, missed moves 186
 sent_split
   exits: 37 pairs, avg time gap 145148s, avg price gap -3.36%, missed moves 50
-  entries: 12 pairs, avg time gap 225993s, avg price gap -0.27%, missed moves 306
+  entries: 13 pairs, avg time gap 241712s, avg price gap +2.16%, missed moves 305
 best_of
   exits: 36 pairs, avg time gap 16046s, avg price gap -0.18%, missed moves 8
-  entries: 7 pairs, avg time gap 52966s, avg price gap +1.93%, missed moves 219
+  entries: 8 pairs, avg time gap 100139s, avg price gap +5.65%, missed moves 218
 btc_trend
   exits: no shadow rows
   entries: no shadow rows
