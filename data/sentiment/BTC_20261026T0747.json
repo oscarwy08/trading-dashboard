@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "BTC",
+ "score": -0.1,
+ "confidence": 0.6,
+ "summary": "BTC ~$79.9k (-0.8% 24h), hovering near $80k after the weekend Iran-headline flush. Strive keeps signalling more buys and US stock futures opened green, but traders are cautious into Wednesday's Fed decision (94.5% hold priced) and Chamath's AI/quantum warning got wide airtime. Unchanged at -0.1 on fresh news.",
+ "sources": [
+  "https://x.com/i/trending/2114040161508159895",
+  "https://x.com/i/trending/2114455101175902297"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "FOMC decision 28 Oct pending; no new dated BTC-specific event",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": -0.8,
+ "carried_over": false
+}

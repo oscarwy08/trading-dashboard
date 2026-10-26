@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "QNT",
+ "score": 0.1,
+ "confidence": 0.35,
+ "summary": "QNT ~$193 (+5% 24h, +7-12% over the weekend). Mentions roughly doubled vs its 3-day average, but most posts are top-gainer lists; the underlying story is still the GENIUS Act framework / tokenised deposit tie-in from last week. Down from +0.15.",
+ "sources": [
+  "https://x.com/TradeApologist/status/2114507427064299845"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none new",
+ "volume": 600,
+ "buzz_level": 600,
+ "buzz_change": 2.0,
+ "price_runup_24h_pct": 5.1,
+ "carried_over": false
+}

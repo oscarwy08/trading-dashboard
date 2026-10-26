@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.28 (-1.8% 24h). Ripple's Swell conference runs 27-29 Oct in New York with subway-wide XRP branding and Garlinghouse appearances; holders talk up utility, but rising exchange reserves and whale selling weigh. Up from -0.1.",
+ "sources": [
+  "https://x.com/i/trending/2114612796486754327",
+  "https://x.com/i/trending/2114558546943820185"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Ripple Swell 2026, 27-29 Oct, New York",
+ "volume": 30000,
+ "buzz_level": 30000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.8,
+ "carried_over": false
+}

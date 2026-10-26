@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "MSFT",
+ "score": 0.05,
+ "confidence": 0.3,
+ "summary": "MSFT reports after the close on Wed 28 Oct, same day as the Fed. US futures opened green Sunday night (Nasdaq +0.7%); focus is AI capex and Azure growth, with an Apollo note arguing AI payoff is concentrated in big tech. New file.",
+ "sources": [
+  "https://x.com/i/trending/2114432803248959935",
+  "https://x.com/i/trending/2114487860556362239"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Earnings 28 Oct after close (pending)",
+ "volume": 2000,
+ "buzz_level": 2000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

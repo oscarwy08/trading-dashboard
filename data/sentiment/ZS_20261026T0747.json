@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "ZS",
+ "score": 0.05,
+ "confidence": 0.3,
+ "summary": "ZS ~$255, up ~23% last week on heavy options flow after its earnings call; analysts flag 52x earnings and 17% guided growth and suggest waiting for a pullback. Already ran hard. Down from +0.1.",
+ "sources": [
+  "https://x.com/SyntheticYields/status/2114550369628078405",
+  "https://x.com/BenBSP/status/2114006743227535525"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none new (post-earnings run)",
+ "volume": 300,
+ "buzz_level": 300,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": 7.3,
+ "carried_over": false
+}

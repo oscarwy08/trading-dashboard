@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "AAPL",
+ "score": 0.1,
+ "confidence": 0.3,
+ "summary": "AAPL: reports say Apple unveils touch-screen OLED MacBook Pros (M5 Pro/Max) plus a new iMac and iPad mini on 28 Oct. US futures green into the week. New file.",
+ "sources": [
+  "https://x.com/i/trending/2114372943488917789"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Product launch expected 28 Oct",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

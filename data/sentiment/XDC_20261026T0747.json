@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "XDC",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "XDC ~$0.0326 (+0.8% 24h, after a -5% day). A UNESCAP database entry lists XDC alongside Ethereum and Polygon for Singapore TradeTrust's China-Tanzania e-bill-of-lading pilot; offset by the Globiance MAS/SFC investor-alert dispute. Mentions down. New file.",
+ "sources": [
+  "https://x.com/Tokenicer/status/2114208529871696333",
+  "https://x.com/Mirako1110Xdc/status/2114575673713136011"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "UNESCAP listing of XDC for TradeTrust eBL pilot (seen 25 Oct)",
+ "volume": 850,
+ "buzz_level": 850,
+ "buzz_change": 0.75,
+ "price_runup_24h_pct": 0.8,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "ENA",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "ENA ~$0.205 (+6% 24h, top-100 leader on the week). Investor unlocks finished 5 Oct and the fee switch is approved, but buybacks only start once USDe reaches $7.5bn (now ~$4.6bn). Much of the chatter is gainer recaps after the run. Up from 0.",
+ "sources": [
+  "https://x.com/Ucan_Coin/status/2113978062278730232",
+  "https://x.com/bayramrozy/status/2114402163610792275"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Investor unlocks completed 5 Oct; fee-switch buyback approved (triggers at USDe $7.5bn)",
+ "volume": 1800,
+ "buzz_level": 1800,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": 6.2,
+ "carried_over": false
+}

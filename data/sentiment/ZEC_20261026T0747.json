@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "ZEC",
+ "score": 0.25,
+ "confidence": 0.45,
+ "summary": "ZEC ~$1,198 (flat 24h after +7% on Saturday). Grayscale's Zcash ETF took $41.1m of inflows last week, its best since mid-September, and the NU7 upgrade (25s blocks) is scheduled for 5 Nov. New file.",
+ "sources": [
+  "https://x.com/i/trending/2114413704917946495"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Grayscale ZEC ETF $41.1m weekly inflow; NU7 upgrade 5 Nov 2026",
+ "volume": 5800,
+ "buzz_level": 5800,
+ "buzz_change": 0.92,
+ "price_runup_24h_pct": 0.5,
+ "carried_over": false
+}

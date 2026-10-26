@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "NOW",
+ "score": 0.0,
+ "confidence": 0.25,
+ "summary": "NOW reports Wednesday 28 Oct alongside Microsoft and Alphabet; no other fresh news. New file.",
+ "sources": [
+  "https://x.com/i/trending/2114432803248959935"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Earnings 28 Oct (pending)",
+ "volume": 150,
+ "buzz_level": 150,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

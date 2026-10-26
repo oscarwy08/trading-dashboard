@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "WLD",
+ "score": -0.5,
+ "confidence": 0.55,
+ "summary": "WLD ~$0.435 (-6% 24h). On-chain trackers (Lookonchain, Ember) report a long-dormant institution that backed Worldcoin and Aave moved ~16.1m WLD to exchanges in a day and may have sold ~35.1m WLD over two days. Down from -0.45.",
+ "sources": [
+  "https://x.com/BSCNWire/status/2114531416801472887",
+  "https://x.com/cabinet963/status/2114567662269612351"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Institutional holder moved/sold ~35.1m WLD to exchanges 24-26 Oct (on-chain)",
+ "volume": 1600,
+ "buzz_level": 1600,
+ "buzz_change": 0.67,
+ "price_runup_24h_pct": -6.1,
+ "carried_over": false
+}

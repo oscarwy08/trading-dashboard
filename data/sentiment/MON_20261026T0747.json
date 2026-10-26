@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T07:58:00Z",
+ "asset": "MON",
+ "score": -0.05,
+ "confidence": 0.35,
+ "summary": "MON ~$0.0216 (+1% 24h), well off its $0.036 high and testing $0.020-0.021 support. Feed is mostly airdrop/contract spam; holders note the first major unlock is ~30 days out (late Nov). Down from +0.05.",
+ "sources": [
+  "https://x.com/ChaosWalk3r/status/2114389276074905993",
+  "https://x.com/SiyamAhmed117/status/2114573305797861429"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "First major Monad token unlock ~late Nov 2026 (about 30 days away)",
+ "volume": 105,
+ "buzz_level": 105,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.0,
+ "carried_over": false
+}
