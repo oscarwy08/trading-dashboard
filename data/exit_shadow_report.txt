@@ -1161,7 +1161,7 @@ insider_rs_stocks
   exits: no shadow rows
   entries: no shadow rows
 risk_ev_fix
-  exits: 8 pairs, avg time gap 1204s, avg price gap -1.46%, missed moves 0
+  exits: 9 pairs, avg time gap 1070s, avg price gap -1.35%, missed moves 0
   entries: 1 pairs, avg time gap 1169s, avg price gap +3.31%, missed moves 19
 signal_engine
   exits: no shadow rows

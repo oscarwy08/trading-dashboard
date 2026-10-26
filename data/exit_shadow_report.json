@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-26T19:53:20+00:00",
+  "generated": "2026-10-26T20:53:55+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -381,9 +381,9 @@
     {
       "name": "risk_ev_fix",
       "exits": {
-        "pairs": 8,
-        "avg_dt_s": 1203.75,
-        "avg_price_pct": -1.4595910345498855,
+        "pairs": 9,
+        "avg_dt_s": 1069.6666666666667,
+        "avg_price_pct": -1.346969096416936,
         "missed": 0
       },
       "entries": {
