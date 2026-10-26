@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-26T21:58:00Z",
+ "asset": "INJ",
+ "score": 0.2,
+ "confidence": 0.5,
+ "summary": "INJ ~$8.02 (+1.9% 24h). Injective launched the Super Intelligence Compute Index ($SICI), on-chain perps on NVIDIA GPU rental prices (H100 40%, B200 25%) with up to 10x leverage, extending its AI-markets push. Product launch is modestly positive; holds at 0.2.",
+ "sources": [
+  "https://x.com/i/trending/2114759232000086030"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "SICI GPU-compute index perps launched 26 Oct",
+ "volume": 12000,
+ "buzz_level": 12000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.9,
+ "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-26T21:58:00Z",
+ "asset": "BTC",
+ "score": 0.0,
+ "confidence": 0.6,
+ "summary": "BTC ~$80.0k (-0.3% 24h), holding the $80k support into Wednesday's FOMC decision. New since midday: Galaxy Research told clients the bear market bottomed in June ($76.5k) and called it an attractive time to accumulate; 7-day hashrate back above 1 ZH/s for the first time since March. Ansem and others still warn of breakdown risk before FOMC/earnings. Nudged from -0.05 to 0.0.",
+ "sources": [
+  "https://x.com/i/trending/2114764602634551420",
+  "https://x.com/i/trending/2114808775488241998",
+  "https://x.com/i/trending/2114764602626154929"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "FOMC 28 Oct pending; Galaxy note is opinion, hashrate is a slow metric",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.3,
+ "carried_over": false
+}

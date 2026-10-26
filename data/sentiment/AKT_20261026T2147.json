@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-26T21:58:00Z",
+ "asset": "AKT",
+ "score": 0.3,
+ "confidence": 0.5,
+ "summary": "AKT ~$0.68 (+5.3% 24h). Akash governance Proposal 346 to migrate the network to Solana has ~98% yes on 34.7m AKT, past quorum, voting open until 2 Nov; AKT would convert 1:1 to a Solana token after audits. Founder Greg Osuri pushing the vote. Bullish on lower costs/access, but migration execution risk remains.",
+ "sources": [
+  "https://x.com/i/trending/2114785191147520430"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Proposal 346 Solana migration vote, ~98% yes, closes 2 Nov",
+ "volume": 1900,
+ "buzz_level": 1900,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 5.3,
+ "carried_over": false
+}

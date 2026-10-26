@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-10-26T21:58:00Z",
+ "asset": "XRP",
+ "score": 0.25,
+ "confidence": 0.6,
+ "summary": "XRP ~$1.29 (flat 24h). Dated positives ahead of Ripple's Swell 2026 (NYC, starts 27 Oct): Aviva Investors put a tokenized share class of its \u00a322bn sterling liquidity fund on the XRP Ledger; Evernorth (XRPN, ~473m XRP) signed an $80.7m equity facility with a Cantor affiliate, mostly to buy more XRP; Ripple launched 24/7 treasury returns; XRP ETFs had first inflows since July. Heavy promo buzz (NYC subway wraps, 'cleared for takeoff' teaser) is hype, not counted. Up from 0.15.",
+ "sources": [
+  "https://x.com/i/trending/2114660131032170925",
+  "https://x.com/i/trending/2114666445288206753",
+  "https://x.com/i/trending/2114717285101523090",
+  "https://x.com/i/trending/2114558546943820185"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Aviva tokenized fund on XRPL (26 Oct); Evernorth $80.7m facility (signed 23 Oct); Swell conference 27 Oct",
+ "volume": 42000,
+ "buzz_level": 42000,
+ "buzz_change": 1.32,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

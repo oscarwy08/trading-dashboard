@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-26T21:58:00Z",
+ "asset": "ETH",
+ "score": -0.2,
+ "confidence": 0.6,
+ "summary": "ETH ~$2,310 (-1.0% 24h), testing the $2,300-2,320 support. New: the Ethereum Foundation sold another 2,785 ETH (~$6.4m) on-chain, drawing holder criticism; spot ETH ETFs had ~$220m outflows last week. Offsetting: BitMine bought 10,452 ETH (now ~6.05m ETH) and Optimum's mump2p went live on mainnet. Unchanged at -0.2.",
+ "sources": [
+  "https://x.com/i/trending/2114689843510829086",
+  "https://x.com/i/trending/2114702638973599849",
+  "https://x.com/i/trending/2114683789356196145"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Ethereum Foundation sold 2,785 ETH on 26 Oct (dated on-chain sale)",
+ "volume": 52000,
+ "buzz_level": 52000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.0,
+ "carried_over": false
+}
