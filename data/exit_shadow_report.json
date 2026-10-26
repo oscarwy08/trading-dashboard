@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-26T08:03:07+00:00",
+  "generated": "2026-10-26T09:05:07+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 39,
         "avg_dt_s": 196247.94871794872,
         "avg_price_pct": -4.776359959911228,
-        "missed": 69
+        "missed": 70
       },
       "entries": {
         "pairs": 8,
@@ -27,10 +27,10 @@
         "missed": 49
       },
       "entries": {
-        "pairs": 15,
-        "avg_dt_s": 325593.13333333336,
-        "avg_price_pct": 3.263120543912907,
-        "missed": 312
+        "pairs": 16,
+        "avg_dt_s": 343170.25,
+        "avg_price_pct": 2.69420922465016,
+        "missed": 311
       }
     },
     {
@@ -42,10 +42,10 @@
         "missed": 41
       },
       "entries": {
-        "pairs": 8,
-        "avg_dt_s": 180365.25,
-        "avg_price_pct": 0.5665212272919751,
-        "missed": 156
+        "pairs": 10,
+        "avg_dt_s": 272610.9,
+        "avg_price_pct": 0.07951657220660913,
+        "missed": 154
       }
     },
     {
@@ -57,10 +57,10 @@
         "missed": 43
       },
       "entries": {
-        "pairs": 9,
-        "avg_dt_s": 273593.8888888889,
-        "avg_price_pct": -0.03515224802569329,
-        "missed": 169
+        "pairs": 11,
+        "avg_dt_s": 340505.63636363635,
+        "avg_price_pct": -0.36848857531826806,
+        "missed": 167
       }
     },
     {
@@ -72,10 +72,10 @@
         "missed": 55
       },
       "entries": {
-        "pairs": 13,
-        "avg_dt_s": 287641.6153846154,
-        "avg_price_pct": 3.1958071285433127,
-        "missed": 261
+        "pairs": 14,
+        "avg_dt_s": 310439.5,
+        "avg_price_pct": 2.5377864350230017,
+        "missed": 260
       }
     },
     {
@@ -87,10 +87,10 @@
         "missed": 43
       },
       "entries": {
-        "pairs": 9,
-        "avg_dt_s": 273602.8888888889,
-        "avg_price_pct": -0.07473930658738819,
-        "missed": 154
+        "pairs": 11,
+        "avg_dt_s": 340515.2727272727,
+        "avg_price_pct": -0.4008779868687457,
+        "missed": 152
       }
     },
     {
@@ -117,10 +117,10 @@
         "missed": 41
       },
       "entries": {
-        "pairs": 13,
-        "avg_dt_s": 221666.46153846153,
-        "avg_price_pct": 14.224742570434435,
-        "missed": 273
+        "pairs": 15,
+        "avg_dt_s": 228619.86666666667,
+        "avg_price_pct": 12.410299423599616,
+        "missed": 271
       }
     },
     {
@@ -132,10 +132,10 @@
         "missed": 53
       },
       "entries": {
-        "pairs": 16,
-        "avg_dt_s": 254002.3125,
-        "avg_price_pct": 8.294303417709092,
-        "missed": 333
+        "pairs": 18,
+        "avg_dt_s": 256204.16666666666,
+        "avg_price_pct": 7.441205145649558,
+        "missed": 331
       }
     },
     {
@@ -156,10 +156,10 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 12,
-        "avg_dt_s": 84616.66666666667,
-        "avg_price_pct": 1.7677901197770562,
-        "missed": 28
+        "pairs": 13,
+        "avg_dt_s": 78129.0,
+        "avg_price_pct": 1.6318062644095903,
+        "missed": 27
       },
       "entries": {
         "pairs": 0,
@@ -177,10 +177,10 @@
         "missed": 53
       },
       "entries": {
-        "pairs": 15,
-        "avg_dt_s": 264189.4666666667,
-        "avg_price_pct": 9.038641994059951,
-        "missed": 328
+        "pairs": 17,
+        "avg_dt_s": 265323.4117647059,
+        "avg_price_pct": 8.037268906484508,
+        "missed": 326
       }
     },
     {
@@ -192,25 +192,25 @@
         "missed": 54
       },
       "entries": {
-        "pairs": 12,
-        "avg_dt_s": 327487.6666666667,
-        "avg_price_pct": 1.639220109830258,
-        "missed": 270
+        "pairs": 13,
+        "avg_dt_s": 373714.3846153846,
+        "avg_price_pct": 1.1483536514665151,
+        "missed": 269
       }
     },
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 65,
-        "avg_dt_s": 199295.4153846154,
-        "avg_price_pct": -0.997546504359684,
+        "pairs": 66,
+        "avg_dt_s": 196283.16666666666,
+        "avg_price_pct": -0.9583171392695131,
         "missed": 66
       },
       "entries": {
-        "pairs": 32,
-        "avg_dt_s": 320820.40625,
-        "avg_price_pct": -1.0326127624123806,
-        "missed": 183
+        "pairs": 34,
+        "avg_dt_s": 328174.5294117647,
+        "avg_price_pct": -1.152739201573707,
+        "missed": 181
       }
     },
     {
@@ -222,10 +222,10 @@
         "missed": 50
       },
       "entries": {
-        "pairs": 16,
-        "avg_dt_s": 266275.875,
-        "avg_price_pct": 7.447836508485434,
-        "missed": 311
+        "pairs": 18,
+        "avg_dt_s": 338614.72222222225,
+        "avg_price_pct": 6.3670443755683666,
+        "missed": 309
       }
     },
     {
@@ -237,10 +237,10 @@
         "missed": 8
       },
       "entries": {
-        "pairs": 11,
-        "avg_dt_s": 174479.54545454544,
-        "avg_price_pct": 12.379289959395605,
-        "missed": 223
+        "pairs": 13,
+        "avg_dt_s": 222994.76923076922,
+        "avg_price_pct": 10.97727311462424,
+        "missed": 221
       }
     },
     {
@@ -2161,6 +2161,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "ENA",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-26T08:55:44+00:00",
+      "shadow_price": 0.15653443684724433,
+      "trigger": "[burst 24h] stop-loss -1.7% <= -1.6% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [],
@@ -3615,6 +3629,27 @@
       "asset": "GRASS",
       "price": 0.5191485183671639,
       "reason": "[burst 24h] 24h-high break +0.62% (high $0.6899); vol x8.3, RSI 66, BTC 1h +0.26%, 4h -0.19%; confidence 0.66 >= 0.55, EV +0.55% after costs; target +5.2% / stop -1.7% / max 6h"
+    },
+    {
+      "ts": "2026-10-26T08:20:33+00:00",
+      "sleeve": "day",
+      "asset": "SEE.L",
+      "price": 0.03801,
+      "reason": "[momentum] DAY score 0.641 >= 0.35; target +4.0% / stop -2.0% (ATR 0.08%); EV +0.30%; 4h +4.6%, 24h +2.1%, EMA6/24 up, RSI 62, no fresh sentiment"
+    },
+    {
+      "ts": "2026-10-26T08:38:53+00:00",
+      "sleeve": "day",
+      "asset": "PRE.L",
+      "price": 0.45999999999999996,
+      "reason": "[momentum] DAY score 0.9 >= 0.35; target +10.3% / stop -5.0% (ATR 4.13%); EV +0.84%; 4h +18.7%, 24h +18.2%, EMA6/24 up, RSI 75, no fresh sentiment"
+    },
+    {
+      "ts": "2026-10-26T08:47:43+00:00",
+      "sleeve": "day",
+      "asset": "ENA",
+      "price": 0.15878134263931004,
+      "reason": "[burst 24h] 24h-high break +0.52% (high $0.211); vol x2.9, RSI 58, BTC 1h +0.36%, 4h +0.41%; confidence 0.62 >= 0.55, EV +0.55% after costs; target +4.8% / stop -1.6% / max 6h"
     }
   ]
 }
