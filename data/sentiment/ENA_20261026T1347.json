@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T13:58:00Z",
+ "asset": "ENA",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "ENA ~$0.204 (+4.5% 24h), among the morning's top gainers and showing on several bullish trend scanners. Chatter is gainer recaps and chart reads; no dated Ethena event found.",
+ "sources": [
+  "https://x.com/Klugekopfglobal/status/2114645359527924019",
+  "https://x.com/flowalphaIO/status/2114707378016768507"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated event found",
+ "volume": 2000,
+ "buzz_level": 2000,
+ "buzz_change": 1.21,
+ "price_runup_24h_pct": 4.5,
+ "carried_over": false
+}

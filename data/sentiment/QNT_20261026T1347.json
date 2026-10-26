@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T13:58:00Z",
+ "asset": "QNT",
+ "score": 0.0,
+ "confidence": 0.35,
+ "summary": "QNT ~$216 (+20.8% 24h), the top large-cap gainer today. Almost all chatter is gainer-list recaps; no dated listing, upgrade or partnership found to explain the move, so it is not scored as bullish news. Buzz roughly doubled after the run-up: price-chasing risk.",
+ "sources": [
+  "https://x.com/Weeklyoptions/status/2114703612421005362",
+  "https://x.com/FameEXGlobal/status/2114710145586565324"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No verifiable catalyst found for the +21% move",
+ "volume": 3500,
+ "buzz_level": 3500,
+ "buzz_change": 1.94,
+ "price_runup_24h_pct": 20.8,
+ "carried_over": false
+}

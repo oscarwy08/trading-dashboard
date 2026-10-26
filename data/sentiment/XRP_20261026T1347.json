@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-26T13:58:00Z",
+ "asset": "XRP",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "XRP ~$1.286 (-0.9% 24h) in a tight $1.26-1.32 range. New: XRP ETFs logged their first weekly inflows since July (~$4m), Aviva Investors launched a tokenized share class of its \u00a322bn Sterling Liquidity Fund on the XRP Ledger, and Ripple's Swell conference runs 27-29 Oct in New York with heavy promo (subway wraps).",
+ "sources": [
+  "https://x.com/i/trending/2114660131032170925",
+  "https://x.com/i/trending/2114612796486754327",
+  "https://x.com/i/trending/2114558546943820185"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Aviva tokenized fund on XRPL launched 26 Oct; Ripple Swell 27-29 Oct",
+ "volume": 35000,
+ "buzz_level": 35000,
+ "buzz_change": 1.17,
+ "price_runup_24h_pct": -0.9,
+ "carried_over": false
+}

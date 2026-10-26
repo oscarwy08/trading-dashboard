@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T13:58:00Z",
+ "asset": "WLD",
+ "score": -0.25,
+ "confidence": 0.45,
+ "summary": "WLD ~$0.439 (-6.2% 24h), listed as a top loser on most morning crypto boards and the subject of short-scalp calls. No project news found to explain it; weakness looks rotation-driven.",
+ "sources": [
+  "https://x.com/BTCdotlive/status/2114598869262594521",
+  "https://x.com/shaunanalysis/status/2114632050804457888"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated event found",
+ "volume": 1800,
+ "buzz_level": 1800,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -6.2,
+ "carried_over": false
+}

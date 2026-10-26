@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T13:58:00Z",
+ "asset": "MSFT",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "MSFT ~$525 (flat). Earnings Wednesday 28 Oct after the close alongside Alphabet and the Fed decision. Anthropic's S-1 (filed today) names Microsoft as a key compute partner. Investors will watch AI capex and Azure growth; the Apollo note that AI isn't lifting margins outside big tech adds some caution.",
+ "sources": [
+  "https://x.com/i/trending/2114432803248959935",
+  "https://x.com/i/trending/2114676296202756531"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Q1 FY27 earnings 28 Oct (not yet reported)",
+ "volume": 2400,
+ "buzz_level": 2400,
+ "buzz_change": 1.12,
+ "price_runup_24h_pct": 0.1,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-26T13:58:00Z",
+ "asset": "TSLA",
+ "score": 0.3,
+ "confidence": 0.55,
+ "summary": "TSLA ~$390 (+4.9% 24h). New: Barclays upgraded Tesla to Overweight from Equal Weight and raised its target to $450 from $370, citing ~2m unsupervised robotaxi miles, FSD take-up above 75% on new North American cars and energy storage near sold out for 2027.",
+ "sources": [
+  "https://x.com/i/trending/2114671982172336183"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Barclays upgrade to Overweight, PT $450 (26 Oct)",
+ "volume": 30000,
+ "buzz_level": 30000,
+ "buzz_change": 1.06,
+ "price_runup_24h_pct": 4.9,
+ "carried_over": false
+}

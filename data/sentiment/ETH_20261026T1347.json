@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-26T13:58:00Z",
+ "asset": "ETH",
+ "score": -0.2,
+ "confidence": 0.55,
+ "summary": "ETH ~$2,305 (-2.2% 24h), testing $2,280-2,320 support after another weekly close below $2,400. ETH ETFs bled another ~$221m last week while BTC funds took inflows. Analysts split between a bottom near the bull-market support band and a drop to $2,200.",
+ "sources": [
+  "https://x.com/i/trending/2114651672752562502",
+  "https://x.com/i/trending/2114683789356196145",
+  "https://x.com/i/trending/2114661463939850292"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No dated ETH-specific event",
+ "volume": 52000,
+ "buzz_level": 52000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.2,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-26T13:58:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.6,
+ "summary": "BTC ~$79.5k (-1.6% 24h), still pinned near $80k into Wednesday's Fed decision. New: US spot BTC ETFs ended a two-week outflow streak with ~$301m-$443m of inflows last week, but late-week withdrawals hint the bid is fragile. Nudged up from -0.1 to -0.05.",
+ "sources": [
+  "https://x.com/i/trending/2114661463939850292",
+  "https://x.com/i/trending/2114040161508159895"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "FOMC decision 28 Oct pending; ETF flow data is weekly, not a discrete event",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 1.02,
+ "price_runup_24h_pct": -1.6,
+ "carried_over": false
+}
