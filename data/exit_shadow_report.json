@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-25T23:38:54+00:00",
+  "generated": "2026-10-26T00:41:25+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -96,9 +96,9 @@
     {
       "name": "midnight_crypto",
       "exits": {
-        "pairs": 56,
-        "avg_dt_s": 164579.85714285713,
-        "avg_price_pct": -3.287068963559289,
+        "pairs": 57,
+        "avg_dt_s": 161696.42105263157,
+        "avg_price_pct": -3.250900915006993,
         "missed": 61
       },
       "entries": {
@@ -156,10 +156,10 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 9,
-        "avg_dt_s": 624.6666666666666,
-        "avg_price_pct": -0.2602980139450906,
-        "missed": 28
+        "pairs": 10,
+        "avg_dt_s": 581.7,
+        "avg_price_pct": -0.23426821255058156,
+        "missed": 27
       },
       "entries": {
         "pairs": 0,
