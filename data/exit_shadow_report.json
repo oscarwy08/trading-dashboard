@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-26T22:02:38+00:00",
+  "generated": "2026-10-26T23:04:50+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -21,10 +21,10 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 42,
-        "avg_dt_s": 113703.64285714286,
-        "avg_price_pct": -2.4391205712598403,
-        "missed": 51
+        "pairs": 44,
+        "avg_dt_s": 108895.84090909091,
+        "avg_price_pct": -2.2907267188858396,
+        "missed": 49
       },
       "entries": {
         "pairs": 19,
@@ -36,10 +36,10 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 26,
-        "avg_dt_s": 140886.92307692306,
-        "avg_price_pct": -2.2548283934931277,
-        "missed": 42
+        "pairs": 27,
+        "avg_dt_s": 136249.40740740742,
+        "avg_price_pct": -2.110321724393261,
+        "missed": 41
       },
       "entries": {
         "pairs": 13,
@@ -51,10 +51,10 @@
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 26,
-        "avg_dt_s": 56127.07692307692,
-        "avg_price_pct": -2.3805182438397554,
-        "missed": 44
+        "pairs": 27,
+        "avg_dt_s": 54629.40740740741,
+        "avg_price_pct": -2.231356395097421,
+        "missed": 43
       },
       "entries": {
         "pairs": 14,
@@ -66,10 +66,10 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 42,
-        "avg_dt_s": 148895.7619047619,
-        "avg_price_pct": -2.85659857774634,
-        "missed": 57
+        "pairs": 44,
+        "avg_dt_s": 142489.0,
+        "avg_price_pct": -2.6892284523502252,
+        "missed": 55
       },
       "entries": {
         "pairs": 17,
@@ -81,10 +81,10 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 26,
-        "avg_dt_s": 56140.192307692305,
-        "avg_price_pct": -2.3805182438397554,
-        "missed": 44
+        "pairs": 27,
+        "avg_dt_s": 54642.555555555555,
+        "avg_price_pct": -2.231356395097421,
+        "missed": 43
       },
       "entries": {
         "pairs": 14,
@@ -111,10 +111,10 @@
     {
       "name": "entry_watch",
       "exits": {
-        "pairs": 46,
-        "avg_dt_s": 144592.3260869565,
-        "avg_price_pct": -3.4691264122675785,
-        "missed": 42
+        "pairs": 47,
+        "avg_dt_s": 141850.29787234042,
+        "avg_price_pct": -3.360275814725645,
+        "missed": 41
       },
       "entries": {
         "pairs": 18,
@@ -126,10 +126,10 @@
     {
       "name": "risk_giveback_15",
       "exits": {
-        "pairs": 46,
-        "avg_dt_s": 156265.69565217392,
-        "avg_price_pct": -1.7861673533609148,
-        "missed": 54
+        "pairs": 47,
+        "avg_dt_s": 153275.36170212767,
+        "avg_price_pct": -1.7131243953701871,
+        "missed": 53
       },
       "entries": {
         "pairs": 21,
@@ -171,10 +171,10 @@
     {
       "name": "no_risk_clock",
       "exits": {
-        "pairs": 46,
-        "avg_dt_s": 156287.73913043478,
-        "avg_price_pct": -1.7861673533609148,
-        "missed": 54
+        "pairs": 47,
+        "avg_dt_s": 153297.48936170212,
+        "avg_price_pct": -1.7131243953701871,
+        "missed": 53
       },
       "entries": {
         "pairs": 20,
@@ -186,10 +186,10 @@
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 46,
-        "avg_dt_s": 162012.69565217392,
-        "avg_price_pct": -2.384046906859743,
-        "missed": 55
+        "pairs": 47,
+        "avg_dt_s": 158571.25531914894,
+        "avg_price_pct": -2.3301056016915624,
+        "missed": 54
       },
       "entries": {
         "pairs": 17,
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 73,
-        "avg_dt_s": 205416.0684931507,
-        "avg_price_pct": -1.158605804520533,
-        "missed": 67
+        "pairs": 74,
+        "avg_dt_s": 216839.8108108108,
+        "avg_price_pct": -1.5118504926828058,
+        "missed": 66
       },
       "entries": {
         "pairs": 38,
