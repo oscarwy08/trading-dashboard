@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T21:58:00Z",
+ "asset": "PUMP",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "Pump.fun added TON blockchain support on 27 Oct (buy TON tokens with USDC in-app). Also a contest controversy over stripped PnL for a bundled token. Price +3.7% 24h, buzz steady (~30k posts/day). Small positive product catalyst.",
+ "sources": [
+  "https://x.com/i/trending/2115181002926821882",
+  "https://x.com/i/trending/2114897276485152881"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "TON support launched 27 Oct",
+ "volume": 30000,
+ "buzz_level": 30000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 3.7,
+ "carried_over": false
+}

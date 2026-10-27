@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-27T21:58:00Z",
+ "asset": "NEAR",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "Gemini listed NEAR for US trading, deposits and withdrawals on 26 Oct (dated, verifiable listing). Price +6.2% in 24h, so part of it is priced in. Buzz flat (~300 posts/day).",
+ "sources": [
+  "https://x.com/i/trending/2114854762252517540"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Gemini listing 26 Oct",
+ "volume": 330,
+ "buzz_level": 330,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 6.2,
+ "carried_over": false
+}

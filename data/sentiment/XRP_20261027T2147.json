@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T21:58:00Z",
+ "asset": "XRP",
+ "score": 0.45,
+ "confidence": 0.6,
+ "summary": "New since midday, from Ripple Swell 2026: BNY to custody XRP and RLUSD (plus direct RLUSD minting for BNY clients and tokenised trade finance on XRPL), and Ripple partnering with Robinhood to put RLUSD on Robinhood Chain/Bitstamp/app and settle institutionally on the XRP Ledger. XRP ETFs saw small outflows on 26 Oct. Price only +2.5% in 24h, so the news is not yet chased. Buzz roughly double its 3-day average (conference-driven).",
+ "sources": [
+  "https://x.com/i/trending/2115056147455705592",
+  "https://x.com/i/trending/2115078806876688384"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "Ripple Swell 27 Oct: BNY custody for XRP/RLUSD; Ripple x Robinhood RLUSD partnership",
+ "volume": 101000,
+ "buzz_level": 101000,
+ "buzz_change": 2.2,
+ "price_runup_24h_pct": 2.5,
+ "carried_over": false
+}

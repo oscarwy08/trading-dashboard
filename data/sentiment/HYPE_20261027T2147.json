@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T21:58:00Z",
+ "asset": "HYPE",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "Kraken parent Payward plans the first CFTC-regulated perpetual markets on Hyperliquid via Bitnomial (pending regulatory approval), plus new XTEN pre-market and Nifty 50 perps. Glassnode notes Hyperliquid whales flipped net short on BTC. HYPE +5.1% in 24h, buzz ~1.35x its recent days but no prior prints to compare.",
+ "sources": [
+  "https://x.com/i/trending/2114776511081546171",
+  "https://x.com/i/trending/2114923201222336711"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Kraken/Bitnomial CFTC-regulated perps on Hyperliquid announced (pending approval)",
+ "volume": 6900,
+ "buzz_level": 6900,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 5.1,
+ "carried_over": false
+}

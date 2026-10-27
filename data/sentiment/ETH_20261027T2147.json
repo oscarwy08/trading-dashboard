@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T21:58:00Z",
+ "asset": "ETH",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,350, holding the $2,300 support / 50-week average. Negatives: spot ETH ETFs lost $88.6m on 26 Oct (October redemptions past $1bn) and the Ethereum Foundation sold 2,785 ETH (~$6.4m). Small positive: Optimum's mump2p validator speed-up adopted by ether.fi and others. Still mildly bearish on flows.",
+ "sources": [
+  "https://x.com/i/trending/2114683789356196145",
+  "https://x.com/i/trending/2114954704258314514"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "ETF outflow $88.6m on 26 Oct; Ethereum Foundation sold 2,785 ETH",
+ "volume": 52000,
+ "buzz_level": 52000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.8,
+ "carried_over": false
+}

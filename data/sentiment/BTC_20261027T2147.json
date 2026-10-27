@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T21:58:00Z",
+ "asset": "BTC",
+ "score": 0.0,
+ "confidence": 0.5,
+ "summary": "BTC ~$81k, dipped under $81k then bounced into tomorrow's (28 Oct) FOMC decision. New tonight: Glassnode says big Hyperliquid traders flipped net short for the first time since March (one $32m short, liquidation ~$83.9k), which some read as downside risk and others as squeeze fuel. Offsets the corporate/ETF buying noted earlier. Neutral, event risk ahead.",
+ "sources": [
+  "https://x.com/i/trending/2115127977637745134",
+  "https://x.com/i/trending/2115116232668291519"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "FOMC decision 28 Oct (scheduled macro event, not asset-specific)",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.3,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-27T21:58:00Z",
+ "asset": "ZEC",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "ZEC ~$1,310 (+6.6% 24h), consolidating $1,200-1,300 with higher lows. New: Zillions browser wallet launched (shielded sync, Ledger support) and bridged ZEC on Solana hit a record ~103k tokens (~$124m). Debate over a PoS move (Crosslink). Buzz up ~1.5x after the run-up, so partly chasing; mild positive only.",
+ "sources": [
+  "https://x.com/i/trending/2115107966391107947"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Zillions wallet launch; record bridged ZEC on Solana",
+ "volume": 9300,
+ "buzz_level": 9300,
+ "buzz_change": 1.53,
+ "price_runup_24h_pct": 6.6,
+ "carried_over": false
+}
