@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-27T18:32:13+00:00",
+  "generated": "2026-10-27T19:41:02+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -21,9 +21,9 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 50,
-        "avg_dt_s": 96163.28,
-        "avg_price_pct": -2.1249005279171005,
+        "pairs": 51,
+        "avg_dt_s": 111536.94117647059,
+        "avg_price_pct": -2.707020332435097,
         "missed": 49
       },
       "entries": {
@@ -66,9 +66,9 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 50,
-        "avg_dt_s": 128951.14,
-        "avg_price_pct": -2.4600937943262835,
+        "pairs": 51,
+        "avg_dt_s": 143682.35294117648,
+        "avg_price_pct": -3.035641181855865,
         "missed": 55
       },
       "entries": {
