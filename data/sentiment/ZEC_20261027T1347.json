@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-27T14:00:00Z",
+ "asset": "ZEC",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "ZEC ~$1,269 (up ~6% from Sunday night), below the $1,300-1,350 resistance. New: Zcash's 10th anniversary week is overshadowed by a dev-fund row over a $550k grant for an adult-expo booth, with co-founder Sean Bowe proposing an end to automatic grants; technical wins (zcash.js toolkit, Ironwood shielded pool). Governance noise rather than a price catalyst.",
+ "sources": [
+  "https://x.com/i/trending/2114612795429851611"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 7000,
+ "buzz_level": 7000,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": 5.8,
+ "carried_over": false
+}

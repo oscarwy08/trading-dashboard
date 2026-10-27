@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T14:00:00Z",
+ "asset": "BTC",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "BTC ~$80.1k (flat), holding $80k into the FOMC decision on 28 Oct. New since morning: corporate buyers added, with Strategy buying ~$205m and Strive ~$511m of BTC, on top of the +$110m IBIT-only ETF inflow on 26 Oct. Bears still cite the ETF outflow trend and calls for $57k. Mildly positive flows, macro event risk ahead.",
+ "sources": [
+  "https://x.com/i/trending/2114954704258314514",
+  "https://x.com/i/trending/2114764602626154929"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Strategy ~$205m and Strive ~$511m BTC purchases; FOMC 28 Oct",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

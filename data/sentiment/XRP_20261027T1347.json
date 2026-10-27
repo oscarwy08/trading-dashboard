@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-27T14:00:00Z",
+ "asset": "XRP",
+ "score": 0.4,
+ "confidence": 0.65,
+ "summary": "XRP ~$1.317 (+1.6%). New dated positives as Swell 2026 opens in NYC (27-29 Oct): Ripple got final OCC approval for Ripple National Trust Bank (RLUSD reserves and institutional custody), and BNY added XRP and RLUSD custody to its digital asset platform, with plans to explore RLUSD minting and tokenized trade finance on the XRP Ledger. Treasury Secretary Bessent added as a Swell speaker. Caveat: raw X volume is heavily inflated by a scam spam wave, so buzz is estimated excluding it.",
+ "sources": [
+  "https://x.com/i/trending/2114863059504078850",
+  "https://x.com/i/trending/2115056147455705592",
+  "https://x.com/i/trending/2115007470049563126"
+ ],
+ "catalyst_score": 0.5,
+ "catalyst_note": "27 Oct: OCC final approval of Ripple National Trust Bank; BNY custody for XRP/RLUSD; Swell 27-29 Oct",
+ "volume": 60000,
+ "buzz_level": 60000,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": 1.6,
+ "carried_over": false
+}

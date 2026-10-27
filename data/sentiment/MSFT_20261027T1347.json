@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T14:00:00Z",
+ "asset": "MSFT",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "MSFT ~$531 (+1.2%). New: Microsoft offered voluntary exit packages to ~60,000 staff (level 70 and below, US/Canada/India/UK, decisions by early December) to reshape teams around AI spending; it was also among 26 companies blocking tokenized versions of their shares on OKX/ICE's venue. Cost-cut is mildly positive for margins but signals restructuring; main event is still earnings after the close on Wed 28 Oct, same day as the Fed.",
+ "sources": [
+  "https://x.com/i/trending/2114746076314116217",
+  "https://x.com/i/trending/2114979576116019395"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Voluntary exit offer to ~60k staff; earnings 28 Oct after close",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.4,
+ "price_runup_24h_pct": 1.2,
+ "carried_over": false
+}

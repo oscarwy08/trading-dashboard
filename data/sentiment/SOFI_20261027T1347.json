@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T14:00:00Z",
+ "asset": "SOFI",
+ "score": 0.45,
+ "confidence": 0.6,
+ "summary": "SOFI ~$15.90 (about +9% premarket/early). Q3 2026 results beat: adjusted net revenue $1.37bn (+44% y/y) vs ~$1.25bn expected, adjusted EBITDA $470m (+70%), 1.2m new members, record $16.9bn originations; 2026 revenue guidance raised to $5.04bn and a 2027 outlook of $6.4bn introduced. Risk: history of fading after earnings pops.",
+ "sources": [
+  "https://x.com/i/trending/2115037786894184877",
+  "https://x.com/i/trending/2114802664118820908"
+ ],
+ "catalyst_score": 0.6,
+ "catalyst_note": "27 Oct Q3 2026 earnings beat and guidance raise",
+ "volume": 49000,
+ "buzz_level": 49000,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": 8.7,
+ "carried_over": false
+}
