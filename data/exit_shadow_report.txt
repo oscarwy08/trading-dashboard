@@ -1099,6 +1099,7 @@ Cycle buys with no shadow entry
   CAP day  2026-10-27T08:05:14+00:00  £0.0753431  [momentum] DAY score 0.9 >= 0.35; target +8.3% / stop -4.0% (ATR 3.31%); EV +0.37%; 4h +3.1%, 24h +14.0%, EMA6/24 up, RSI 53, no fresh sentiment
   CAP day  2026-10-27T09:08:49+00:00  £0.0762794  [momentum] DAY score 0.9 >= 0.35; target +8.5% / stop -4.1% (ATR 3.39%); EV +0.31%; 4h +5.2%, 24h +32.3%, EMA6/24 up, RSI 55, no fresh sentiment
   CAP day  2026-10-27T10:40:48+00:00  £0.0744568  [momentum] DAY score 0.9 >= 0.35; target +9.9% / stop -4.8% (ATR 3.97%); EV +0.37%; 4h +5.8%, 24h +23.7%, EMA6/24 up, RSI 53, no fresh sentiment
+  ZEC day  2026-10-27T14:39:38+00:00  £958.2  [burst 24h] 24h-high break +0.20% (high $1275.3); vol x3.3, RSI 70, BTC 1h +0.28%, 4h +0.86%; confidence 0.64 >= 0.57, EV +0.31% after costs; target +3.1% / stop -1.5% / max 6h
 
 Per book
 
