@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-27T11:48:07+00:00",
+  "generated": "2026-10-27T12:54:21+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -21,10 +21,10 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 48,
-        "avg_dt_s": 99870.27083333333,
-        "avg_price_pct": -2.2007130009666542,
-        "missed": 50
+        "pairs": 49,
+        "avg_dt_s": 98041.26530612246,
+        "avg_price_pct": -2.1517609620039546,
+        "missed": 49
       },
       "entries": {
         "pairs": 21,
@@ -36,10 +36,10 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 30,
-        "avg_dt_s": 133414.5,
-        "avg_price_pct": -1.70725685048874,
-        "missed": 42
+        "pairs": 31,
+        "avg_dt_s": 129588.96774193548,
+        "avg_price_pct": -1.626925076203481,
+        "missed": 41
       },
       "entries": {
         "pairs": 14,
@@ -51,10 +51,10 @@
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 30,
-        "avg_dt_s": 49234.166666666664,
-        "avg_price_pct": -2.154052744418095,
-        "missed": 44
+        "pairs": 31,
+        "avg_dt_s": 47977.06451612903,
+        "avg_price_pct": -2.0781821104624907,
+        "missed": 43
       },
       "entries": {
         "pairs": 15,
@@ -66,10 +66,10 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 48,
-        "avg_dt_s": 134000.875,
-        "avg_price_pct": -2.3753206815229935,
-        "missed": 56
+        "pairs": 49,
+        "avg_dt_s": 131497.8775510204,
+        "avg_price_pct": -2.4937949073194474,
+        "missed": 55
       },
       "entries": {
         "pairs": 19,
@@ -81,10 +81,10 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 30,
-        "avg_dt_s": 49247.566666666666,
-        "avg_price_pct": -2.154052744418095,
-        "missed": 44
+        "pairs": 31,
+        "avg_dt_s": 47990.51612903226,
+        "avg_price_pct": -2.0781821104624907,
+        "missed": 43
       },
       "entries": {
         "pairs": 15,
