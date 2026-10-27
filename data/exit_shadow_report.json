@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-27T16:14:22+00:00",
+  "generated": "2026-10-27T17:23:40+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,13 +9,13 @@
         "pairs": 50,
         "avg_dt_s": 192755.32,
         "avg_price_pct": -3.7427768617256025,
-        "missed": 70
+        "missed": 71
       },
       "entries": {
         "pairs": 11,
         "avg_dt_s": 533682.2727272727,
         "avg_price_pct": -6.161579475051206,
-        "missed": 93
+        "missed": 94
       }
     },
     {
@@ -24,7 +24,7 @@
         "pairs": 49,
         "avg_dt_s": 98041.26530612246,
         "avg_price_pct": -2.1517609620039546,
-        "missed": 49
+        "missed": 50
       },
       "entries": {
         "pairs": 21,
@@ -39,7 +39,7 @@
         "pairs": 31,
         "avg_dt_s": 129588.96774193548,
         "avg_price_pct": -1.626925076203481,
-        "missed": 41
+        "missed": 42
       },
       "entries": {
         "pairs": 14,
@@ -54,7 +54,7 @@
         "pairs": 31,
         "avg_dt_s": 47977.06451612903,
         "avg_price_pct": -2.0781821104624907,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 15,
@@ -69,7 +69,7 @@
         "pairs": 49,
         "avg_dt_s": 131497.8775510204,
         "avg_price_pct": -2.4937949073194474,
-        "missed": 55
+        "missed": 56
       },
       "entries": {
         "pairs": 19,
@@ -84,7 +84,7 @@
         "pairs": 31,
         "avg_dt_s": 47990.51612903226,
         "avg_price_pct": -2.0781821104624907,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 15,
@@ -195,7 +195,7 @@
         "pairs": 18,
         "avg_dt_s": 416280.94444444444,
         "avg_price_pct": 4.101225204969187,
-        "missed": 335
+        "missed": 336
       }
     },
     {
@@ -390,7 +390,7 @@
         "pairs": 1,
         "avg_dt_s": 1169.0,
         "avg_price_pct": 3.3056300589103067,
-        "missed": 19
+        "missed": 20
       }
     },
     {
@@ -2329,6 +2329,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "ZEC",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-27T16:54:39+00:00",
+      "shadow_price": 975.5757652148861,
+      "trigger": "[burst 24h] trailing stop +1.7% (peak +2.9%, gives back 40% of the gain)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -3789,6 +3803,20 @@
       "shadow_ts": "2026-10-26T12:46:03+00:00",
       "shadow_price": 0.32248961377394114,
       "trigger": "[momentum] price holds \u00a30.322235; score 0.646 >= 0.35",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "ENA",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-27T16:17:12+00:00",
+      "shadow_price": 0.16094974053610095,
+      "trigger": "[burst 24h] price breaks \u00a30.160885; volume x2",
       "status": "cycle missed",
       "cycle_ts": null,
       "cycle_price": null,
