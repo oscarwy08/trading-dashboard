@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T07:55:00Z",
+ "asset": "BTC",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "BTC ~$79.6k (-0.6% 24h), trading $79.7-80.4k into the Oct 27-28 FOMC. New: US spot BTC ETFs took +$110.3m net on 26 Oct, all via BlackRock's IBIT, after outflows of $635.5m (22 Oct) and $137.9m (23 Oct). Galaxy's 'bear market over' call still circulating; bears point to ETF outflow trend. Mildly positive flow, macro event risk ahead.",
+ "sources": [
+  "https://x.com/i/trending/2114954704258314514",
+  "https://x.com/i/trending/2114764602626154929"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "26 Oct spot BTC ETF net inflow +$110.3m (IBIT); FOMC decision 28 Oct",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.6,
+ "carried_over": false
+}

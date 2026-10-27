@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T07:55:00Z",
+ "asset": "QNT",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "QNT ~$208 (+9.8% 24h, ~+100% 30d). X now attributes the run to Quant's Clearing House On-Chain Money contract, but that was announced 24 Sep, so no fresh dated catalyst; skeptics note it is a software deal with no guaranteed token demand. Chatter is mostly gainer-list recaps. Buzz ~7.5k posts on 26 Oct vs ~3.0k/day prior three days (2.5x) after a big run-up: price-chasing risk.",
+ "sources": [
+  "https://x.com/i/trending/2114820687235874943",
+  "https://x.com/CoinCodex/status/2114734361459490932"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none new (Clearing House contract dated 24 Sep)",
+ "volume": 7503,
+ "buzz_level": 7503,
+ "buzz_change": 2.5,
+ "price_runup_24h_pct": 9.8,
+ "carried_over": false
+}

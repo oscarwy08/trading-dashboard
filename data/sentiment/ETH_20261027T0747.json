@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-27T07:55:00Z",
+ "asset": "ETH",
+ "score": -0.2,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,305 (-1.0% 24h), sitting on the $2,300-2,320 support. New: US spot ETH ETFs had -$88.6m net outflows on 26 Oct while BTC ETFs saw inflows, a relative-weakness signal. BitMine's 10,452 ETH buy (now ~6.05m ETH) is the offset. Below $2,300 traders eye $2,200.",
+ "sources": [
+  "https://x.com/i/trending/2114954704258314514",
+  "https://x.com/i/trending/2114683789356196145"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "26 Oct spot ETH ETF net outflow -$88.6m",
+ "volume": 52000,
+ "buzz_level": 52000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.0,
+ "carried_over": false
+}
