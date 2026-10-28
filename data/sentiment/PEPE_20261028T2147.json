@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-28T22:00:00Z",
+ "asset": "PEPE",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "PEPE +11% 24h after Arkham showed Justin Sun-linked wallets accumulating ~$51M (2.8% of supply) via Poloniex withdrawals on 17 and 26 Oct. Possibly internal transfers since Sun owns Poloniex, so the 'whale buying' read is shaky. Buzz spike on a coin that has already run, which is a chase risk, not a clean bullish signal.",
+ "sources": [
+  "https://x.com/i/trending/2115087553766236188"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No verifiable dated catalyst (wallet flows may be internal exchange moves)",
+ "volume": 60000,
+ "buzz_level": 60000,
+ "buzz_change": 2.9,
+ "price_runup_24h_pct": 11.09,
+ "carried_over": false
+}

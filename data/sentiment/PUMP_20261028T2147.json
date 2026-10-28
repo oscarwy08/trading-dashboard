@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-28T22:00:00Z",
+ "asset": "PUMP",
+ "score": 0.3,
+ "confidence": 0.5,
+ "summary": "Pump.fun launched perpetual futures on 28 Oct using Hyperliquid order books (300+ markets, fees 0.05%), with an Elysium integration due 9 Nov. A real product catalyst after the TON add on 27 Oct. Price +3.9% 24h; offset by ongoing debate about Pump.fun draining memecoin liquidity.",
+ "sources": [
+  "https://x.com/i/trending/2115500581473095757",
+  "https://x.com/i/trending/2115407504909668600"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "Perps launch with Hyperliquid 28 Oct; Elysium integration 9 Nov",
+ "volume": 42000,
+ "buzz_level": 42000,
+ "buzz_change": 1.4,
+ "price_runup_24h_pct": 3.94,
+ "carried_over": false
+}

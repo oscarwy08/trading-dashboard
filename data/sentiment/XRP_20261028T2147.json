@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-28T22:00:00Z",
+ "asset": "XRP",
+ "score": 0.45,
+ "confidence": 0.55,
+ "summary": "XRP ~$1.33 (flat 24h). Swell day two: Treasury Secretary Bessent backed dollar stablecoins on stage and said regulators will advance crypto rules without new laws; Flare added to XRPL recommended validators. Builds on the Coinbase RLUSD listing, but price still hasn't responded and buzz is cooling slightly from midday.",
+ "sources": [
+  "https://x.com/i/trending/2115516014977020228",
+  "https://x.com/i/trending/2115531677854507281"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Bessent speech at Swell 28 Oct; Coinbase RLUSD listing 28 Oct",
+ "volume": 130000,
+ "buzz_level": 130000,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": 0.03,
+ "carried_over": false
+}

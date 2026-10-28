@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-28T22:00:00Z",
+ "asset": "BTC",
+ "score": 0.15,
+ "confidence": 0.55,
+ "summary": "BTC ~$81.1k (+0.1% 24h). New since midday: the Fed held at 3.75-4.00% in a 10-2 vote (two dissents wanted another hike), with Warsh saying inflation is still too high; stocks rose modestly and yields eased. Spot BTC ETF inflows now $286M over 26-27 Oct while ETH ETFs bleed. Hawkish tone caps upside; price reaction so far muted.",
+ "sources": [
+  "https://x.com/i/trending/2115497447732445567",
+  "https://x.com/i/trending/2114954704258314514"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "FOMC hold 28 Oct (hawkish, 2 hike dissents); BTC ETF inflows 26-27 Oct",
+ "volume": 95000,
+ "buzz_level": 95000,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": 0.12,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-28T22:00:00Z",
+ "asset": "HYPE",
+ "score": 0.25,
+ "confidence": 0.45,
+ "summary": "Pump.fun's new perps product (launched 28 Oct) routes through Hyperliquid order books, adding volume on top of Kraken/Bitnomial plans; a $79M 30x BTC/ZEC long on Hyperliquid also drew attention. Price -1.0% 24h.",
+ "sources": [
+  "https://x.com/i/trending/2115500581473095757",
+  "https://x.com/i/trending/2115421197160653233"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Pump.fun perps built on Hyperliquid, live 28 Oct",
+ "volume": 9000,
+ "buzz_level": 9000,
+ "buzz_change": 1.3,
+ "price_runup_24h_pct": -1.01,
+ "carried_over": false
+}
