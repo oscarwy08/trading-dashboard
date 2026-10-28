@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-28T07:58:00Z",
+ "asset": "IREN",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "IREN ~$27.3, +7-9% on 27 Oct rebounding with AI-infra names after Anthropic's IPO filing lifted the sector. No new company-specific event; earnings 5 Nov. Mostly price-chasing chatter, so only mildly positive.",
+ "sources": [
+  "https://x.com/i/trending/2115127972298371319"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Earnings scheduled 5 Nov",
+ "volume": 4000,
+ "buzz_level": 4000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 9.4,
+ "carried_over": false
+}

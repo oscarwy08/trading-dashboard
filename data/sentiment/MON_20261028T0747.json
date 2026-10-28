@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-28T07:58:00Z",
+ "asset": "MON",
+ "score": 0.1,
+ "confidence": 0.35,
+ "summary": "MON ~$0.0215 (-1.2% 24h), still near $0.020-0.021 support. New: payments firm Reap is integrating stablecoin card infrastructure with Monad, with LatAm app Meru to launch the first card program. Small real-use positive; rest of feed is spam and memes.",
+ "sources": [
+  "https://x.com/iiam_Akshay/status/2115253857983062105"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Reap stablecoin-card integration with Monad (Meru first card program), reported 28 Oct",
+ "volume": 150,
+ "buzz_level": 150,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": -1.2,
+ "carried_over": false
+}

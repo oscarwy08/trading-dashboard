@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-28T07:58:00Z",
+ "asset": "XRP",
+ "score": 0.45,
+ "confidence": 0.6,
+ "summary": "XRP ~$1.32 (+1.2% 24h). New from Ripple Swell day 1 (27 Oct): C2FO partnership to settle Instant Pay early-invoice payments in RLUSD on the public XRP Ledger, alongside the BNY custody deal, OCC trust-bank approval and Moody's investment-grade RLUSD rating already counted. Community price targets ($10-30) are hype, ignored. Swell runs to 29 Oct.",
+ "sources": [
+  "https://x.com/i/trending/2115289425022443930",
+  "https://x.com/i/trending/2114717285101523090",
+  "https://x.com/i/trending/2115236187224883583"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "Ripple-C2FO RLUSD settlement on XRPL announced 27 Oct at Swell 2026",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 1.6,
+ "price_runup_24h_pct": 1.2,
+ "carried_over": false
+}

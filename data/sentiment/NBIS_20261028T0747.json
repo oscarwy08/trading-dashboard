@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-28T07:58:00Z",
+ "asset": "NBIS",
+ "score": 0.3,
+ "confidence": 0.5,
+ "summary": "NBIS ~$170, +10% on 27 Oct after a 40% monthly drop. Dated news: 50MW anchor-customer data-centre deal at Saudi NEOM Oxagon (from late 2027), a $3.5bn Citi credit facility, extra funding for its Lille project, and a director share buy. Price already reacted strongly.",
+ "sources": [
+  "https://x.com/i/trending/2115118993639870534"
+ ],
+ "catalyst_score": 0.4,
+ "catalyst_note": "NEOM 50MW data-centre deal + $3.5bn Citi facility announced 27 Oct",
+ "volume": 6000,
+ "buzz_level": 6000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 7.1,
+ "carried_over": false
+}

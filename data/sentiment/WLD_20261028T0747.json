@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-28T07:58:00Z",
+ "asset": "WLD",
+ "score": -0.25,
+ "confidence": 0.45,
+ "summary": "WLD ~$0.434 (-1.9% 24h), was the week's biggest top-100 loser (about -25%). Only new item: BYDFi listed a WLD perp on 27 Oct (up to 75x), which adds short access more than demand. Feed is short-setup calls; no project news.",
+ "sources": [
+  "https://x.com/tokenticker/status/2115264204320190859",
+  "https://x.com/LiquidityFlow_X/status/2115213476385665053"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "BYDFi WLD perpetual listing 27 Oct (minor derivatives listing)",
+ "volume": 1800,
+ "buzz_level": 1800,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -1.9,
+ "carried_over": false
+}

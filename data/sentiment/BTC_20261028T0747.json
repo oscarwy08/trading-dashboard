@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-28T07:58:00Z",
+ "asset": "BTC",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "BTC ~$80.8k (+1.0% 24h), back above $80k into today's FOMC decision (2pm ET, hold expected). New: US spot BTC ETFs took +$176m net on 27 Oct, led by BlackRock IBIT +$151m and Fidelity +$24.5m. Offsets last night's Hyperliquid whales-net-short note. Mildly positive, big event risk tonight.",
+ "sources": [
+  "https://x.com/i/trending/2115350141263569376",
+  "https://x.com/i/trending/2115116232668291519"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "FOMC decision 28 Oct (scheduled macro event, not asset-specific)",
+ "volume": 85000,
+ "buzz_level": 85000,
+ "buzz_change": 1.06,
+ "price_runup_24h_pct": 1.0,
+ "carried_over": false
+}
