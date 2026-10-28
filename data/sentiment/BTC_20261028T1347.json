@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-28T14:00:00Z",
+ "asset": "BTC",
+ "score": 0.1,
+ "confidence": 0.5,
+ "summary": "BTC ~$80.4k (+0.6% 24h). Spot ETFs took $176M net inflows on 27 Oct; FOMC decision today 6pm UK expected hold at 3.75-4.00%, with risk around Warsh's tone on a possible December hike. Large leveraged longs on Hyperliquid add squeeze/flush risk either way.",
+ "sources": [
+  "https://x.com/i/trending/2115350141263569376",
+  "https://x.com/i/trending/2115127977906192860"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "ETF inflows 27 Oct; FOMC decision 28 Oct 18:00 UK (event risk)",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": 0.57,
+ "carried_over": false
+}

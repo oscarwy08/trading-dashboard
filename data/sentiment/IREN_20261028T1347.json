@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-28T14:00:00Z",
+ "asset": "IREN",
+ "score": 0.25,
+ "confidence": 0.45,
+ "summary": "IREN ~$27.1 (+0.6% 24h). Closed $363M equipment financing on its GPU servers (28 Oct), freeing cash for AI data-centre expansion without equity dilution.",
+ "sources": [
+  "https://x.com/i/trending/2115407503525630398"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "$363M GPU equipment financing with Wingspire and six lenders, closed 28 Oct",
+ "volume": 6000,
+ "buzz_level": 6000,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": 0.61,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-28T14:00:00Z",
+ "asset": "XRP",
+ "score": 0.5,
+ "confidence": 0.6,
+ "summary": "XRP ~$1.31 (+0.3% 24h), flat despite Swell news flow. New since morning: Ripple and Coinbase launched RLUSD trading on Coinbase (28 Oct), adding to Robinhood RLUSD, BNY custody, OCC trust-bank approval and the $900M revenue run-rate. Real catalysts, but price hasn't reacted and buzz is heavy with outlandish price targets.",
+ "sources": [
+  "https://x.com/i/trending/2115428538417635790",
+  "https://x.com/i/trending/2115407505241022686"
+ ],
+ "catalyst_score": 0.4,
+ "catalyst_note": "Coinbase lists RLUSD (28 Oct) on top of Swell announcements (Robinhood, BNY, OCC charter)",
+ "volume": 140000,
+ "buzz_level": 140000,
+ "buzz_change": 1.3,
+ "price_runup_24h_pct": 0.25,
+ "carried_over": false
+}
