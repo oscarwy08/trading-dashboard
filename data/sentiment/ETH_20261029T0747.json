@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-29T08:00:00Z",
+ "asset": "ETH",
+ "score": -0.25,
+ "confidence": 0.5,
+ "summary": "ETH slid below $2,300 (-1.9% 24h) in the post-Fed selloff; ETH ETFs keep bleeding ($1.31B out over 30 days) while money rotates to BTC. Optimum's mump2p networking upgrade adoption (2.5M ETH staked) is a positive but minor tech story.",
+ "sources": [
+  "https://x.com/i/trending/2115634084177498334",
+  "https://x.com/i/trending/2114954704258314514"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Post-FOMC selloff 29 Oct; ETH ETF outflows",
+ "volume": 6000,
+ "buzz_level": 6000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.87,
+ "carried_over": false
+}

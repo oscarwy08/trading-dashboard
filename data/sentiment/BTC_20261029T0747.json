@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-29T08:00:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.55,
+ "summary": "BTC slipped under $80k overnight (~$79.8k, -1.3% 24h) after the Fed's hawkish hold (10-2, two hike dissents); markets now price ~78-80% odds of a December hike and ~$356M of mostly long liquidations hit. Offsets: BlackRock IBIT kept buying (ETF inflows $286M on 26-27 Oct) and Sen. Hagerty talked up expanding the US BTC reserve (conditional on stalled legislation). Retail interest at a 5-year low.",
+ "sources": [
+  "https://x.com/i/trending/2115634084177498334",
+  "https://x.com/i/trending/2115046791120920669",
+  "https://x.com/i/trending/2115598449462665488"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Hawkish FOMC 28 Oct, Dec hike odds ~80%; $356M liquidations 29 Oct",
+ "volume": 81500,
+ "buzz_level": 81500,
+ "buzz_change": 0.98,
+ "price_runup_24h_pct": -1.25,
+ "carried_over": false
+}

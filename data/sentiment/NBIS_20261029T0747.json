@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-29T08:00:00Z",
+ "asset": "NBIS",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "Nebius closed +7% near $182 on 28 Oct on AI-cloud momentum and its $3.5B financing; earnings due 10 Nov. Move is momentum/price-chasing rather than a new catalyst, and macro turned hawkish after the close.",
+ "sources": [
+  "https://x.com/i/trending/2115561877233336367"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No new dated event; earnings 10 Nov",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.3,
+ "price_runup_24h_pct": 6.74,
+ "carried_over": false
+}

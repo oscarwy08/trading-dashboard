@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-29T08:00:00Z",
+ "asset": "MSFT",
+ "score": 0.55,
+ "confidence": 0.65,
+ "summary": "Microsoft beat after the close on 28 Oct: revenue $92.3B (+19%, vs $90.7B est), EPS $4.89 vs ~$4.72, Azure +48% to $33.2B, Microsoft Cloud $63.9B, guidance for 49-50% Azure growth, capex $39.4B. Shares up ~4-5% after hours. Watch: capex worries and 60k-employee buyout headlines.",
+ "sources": [
+  "https://x.com/i/trending/2115713043749543960",
+  "https://x.com/i/trending/2115537951639605742"
+ ],
+ "catalyst_score": 0.6,
+ "catalyst_note": "Q1 FY27 earnings beat 28 Oct after close, Azure +48%",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.6,
+ "price_runup_24h_pct": -0.06,
+ "carried_over": false
+}

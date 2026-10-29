@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-29T08:00:00Z",
+ "asset": "IREN",
+ "score": 0.3,
+ "confidence": 0.5,
+ "summary": "IREN closed a $363M asset-backed GPU equipment financing (Wingspire, Eldridge, Silver Point) without issuing shares, backed by multi-year contracts. Funding without dilution is supportive; sector risk from the post-Fed tech selloff and Cerebras short report.",
+ "sources": [
+  "https://x.com/i/trending/2115407503525630398"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "$363M non-dilutive GPU financing closed 28 Oct",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": 4.15,
+ "carried_over": false
+}

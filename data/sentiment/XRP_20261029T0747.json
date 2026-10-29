@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-29T08:00:00Z",
+ "asset": "XRP",
+ "score": 0.3,
+ "confidence": 0.5,
+ "summary": "Ripple Swell (27-29 Oct) delivered real items: Robinhood RLUSD integration, BNY custody for XRP/RLUSD, OCC trust bank approval and Moody's A2 rating for RLUSD. But XRP itself fell with the market (-2.5% 24h, ~$1.29) and much of the X chatter is outsized price-target hype. Score trimmed from 0.45 as the news is mostly priced and macro is risk-off.",
+ "sources": [
+  "https://x.com/i/trending/2115423192508760371",
+  "https://x.com/i/trending/2114717285101523090"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "Swell 27-29 Oct: Robinhood RLUSD, BNY custody, Moody's A2 for RLUSD",
+ "volume": 360000,
+ "buzz_level": 360000,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": -2.5,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-29T08:00:00Z",
+ "asset": "PEPE",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "Justin Sun-linked wallets now hold ~2.8% of PEPE supply (~$51M), which drove a 12% pop earlier; analysts note the moves may be internal transfers rather than fresh buying. Already-run-up memecoin in a risk-off tape; no new dated catalyst since last night.",
+ "sources": [
+  "https://x.com/i/trending/2115087553766236188"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none dated (whale wallet tracking only)",
+ "volume": 50,
+ "buzz_level": 50,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 4.65,
+ "carried_over": false
+}
