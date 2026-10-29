@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-29T12:10:05+00:00",
+  "generated": "2026-10-29T13:12:39+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,12 +9,12 @@
         "pairs": 53,
         "avg_dt_s": 182794.79245283018,
         "avg_price_pct": -3.666019265707061,
-        "missed": 70
+        "missed": 72
       },
       "entries": {
-        "pairs": 12,
-        "avg_dt_s": 560377.8333333334,
-        "avg_price_pct": -1.6501357621070316,
+        "pairs": 13,
+        "avg_dt_s": 517281.3076923077,
+        "avg_price_pct": -1.4756922000497332,
         "missed": 93
       }
     },
@@ -39,13 +39,13 @@
         "pairs": 39,
         "avg_dt_s": 180924.53846153847,
         "avg_price_pct": -1.2653654572545951,
-        "missed": 41
+        "missed": 42
       },
       "entries": {
         "pairs": 17,
         "avg_dt_s": 488021.4705882353,
         "avg_price_pct": 2.246382669908504,
-        "missed": 217
+        "missed": 219
       }
     },
     {
@@ -54,13 +54,13 @@
         "pairs": 39,
         "avg_dt_s": 114883.05128205128,
         "avg_price_pct": -1.4119217931023265,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 18,
         "avg_dt_s": 517549.77777777775,
         "avg_price_pct": 1.841546799254418,
-        "missed": 228
+        "missed": 230
       }
     },
     {
@@ -84,13 +84,13 @@
         "pairs": 39,
         "avg_dt_s": 114896.23076923077,
         "avg_price_pct": -1.4119217931023265,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 18,
         "avg_dt_s": 517559.1111111111,
         "avg_price_pct": 1.813886907385841,
-        "missed": 211
+        "missed": 213
       }
     },
     {
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 90,
-        "avg_dt_s": 236302.67777777778,
-        "avg_price_pct": -2.0253688248904824,
+        "pairs": 91,
+        "avg_dt_s": 233682.3186813187,
+        "avg_price_pct": -2.0365722789859952,
         "missed": 65
       },
       "entries": {
@@ -384,13 +384,13 @@
         "pairs": 12,
         "avg_dt_s": 1475.1666666666667,
         "avg_price_pct": -1.018108127000352,
-        "missed": 0
+        "missed": 1
       },
       "entries": {
         "pairs": 2,
         "avg_dt_s": 1988.0,
         "avg_price_pct": 2.4239238046051232,
-        "missed": 24
+        "missed": 25
       }
     },
     {
@@ -2371,6 +2371,34 @@
       "dt_s": 96.0,
       "price_diff": 0.29040779778297576,
       "price_pct": 0.4524479262073691
+    },
+    {
+      "asset": "KNTQ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-29T12:31:56+00:00",
+      "shadow_price": 0.3497061745144952,
+      "trigger": "[burst 24h] stop-loss -2.3% <= -1.6% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "ZRO",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-29T13:07:45+00:00",
+      "shadow_price": 1.322233469436742,
+      "trigger": "[burst 24h] stop-loss -2.0% <= -1.8% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -3852,6 +3880,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "ZRO",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-29T13:00:34+00:00",
+      "shadow_price": 1.3357333006618477,
+      "trigger": "[burst 24h] price breaks \u00a31.33482; volume x2",
+      "status": "matched",
+      "cycle_ts": "2026-10-29T13:02:37+00:00",
+      "cycle_price": 1.3439831975216345,
+      "cycle_reason": "[burst 24h] 24h-high break +0.45% (high $1.778); vol x8.1, RSI 64, BTC 1h +0.01%, 4h +0.40%; confidence 0.65 >= 0.55, EV +0.82% after costs; target +5.5% / stop -1.8% / max 6h",
+      "dt_s": 123.0,
+      "price_diff": 0.008249896859786832,
+      "price_pct": 0.6176305446378448
     }
   ],
   "main_entry_missed": [
