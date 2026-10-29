@@ -53,7 +53,8 @@ XTZ day
 
 VVV day
   shadow  2026-10-13T09:00:52+00:00  £17.3061  [burst 4h] stop-loss -1.7% <= -1.6% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-29T16:43:20+00:00  £19.0502  [burst 24h] trailing stop +1.8% (peak +3.1%, gives back 40% of the gain); P&L £+0.09
+  cycle was 1410148s later, price £+1.74418 (+10.08%)
 
 RENDER day
   shadow  2026-10-13T09:54:07+00:00  £1.58734  [momentum] stop-loss -3.1% <= -3.0% (ATR-scaled)
@@ -576,7 +577,8 @@ VVV day
 
 KNTQ day
   shadow  2026-10-29T15:48:07+00:00  £0.366496  [burst 24h] stop-loss -2.1% <= -1.9% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-29T17:06:04+00:00  £0.408971  [burst 24h] take-profit 9.3% >= 5.6% (ATR-scaled); P&L £+0.46
+  cycle was 4677s later, price £+0.0424759 (+11.59%)
 
 ZEC day
   shadow  2026-10-29T16:12:15+00:00  £1029.5  [burst 24h] trailing stop +2.0% (peak +3.5%, gives back 40% of the gain)
@@ -1178,7 +1180,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 59 pairs, avg time gap 189384s, avg price gap -3.58%, missed moves 72
+  exits: 61 pairs, avg time gap 206369s, avg price gap -3.10%, missed moves 70
   entries: 14 pairs, avg time gap 517134s, avg price gap -1.12%, missed moves 93
 ev_exit
   exits: 59 pairs, avg time gap 137299s, avg price gap -3.40%, missed moves 50

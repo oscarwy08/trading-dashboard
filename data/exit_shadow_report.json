@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-29T16:31:35+00:00",
+  "generated": "2026-10-29T17:42:00+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 59,
-        "avg_dt_s": 189384.05084745763,
-        "avg_price_pct": -3.5755310522029116,
-        "missed": 72
+        "pairs": 61,
+        "avg_dt_s": 206368.59016393442,
+        "avg_price_pct": -3.103084573375285,
+        "missed": 70
       },
       "entries": {
         "pairs": 14,
@@ -824,13 +824,13 @@
       "shadow_ts": "2026-10-13T09:00:52+00:00",
       "shadow_price": 17.3060651611133,
       "trigger": "[burst 4h] stop-loss -1.7% <= -1.6% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-29T16:43:20+00:00",
+      "cycle_price": 19.050245158987188,
+      "cycle_reason": "[burst 24h] trailing stop +1.8% (peak +3.1%, gives back 40% of the gain); P&L \u00a3+0.09",
+      "dt_s": 1410148.0,
+      "price_diff": 1.7441799978738892,
+      "price_pct": 10.078431934909496
     },
     {
       "asset": "RENDER",
@@ -2462,13 +2462,13 @@
       "shadow_ts": "2026-10-29T15:48:07+00:00",
       "shadow_price": 0.36649551729619817,
       "trigger": "[burst 24h] stop-loss -2.1% <= -1.9% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-29T17:06:04+00:00",
+      "cycle_price": 0.4089713991474379,
+      "cycle_reason": "[burst 24h] take-profit 9.3% >= 5.6% (ATR-scaled); P&L \u00a3+0.46",
+      "dt_s": 4677.0,
+      "price_diff": 0.04247588185123974,
+      "price_pct": 11.589741169169919
     },
     {
       "asset": "ZEC",
