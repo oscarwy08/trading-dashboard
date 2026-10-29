@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-29T21:55:00Z",
+ "asset": "HYPE",
+ "score": 0.45,
+ "confidence": 0.6,
+ "summary": "HYPE ~$94 (+14% in 24h, touched ~$98) after ICE (NYSE owner) and trade[XYZ] announced regulated US 24/7 perpetual futures built on Hyperliquid tech, pending CFTC approval; Druckenmiller publicly backed it. Real dated catalyst, but buzz is spiking on a coin that has already run hard, so chase risk is high.",
+ "sources": [
+  "https://x.com/i/trending/2115892615585341679",
+  "https://x.com/i/trending/2115756304312435149"
+ ],
+ "catalyst_score": 0.6,
+ "catalyst_note": "ICE + trade[XYZ] Hyperliquid perps partnership announced 29 Oct (pending CFTC)",
+ "volume": 125604,
+ "buzz_level": 125604,
+ "buzz_change": 1.6,
+ "price_runup_24h_pct": 14.0,
+ "carried_over": false
+}

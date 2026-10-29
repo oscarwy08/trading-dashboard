@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-29T21:55:00Z",
+ "asset": "ETH",
+ "score": -0.2,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,283, dropped sharply with the post-Fed sell-off and ETF outflows. A $45M 25x ETH long opened on Hyperliquid near $2,310 is now underwater; prominent trader Ansem is shorting ETH. zkLink Nova bridge exploit ($786k) is small and not ETH-specific.",
+ "sources": [
+  "https://x.com/i/trending/2115776142544343139",
+  "https://x.com/i/trending/2115766737673068567",
+  "https://x.com/i/trending/2115497447732445567"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Fed hold 29 Oct; ETF outflows",
+ "volume": 6000,
+ "buzz_level": 6000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.79,
+ "carried_over": false
+}

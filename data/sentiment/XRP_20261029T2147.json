@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-29T21:55:00Z",
+ "asset": "XRP",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "XRP ~$1.26, down with the market despite a strong Ripple Swell close: ~$900M annualised revenue, bank partners (Standard Chartered, HSBC, BNY) and final OCC approval for a national trust bank charter, with Treasury Secretary Bessent on stage. X chatter has fallen back sharply after the Swell spike.",
+ "sources": [
+  "https://x.com/i/trending/2115368381108879588"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Ripple final OCC national trust bank charter approval announced at Swell, 27-29 Oct",
+ "volume": 60776,
+ "buzz_level": 60776,
+ "buzz_change": 0.12,
+ "price_runup_24h_pct": -5.34,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-29T21:55:00Z",
+ "asset": "WLD",
+ "score": -0.3,
+ "confidence": 0.4,
+ "summary": "WLD ~$0.395, listed among the day's biggest losers in the risk-off move; charts show it testing a support line held since May, with traders eyeing $0.36 then $0.30 if it breaks. No project news. Mention count roughly doubled, but it is mostly bearish chart talk on a falling coin.",
+ "sources": [
+  "https://x.com/speartrades_app/status/2115787665727766614",
+  "https://x.com/BTCassh/status/2115910351459922013"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "none",
+ "volume": 3458,
+ "buzz_level": 3458,
+ "buzz_change": 2.0,
+ "price_runup_24h_pct": -10.38,
+ "carried_over": false
+}

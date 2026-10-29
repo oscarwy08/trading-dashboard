@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-29T21:55:00Z",
+ "asset": "BTC",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "BTC ~$79.3k, slipped below $80k after the hawkish 10-2 Fed hold (two dissents wanted a hike); ~$335M crypto liquidations. Offsetting institutional news: Franklin Templeton launched two Bitcoin-dividend ETFs today. Dominance easing toward 60% as money rotates into some alts.",
+ "sources": [
+  "https://x.com/i/trending/2115497447732445567",
+  "https://x.com/i/trending/2115837481815851238",
+  "https://x.com/i/trending/2115870740109004839"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Fed hold with hawkish dissents 29 Oct; Franklin BTC DRIP ETFs launched 29 Oct",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.85,
+ "carried_over": false
+}
