@@ -1,20 +1,20 @@
 {
   "status": "ok",
-  "generated": "2026-10-29T14:19:11+00:00",
+  "generated": "2026-10-29T15:24:24+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 56,
-        "avg_dt_s": 199395.73214285713,
-        "avg_price_pct": -3.7921212202123447,
+        "pairs": 57,
+        "avg_dt_s": 196010.91228070174,
+        "avg_price_pct": -3.669993856896351,
         "missed": 71
       },
       "entries": {
-        "pairs": 13,
-        "avg_dt_s": 517281.3076923077,
-        "avg_price_pct": -1.4756922000497332,
+        "pairs": 14,
+        "avg_dt_s": 517133.78571428574,
+        "avg_price_pct": -1.118987357947859,
         "missed": 93
       }
     },
@@ -45,7 +45,7 @@
         "pairs": 17,
         "avg_dt_s": 488021.4705882353,
         "avg_price_pct": 2.246382669908504,
-        "missed": 219
+        "missed": 221
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 18,
         "avg_dt_s": 517549.77777777775,
         "avg_price_pct": 1.841546799254418,
-        "missed": 230
+        "missed": 232
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 18,
         "avg_dt_s": 517559.1111111111,
         "avg_price_pct": 1.813886907385841,
-        "missed": 213
+        "missed": 215
       }
     },
     {
@@ -390,7 +390,7 @@
         "pairs": 2,
         "avg_dt_s": 1988.0,
         "avg_price_pct": 2.4239238046051232,
-        "missed": 26
+        "missed": 29
       }
     },
     {
@@ -2378,13 +2378,13 @@
       "shadow_ts": "2026-10-29T12:31:56+00:00",
       "shadow_price": 0.3497061745144952,
       "trigger": "[burst 24h] stop-loss -2.3% <= -1.6% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-29T14:19:37+00:00",
+      "cycle_price": 0.3607888474887417,
+      "cycle_reason": "[burst 24h] trailing stop +0.8% (peak +2.0%, gives back 40% of the gain); P&L \u00a3+0.04",
+      "dt_s": 6461.0,
+      "price_diff": 0.011082672974246477,
+      "price_pct": 3.1691384887992893
     },
     {
       "asset": "ZRO",
@@ -2420,6 +2420,20 @@
       "shadow_ts": "2026-10-29T13:45:10+00:00",
       "shadow_price": 0.055341808116697214,
       "trigger": "[burst 24h] stop-loss -1.8% <= -1.7% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "PEPE",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-29T15:15:49+00:00",
+      "shadow_price": 3.802880773923224e-06,
+      "trigger": "[burst 4h] trailing stop +1.2% (peak +2.0%, gives back 40% of the gain)",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
@@ -3565,13 +3579,13 @@
       "shadow_ts": "2026-10-23T15:34:14+00:00",
       "shadow_price": 3.619065867e-06,
       "trigger": "[momentum] price holds \u00a33.61533e-06; score 0.377 >= 0.35",
-      "status": "cycle missed",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-29T14:41:10+00:00",
+      "cycle_price": 3.7463909588962513e-06,
+      "cycle_reason": "[burst 4h] 4h-range break +1.15% (range 2.2%); vol x5.4, RSI 46, BTC 1h +1.38%, 4h +1.19%; confidence 0.72 >= 0.55, EV +0.52% after costs; target +6.0% / stop -2.0% / max 6h",
+      "dt_s": 515216.0,
+      "price_diff": 1.2732509189625117e-07,
+      "price_pct": 3.518175589376505
     },
     {
       "asset": "SOON",
@@ -3922,6 +3936,20 @@
       "dt_s": 123.0,
       "price_diff": 0.008249896859786832,
       "price_pct": 0.6176305446378448
+    },
+    {
+      "asset": "UNI",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-29T15:14:03+00:00",
+      "shadow_price": 5.507584263478957,
+      "trigger": "[burst 24h] price breaks \u00a35.50462; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_entry_missed": [
@@ -4239,6 +4267,13 @@
       "asset": "PYTH",
       "price": 0.05611429845902271,
       "reason": "[burst 24h] 24h-high break +1.11% (high $0.07452); vol x12.2, RSI 57, BTC 1h +0.08%, 4h -0.09%; confidence 0.67 >= 0.55, EV +0.75% after costs; target +5.2% / stop -1.7% / max 6h"
+    },
+    {
+      "ts": "2026-10-29T15:14:06+00:00",
+      "sleeve": "day",
+      "asset": "VVV",
+      "price": 18.650298263602192,
+      "reason": "[burst 24h] 24h-high break +0.65% (high $24.8); vol x4.5, RSI 71, BTC 1h +1.45%, 4h +1.59%; confidence 0.73 >= 0.55, EV +0.58% after costs; target +4.1% / stop -1.5% / max 6h"
     }
   ]
 }

@@ -548,7 +548,8 @@ HYPE day
 
 KNTQ day
   shadow  2026-10-29T12:31:56+00:00  £0.349706  [burst 24h] stop-loss -2.3% <= -1.6% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-29T14:19:37+00:00  £0.360789  [burst 24h] trailing stop +0.8% (peak +2.0%, gives back 40% of the gain); P&L £+0.04
+  cycle was 6461s later, price £+0.0110827 (+3.17%)
 
 ZRO day
   shadow  2026-10-29T13:07:45+00:00  £1.32223  [burst 24h] stop-loss -2.0% <= -1.8% (ATR-scaled)
@@ -562,6 +563,10 @@ HYPE day
 
 PYTH day
   shadow  2026-10-29T13:45:10+00:00  £0.0553418  [burst 24h] stop-loss -1.8% <= -1.7% (ATR-scaled)
+  cycle   no sell yet
+
+PEPE day
+  shadow  2026-10-29T15:15:49+00:00  £3.80288e-06  [burst 4h] trailing stop +1.2% (peak +2.0%, gives back 40% of the gain)
   cycle   no sell yet
 
 Cycle sells with no shadow exit
@@ -902,7 +907,8 @@ DASH day
 
 PEPE day
   shadow  2026-10-23T15:34:14+00:00  £3.61907e-06  [momentum] price holds £3.61533e-06; score 0.377 >= 0.35
-  cycle   no buy — the cycle missed this move
+  cycle   2026-10-29T14:41:10+00:00  £3.74639e-06  [burst 4h] 4h-range break +1.15% (range 2.2%); vol x5.4, RSI 46, BTC 1h +1.38%, 4h +1.19%; confidence 0.72 >= 0.55, EV +0.52% after costs; target +6.0% / stop -2.0% / max 6h
+  cycle was 515216s later, price £+1.27325e-07 (+3.52%)
 
 SOON day
   shadow  2026-10-23T15:34:14+00:00  £0.238558  [momentum] price holds £0.238558; score 0.72 >= 0.35
@@ -1006,6 +1012,10 @@ ZRO day
   cycle   2026-10-29T13:02:37+00:00  £1.34398  [burst 24h] 24h-high break +0.45% (high $1.778); vol x8.1, RSI 64, BTC 1h +0.01%, 4h +0.40%; confidence 0.65 >= 0.55, EV +0.82% after costs; target +5.5% / stop -1.8% / max 6h
   cycle was 123s later, price £+0.0082499 (+0.62%)
 
+UNI day
+  shadow  2026-10-29T15:14:03+00:00  £5.50758  [burst 24h] price breaks £5.50462; volume x2
+  cycle   no buy — the cycle missed this move
+
 Moves the cycle missed
   KNTQ risk  2026-10-12T13:22:23+00:00  £0.266751  RISK dip: price holds £0.266751
   ZRO risk  2026-10-12T13:23:44+00:00  £1.81194  RISK dip: price holds £1.81043
@@ -1076,7 +1086,6 @@ Moves the cycle missed
   CARDS day  2026-10-23T15:34:14+00:00  £0.272009  [momentum] price holds £0.27139; score 0.9 >= 0.35
   COMP day  2026-10-23T15:34:14+00:00  £18.4649  [momentum] price holds £18.45; score 0.489 >= 0.35
   DASH day  2026-10-23T15:34:14+00:00  £40.198  [momentum] price holds £40.0554; score 0.817 >= 0.35
-  PEPE day  2026-10-23T15:34:14+00:00  £3.61907e-06  [momentum] price holds £3.61533e-06; score 0.377 >= 0.35
   STABLE day  2026-10-23T15:34:14+00:00  £0.019458  [momentum] price holds £0.019458; score 0.397 >= 0.35
   VET day  2026-10-23T15:34:14+00:00  £0.00543047  [momentum] price holds £0.00542673; score 0.358 >= 0.35
   SENT day  2026-10-23T15:34:19+00:00  £0.0177302  [momentum] price holds £0.0177183; score 0.9 >= 0.35
@@ -1100,6 +1109,7 @@ Moves the cycle missed
   POL day  2026-10-26T12:45:57+00:00  £0.0675119  [momentum] price holds £0.067497; score 0.498 >= 0.35
   JTO day  2026-10-26T12:46:03+00:00  £0.32249  [momentum] price holds £0.322235; score 0.646 >= 0.35
   ENA day  2026-10-27T16:17:12+00:00  £0.16095  [burst 24h] price breaks £0.160885; volume x2
+  UNI day  2026-10-29T15:14:03+00:00  £5.50758  [burst 24h] price breaks £5.50462; volume x2
 
 Cycle buys with no shadow entry
   CARDS day  2026-10-19T07:11:51+00:00  £0.220091  [momentum] DAY score 0.8 >= 0.35; target +5.5% / stop -2.6% (ATR 2.20%); EV +0.33%; 4h +8.3%, 24h +9.1%, EMA6/24 up, RSI 78, no fresh sentiment
@@ -1147,27 +1157,28 @@ Cycle buys with no shadow entry
   HYPE day  2026-10-29T10:39:30+00:00  £62.1954  [burst 24h] 24h-high break +0.75% (high $82.24); vol x5.1, RSI 62, BTC 1h +0.14%, 4h +0.28%; confidence 0.66 >= 0.55, EV +0.36% after costs; target +3.0% / stop -1.5% / max 6h
   HYPE day  2026-10-29T11:59:59+00:00  £65.8931  [burst 24h] 24h-high break +0.24% (high $87.46); vol x6.0, RSI 74, BTC 1h -0.21%, 4h +0.35%; confidence 0.64 >= 0.55, EV +0.64% after costs; target +3.7% / stop -1.5% / max 6h
   PYTH day  2026-10-29T13:24:21+00:00  £0.0561143  [burst 24h] 24h-high break +1.11% (high $0.07452); vol x12.2, RSI 57, BTC 1h +0.08%, 4h -0.09%; confidence 0.67 >= 0.55, EV +0.75% after costs; target +5.2% / stop -1.7% / max 6h
+  VVV day  2026-10-29T15:14:06+00:00  £18.6503  [burst 24h] 24h-high break +0.65% (high $24.8); vol x4.5, RSI 71, BTC 1h +1.45%, 4h +1.59%; confidence 0.73 >= 0.55, EV +0.58% after costs; target +4.1% / stop -1.5% / max 6h
 
 Per book
 
 main
-  exits: 56 pairs, avg time gap 199396s, avg price gap -3.79%, missed moves 71
-  entries: 13 pairs, avg time gap 517281s, avg price gap -1.48%, missed moves 93
+  exits: 57 pairs, avg time gap 196011s, avg price gap -3.67%, missed moves 71
+  entries: 14 pairs, avg time gap 517134s, avg price gap -1.12%, missed moves 93
 ev_exit
   exits: 59 pairs, avg time gap 137299s, avg price gap -3.40%, missed moves 50
   entries: 23 pairs, avg time gap 500523s, avg price gap +5.11%, missed moves 327
 review_leftovers
   exits: 40 pairs, avg time gap 176424s, avg price gap -1.21%, missed moves 41
-  entries: 17 pairs, avg time gap 488021s, avg price gap +2.25%, missed moves 219
+  entries: 17 pairs, avg time gap 488021s, avg price gap +2.25%, missed moves 221
 all_combined
   exits: 40 pairs, avg time gap 112034s, avg price gap -1.36%, missed moves 43
-  entries: 18 pairs, avg time gap 517550s, avg price gap +1.84%, missed moves 230
+  entries: 18 pairs, avg time gap 517550s, avg price gap +1.84%, missed moves 232
 burst_runner
   exits: 59 pairs, avg time gap 186722s, avg price gap -3.97%, missed moves 56
   entries: 21 pairs, avg time gap 471262s, avg price gap +5.12%, missed moves 276
 everything
   exits: 40 pairs, avg time gap 112047s, avg price gap -1.36%, missed moves 43
-  entries: 18 pairs, avg time gap 517559s, avg price gap +1.81%, missed moves 213
+  entries: 18 pairs, avg time gap 517559s, avg price gap +1.81%, missed moves 215
 midnight_crypto
   exits: 69 pairs, avg time gap 153281s, avg price gap -3.01%, missed moves 61
   entries: 37 pairs, avg time gap 357754s, avg price gap +2.82%, missed moves 436
@@ -1227,7 +1238,7 @@ insider_rs_stocks
   entries: no shadow rows
 risk_ev_fix
   exits: 13 pairs, avg time gap 1446s, avg price gap -0.88%, missed moves 0
-  entries: 2 pairs, avg time gap 1988s, avg price gap +2.42%, missed moves 26
+  entries: 2 pairs, avg time gap 1988s, avg price gap +2.42%, missed moves 29
 signal_engine
   exits: no shadow rows
   entries: no shadow rows
