@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-29T13:55:00Z",
+ "asset": "CRWD",
+ "score": -0.15,
+ "confidence": 0.45,
+ "summary": "CRWD ~$256 (-4% vs yesterday). Cyber peer Fortinet fell ~20% after hours on 28 Oct on a services slowdown despite beats and raised guidance, dragging the group; plus broad tech weakness at the open after Alphabet's miss. No CrowdStrike-specific news.",
+ "sources": [
+  "https://x.com/i/trending/2115553125847171459",
+  "https://x.com/i/trending/2115537951639662874"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "Fortinet Q3 28 Oct, shares -20% AH, peers lower",
+ "volume": 300,
+ "buzz_level": 300,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -4.13,
+ "carried_over": false
+}

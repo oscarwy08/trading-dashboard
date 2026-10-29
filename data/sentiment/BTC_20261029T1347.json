@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-29T13:55:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "BTC ~$80.0k (-1.1%), holding the $80k line after the hawkish Fed hold. US Q3 GDP 3.4% beat (3.2% est) and PCE inflation 3.6% in line; US stocks gapped lower at the open (Alphabet -9% after hours). A big ETH 25x long on Hyperliquid is drawing attention but no BTC-specific catalyst since the morning.",
+ "sources": [
+  "https://x.com/i/trending/2115792662326345999",
+  "https://x.com/i/trending/2115627536398827983"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "US GDP/PCE 29 Oct in line-to-hot; Dec hike odds high",
+ "volume": 80000,
+ "buzz_level": 80000,
+ "buzz_change": 0.98,
+ "price_runup_24h_pct": -1.09,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-29T13:55:00Z",
+ "asset": "PEPE",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "PEPE ~$0.00000486 (flat 24h). Chatter about breaking a two-year downtrend vs BTC and Justin Sun-linked wallets accumulating (~$51M, already in the morning score). Mostly chart talk, no new dated event; buzz slightly below its 3-day norm.",
+ "sources": [
+  "https://x.com/i/trending/2115768197890572734"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 18500,
+ "buzz_level": 18500,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": 0.5,
+ "carried_over": false
+}

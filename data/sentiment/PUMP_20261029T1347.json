@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-29T13:55:00Z",
+ "asset": "PUMP",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "PUMP ~$0.0044 (+1.5%). Perps launch (28 Oct, 300+ Hyperliquid markets) already in the prior score; today's buzz is mostly negative: an analysis showing the platform kept $1.37B of fees while only 0.4% of accounts made >$10k, a #BOYCOTTPUMPFUN push, and the ongoing New York lawsuit. Also named exclusive trading partner for Elysium L2 (launch 9 Nov).",
+ "sources": [
+  "https://x.com/i/trending/2115737270607081536",
+  "https://x.com/i/trending/2115500581473095757"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Elysium L2 partner, launch 9 Nov; boycott/fee analysis 29 Oct",
+ "volume": 23500,
+ "buzz_level": 23500,
+ "buzz_change": 0.8,
+ "price_runup_24h_pct": 1.53,
+ "carried_over": false
+}

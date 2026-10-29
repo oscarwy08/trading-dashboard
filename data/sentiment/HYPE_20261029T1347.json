@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-29T13:55:00Z",
+ "asset": "HYPE",
+ "score": 0.35,
+ "confidence": 0.55,
+ "summary": "HYPE ~$90.7 (about +12% since yesterday morning). New dated catalyst today: ICE (owner of the NYSE) is partnering with trade.xyz to launch a regulated US venue for 24/7 perpetual futures on Hyperliquid's infrastructure, pending CFTC approval; HYPE jumped 8-9% on it. Adds to Pump.fun's perps integration (28 Oct). Already run up and RSI ~81, so a lot is priced in; minor negative: a user's $190k ZEC deposit via Unit bridge stuck.",
+ "sources": [
+  "https://x.com/i/trending/2115756304312435149",
+  "https://x.com/i/trending/2115500581473095757",
+  "https://x.com/i/trending/2115646851894358205"
+ ],
+ "catalyst_score": 0.45,
+ "catalyst_note": "ICE x trade.xyz 24/7 US perps on Hyperliquid announced 29 Oct (pending CFTC)",
+ "volume": 58800,
+ "buzz_level": 58800,
+ "buzz_change": 1.42,
+ "price_runup_24h_pct": 11.95,
+ "carried_over": false
+}
