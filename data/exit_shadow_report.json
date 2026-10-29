@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-29T19:50:32+00:00",
+  "generated": "2026-10-29T20:59:21+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -21,10 +21,10 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 60,
-        "avg_dt_s": 135275.46666666667,
-        "avg_price_pct": -3.2804348715265426,
-        "missed": 50
+        "pairs": 61,
+        "avg_dt_s": 133118.60655737706,
+        "avg_price_pct": -3.2350082591705975,
+        "missed": 49
       },
       "entries": {
         "pairs": 24,
@@ -66,10 +66,10 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 60,
-        "avg_dt_s": 183874.96666666667,
-        "avg_price_pct": -3.838124391970654,
-        "missed": 56
+        "pairs": 61,
+        "avg_dt_s": 180921.7868852459,
+        "avg_price_pct": -3.7835553284598875,
+        "missed": 55
       },
       "entries": {
         "pairs": 22,
@@ -156,9 +156,9 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 15,
-        "avg_dt_s": 67884.33333333333,
-        "avg_price_pct": 1.2308804273214624,
+        "pairs": 16,
+        "avg_dt_s": 146307.3125,
+        "avg_price_pct": 0.5598653548103211,
         "missed": 27
       },
       "entries": {
@@ -201,16 +201,16 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 93,
-        "avg_dt_s": 228682.75268817204,
-        "avg_price_pct": -1.9892982444151972,
+        "pairs": 94,
+        "avg_dt_s": 226253.6489361702,
+        "avg_price_pct": -1.9967240967518902,
         "missed": 65
       },
       "entries": {
         "pairs": 43,
         "avg_dt_s": 431719.5813953488,
         "avg_price_pct": -0.03412771859686777,
-        "missed": 182
+        "missed": 184
       }
     },
     {
