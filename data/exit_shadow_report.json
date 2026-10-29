@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-29T15:24:24+00:00",
+  "generated": "2026-10-29T16:31:35+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 57,
-        "avg_dt_s": 196010.91228070174,
-        "avg_price_pct": -3.669993856896351,
-        "missed": 71
+        "pairs": 59,
+        "avg_dt_s": 189384.05084745763,
+        "avg_price_pct": -3.5755310522029116,
+        "missed": 72
       },
       "entries": {
         "pairs": 14,
@@ -36,31 +36,31 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 40,
-        "avg_dt_s": 176424.15,
-        "avg_price_pct": -1.2136322018804988,
+        "pairs": 41,
+        "avg_dt_s": 172129.29268292684,
+        "avg_price_pct": -1.1879363348063998,
         "missed": 41
       },
       "entries": {
         "pairs": 17,
         "avg_dt_s": 488021.4705882353,
         "avg_price_pct": 2.246382669908504,
-        "missed": 221
+        "missed": 230
       }
     },
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 40,
-        "avg_dt_s": 112034.175,
-        "avg_price_pct": -1.3565246293320368,
+        "pairs": 41,
+        "avg_dt_s": 109310.19512195123,
+        "avg_price_pct": -1.3273435811005834,
         "missed": 43
       },
       "entries": {
         "pairs": 18,
         "avg_dt_s": 517549.77777777775,
         "avg_price_pct": 1.841546799254418,
-        "missed": 232
+        "missed": 240
       }
     },
     {
@@ -81,16 +81,16 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 40,
-        "avg_dt_s": 112047.375,
-        "avg_price_pct": -1.3565246293320368,
+        "pairs": 41,
+        "avg_dt_s": 109323.53658536586,
+        "avg_price_pct": -1.3273435811005834,
         "missed": 43
       },
       "entries": {
         "pairs": 18,
         "avg_dt_s": 517559.1111111111,
         "avg_price_pct": 1.813886907385841,
-        "missed": 215
+        "missed": 223
       }
     },
     {
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 91,
-        "avg_dt_s": 233682.3186813187,
-        "avg_price_pct": -2.0365722789859952,
+        "pairs": 92,
+        "avg_dt_s": 231144.94565217392,
+        "avg_price_pct": -2.010508230864549,
         "missed": 65
       },
       "entries": {
@@ -390,7 +390,7 @@
         "pairs": 2,
         "avg_dt_s": 1988.0,
         "avg_price_pct": 2.4239238046051232,
-        "missed": 29
+        "missed": 41
       }
     },
     {
@@ -2434,6 +2434,20 @@
       "shadow_ts": "2026-10-29T15:15:49+00:00",
       "shadow_price": 3.802880773923224e-06,
       "trigger": "[burst 4h] trailing stop +1.2% (peak +2.0%, gives back 40% of the gain)",
+      "status": "matched",
+      "cycle_ts": "2026-10-29T15:24:54+00:00",
+      "cycle_price": 3.7871478156386714e-06,
+      "cycle_reason": "[burst 4h] trailing stop +0.8% (peak +2.0%, gives back 40% of the gain); P&L \u00a3+0.04",
+      "dt_s": 545.0,
+      "price_diff": -1.5732958284552704e-08,
+      "price_pct": -0.4137115839243593
+    },
+    {
+      "asset": "VVV",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-29T15:36:08+00:00",
+      "shadow_price": 18.95072284798817,
+      "trigger": "[burst 24h] trailing stop +1.3% (peak +2.3%, gives back 40% of the gain)",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
@@ -2441,6 +2455,34 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "KNTQ",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-29T15:48:07+00:00",
+      "shadow_price": 0.36649551729619817,
+      "trigger": "[burst 24h] stop-loss -2.1% <= -1.9% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "ZEC",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-29T16:12:15+00:00",
+      "shadow_price": 1029.498276160541,
+      "trigger": "[burst 24h] trailing stop +2.0% (peak +3.5%, gives back 40% of the gain)",
+      "status": "matched",
+      "cycle_ts": "2026-10-29T16:20:27+00:00",
+      "cycle_price": 1015.5694666114072,
+      "cycle_reason": "[burst 24h] trailing stop +0.6% (peak +2.9%, gives back 40% of the gain) [gap fill]; P&L \u00a3+0.03",
+      "dt_s": 492.0,
+      "price_diff": -13.928809549133916,
+      "price_pct": -1.3529706529554053
     }
   ],
   "main_exit_missed": [
@@ -4274,6 +4316,20 @@
       "asset": "VVV",
       "price": 18.650298263602192,
       "reason": "[burst 24h] 24h-high break +0.65% (high $24.8); vol x4.5, RSI 71, BTC 1h +1.45%, 4h +1.59%; confidence 0.73 >= 0.55, EV +0.58% after costs; target +4.1% / stop -1.5% / max 6h"
+    },
+    {
+      "ts": "2026-10-29T15:24:54+00:00",
+      "sleeve": "day",
+      "asset": "KNTQ",
+      "price": 0.37206947965986814,
+      "reason": "[burst 24h] 24h-high break +1.35% (high $0.49); vol x10.8, RSI 67, BTC 1h +1.38%, 4h +1.70%; confidence 0.75 >= 0.55, EV +0.78% after costs; target +5.6% / stop -1.9% / max 6h"
+    },
+    {
+      "ts": "2026-10-29T15:37:26+00:00",
+      "sleeve": "day",
+      "asset": "ZEC",
+      "price": 1008.1005399100375,
+      "reason": "[burst 24h] 24h-high break +1.32% (high $1323.3); vol x5.4, RSI 72, BTC 1h +1.47%, 4h +1.85%; confidence 0.74 >= 0.55, EV +0.69% after costs; target +3.6% / stop -1.5% / max 6h"
     }
   ]
 }
