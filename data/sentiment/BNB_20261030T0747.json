@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "BNB",
+ "score": -0.6,
+ "confidence": 0.6,
+ "summary": "Binance hit by reported record $6.3B hack via a compromised DevOps laptop; withdrawals/deposits paused for checks, SAFU to cover losses, ~$3B frozen with Tether/Circle help. BNB -5% in 24h, the worst of the majors.",
+ "sources": [
+  "https://x.com/i/trending/2116063292150218854",
+  "https://x.com/i/trending/2116067081896484880"
+ ],
+ "catalyst_score": -0.8,
+ "catalyst_note": "Binance $6.3B hack and withdrawal pause 29-30 Oct",
+ "volume": 35000,
+ "buzz_level": 35000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -5.22,
+ "carried_over": false
+}

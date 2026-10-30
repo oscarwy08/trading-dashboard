@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "XRP",
+ "score": -0.05,
+ "confidence": 0.45,
+ "summary": "XRP fell >6% to ~$1.23 on 29 Oct, now ~$1.25. Swell (27-29 Oct) wrapped with Garlinghouse reaffirming XRP and RLUSD at $2.6B, but nothing new and dated today; mentions have faded sharply after the Swell spike. Resistance $1.33-1.34.",
+ "sources": [
+  "https://x.com/i/trending/2115942197585477708",
+  "https://x.com/i/trending/2116067080390705506",
+  "https://x.com/i/trending/2115368381108879588"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 56000,
+ "buzz_level": 56000,
+ "buzz_change": 0.17,
+ "price_runup_24h_pct": -2.78,
+ "carried_over": false
+}

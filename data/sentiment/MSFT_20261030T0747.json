@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "MSFT",
+ "score": 0.1,
+ "confidence": 0.5,
+ "summary": "FQ1 beat (revenue $92.3B, Azure +48%, guide 49-50%), but capex came in light on GPU delays, which hit AI-infrastructure names; also launched a ~$25B bond sale, its first since 2017. Net mildly positive for MSFT itself.",
+ "sources": [
+  "https://x.com/i/trending/2115713043749543960",
+  "https://x.com/i/trending/2115777966948971005"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "FQ1 earnings 28-29 Oct; $25B bond sale 29 Oct",
+ "volume": 20000,
+ "buzz_level": 20000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.16,
+ "carried_over": false
+}

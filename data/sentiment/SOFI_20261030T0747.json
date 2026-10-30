@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "SOFI",
+ "score": 0.45,
+ "confidence": 0.55,
+ "summary": "Q3 beat: adjusted revenue $1.4B (+44%), record EBITDA, 17.1M members, 2026 guidance raised to $5.04B and 2027 previewed at $6.4B; UBS target to $22. Shares ~$17.6, up despite a weak tape.",
+ "sources": [
+  "https://x.com/i/trending/2115811360386813991"
+ ],
+ "catalyst_score": 0.6,
+ "catalyst_note": "Q3 earnings and raised guidance 29 Oct",
+ "volume": 15000,
+ "buzz_level": 15000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 2.95,
+ "carried_over": false
+}

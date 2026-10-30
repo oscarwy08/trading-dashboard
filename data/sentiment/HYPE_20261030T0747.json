@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "HYPE",
+ "score": 0.4,
+ "confidence": 0.55,
+ "summary": "HYPE ~$91.5 (+16.5% 24h) after ICE (NYSE parent) and trade[XYZ] agreed to build regulated US perps on Hyperliquid tech, pending CFTC; Druckenmiller disclosed backing trade[XYZ]. Buzz up ~30% after an already big run-up, so chase risk is high.",
+ "sources": [
+  "https://x.com/i/trending/2115892615585341679",
+  "https://x.com/i/trending/2115756304312435149"
+ ],
+ "catalyst_score": 0.6,
+ "catalyst_note": "ICE x trade[XYZ] Hyperliquid partnership announced 29 Oct",
+ "volume": 100000,
+ "buzz_level": 100000,
+ "buzz_change": 1.3,
+ "price_runup_24h_pct": 16.54,
+ "carried_over": false
+}

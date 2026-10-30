@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "SUI",
+ "score": 0.25,
+ "confidence": 0.45,
+ "summary": "Mercado Bitcoin (Brazil, 4.5M users) enabled Sui network transfers for SUI, USDC and USDsui, with plans for BTC lending and 800+ tokenized RWAs on Sui. Price flat (-1%) despite the listing, in a weak market.",
+ "sources": [
+  "https://x.com/i/trending/2115824331423179257"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Mercado Bitcoin Sui support launched 30 Oct",
+ "volume": 27000,
+ "buzz_level": 27000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.13,
+ "carried_over": false
+}

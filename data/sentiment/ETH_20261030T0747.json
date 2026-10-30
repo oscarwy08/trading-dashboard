@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "ETH",
+ "score": -0.35,
+ "confidence": 0.5,
+ "summary": "ETH under $2,250 with the crypto selloff; the Binance hacker reportedly borrowed ETH on Aave against stolen stablecoins, adding sell-side risk. Small zkLink Nova bridge exploit ($786k) on 28 Oct. Leveraged whale long from $2,310 is underwater.",
+ "sources": [
+  "https://x.com/i/trending/2116063292150218854",
+  "https://x.com/i/trending/2116009271863521385",
+  "https://x.com/i/trending/2115675509099258274"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Binance hack funds routed via Aave 29-30 Oct",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.77,
+ "carried_over": false
+}

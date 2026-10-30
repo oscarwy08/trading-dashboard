@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "IREN",
+ "score": -0.3,
+ "confidence": 0.45,
+ "summary": "IREN fell 9% to ~$26.3 on 29 Oct on heavy volume after Microsoft's lighter capex raised doubts about GPU-cloud demand. Bulls cite large cash and prepayments; earnings are due 5 Nov.",
+ "sources": [
+  "https://x.com/i/trending/2115892610535502076"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 12000,
+ "buzz_level": 12000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -6.59,
+ "carried_over": false
+}

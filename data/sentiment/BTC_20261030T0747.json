@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-30T07:55:00Z",
+ "asset": "BTC",
+ "score": -0.35,
+ "confidence": 0.6,
+ "summary": "BTC ~$78.2k after dropping to ~$76.4k on the reported record $6.3B Binance hot-wallet hack (attributed to North Korea's TraderTraitor; Binance says SAFU covers losses, ~$3B frozen). ~$1.1B liquidations in 24h, mostly longs; tech-earnings selloff adds pressure. Support eyed near $75.8k (50-week MA).",
+ "sources": [
+  "https://x.com/i/trending/2116063292150218854",
+  "https://x.com/i/trending/2116034431941300383",
+  "https://x.com/i/trending/2116009271863521385"
+ ],
+ "catalyst_score": -0.5,
+ "catalyst_note": "Binance $6.3B hack disclosed 29-30 Oct; Fed hawkish hold 29 Oct",
+ "volume": 160000,
+ "buzz_level": 160000,
+ "buzz_change": 1.9,
+ "price_runup_24h_pct": -1.96,
+ "carried_over": false
+}
