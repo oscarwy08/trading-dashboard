@@ -605,6 +605,11 @@ GRASS day
   cycle   2026-10-30T13:28:33+00:00  £0.437146  [burst 4h] stop-loss -2.7% <= -2.3% (ATR-scaled); P&L £-0.14
   cycle was 598s later, price £-0.000895637 (-0.20%)
 
+SUPER day
+  shadow  2026-10-30T18:05:06+00:00  £0.119412  [burst 4h] stop-loss -2.8% <= -2.5% (ATR-scaled)
+  cycle   2026-10-30T18:14:27+00:00  £0.119116  [burst 4h] stop-loss -3.1% <= -2.5% (ATR-scaled); P&L £-0.15
+  cycle was 561s later, price £-0.000296612 (-0.25%)
+
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
 
@@ -1204,7 +1209,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 65 pairs, avg time gap 193949s, avg price gap -2.98%, missed moves 70
+  exits: 66 pairs, avg time gap 191019s, avg price gap -2.94%, missed moves 70
   entries: 15 pairs, avg time gap 545344s, avg price gap -1.03%, missed moves 92
 ev_exit
   exits: 66 pairs, avg time gap 123374s, avg price gap -3.03%, missed moves 49
