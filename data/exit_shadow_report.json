@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-30T10:06:32+00:00",
+  "generated": "2026-10-30T11:15:06+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -24,7 +24,7 @@
         "pairs": 61,
         "avg_dt_s": 133118.60655737706,
         "avg_price_pct": -3.2350082591705975,
-        "missed": 49
+        "missed": 50
       },
       "entries": {
         "pairs": 26,
@@ -69,7 +69,7 @@
         "pairs": 61,
         "avg_dt_s": 180921.7868852459,
         "avg_price_pct": -3.7835553284598875,
-        "missed": 55
+        "missed": 56
       },
       "entries": {
         "pairs": 24,
@@ -192,10 +192,10 @@
         "missed": 54
       },
       "entries": {
-        "pairs": 18,
-        "avg_dt_s": 416280.94444444444,
-        "avg_price_pct": 4.101225204969187,
-        "missed": 341
+        "pairs": 19,
+        "avg_dt_s": 461757.8947368421,
+        "avg_price_pct": 5.188519343842087,
+        "missed": 340
       }
     },
     {
@@ -222,10 +222,10 @@
         "missed": 50
       },
       "entries": {
-        "pairs": 20,
-        "avg_dt_s": 354690.3,
-        "avg_price_pct": 6.701962598927144,
-        "missed": 408
+        "pairs": 21,
+        "avg_dt_s": 377976.1904761905,
+        "avg_price_pct": 7.052878750644854,
+        "missed": 407
       }
     },
     {
@@ -237,10 +237,10 @@
         "missed": 8
       },
       "entries": {
-        "pairs": 15,
-        "avg_dt_s": 213984.53333333333,
-        "avg_price_pct": 10.663425392462935,
-        "missed": 320
+        "pairs": 16,
+        "avg_dt_s": 253341.8125,
+        "avg_price_pct": 10.87015339627091,
+        "missed": 319
       }
     },
     {
@@ -4330,6 +4330,20 @@
       "asset": "ZEC",
       "price": 1008.1005399100375,
       "reason": "[burst 24h] 24h-high break +1.32% (high $1323.3); vol x5.4, RSI 72, BTC 1h +1.47%, 4h +1.85%; confidence 0.74 >= 0.55, EV +0.69% after costs; target +3.6% / stop -1.5% / max 6h"
+    },
+    {
+      "ts": "2026-10-30T10:29:03+00:00",
+      "sleeve": "day",
+      "asset": "GRASS",
+      "price": 0.44721289880020193,
+      "reason": "[burst 4h] 4h-range break +0.94% (range 2.6%); vol x4.2, RSI 49, BTC 1h -0.31%, 4h -1.49%; confidence 0.57 >= 0.55, EV +0.42% after costs; target +6.8% / stop -2.3% / max 6h"
+    },
+    {
+      "ts": "2026-10-30T11:03:01+00:00",
+      "sleeve": "day",
+      "asset": "PEPE",
+      "price": 3.900917841657714e-06,
+      "reason": "[momentum] DAY score 0.895 >= 0.35; target +7.6% / stop -3.6% (ATR 3.04%); EV +0.36%; 4h +5.4%, 24h +7.9%, EMA6/24 up, RSI 64, no fresh sentiment"
     }
   ]
 }
