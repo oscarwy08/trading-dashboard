@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-30T21:55:00Z",
+ "asset": "XRP",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.25, flat (-0.8% 24h) after bouncing from ~$1.20. Ripple Swell conference: Garlinghouse reaffirmed XRP priority, ~$900M revenue run rate; Q3 report shows XRPL stablecoin supply +25% to $1.03B and XRP ETP inflows +40% to $355M. Elliott-wave price targets in posts ignored as hype.",
+ "sources": [
+  "https://x.com/i/trending/2116277797090173432",
+  "https://x.com/i/trending/2116259372951044166"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Ripple Swell conference (30 Oct) and Q3 XRPL/ETP inflow data",
+ "volume": 70000,
+ "buzz_level": 70000,
+ "buzz_change": 1.13,
+ "price_runup_24h_pct": -0.75,
+ "carried_over": false
+}

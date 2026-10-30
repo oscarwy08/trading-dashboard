@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-30T21:55:00Z",
+ "asset": "HYPE",
+ "score": 0.3,
+ "confidence": 0.45,
+ "summary": "HYPE ~$89.4, -4.8% in 24h after jumping >10% to above $90 on the trade.xyz / ICE deal: ICE to operate and clear regulated 24/7 perps built on Hyperliquid tech (pending CFTC approval), with a strategic ICE investment and Druckenmiller backing. Buzz exploded (X posts ~42k on 29 Oct vs ~6-7k/day before) but price is already fading the spike.",
+ "sources": [
+  "https://x.com/i/trending/2115756304312435149"
+ ],
+ "catalyst_score": 0.4,
+ "catalyst_note": "trade.xyz partnership with ICE for 24/7 regulated perps on Hyperliquid tech, pending CFTC approval",
+ "volume": 27158,
+ "buzz_level": 27158,
+ "buzz_change": 1.47,
+ "price_runup_24h_pct": -4.79,
+ "carried_over": false
+}

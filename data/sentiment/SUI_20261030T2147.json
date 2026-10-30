@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-30T21:55:00Z",
+ "asset": "SUI",
+ "score": 0.25,
+ "confidence": 0.4,
+ "summary": "SUI ~$0.90, flat (+0.2% 24h). Mercado Bitcoin (Brazil, 4.5M users) launched native SUI, USDC and USDsui support, USDsui as lending collateral. Investor Michael van de Poppe raised SUI holdings. Mentions down vs recent days.",
+ "sources": [
+  "https://x.com/i/trending/2115824331423179257"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Mercado Bitcoin listing / native Sui support (30 Oct)",
+ "volume": 1455,
+ "buzz_level": 1455,
+ "buzz_change": 0.44,
+ "price_runup_24h_pct": 0.22,
+ "carried_over": false
+}

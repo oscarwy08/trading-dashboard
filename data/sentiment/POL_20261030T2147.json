@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-30T21:55:00Z",
+ "asset": "POL",
+ "score": 0.15,
+ "confidence": 0.35,
+ "summary": "POL ~$0.094, +4.1% in 24h. Polygon integrated Solana into its Open Money Stack (one API for stablecoin/bank payouts across Solana, Polygon, Ethereum, TRON); early adopter Kira. Low mention volume.",
+ "sources": [
+  "https://x.com/i/trending/2115606359194358204"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Polygon Open Money Stack adds Solana (announced ~29-30 Oct)",
+ "volume": 48,
+ "buzz_level": 48,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": 4.1,
+ "carried_over": false
+}

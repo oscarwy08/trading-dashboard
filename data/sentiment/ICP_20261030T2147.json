@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-30T21:55:00Z",
+ "asset": "ICP",
+ "score": 0.2,
+ "confidence": 0.4,
+ "summary": "ICP ~$2.54, +3.7% in 24h. DFINITY announced (30 Oct) a direct Internet Computer connector for Anthropic's Claude via MCP, letting users build/query on-chain apps by prompt (no financial transactions yet). Mentions modestly up.",
+ "sources": [
+  "https://x.com/i/trending/2116185051670999524"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "DFINITY / Claude integration announced 30 Oct",
+ "volume": 1774,
+ "buzz_level": 1774,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 3.68,
+ "carried_over": false
+}

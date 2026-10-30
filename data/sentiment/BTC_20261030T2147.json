@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-30T21:55:00Z",
+ "asset": "BTC",
+ "score": -0.3,
+ "confidence": 0.5,
+ "summary": "BTC ~$76.7k, -3.4% in 24h, heading for a second straight red October (high above $86k earlier in the month). ETF outflows and weak demand cited; Friday tech selloff (S&P -1.8%, Nasdaq -2.9%) and rumours of leveraged-fund liquidations weigh on risk. Aftermath of the 29 Oct Binance breach (~$6.3B) still in the news; Aave markets reopened. Fear & Greed ~30. Strategy (MSTR) to fund buys mainly via preferred stock (mild support).",
+ "sources": [
+  "https://x.com/i/trending/2116283605953679443",
+  "https://x.com/i/trending/2116190874069524758",
+  "https://x.com/i/trending/2116259369910153387"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "Binance security breach 29 Oct (~$6.3B stolen), exchange says it will cover losses",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -3.41,
+ "carried_over": false
+}

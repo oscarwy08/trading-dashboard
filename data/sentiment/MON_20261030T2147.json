@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-30T21:55:00Z",
+ "asset": "MON",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "MON ~$0.0196, -1% in 24h. Monad Foundation released a Crypto OpSec Bible and open-source Ultrafuzz AI fuzzing tool; ecosystem-positive but not a price catalyst. Mentions steady.",
+ "sources": [
+  "https://x.com/i/trending/2116246506407645616"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 120,
+ "buzz_level": 120,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": -0.96,
+ "carried_over": false
+}
