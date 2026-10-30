@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-10-30T13:27:23+00:00",
+  "generated": "2026-10-30T14:35:12+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 62,
-        "avg_dt_s": 203047.5,
-        "avg_price_pct": -3.106798263052027,
-        "missed": 73
+        "pairs": 64,
+        "avg_dt_s": 196725.234375,
+        "avg_price_pct": -3.0141585839351572,
+        "missed": 71
       },
       "entries": {
         "pairs": 15,
@@ -141,24 +141,24 @@
     {
       "name": "day_trail_arm",
       "exits": {
-        "pairs": 41,
-        "avg_dt_s": 154414.75609756098,
-        "avg_price_pct": -2.631016848521366,
-        "missed": 37
+        "pairs": 42,
+        "avg_dt_s": 150842.83333333334,
+        "avg_price_pct": -2.5665703329044804,
+        "missed": 36
       },
       "entries": {
         "pairs": 23,
         "avg_dt_s": 402106.0869565217,
         "avg_price_pct": 6.680745637737519,
-        "missed": 414
+        "missed": 419
       }
     },
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 16,
-        "avg_dt_s": 146307.3125,
-        "avg_price_pct": 0.5598653548103211,
+        "pairs": 17,
+        "avg_dt_s": 137755.88235294117,
+        "avg_price_pct": 0.2495262451619397,
         "missed": 27
       },
       "entries": {
@@ -2518,13 +2518,13 @@
       "shadow_ts": "2026-10-30T13:14:01+00:00",
       "shadow_price": 0.014055075579479458,
       "trigger": "[burst 4h] stop-loss -2.6% <= -2.5% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-30T13:28:33+00:00",
+      "cycle_price": 0.014043804402693328,
+      "cycle_reason": "[burst 4h] stop-loss -2.7% <= -2.5% (ATR-scaled); P&L \u00a3-0.13",
+      "dt_s": 872.0,
+      "price_diff": -1.1271176786129336e-05,
+      "price_pct": -0.0801929290411313
     },
     {
       "asset": "GRASS",
@@ -2532,13 +2532,13 @@
       "shadow_ts": "2026-10-30T13:18:35+00:00",
       "shadow_price": 0.43804135588653625,
       "trigger": "[burst 4h] stop-loss -2.5% <= -2.3% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-10-30T13:28:33+00:00",
+      "cycle_price": 0.4371457184234866,
+      "cycle_reason": "[burst 4h] stop-loss -2.7% <= -2.3% (ATR-scaled); P&L \u00a3-0.14",
+      "dt_s": 598.0,
+      "price_diff": -0.0008956374630496589,
+      "price_pct": -0.20446413358323445
     }
   ],
   "main_exit_missed": [

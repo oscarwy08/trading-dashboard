@@ -596,11 +596,13 @@ LIT day
 
 AKE day
   shadow  2026-10-30T13:14:01+00:00  £0.0140551  [burst 4h] stop-loss -2.6% <= -2.5% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-30T13:28:33+00:00  £0.0140438  [burst 4h] stop-loss -2.7% <= -2.5% (ATR-scaled); P&L £-0.13
+  cycle was 872s later, price £-1.12712e-05 (-0.08%)
 
 GRASS day
   shadow  2026-10-30T13:18:35+00:00  £0.438041  [burst 4h] stop-loss -2.5% <= -2.3% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-10-30T13:28:33+00:00  £0.437146  [burst 4h] stop-loss -2.7% <= -2.3% (ATR-scaled); P&L £-0.14
+  cycle was 598s later, price £-0.000895637 (-0.20%)
 
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
@@ -1200,7 +1202,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 62 pairs, avg time gap 203048s, avg price gap -3.11%, missed moves 73
+  exits: 64 pairs, avg time gap 196725s, avg price gap -3.01%, missed moves 71
   entries: 15 pairs, avg time gap 545344s, avg price gap -1.03%, missed moves 92
 ev_exit
   exits: 63 pairs, avg time gap 128909s, avg price gap -3.17%, missed moves 50
@@ -1227,10 +1229,10 @@ risk_giveback_15
   exits: 56 pairs, avg time gap 164214s, avg price gap -2.68%, missed moves 53
   entries: 25 pairs, avg time gap 435879s, avg price gap +8.85%, missed moves 348
 day_trail_arm
-  exits: 41 pairs, avg time gap 154415s, avg price gap -2.63%, missed moves 37
-  entries: 23 pairs, avg time gap 402106s, avg price gap +6.68%, missed moves 414
+  exits: 42 pairs, avg time gap 150843s, avg price gap -2.57%, missed moves 36
+  entries: 23 pairs, avg time gap 402106s, avg price gap +6.68%, missed moves 419
 day_ev_blend
-  exits: 16 pairs, avg time gap 146307s, avg price gap +0.56%, missed moves 27
+  exits: 17 pairs, avg time gap 137756s, avg price gap +0.25%, missed moves 27
   entries: 0 pairs, avg time gap n/a, avg price gap n/a, missed moves 31
 no_risk_clock
   exits: 56 pairs, avg time gap 164236s, avg price gap -2.68%, missed moves 53
