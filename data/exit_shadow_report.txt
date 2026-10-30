@@ -1207,43 +1207,43 @@ main
   exits: 65 pairs, avg time gap 193949s, avg price gap -2.98%, missed moves 70
   entries: 15 pairs, avg time gap 545344s, avg price gap -1.03%, missed moves 92
 ev_exit
-  exits: 65 pairs, avg time gap 125211s, avg price gap -3.06%, missed moves 50
+  exits: 66 pairs, avg time gap 123374s, avg price gap -3.03%, missed moves 49
   entries: 30 pairs, avg time gap 570453s, avg price gap +8.21%, missed moves 343
 review_leftovers
-  exits: 44 pairs, avg time gap 164606s, avg price gap -1.10%, missed moves 41
+  exits: 45 pairs, avg time gap 161008s, avg price gap -1.11%, missed moves 41
   entries: 19 pairs, avg time gap 515536s, avg price gap +6.57%, missed moves 231
 all_combined
-  exits: 44 pairs, avg time gap 106071s, avg price gap -1.23%, missed moves 43
+  exits: 45 pairs, avg time gap 103774s, avg price gap -1.24%, missed moves 43
   entries: 21 pairs, avg time gap 515201s, avg price gap +5.61%, missed moves 242
 burst_runner
-  exits: 65 pairs, avg time gap 184456s, avg price gap -3.77%, missed moves 56
+  exits: 66 pairs, avg time gap 181721s, avg price gap -3.72%, missed moves 55
   entries: 28 pairs, avg time gap 538821s, avg price gap +8.67%, missed moves 291
 everything
-  exits: 44 pairs, avg time gap 106084s, avg price gap -1.23%, missed moves 43
+  exits: 45 pairs, avg time gap 103788s, avg price gap -1.24%, missed moves 43
   entries: 21 pairs, avg time gap 515211s, avg price gap +5.59%, missed moves 225
 midnight_crypto
-  exits: 70 pairs, avg time gap 151098s, avg price gap -2.99%, missed moves 61
-  entries: 39 pairs, avg time gap 399531s, avg price gap +5.36%, missed moves 442
+  exits: 71 pairs, avg time gap 149009s, avg price gap -2.97%, missed moves 61
+  entries: 39 pairs, avg time gap 399531s, avg price gap +5.36%, missed moves 444
 entry_watch
-  exits: 58 pairs, avg time gap 143169s, avg price gap -3.44%, missed moves 42
-  entries: 24 pairs, avg time gap 374428s, avg price gap +12.98%, missed moves 290
+  exits: 60 pairs, avg time gap 138510s, avg price gap -3.36%, missed moves 41
+  entries: 24 pairs, avg time gap 374428s, avg price gap +12.98%, missed moves 292
 risk_giveback_15
-  exits: 58 pairs, avg time gap 158589s, avg price gap -2.66%, missed moves 54
-  entries: 27 pairs, avg time gap 461444s, avg price gap +9.71%, missed moves 350
+  exits: 60 pairs, avg time gap 153416s, avg price gap -2.61%, missed moves 53
+  entries: 27 pairs, avg time gap 461444s, avg price gap +9.71%, missed moves 352
 day_trail_arm
-  exits: 43 pairs, avg time gap 147348s, avg price gap -2.51%, missed moves 37
+  exits: 44 pairs, avg time gap 144091s, avg price gap -2.46%, missed moves 36
   entries: 24 pairs, avg time gap 438840s, avg price gap +6.05%, missed moves 418
 day_ev_blend
   exits: 18 pairs, avg time gap 130280s, avg price gap -0.01%, missed moves 27
   entries: 0 pairs, avg time gap n/a, avg price gap n/a, missed moves 31
 no_risk_clock
-  exits: 58 pairs, avg time gap 158612s, avg price gap -2.66%, missed moves 54
-  entries: 26 pairs, avg time gap 475270s, avg price gap +10.17%, missed moves 345
+  exits: 60 pairs, avg time gap 153439s, avg price gap -2.61%, missed moves 53
+  entries: 26 pairs, avg time gap 475270s, avg price gap +10.17%, missed moves 349
 day_capital_caution
-  exits: 55 pairs, avg time gap 179545s, avg price gap -2.20%, missed moves 55
+  exits: 56 pairs, avg time gap 176411s, avg price gap -2.18%, missed moves 54
   entries: 20 pairs, avg time gap 502201s, avg price gap +3.58%, missed moves 343
 partial_take
-  exits: 97 pairs, avg time gap 219267s, avg price gap -1.94%, missed moves 66
+  exits: 98 pairs, avg time gap 217071s, avg price gap -1.93%, missed moves 65
   entries: 46 pairs, avg time gap 482984s, avg price gap +3.07%, missed moves 181
 sent_split
   exits: 57 pairs, avg time gap 158028s, avg price gap -2.28%, missed moves 50
