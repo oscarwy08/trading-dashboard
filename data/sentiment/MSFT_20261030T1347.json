@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-30T13:55:00Z",
+ "asset": "MSFT",
+ "score": -0.1,
+ "confidence": 0.4,
+ "summary": "MSFT ~$516, -2.8% in 24h. Friday US futures ~1% lower after Amazon (heavy AI capex, FCF outflow) and Intel (weak Q4 guide, ~-25%) results, extending the tech selloff after Alphabet's -12% day. MSFT among companies opting out of tokenized shares on OKXICE (neutral). No new MSFT-specific catalyst.",
+ "sources": [
+  "https://x.com/i/trending/2115627536398827983",
+  "https://x.com/i/trending/2115701855909212547"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 15000,
+ "buzz_level": 15000,
+ "buzz_change": 1.7,
+ "price_runup_24h_pct": -2.79,
+ "carried_over": false
+}

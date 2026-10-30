@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-30T13:55:00Z",
+ "asset": "BTC",
+ "score": -0.25,
+ "confidence": 0.55,
+ "summary": "BTC ~$77.0k, down ~5% in 24h. Coinbase Premium hit -0.27% on 29 Oct, its lowest in four years, pointing to US selling after the $6.3B Binance hack; Fear & Greed 30. Binance says SAFU covers losses and withdrawals resume within ~48h. Some call capitulation, but no fresh bullish catalyst.",
+ "sources": [
+  "https://x.com/i/trending/2116157848371523863",
+  "https://x.com/i/trending/2116063292150218854",
+  "https://x.com/i/trending/2116018873006952625"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Binance $6.3B hack disclosed 29 Oct; withdrawals due to resume ~31 Oct",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 1.25,
+ "price_runup_24h_pct": -5.2,
+ "carried_over": false
+}

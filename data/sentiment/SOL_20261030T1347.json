@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-30T13:55:00Z",
+ "asset": "SOL",
+ "score": -0.35,
+ "confidence": 0.5,
+ "summary": "SOL ~$95.6, below the $100 support traders were watching. A whale sold ~1.02M SOL ($104M) to exchanges over five days, and ~970k SOL was among the Binance hack losses. Ecosystem positives (Solana RWAs >$5B, Polygon Open Money Stack integration) are not moving price.",
+ "sources": [
+  "https://x.com/i/trending/2115745877906391349",
+  "https://x.com/i/trending/2115606359194358204"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Binance hack 29 Oct included ~970k SOL",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -6.52,
+ "carried_over": false
+}

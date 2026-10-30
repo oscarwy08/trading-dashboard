@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-30T13:55:00Z",
+ "asset": "TEAM",
+ "score": -0.3,
+ "confidence": 0.35,
+ "summary": "TEAM ~$198, ~-10% in 24h with the software selloff after ServiceNow fell up to 25% on a slight EPS miss and slowing cRPO guidance, plus Friday's weak tech futures. No Atlassian-specific news found.",
+ "sources": [
+  "https://x.com/i/trending/2115540891867685247",
+  "https://x.com/i/trending/2115627536398827983"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 2000,
+ "buzz_level": 2000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -9.96,
+ "carried_over": false
+}

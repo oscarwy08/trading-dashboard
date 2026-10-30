@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-30T13:55:00Z",
+ "asset": "XRP",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "XRP ~$1.24 after a >6% drop, holding the $1.20-1.25 support. Garlinghouse reaffirmed XRP focus after Swell; ~$8.4M US XRP ETF inflows cited. Mostly community chart calls (wedges, Elliott waves), not new dated news; mentions well below the Swell peak.",
+ "sources": [
+  "https://x.com/i/trending/2116117745171640353",
+  "https://x.com/i/trending/2116067080390705506"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 70000,
+ "buzz_level": 70000,
+ "buzz_change": 0.47,
+ "price_runup_24h_pct": -6.26,
+ "carried_over": false
+}
