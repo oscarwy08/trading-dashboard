@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-31T17:03:40+00:00",
+  "generated": "2026-10-31T18:10:02+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -96,46 +96,46 @@
     {
       "name": "midnight_crypto",
       "exits": {
-        "pairs": 78,
-        "avg_dt_s": 154208.3205128205,
-        "avg_price_pct": -2.7481995267277597,
-        "missed": 62
+        "pairs": 79,
+        "avg_dt_s": 152344.7341772152,
+        "avg_price_pct": -2.814506798893411,
+        "missed": 61
       },
       "entries": {
-        "pairs": 47,
-        "avg_dt_s": 448554.97872340423,
-        "avg_price_pct": 8.408677412049226,
-        "missed": 459
+        "pairs": 48,
+        "avg_dt_s": 468921.9166666667,
+        "avg_price_pct": 7.5999197165119154,
+        "missed": 458
       }
     },
     {
       "name": "entry_watch",
       "exits": {
-        "pairs": 61,
-        "avg_dt_s": 136250.5737704918,
-        "avg_price_pct": -3.2859254531413664,
-        "missed": 42
+        "pairs": 62,
+        "avg_dt_s": 134144.11290322582,
+        "avg_price_pct": -3.252825468886585,
+        "missed": 41
       },
       "entries": {
         "pairs": 26,
         "avg_dt_s": 384496.03846153844,
         "avg_price_pct": 11.569490700578266,
-        "missed": 301
+        "missed": 334
       }
     },
     {
       "name": "risk_giveback_15",
       "exits": {
-        "pairs": 61,
-        "avg_dt_s": 150911.8524590164,
-        "avg_price_pct": -2.546387328414746,
-        "missed": 54
+        "pairs": 62,
+        "avg_dt_s": 148569.01612903227,
+        "avg_price_pct": -2.5252153784297486,
+        "missed": 53
       },
       "entries": {
         "pairs": 29,
         "avg_dt_s": 474449.7586206897,
         "avg_price_pct": 8.49727490833557,
-        "missed": 361
+        "missed": 393
       }
     },
     {
@@ -171,16 +171,16 @@
     {
       "name": "no_risk_clock",
       "exits": {
-        "pairs": 61,
-        "avg_dt_s": 150935.22950819673,
-        "avg_price_pct": -2.546387328414746,
-        "missed": 54
+        "pairs": 62,
+        "avg_dt_s": 148592.5,
+        "avg_price_pct": -2.5252153784297486,
+        "missed": 53
       },
       "entries": {
         "pairs": 28,
         "avg_dt_s": 487751.3214285714,
         "avg_price_pct": 8.874522587875655,
-        "missed": 358
+        "missed": 388
       }
     },
     {
