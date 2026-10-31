@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-31T07:55:00Z",
+ "asset": "ETH",
+ "score": -0.35,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,243, +0.3% in 24h, holding after the selloff. Ethereum ETFs lost $156M on 30 Oct and a record $1.61B for October. Positives are infrastructure-side (mump2p block propagation adoption) and Devcon 8 in Mumbai 3-6 Nov, but flows dominate near term.",
+ "sources": [
+  "https://x.com/i/trending/2116395892890894833",
+  "https://x.com/i/trending/2116078053516579071",
+  "https://x.com/i/trending/2116359577663086693"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "ETH ETF outflow $156M on 30 Oct, record $1.61B monthly outflow; Devcon 8 3-6 Nov upcoming",
+ "volume": 63786,
+ "buzz_level": 63786,
+ "buzz_change": 1.24,
+ "price_runup_24h_pct": 0.34,
+ "carried_over": false
+}

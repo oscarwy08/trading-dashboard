@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-10-31T07:55:00Z",
+ "asset": "BTC",
+ "score": -0.35,
+ "confidence": 0.55,
+ "summary": "BTC ~$77.3k, -1.1% in 24h, set for a second straight red October (about -8% on the month). US spot BTC ETFs had $643M of outflows on 30 Oct, the biggest single-day exit since late June (IBIT -$234M, FBTC -$201M), on top of the Binance breach and a broad cross-asset selloff (Nasdaq -3%, gold and silver down). CFTC pointed to the hack to push voluntary exchange registration. Weekend, thin liquidity.",
+ "sources": [
+  "https://x.com/i/trending/2116395892890894833",
+  "https://x.com/i/trending/2116283605953679443",
+  "https://x.com/i/trending/2116339246432977056"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "US spot BTC ETF outflow $643M on 30 Oct, largest since June",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.14,
+ "carried_over": false
+}

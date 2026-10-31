@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-31T07:55:00Z",
+ "asset": "AAVE",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "AAVE ~$132, +5.4% in 24h. Aave reopened lending markets in stages after freezing 292 reserves when the Binance hacker routed $60M USDT in and borrowed $44.6M WETH; positions stayed fully collateralised and withdrawals never stopped. Buzz is ~2.7x its recent level, but it is hack-driven attention rather than a bullish catalyst, and price has already bounced.",
+ "sources": [
+  "https://x.com/i/trending/2116190874069524758"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Aave markets reopened 30 Oct after precautionary freeze; no bad debt reported",
+ "volume": 9512,
+ "buzz_level": 9512,
+ "buzz_change": 2.71,
+ "price_runup_24h_pct": 5.38,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-31T07:55:00Z",
+ "asset": "ONDO",
+ "score": 0.25,
+ "confidence": 0.4,
+ "summary": "ONDO ~$0.416, +6.6% in 24h. Ondo launched seven tokenised 'Intelligent Portfolios' on Solana on 30 Oct, three built on BlackRock model portfolios, for non-US investors. Real product news; mentions steady (~6.8k/day), so the move is not a buzz spike.",
+ "sources": [
+  "https://x.com/i/trending/2115813822527426922"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Ondo Intelligent Portfolios (incl. BlackRock models) launched on Solana 30 Oct",
+ "volume": 6819,
+ "buzz_level": 6819,
+ "buzz_change": 0.99,
+ "price_runup_24h_pct": 6.61,
+ "carried_over": false
+}
