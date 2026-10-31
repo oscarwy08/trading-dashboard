@@ -1,14 +1,14 @@
 {
   "status": "ok",
-  "generated": "2026-10-31T14:56:41+00:00",
+  "generated": "2026-10-31T16:00:21+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 67,
-        "avg_dt_s": 207852.35820895524,
-        "avg_price_pct": -1.9920094979557326,
+        "pairs": 68,
+        "avg_dt_s": 204814.48529411765,
+        "avg_price_pct": -2.0182923605029983,
         "missed": 70
       },
       "entries": {
@@ -102,9 +102,9 @@
         "missed": 61
       },
       "entries": {
-        "pairs": 45,
-        "avg_dt_s": 405117.02222222224,
-        "avg_price_pct": 9.868452647651564,
+        "pairs": 46,
+        "avg_dt_s": 427360.5,
+        "avg_price_pct": 9.166900507810222,
         "missed": 460
       }
     },
@@ -195,7 +195,7 @@
         "pairs": 21,
         "avg_dt_s": 514671.38095238095,
         "avg_price_pct": 6.310908075176745,
-        "missed": 353
+        "missed": 354
       }
     },
     {
@@ -390,7 +390,7 @@
         "pairs": 2,
         "avg_dt_s": 1988.0,
         "avg_price_pct": 2.4239238046051232,
-        "missed": 42
+        "missed": 43
       }
     },
     {
@@ -2567,6 +2567,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "RSR",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-31T15:26:29+00:00",
+      "shadow_price": 0.0012462372067878682,
+      "trigger": "[burst 24h] trailing stop +2.1% (peak +3.8%, gives back 40% of the gain)",
+      "status": "matched",
+      "cycle_ts": "2026-10-31T15:47:46+00:00",
+      "cycle_price": 0.0011991388600406361,
+      "cycle_reason": "[burst 24h] trailing stop -1.8% (peak +3.2%, gives back 40% of the gain) [gap fill]; P&L \u00a3-0.09",
+      "dt_s": 1277.0,
+      "price_diff": -4.709834674723203e-05,
+      "price_pct": -3.7792441511697707
     }
   ],
   "main_exit_missed": [
@@ -4470,6 +4484,13 @@
       "asset": "SUPER",
       "price": 0.12213670863295278,
       "reason": "[burst 4h] 4h-range break +0.86% (range 1.6%); vol x4.7, RSI 51, BTC 1h -0.14%, 4h -0.93%; confidence 0.59 >= 0.57, EV +0.35% after costs; target +8.0% / stop -2.5% / max 6h"
+    },
+    {
+      "ts": "2026-10-31T15:22:42+00:00",
+      "sleeve": "day",
+      "asset": "RSR",
+      "price": 0.001213343123345357,
+      "reason": "[burst 24h] 24h-high break +1.57% (high $0.001592); vol x6.0, RSI 68, BTC 1h -0.04%, 4h -0.00%; confidence 0.68 >= 0.56, EV +1.50% after costs; target +8.0% / stop -2.5% / max 6h"
     }
   ]
 }
