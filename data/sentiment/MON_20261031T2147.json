@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-10-31T21:55:00Z",
+ "asset": "MON",
+ "score": -0.1,
+ "confidence": 0.4,
+ "summary": "MON ~$0.0193, -1.5% on the day. Negative items: a Name.com DNS hijack turned Kintsu (Monad liquid staking) and other sites into wallet drainers on 31 Oct, with ~5M MON tied to the attackers still parked on-chain (possible sell pressure), and a large token unlock (~140% of circulating supply, per one post) flagged for 24 Nov. Positive: Monad stablecoin pools more than doubled in Q3 to ~$871M after Aave launched. Leaning slightly negative.",
+ "sources": [
+  "https://x.com/sprunky_eth/status/2116615426369024083",
+  "https://x.com/leeky_k_crypt/status/2116591037196145015",
+  "https://x.com/cryptoissimple/status/2116333444309389585",
+  "https://x.com/i/trending/2116359578120274100"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "31 Oct Kintsu DNS hijack/drainer on Monad; 24 Nov token unlock flagged",
+ "volume": 50,
+ "buzz_level": 50,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.5,
+ "carried_over": false
+}

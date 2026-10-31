@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-31T21:55:00Z",
+ "asset": "HYPE",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "HYPE ~$87.8, -2.5% on the day. Positive: ICE and Trade[XYZ] announced plans (31 Oct, subject to approvals) for US-regulated versions of Hyperliquid-based perps; Elysium mainnet 9 Nov. Negative: a very large unlock (~$923M) is flagged for 6 Nov, which caps upside near term. Net modestly positive, lower than last night's 0.3.",
+ "sources": [
+  "https://x.com/ICE_Markets/status/2116494325265674252",
+  "https://x.com/Tokenomist_ai/status/2116070763342315991"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "ICE x Trade[XYZ] US perps plan (31 Oct); ~$923M unlock 6 Nov",
+ "volume": 50,
+ "buzz_level": 50,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.5,
+ "carried_over": false
+}

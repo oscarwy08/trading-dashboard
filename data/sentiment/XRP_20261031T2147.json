@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-31T21:55:00Z",
+ "asset": "XRP",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.25, flat. News flow is still the Swell 2026 follow-through (Robinhood RLUSD on XRPL, BNY custody, trust bank charter approval) and XRPL Q3 growth stats, but price isn't reacting and holders are frustrated. Slightly positive on fundamentals, no fresh catalyst tonight.",
+ "sources": [
+  "https://x.com/i/trending/2116562602281275709",
+  "https://x.com/i/trending/2116259372951044166"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Swell 2026 announcements (27-29 Oct) still being digested",
+ "volume": 50,
+ "buzz_level": 50,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

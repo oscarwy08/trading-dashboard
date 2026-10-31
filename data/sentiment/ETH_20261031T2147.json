@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-31T21:55:00Z",
+ "asset": "ETH",
+ "score": -0.3,
+ "confidence": 0.5,
+ "summary": "ETH ~$2,250, flat on the day after breaking below $2,300 and the 50-week average. Bitfinex longs at a four-year high (~390k ETH) are a mixed signal (squeeze fuel or liquidation risk). Binance hack recovery news helps at the margin; trend still down.",
+ "sources": [
+  "https://x.com/i/trending/2116644676132352152",
+  "https://x.com/i/trending/2116469298155880747"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Binance hack recovery; ETH below $2,300 support",
+ "volume": 50,
+ "buzz_level": 50,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.5,
+ "carried_over": false
+}

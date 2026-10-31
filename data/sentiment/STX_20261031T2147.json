@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-31T21:55:00Z",
+ "asset": "STX",
+ "score": 0.0,
+ "confidence": 0.3,
+ "summary": "STX ~$0.325, +15% on the day. Posts are almost all 'top gainer' scanner recaps with no dated news found, so this doesn't count as bullish news. Buzz is roughly 2.4x its recent level on a coin that has already run up - treat with caution.",
+ "sources": [
+  "https://x.com/BattleTicker/status/2116638122603622635",
+  "https://x.com/WhisprNews/status/2116636172495577302"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 135,
+ "buzz_level": 135,
+ "buzz_change": 2.4,
+ "price_runup_24h_pct": 15.1,
+ "carried_over": false
+}

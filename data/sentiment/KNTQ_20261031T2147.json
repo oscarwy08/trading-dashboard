@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-31T21:55:00Z",
+ "asset": "KNTQ",
+ "score": 0.25,
+ "confidence": 0.4,
+ "summary": "KNTQ (Kinetiq) ~$0.56, +13.5% on the day after a fresh all-time high this week. Dated catalyst: Elysium mainnet scheduled for 9 Nov, plus ICE/Trade[XYZ] plans to bring Hyperliquid perps to the US (31 Oct). Buzz is high but slightly below its recent daily average; a lot of it is shill-style posting. Already run up, so the positive score is tempered.",
+ "sources": [
+  "https://x.com/oofybog/status/2116461920827982215",
+  "https://x.com/ICE_Markets/status/2116494325265674252"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Elysium mainnet scheduled 9 Nov; ICE x Trade[XYZ] Hyperliquid perps announcement 31 Oct",
+ "volume": 723,
+ "buzz_level": 723,
+ "buzz_change": 0.75,
+ "price_runup_24h_pct": 13.5,
+ "carried_over": false
+}

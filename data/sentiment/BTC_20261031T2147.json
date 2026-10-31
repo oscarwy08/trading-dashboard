@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-31T21:55:00Z",
+ "asset": "BTC",
+ "score": -0.25,
+ "confidence": 0.5,
+ "summary": "BTC ~$77.4k, +0.9% on the day, closing October about 7.7% down (second red month in a row). The Binance $6.3B hack (29 Oct) overhang is easing: Binance says ~90% of funds restored, BTC/ETH/BNB at 100% backing, withdrawals due to resume 1 Nov. Still weak demand and below key levels, so mildly negative, a little less bearish than this morning.",
+ "sources": [
+  "https://x.com/i/trending/2116009271863521385",
+  "https://x.com/i/trending/2116061652080832855"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Binance says 90% of hacked funds restored, withdrawals resume 1 Nov",
+ "volume": 50,
+ "buzz_level": 50,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.9,
+ "carried_over": false
+}
