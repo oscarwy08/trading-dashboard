@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-31T09:38:49+00:00",
+  "generated": "2026-10-31T10:41:17+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -15,16 +15,16 @@
         "pairs": 16,
         "avg_dt_s": 558918.1875,
         "avg_price_pct": 2.832694446050302,
-        "missed": 91
+        "missed": 92
       }
     },
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 67,
-        "avg_dt_s": 121594.4776119403,
-        "avg_price_pct": -2.9844037668495877,
-        "missed": 50
+        "pairs": 68,
+        "avg_dt_s": 119855.0294117647,
+        "avg_price_pct": -2.9650737698519762,
+        "missed": 49
       },
       "entries": {
         "pairs": 32,
@@ -66,10 +66,10 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 67,
-        "avg_dt_s": 182881.8805970149,
-        "avg_price_pct": -3.8934635017375006,
-        "missed": 56
+        "pairs": 68,
+        "avg_dt_s": 180241.5,
+        "avg_price_pct": -3.8607649792268317,
+        "missed": 55
       },
       "entries": {
         "pairs": 30,
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 100,
-        "avg_dt_s": 212801.65,
-        "avg_price_pct": -1.9140093290055749,
+        "pairs": 101,
+        "avg_dt_s": 210701.69306930693,
+        "avg_price_pct": -1.8976376410344211,
         "missed": 65
       },
       "entries": {
@@ -4055,6 +4055,20 @@
       "shadow_ts": "2026-10-29T15:14:03+00:00",
       "shadow_price": 5.507584263478957,
       "trigger": "[burst 24h] price breaks \u00a35.50462; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "QNT",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-31T10:17:39+00:00",
+      "shadow_price": 147.91819641607114,
+      "trigger": "[burst 24h] price breaks \u00a3147.819; volume x2",
       "status": "cycle missed",
       "cycle_ts": null,
       "cycle_price": null,
