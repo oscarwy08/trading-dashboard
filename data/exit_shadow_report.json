@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-31T07:32:15+00:00",
+  "generated": "2026-10-31T08:34:58+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -27,10 +27,10 @@
         "missed": 49
       },
       "entries": {
-        "pairs": 30,
-        "avg_dt_s": 570452.5666666667,
-        "avg_price_pct": 8.213143334084425,
-        "missed": 343
+        "pairs": 32,
+        "avg_dt_s": 613166.8125,
+        "avg_price_pct": 8.93943276816589,
+        "missed": 341
       }
     },
     {
@@ -72,10 +72,10 @@
         "missed": 55
       },
       "entries": {
-        "pairs": 28,
-        "avg_dt_s": 538820.8571428572,
-        "avg_price_pct": 8.668931025476954,
-        "missed": 291
+        "pairs": 30,
+        "avg_dt_s": 574603.5,
+        "avg_price_pct": 9.156304235550875,
+        "missed": 289
       }
     },
     {
@@ -207,10 +207,10 @@
         "missed": 65
       },
       "entries": {
-        "pairs": 46,
-        "avg_dt_s": 482983.7826086957,
-        "avg_price_pct": 3.0685548006887635,
-        "missed": 181
+        "pairs": 47,
+        "avg_dt_s": 498433.59574468085,
+        "avg_price_pct": 2.3629674725626515,
+        "missed": 180
       }
     },
     {
