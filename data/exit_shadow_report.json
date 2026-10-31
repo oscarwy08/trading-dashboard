@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-10-31T12:45:37+00:00",
+  "generated": "2026-10-31T13:49:00+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -15,15 +15,15 @@
         "pairs": 16,
         "avg_dt_s": 558918.1875,
         "avg_price_pct": 2.832694446050302,
-        "missed": 92
+        "missed": 93
       }
     },
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 68,
-        "avg_dt_s": 119855.0294117647,
-        "avg_price_pct": -2.9650737698519762,
+        "pairs": 69,
+        "avg_dt_s": 118125.55072463768,
+        "avg_price_pct": -2.9209556456699035,
         "missed": 50
       },
       "entries": {
@@ -66,9 +66,9 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 68,
-        "avg_dt_s": 180241.5,
-        "avg_price_pct": -3.8607649792268317,
+        "pairs": 69,
+        "avg_dt_s": 177637.1739130435,
+        "avg_price_pct": -3.8036658230248337,
         "missed": 56
       },
       "entries": {
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 101,
-        "avg_dt_s": 210701.69306930693,
-        "avg_price_pct": -1.8976376410344211,
-        "missed": 66
+        "pairs": 102,
+        "avg_dt_s": 208643.57843137256,
+        "avg_price_pct": -1.890699725443336,
+        "missed": 65
       },
       "entries": {
         "pairs": 47,
@@ -390,7 +390,7 @@
         "pairs": 2,
         "avg_dt_s": 1988.0,
         "avg_price_pct": 2.4239238046051232,
-        "missed": 41
+        "missed": 42
       }
     },
     {
@@ -4069,6 +4069,20 @@
       "shadow_ts": "2026-10-31T10:17:39+00:00",
       "shadow_price": 147.91819641607114,
       "trigger": "[burst 24h] price breaks \u00a3147.819; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "QNT",
+      "sleeve": "day",
+      "shadow_ts": "2026-10-31T13:16:58+00:00",
+      "shadow_price": 150.0504598467953,
+      "trigger": "[burst 24h] price breaks \u00a3149.984; volume x2",
       "status": "cycle missed",
       "cycle_ts": null,
       "cycle_price": null,
