@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-10-31T13:55:00Z",
+ "asset": "BEAM",
+ "score": 0.1,
+ "confidence": 0.35,
+ "summary": "BEAM ~$0.00496, flat over 24h (-0.5%) after a ~50% jump on 29-30 Oct. The one real event: Beam/Merit Circle burned the BEAM sitting in the Binance hacker's wallet (~984M tokens, reported ~$3.3M) on 30 Oct, removing an overhang rather than adding demand. Most of the buzz is scanner 'top gainer' posts chasing the move, which doesn't count as bullish news. Already-run-up coin with a buzz spike, so treat with caution.",
+ "sources": [
+  "https://x.com/cryptolevier/status/2116158322525024352",
+  "https://x.com/Bagz888/status/2116346024499220991"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "30 Oct burn of BEAM held by the Binance hacker (~984M tokens)",
+ "volume": 224,
+ "buzz_level": 224,
+ "buzz_change": 2.1,
+ "price_runup_24h_pct": -0.5,
+ "carried_over": false
+}
