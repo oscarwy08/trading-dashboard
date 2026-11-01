@@ -625,6 +625,10 @@ PONS day
   shadow  2026-11-01T09:13:09+00:00  £0.182269  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)
   cycle   no sell yet
 
+BEAM day
+  shadow  2026-11-01T11:26:05+00:00  £0.00387586  [momentum] stop-loss -5.3% <= -5.0% (ATR-scaled)
+  cycle   no sell yet
+
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
 
@@ -1245,7 +1249,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 69 pairs, avg time gap 209038s, avg price gap -2.03%, missed moves 70
+  exits: 69 pairs, avg time gap 209038s, avg price gap -2.03%, missed moves 71
   entries: 18 pairs, avg time gap 610122s, avg price gap +4.51%, missed moves 93
 ev_exit
   exits: 73 pairs, avg time gap 123997s, avg price gap -2.99%, missed moves 49
@@ -1272,7 +1276,7 @@ risk_giveback_15
   exits: 63 pairs, avg time gap 146217s, avg price gap -2.47%, missed moves 53
   entries: 29 pairs, avg time gap 474450s, avg price gap +8.50%, missed moves 393
 day_trail_arm
-  exits: 45 pairs, avg time gap 140904s, avg price gap -2.39%, missed moves 36
+  exits: 45 pairs, avg time gap 140904s, avg price gap -2.39%, missed moves 37
   entries: 26 pairs, avg time gap 484347s, avg price gap +11.40%, missed moves 427
 day_ev_blend
   exits: 18 pairs, avg time gap 130280s, avg price gap -0.01%, missed moves 27

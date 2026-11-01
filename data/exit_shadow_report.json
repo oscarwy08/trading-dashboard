@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-01T10:44:17+00:00",
+  "generated": "2026-11-01T11:48:19+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 69,
         "avg_dt_s": 209037.63768115942,
         "avg_price_pct": -2.028995841444715,
-        "missed": 70
+        "missed": 71
       },
       "entries": {
         "pairs": 18,
@@ -144,7 +144,7 @@
         "pairs": 45,
         "avg_dt_s": 140904.06666666668,
         "avg_price_pct": -2.3853006053227617,
-        "missed": 36
+        "missed": 37
       },
       "entries": {
         "pairs": 26,
@@ -2588,6 +2588,20 @@
       "shadow_ts": "2026-11-01T09:13:09+00:00",
       "shadow_price": 0.18226931278693742,
       "trigger": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "BEAM",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-01T11:26:05+00:00",
+      "shadow_price": 0.003875862392385763,
+      "trigger": "[momentum] stop-loss -5.3% <= -5.0% (ATR-scaled)",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
