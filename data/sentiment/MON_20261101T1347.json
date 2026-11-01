@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T13:58:00Z",
+ "asset": "MON",
+ "score": -0.2,
+ "confidence": 0.45,
+ "summary": "MON ~$0.0196, roughly flat on the day. The 24 Nov team/investor unlock (~$324M, reported as over 140% of circulating supply) is now being widely circulated by CryptoRank and others as November's biggest unlock, adding to last night's Kintsu DNS-drainer overhang. Mention volume is falling. More bearish than last night because the unlock is getting wider attention.",
+ "sources": [
+  "https://x.com/CryptoRank_io/status/2116857224093909201",
+  "https://x.com/Aleksej17034669/status/2116802515496837546"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Team/investor token unlock scheduled 24 Nov (~$324M, >140% of float)",
+ "volume": 45,
+ "buzz_level": 45,
+ "buzz_change": 0.5,
+ "price_runup_24h_pct": -0.5,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T13:58:00Z",
+ "asset": "HYPE",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "HYPE ~$87.9, -2% in 24h. ICE/Trade[XYZ] regulated US perps plan (pending CFTC) still supportive and Elysium mainnet 9 Nov. New negative: an apparent coordinated XPL long squeeze on 1 Nov cost Hyperliquid's HLP vault ~$556-676K, reviving vault-risk worries. A bit less positive than this morning.",
+ "sources": [
+  "https://x.com/i/trending/2116827011058372975",
+  "https://x.com/i/trending/2116470860660027746"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "XPL liquidation cost HLP vault ~$556K (1 Nov); ICE plan pending CFTC",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.2,
+ "carried_over": false
+}

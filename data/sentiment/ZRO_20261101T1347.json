@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T13:58:00Z",
+ "asset": "ZRO",
+ "score": 0.0,
+ "confidence": 0.35,
+ "summary": "ZRO ~$1.89, up ~9% in 24h and ~25% since Friday's BTC low, showing on clean-uptrend scans. Almost all chatter is gainer recaps. A ~$48M November unlock is on the CryptoRank list. Neutral: strong price but no fresh fundamental news and an unlock ahead; buzz below its recent days.",
+ "sources": [
+  "https://x.com/0xNjin/status/2116811927028396181",
+  "https://x.com/CryptoRank_io/status/2116857224093909201"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "November token unlock (~$48M) listed by CryptoRank",
+ "volume": 470,
+ "buzz_level": 470,
+ "buzz_change": 0.8,
+ "price_runup_24h_pct": 9.0,
+ "carried_over": false
+}

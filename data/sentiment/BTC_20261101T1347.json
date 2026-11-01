@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-01T13:58:00Z",
+ "asset": "BTC",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "BTC ~$77.9k, +0.9% in 24h, holding above $76.3k support after a second straight red October (-7.3%). Binance says 95% of the $6.3B hack is now covered and withdrawals are back. Lazarus is swapping ~$96M of stolen SOL into BTC via Relay, a small overhang. Fear & Greed up from 30 to 34. Slightly less bearish than this morning.",
+ "sources": [
+  "https://x.com/i/trending/2116839914038087858",
+  "https://x.com/i/trending/2116890096636989793",
+  "https://x.com/petranto/status/2116838071815508165"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Binance recovery update 1 Nov: 95% of hack losses covered",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.9,
+ "carried_over": false
+}

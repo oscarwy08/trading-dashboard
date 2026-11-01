@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T13:58:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.25, flat. Ripple released 1B XRP from escrow on 1 Nov in two unusual 500M transactions; usually ~70% is re-locked, but the odd pattern drew attention. The IMF's October stability report named the XRP Ledger as tokenised-finance infrastructure (not an endorsement). XRPL upgrade still due 4 Nov. Mostly holder price-ladder posts. Slightly less positive than this morning.",
+ "sources": [
+  "https://x.com/i/trending/2116879006502965437",
+  "https://x.com/i/trending/2116809724284817714"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "1B XRP monthly escrow release 1 Nov (unusual two-part); XRPL upgrade 4 Nov",
+ "volume": 50000,
+ "buzz_level": 50000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.3,
+ "carried_over": false
+}

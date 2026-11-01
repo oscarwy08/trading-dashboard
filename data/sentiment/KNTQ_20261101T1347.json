@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-01T13:58:00Z",
+ "asset": "KNTQ",
+ "score": 0.2,
+ "confidence": 0.4,
+ "summary": "KNTQ ~$0.57, up ~15% in 24h near its ~$0.60 all-time high after Arthur Hayes posted its chart, which lit up replies. Dated catalyst still Elysium L2 mainnet on 9 Nov. The Hayes post is buzz rather than news and the coin has already run hard, so slightly less positive than last night; chase risk is high.",
+ "sources": [
+  "https://x.com/i/trending/2116762088064299498"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Elysium mainnet scheduled 9 Nov",
+ "volume": 900,
+ "buzz_level": 900,
+ "buzz_change": 1.3,
+ "price_runup_24h_pct": 15.0,
+ "carried_over": false
+}

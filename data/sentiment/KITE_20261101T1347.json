@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T13:58:00Z",
+ "asset": "KITE",
+ "score": -0.2,
+ "confidence": 0.4,
+ "summary": "KITE ~$0.120, up ~9% in 24h and among today's top gainers, but a large token unlock (~$132M per CryptoRank, trackers disagree on size) is due 3 Nov, two days out. Gainer lists and call-channel posts are price-chasing, not news. Run-up into an imminent unlock is a sell-pressure risk.",
+ "sources": [
+  "https://x.com/CryptoRank_io/status/2116857224093909201",
+  "https://x.com/Aleksej17034669/status/2116802515496837546"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Token unlock scheduled 3 Nov (~$132M, size disputed)",
+ "volume": 170,
+ "buzz_level": 170,
+ "buzz_change": 1.15,
+ "price_runup_24h_pct": 9.0,
+ "carried_over": false
+}
