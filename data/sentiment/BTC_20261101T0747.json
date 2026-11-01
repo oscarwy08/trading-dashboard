@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-01T07:55:00Z",
+ "asset": "BTC",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "BTC ~$77.7k, +0.7% in 24h after closing October ~7% down. Binance hack overhang easing further: FBI pinned it on North Korea's TraderTraitor, Binance covered losses and withdrawals resume in phases from 1 Nov. Moscow Exchange to list BTC/ETH/USDT trading from 1 Dec. Some treasury firms (Next Technology, Iole) authorising BTC sales is a mild drag. Slightly less bearish than last night.",
+ "sources": [
+  "https://x.com/i/trending/2116726905810682068",
+  "https://x.com/i/trending/2116619002415927488",
+  "https://x.com/i/trending/2116543199246270713"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Binance withdrawals resume 1 Nov; Moscow Exchange BTC trading from 1 Dec",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 0.7,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T07:55:00Z",
+ "asset": "BEAM",
+ "score": 0.15,
+ "confidence": 0.4,
+ "summary": "BEAM up ~37% in 24h and ~80% in 7 days. Real catalyst: Beam Foundation burned ~984M BEAM (~$3.4M) held by the Binance hacker, so the stolen tokens can't be dumped. But much of the X chatter now is price-chasing gainer recaps and call-channel posts after a big run, so only mildly positive; chase risk is high.",
+ "sources": [
+  "https://x.com/AltcoinView/status/2116800221917122794",
+  "https://x.com/crypto_edith/status/2116637140759298148"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "Beam burned ~984M BEAM held by the Binance hacker (31 Oct)",
+ "volume": 1500,
+ "buzz_level": 1500,
+ "buzz_change": 6.7,
+ "price_runup_24h_pct": 36.9,
+ "carried_over": false
+}

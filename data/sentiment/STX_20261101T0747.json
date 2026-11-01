@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T07:55:00Z",
+ "asset": "STX",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "STX +13.7% in 24h, top-100 best performer on 31 Oct. Talk is mostly price recaps and chart targets; the only fundamental item is Stacks founder hinting at a further 'bond 3' Bitcoin capital markets deal, not a dated event. Neutral to slightly positive; treat the run as price-chasing.",
+ "sources": [
+  "https://x.com/CallMeHunch/status/2116573965238083589",
+  "https://x.com/Markymarco34/status/2116578481375223929"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 400,
+ "buzz_level": 400,
+ "buzz_change": 2.5,
+ "price_runup_24h_pct": 13.7,
+ "carried_over": false
+}

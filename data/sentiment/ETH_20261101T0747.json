@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-01T07:55:00Z",
+ "asset": "ETH",
+ "score": -0.2,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,265, +1.1% in 24h but down ~16% in October. Hacker laundering stolen Binance funds into ETH, though THORChain pause slowed it. Positive network news (mump2p adoption ~8% of staked ETH) and Moscow Exchange listing from 1 Dec. Mildly negative, a touch better than last night.",
+ "sources": [
+  "https://x.com/i/trending/2116671503714361480",
+  "https://x.com/i/trending/2116359577663086693",
+  "https://x.com/i/trending/2116619002415927488"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Moscow Exchange ETH trading from 1 Dec",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.1,
+ "carried_over": false
+}

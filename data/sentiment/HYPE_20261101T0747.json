@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T07:55:00Z",
+ "asset": "HYPE",
+ "score": 0.25,
+ "confidence": 0.5,
+ "summary": "HYPE ~$87.7, -2.5% in 24h. ICE (NYSE parent) announced a plan with Trade[XYZ] for regulated US retail perps built on Hyperliquid tech, pending CFTC approval, which briefly spiked HYPE. Kinetiq's Elysium L2 (HYPE as gas) mainnet set for 9 Nov. Positive news but price has faded the spike.",
+ "sources": [
+  "https://x.com/i/trending/2116470860660027746",
+  "https://x.com/i/trending/2116589543352840521"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "ICE plans regulated Hyperliquid-based perps (pending CFTC); Elysium mainnet 9 Nov",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -2.5,
+ "carried_over": false
+}

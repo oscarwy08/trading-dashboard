@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T07:55:00Z",
+ "asset": "XRP",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.25, flat in 24h after a ~15% October drop. Community holding firm after Ripple Swell ($900M revenue, BNY custody); an XRP Ledger upgrade is due 4 Nov. Mostly holder conviction posts, not new demand. Mildly positive, unchanged.",
+ "sources": [
+  "https://x.com/i/trending/2116759042400080022",
+  "https://x.com/i/trending/2116647276202561545"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "XRP Ledger upgrade scheduled 4 Nov",
+ "volume": 50000,
+ "buzz_level": 50000,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": -0.3,
+ "carried_over": false
+}
