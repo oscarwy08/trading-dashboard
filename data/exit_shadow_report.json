@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-01T11:48:19+00:00",
+  "generated": "2026-11-01T12:54:03+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 69,
-        "avg_dt_s": 209037.63768115942,
-        "avg_price_pct": -2.028995841444715,
-        "missed": 71
+        "pairs": 70,
+        "avg_dt_s": 207167.87142857144,
+        "avg_price_pct": -1.8955698745820728,
+        "missed": 70
       },
       "entries": {
         "pairs": 18,
@@ -36,31 +36,31 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 47,
-        "avg_dt_s": 154177.21276595743,
-        "avg_price_pct": -1.0140143850497965,
+        "pairs": 48,
+        "avg_dt_s": 150972.97916666666,
+        "avg_price_pct": -0.992889085361259,
         "missed": 41
       },
       "entries": {
         "pairs": 22,
         "avg_dt_s": 601324.5454545454,
         "avg_price_pct": 15.694243091679688,
-        "missed": 232
+        "missed": 234
       }
     },
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 47,
-        "avg_dt_s": 99379.89361702128,
-        "avg_price_pct": -1.1356249616042968,
+        "pairs": 48,
+        "avg_dt_s": 97317.64583333333,
+        "avg_price_pct": -1.1119661082375407,
         "missed": 43
       },
       "entries": {
         "pairs": 24,
         "avg_dt_s": 593883.9166666666,
         "avg_price_pct": 14.100881986662282,
-        "missed": 243
+        "missed": 245
       }
     },
     {
@@ -81,76 +81,76 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 47,
-        "avg_dt_s": 99394.17021276595,
-        "avg_price_pct": -1.1356249616042968,
+        "pairs": 48,
+        "avg_dt_s": 97332.08333333333,
+        "avg_price_pct": -1.1119661082375407,
         "missed": 43
       },
       "entries": {
         "pairs": 24,
         "avg_dt_s": 593892.0,
         "avg_price_pct": 14.076203234320753,
-        "missed": 226
+        "missed": 228
       }
     },
     {
       "name": "midnight_crypto",
       "exits": {
-        "pairs": 83,
-        "avg_dt_s": 145385.843373494,
-        "avg_price_pct": -2.601259163947065,
+        "pairs": 84,
+        "avg_dt_s": 143660.0119047619,
+        "avg_price_pct": -2.570291792947695,
         "missed": 61
       },
       "entries": {
         "pairs": 49,
         "avg_dt_s": 462836.4081632653,
         "avg_price_pct": 8.207778597669417,
-        "missed": 457
+        "missed": 468
       }
     },
     {
       "name": "entry_watch",
       "exits": {
-        "pairs": 63,
-        "avg_dt_s": 132021.20634920636,
-        "avg_price_pct": -3.1836228132114153,
+        "pairs": 64,
+        "avg_dt_s": 129965.15625,
+        "avg_price_pct": -3.1338787067549867,
         "missed": 41
       },
       "entries": {
         "pairs": 26,
         "avg_dt_s": 384496.03846153844,
         "avg_price_pct": 11.569490700578266,
-        "missed": 334
+        "missed": 345
       }
     },
     {
       "name": "risk_giveback_15",
       "exits": {
-        "pairs": 63,
-        "avg_dt_s": 146217.17460317462,
-        "avg_price_pct": -2.467562089269766,
+        "pairs": 64,
+        "avg_dt_s": 143939.328125,
+        "avg_price_pct": -2.429006431624926,
         "missed": 53
       },
       "entries": {
         "pairs": 29,
         "avg_dt_s": 474449.7586206897,
         "avg_price_pct": 8.49727490833557,
-        "missed": 393
+        "missed": 404
       }
     },
     {
       "name": "day_trail_arm",
       "exits": {
-        "pairs": 45,
-        "avg_dt_s": 140904.06666666668,
-        "avg_price_pct": -2.3853006053227617,
-        "missed": 37
+        "pairs": 46,
+        "avg_dt_s": 137872.45652173914,
+        "avg_price_pct": -2.3310607354948507,
+        "missed": 36
       },
       "entries": {
         "pairs": 26,
         "avg_dt_s": 484347.03846153844,
         "avg_price_pct": 11.396691361651628,
-        "missed": 427
+        "missed": 434
       }
     },
     {
@@ -171,16 +171,16 @@
     {
       "name": "no_risk_clock",
       "exits": {
-        "pairs": 63,
-        "avg_dt_s": 146240.82539682538,
-        "avg_price_pct": -2.467562089269766,
+        "pairs": 64,
+        "avg_dt_s": 143963.109375,
+        "avg_price_pct": -2.429006431624926,
         "missed": 53
       },
       "entries": {
         "pairs": 28,
         "avg_dt_s": 487751.3214285714,
         "avg_price_pct": 8.874522587875655,
-        "missed": 388
+        "missed": 399
       }
     },
     {
@@ -216,31 +216,31 @@
     {
       "name": "sent_split",
       "exits": {
-        "pairs": 59,
-        "avg_dt_s": 152691.74576271186,
-        "avg_price_pct": -2.169195957607906,
+        "pairs": 60,
+        "avg_dt_s": 150155.01666666666,
+        "avg_price_pct": -2.1330426916477743,
         "missed": 50
       },
       "entries": {
         "pairs": 24,
         "avg_dt_s": 426090.875,
         "avg_price_pct": 14.496458025547236,
-        "missed": 421
+        "missed": 431
       }
     },
     {
       "name": "best_of",
       "exits": {
-        "pairs": 58,
-        "avg_dt_s": 22549.362068965518,
-        "avg_price_pct": -0.10618636568282588,
+        "pairs": 59,
+        "avg_dt_s": 22175.728813559323,
+        "avg_price_pct": -0.10438659677294748,
         "missed": 8
       },
       "entries": {
         "pairs": 19,
         "avg_dt_s": 333798.5263157895,
         "avg_price_pct": 19.669841746838227,
-        "missed": 333
+        "missed": 343
       }
     },
     {
@@ -2560,13 +2560,13 @@
       "shadow_ts": "2026-10-31T14:06:16+00:00",
       "shadow_price": 0.003615772800672291,
       "trigger": "[momentum] stop-loss -5.2% <= -5.0% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-01T11:48:50+00:00",
+      "cycle_price": 0.0038801155082303015,
+      "cycle_reason": "[momentum] stop-loss -5.2% <= -5.0% (ATR-scaled); P&L \u00a3-0.28",
+      "dt_s": 78154.0,
+      "price_diff": 0.00026434270755801076,
+      "price_pct": 7.3108218389402335
     },
     {
       "asset": "RSR",
