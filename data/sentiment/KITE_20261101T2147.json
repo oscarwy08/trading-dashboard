@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T21:55:00Z",
+ "asset": "KITE",
+ "score": -0.35,
+ "confidence": 0.55,
+ "summary": "KITE ~$0.121, +5.5% in 24h, but ~800M tokens (~$97M, roughly 30% of market cap) unlock on Tue 3 Nov and it is the most-flagged unlock of the week. The bounce looks like a run-up into supply. More bearish than midday.",
+ "sources": [
+  "https://x.com/Proxonchain/status/2116949637638848641",
+  "https://x.com/Ergun_B/status/2116955288444301371"
+ ],
+ "catalyst_score": -0.4,
+ "catalyst_note": "Token unlock 3 Nov, ~800M KITE (~30% of mcap)",
+ "volume": 250,
+ "buzz_level": 250,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": 5.5,
+ "carried_over": false
+}

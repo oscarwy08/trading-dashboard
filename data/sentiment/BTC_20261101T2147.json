@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-01T21:55:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "BTC ~$77.8k, +0.5% in 24h, closed October -7.3% but held above the ~$75.8k weekly support. Binance reopened withdrawals at 06:00 UTC; ~$3.6B net outflow (about 2% of its assets) so far, orderly. Saylor hinting at more Strategy buys. Slightly less bearish than midday.",
+ "sources": [
+  "https://x.com/i/trending/2116671503714361480",
+  "https://x.com/i/trending/2116969724403986638",
+  "https://x.com/i/trending/2116877522206089428"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Binance withdrawals resumed 1 Nov 06:00 UTC after the 29 Oct hack",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.5,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T21:55:00Z",
+ "asset": "ETH",
+ "score": -0.1,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,262, +0.5% in 24h, holding the $2,200-2,300 support near the 200-day average. Long positioning has surged, which cuts both ways. Devcon 8 opens in Mumbai on 3 Nov. Mild improvement from this morning.",
+ "sources": [
+  "https://x.com/i/trending/2116978258235335002",
+  "https://x.com/i/trending/2116802026084376838"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Devcon 8, Mumbai, 3-6 Nov",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.5,
+ "carried_over": false
+}

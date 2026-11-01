@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-01T21:55:00Z",
+ "asset": "MON",
+ "score": -0.25,
+ "confidence": 0.5,
+ "summary": "MON ~$0.0191, -1.2% in 24h. The 24 Nov unlock (~$324M, larger than the circulating market cap) now heads almost every November-unlock list on X. Small positive: ~20% of MON staked at ~9% APY. Mention volume still falling. A touch more bearish than midday.",
+ "sources": [
+  "https://x.com/Adellbah/status/2116978079193329690",
+  "https://x.com/DynamoCrypto/status/2116901981990072711",
+  "https://x.com/leeky_k_crypt/status/2117006265348133270"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Team/investor unlock 24 Nov (~$324M)",
+ "volume": 59,
+ "buzz_level": 59,
+ "buzz_change": 0.68,
+ "price_runup_24h_pct": -1.2,
+ "carried_over": false
+}

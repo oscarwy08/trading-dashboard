@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T21:55:00Z",
+ "asset": "ZBCN",
+ "score": 0.05,
+ "confidence": 0.3,
+ "summary": "ZBCN ~$0.0021, +4.4% in 24h. Chatter is mostly XRP-community speculation that Zebec is linked to an XRP/Yellow announcement (the 'X+Y=Z' posts), with nothing confirmed. Mentions about steady vs recent days. Near-neutral, low confidence.",
+ "sources": [
+  "https://x.com/XrpUdate/status/2116973943529898475",
+  "https://x.com/WelshieOutdoors/status/2116829759208374550"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 839,
+ "buzz_level": 839,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": 4.4,
+ "carried_over": false
+}

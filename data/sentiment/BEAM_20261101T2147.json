@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T21:55:00Z",
+ "asset": "BEAM",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "BEAM ~$0.0055, +10% in 24h and on today's trending-coin lists, but it swung -10% on perps within 4h earlier today, so very choppy. Verified on-chain: Beam's multisig burned 984M BEAM stolen in the Binance hack on 29 Oct. Buzz has jumped after the price move, so treat it as chase risk rather than fresh news.",
+ "sources": [
+  "https://x.com/shridlock/status/2116937681024237953",
+  "https://x.com/ratiodotday/status/2116910644494512399"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "984M stolen BEAM burned by project multisig 29 Oct",
+ "volume": 1800,
+ "buzz_level": 1800,
+ "buzz_change": 2.1,
+ "price_runup_24h_pct": 10.0,
+ "carried_over": false
+}

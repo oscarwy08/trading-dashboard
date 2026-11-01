@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-01T21:55:00Z",
+ "asset": "WLD",
+ "score": -0.3,
+ "confidence": 0.45,
+ "summary": "WLD ~$0.39, -1.8% in 24h and the week's worst major (-11%). Critics point out none of World's app/ID activity flows to the token while ~2.9M WLD a day keeps unlocking. No new catalyst.",
+ "sources": [
+  "https://x.com/ValeriusLabs/status/2116966710100230475",
+  "https://x.com/mavefund/status/2116908176981241865"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 640,
+ "buzz_level": 640,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.8,
+ "carried_over": false
+}
