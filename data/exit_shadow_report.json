@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-01T18:02:35+00:00",
+  "generated": "2026-11-01T19:04:03+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -204,7 +204,7 @@
         "pairs": 105,
         "avg_dt_s": 202731.84761904762,
         "avg_price_pct": -1.8357941351665843,
-        "missed": 65
+        "missed": 66
       },
       "entries": {
         "pairs": 47,
