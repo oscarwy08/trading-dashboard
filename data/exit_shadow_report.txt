@@ -784,7 +784,8 @@ BR day
 
 XPL day
   shadow  2026-10-15T14:06:40+00:00  £0.0630642  [burst 24h] price breaks £0.0629758; volume x2
-  cycle   no buy — the cycle missed this move
+  cycle   2026-11-01T13:44:39+00:00  £0.0563831  [burst 4h] 4h-range break +0.80% (range 3.5%); vol x4.9, RSI 36, BTC 1h +0.10%, 4h -0.12%; confidence 0.58 >= 0.56, EV +0.37% after costs; target +8.0% / stop -2.5% / max 6h
+  cycle was 1467479s later, price £-0.00668108 (-10.59%)
 
 ZAMA day
   shadow  2026-10-15T14:11:20+00:00  £0.0565158  [burst 24h] price breaks £0.056436; volume x2
@@ -1126,7 +1127,6 @@ Moves the cycle missed
   SENT day  2026-10-15T13:10:30+00:00  £0.0146757  [momentum] price holds £0.0146643; score 0.39 >= 0.35
   ZAMA day  2026-10-15T13:41:17+00:00  £0.0551169  [momentum] price holds £0.0548976; score 0.443 >= 0.35
   BR day  2026-10-15T13:41:29+00:00  £0.29327  [momentum] price holds £0.292856; score 0.8 >= 0.35
-  XPL day  2026-10-15T14:06:40+00:00  £0.0630642  [burst 24h] price breaks £0.0629758; volume x2
   ZAMA day  2026-10-15T14:11:20+00:00  £0.0565158  [burst 24h] price breaks £0.056436; volume x2
   ETHFI day  2026-10-16T07:13:34+00:00  £0.529232  [burst 24h] price breaks £0.528182; volume x2
   HBAR day  2026-10-18T07:08:45+00:00  £0.0661012  [burst 24h] price breaks £0.0660922; volume x2
@@ -1251,7 +1251,7 @@ Per book
 
 main
   exits: 70 pairs, avg time gap 207168s, avg price gap -1.90%, missed moves 70
-  entries: 18 pairs, avg time gap 610122s, avg price gap +4.51%, missed moves 93
+  entries: 19 pairs, avg time gap 655246s, avg price gap +3.71%, missed moves 92
 ev_exit
   exits: 73 pairs, avg time gap 123997s, avg price gap -2.99%, missed moves 49
   entries: 35 pairs, avg time gap 656516s, avg price gap +12.57%, missed moves 350

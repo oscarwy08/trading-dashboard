@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-01T12:54:03+00:00",
+  "generated": "2026-11-01T13:56:51+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -12,10 +12,10 @@
         "missed": 70
       },
       "entries": {
-        "pairs": 18,
-        "avg_dt_s": 610122.1666666666,
-        "avg_price_pct": 4.506909501900785,
-        "missed": 93
+        "pairs": 19,
+        "avg_dt_s": 655246.2105263158,
+        "avg_price_pct": 3.712119458415762,
+        "missed": 92
       }
     },
     {
@@ -3117,13 +3117,13 @@
       "shadow_ts": "2026-10-15T14:06:40+00:00",
       "shadow_price": 0.063064161,
       "trigger": "[burst 24h] price breaks \u00a30.0629758; volume x2",
-      "status": "cycle missed",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-01T13:44:39+00:00",
+      "cycle_price": 0.056383079884331076,
+      "cycle_reason": "[burst 4h] 4h-range break +0.80% (range 3.5%); vol x4.9, RSI 36, BTC 1h +0.10%, 4h -0.12%; confidence 0.58 >= 0.56, EV +0.37% after costs; target +8.0% / stop -2.5% / max 6h",
+      "dt_s": 1467479.0,
+      "price_diff": -0.006681081115668917,
+      "price_pct": -10.594101324314643
     },
     {
       "asset": "ZAMA",
