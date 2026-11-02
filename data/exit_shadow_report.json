@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-02T15:38:53+00:00",
+  "generated": "2026-11-02T16:48:25+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -21,9 +21,9 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 73,
-        "avg_dt_s": 123996.95890410959,
-        "avg_price_pct": -2.9862082324130075,
+        "pairs": 74,
+        "avg_dt_s": 122335.35135135135,
+        "avg_price_pct": -2.9491063776646707,
         "missed": 49
       },
       "entries": {
@@ -36,10 +36,10 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 50,
-        "avg_dt_s": 145131.72,
-        "avg_price_pct": -0.9134024031910712,
-        "missed": 42
+        "pairs": 51,
+        "avg_dt_s": 142719.74509803922,
+        "avg_price_pct": -0.8420166163192317,
+        "missed": 41
       },
       "entries": {
         "pairs": 22,
@@ -51,10 +51,10 @@
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 50,
-        "avg_dt_s": 93623.32,
-        "avg_price_pct": -1.0277163451523017,
-        "missed": 44
+        "pairs": 51,
+        "avg_dt_s": 92221.60784313726,
+        "avg_price_pct": -0.9540891084380851,
+        "missed": 43
       },
       "entries": {
         "pairs": 24,
@@ -66,9 +66,9 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 73,
-        "avg_dt_s": 180248.87671232875,
-        "avg_price_pct": -3.820550728816982,
+        "pairs": 74,
+        "avg_dt_s": 177827.43243243243,
+        "avg_price_pct": -3.7721739754685917,
         "missed": 55
       },
       "entries": {
@@ -81,10 +81,10 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 50,
-        "avg_dt_s": 93638.06,
-        "avg_price_pct": -1.0277163451523017,
-        "missed": 44
+        "pairs": 51,
+        "avg_dt_s": 92236.49019607843,
+        "avg_price_pct": -0.9540891084380851,
+        "missed": 43
       },
       "entries": {
         "pairs": 24,
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 107,
-        "avg_dt_s": 210442.6261682243,
-        "avg_price_pct": -1.817303773450974,
+        "pairs": 108,
+        "avg_dt_s": 208507.50925925927,
+        "avg_price_pct": -1.8029184576094541,
         "missed": 65
       },
       "entries": {
