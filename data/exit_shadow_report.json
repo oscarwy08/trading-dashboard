@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-02T08:53:46+00:00",
+  "generated": "2026-11-02T10:04:21+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 71,
         "avg_dt_s": 224858.7605633803,
         "avg_price_pct": -2.075245441944558,
-        "missed": 70
+        "missed": 71
       },
       "entries": {
         "pairs": 19,
@@ -39,7 +39,7 @@
         "pairs": 48,
         "avg_dt_s": 150972.97916666666,
         "avg_price_pct": -0.992889085361259,
-        "missed": 41
+        "missed": 42
       },
       "entries": {
         "pairs": 22,
@@ -54,7 +54,7 @@
         "pairs": 48,
         "avg_dt_s": 97317.64583333333,
         "avg_price_pct": -1.1119661082375407,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 24,
@@ -84,7 +84,7 @@
         "pairs": 48,
         "avg_dt_s": 97332.08333333333,
         "avg_price_pct": -1.1119661082375407,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 24,
@@ -156,9 +156,9 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 20,
-        "avg_dt_s": 117288.65,
-        "avg_price_pct": 0.06975428731874016,
+        "pairs": 21,
+        "avg_dt_s": 111735.47619047618,
+        "avg_price_pct": 0.07485070345676312,
         "missed": 27
       },
       "entries": {
@@ -2616,6 +2616,20 @@
       "shadow_ts": "2026-11-01T14:44:19+00:00",
       "shadow_price": 0.05511439795286237,
       "trigger": "[burst 4h] stop-loss -2.7% <= -2.5% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "FTC.L",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-02T09:46:14+00:00",
+      "shadow_price": 2.33134,
+      "trigger": "[momentum] trailing stop +1.7% (peak +4.7%, gives back 40% of the gain) [gap fill]",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
