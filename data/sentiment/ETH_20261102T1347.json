@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-02T13:58:00Z",
+ "asset": "ETH",
+ "score": -0.1,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,276, +1.0% in 24h, bouncing off the daily 200 average with $2,550 as resistance. ETH ETFs lost ~$432M last week, the biggest outflow of the majors. ZachXBT flagged a ~$106M theft from an EU entity's exchange accounts swapped through ETH into Monero, a minor negative.",
+ "sources": [
+  "https://x.com/i/trending/2117252757438771374",
+  "https://x.com/i/trending/2117178165672231036",
+  "https://x.com/i/trending/2117240097997484033"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.0,
+ "carried_over": false
+}

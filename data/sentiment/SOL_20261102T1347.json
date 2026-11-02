@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T13:58:00Z",
+ "asset": "SOL",
+ "score": -0.1,
+ "confidence": 0.4,
+ "summary": "SOL ~$93.7, -1.7% in 24h. Arkham shows a whale moved ~1.49M SOL (~$149M) to exchanges over 10 days, a possible sell overhang; SOL ETFs saw ~$71M outflows last week. Offsetting: record tokenized-stock activity and stablecoin supply on Solana. $90-93 is the support traders watch.",
+ "sources": [
+  "https://x.com/i/trending/2117209881405002040",
+  "https://x.com/i/trending/2117247096726446516"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.7,
+ "carried_over": false
+}

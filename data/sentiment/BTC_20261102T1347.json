@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-02T13:58:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "BTC ~$77.5k, +0.1% in 24h, slipped from ~$78.7k this morning. US spot BTC ETFs had ~$203M net outflows last week. Election week (US midterms Tue) and Friday's jobs report are the near-term risk; traders watch $76k support and $80.5k resistance. Binance now restoring fiat withdrawals after the hack, which eases that overhang.",
+ "sources": [
+  "https://x.com/i/trending/2117252757438771374",
+  "https://x.com/i/trending/2117178165672231036",
+  "https://x.com/i/trending/2117240102980370873"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.1,
+ "carried_over": false
+}

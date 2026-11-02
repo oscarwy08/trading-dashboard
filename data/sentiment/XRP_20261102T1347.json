@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T13:58:00Z",
+ "asset": "XRP",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.246, -0.3% in 24h. XRP ETFs took in $4.3M last week while BTC/ETH/SOL ETFs bled ~$690M, a seventh straight month of inflows, hinting at rotation. Ripple executives say RLUSD adds fee activity on the XRP Ledger. Price itself still weak (-16% over October).",
+ "sources": [
+  "https://x.com/i/trending/2117178165672231036",
+  "https://x.com/i/trending/2116759042400080022"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 50000,
+ "buzz_level": 50000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.3,
+ "carried_over": false
+}
