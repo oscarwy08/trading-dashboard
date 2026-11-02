@@ -1251,6 +1251,7 @@ Cycle buys with no shadow entry
   AKE day  2026-10-30T13:05:01+00:00  £0.0143614  [burst 4h] 4h-range break +1.71% (range 2.6%); vol x3.6, RSI 31, BTC 1h -0.02%, 4h -0.86%; confidence 0.57 >= 0.56, EV +0.60% after costs; target +7.8% / stop -2.5% / max 6h
   SUPER day  2026-10-30T14:46:52+00:00  £0.122137  [burst 4h] 4h-range break +0.86% (range 1.6%); vol x4.7, RSI 51, BTC 1h -0.14%, 4h -0.93%; confidence 0.59 >= 0.57, EV +0.35% after costs; target +8.0% / stop -2.5% / max 6h
   RSR day  2026-10-31T15:22:42+00:00  £0.00121334  [burst 24h] 24h-high break +1.57% (high $0.001592); vol x6.0, RSI 68, BTC 1h -0.04%, 4h -0.00%; confidence 0.68 >= 0.56, EV +1.50% after costs; target +8.0% / stop -2.5% / max 6h
+  FTC.L day  2026-11-02T08:40:05+00:00  £2.2875  [momentum] DAY score 0.389 >= 0.35; target +7.5% / stop -3.6% (ATR 3.02%); EV +0.47%; 4h +1.9%, 24h -0.7%, EMA6/24 up, RSI 57, no fresh sentiment
 
 Per book
 
@@ -1285,7 +1286,7 @@ day_trail_arm
   exits: 46 pairs, avg time gap 137872s, avg price gap -2.33%, missed moves 36
   entries: 26 pairs, avg time gap 484347s, avg price gap +11.40%, missed moves 434
 day_ev_blend
-  exits: 18 pairs, avg time gap 130280s, avg price gap -0.01%, missed moves 27
+  exits: 20 pairs, avg time gap 117289s, avg price gap +0.07%, missed moves 27
   entries: 0 pairs, avg time gap n/a, avg price gap n/a, missed moves 31
 no_risk_clock
   exits: 64 pairs, avg time gap 143963s, avg price gap -2.43%, missed moves 53

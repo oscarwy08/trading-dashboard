@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-02T07:44:14+00:00",
+  "generated": "2026-11-02T08:53:46+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -156,9 +156,9 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 18,
-        "avg_dt_s": 130280.27777777778,
-        "avg_price_pct": -0.010178185354208896,
+        "pairs": 20,
+        "avg_dt_s": 117288.65,
+        "avg_price_pct": 0.06975428731874016,
         "missed": 27
       },
       "entries": {
@@ -4561,6 +4561,13 @@
       "asset": "RSR",
       "price": 0.001213343123345357,
       "reason": "[burst 24h] 24h-high break +1.57% (high $0.001592); vol x6.0, RSI 68, BTC 1h -0.04%, 4h -0.00%; confidence 0.68 >= 0.56, EV +1.50% after costs; target +8.0% / stop -2.5% / max 6h"
+    },
+    {
+      "ts": "2026-11-02T08:40:05+00:00",
+      "sleeve": "day",
+      "asset": "FTC.L",
+      "price": 2.2875,
+      "reason": "[momentum] DAY score 0.389 >= 0.35; target +7.5% / stop -3.6% (ATR 3.02%); EV +0.47%; 4h +1.9%, 24h -0.7%, EMA6/24 up, RSI 57, no fresh sentiment"
     }
   ]
 }
