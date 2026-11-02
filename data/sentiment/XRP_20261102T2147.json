@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T21:55:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.25, flat in 24h. Holders split over Ripple prioritising RLUSD; a critic is drafting a class-action complaint. XRPL fixCleanup3_4_0 amendment (token-minting loophole fix, native XRP unaffected) has 33/35 validator support and could activate as early as Nov 4 - routine fix, minor.",
+ "sources": [
+  "https://x.com/i/trending/2117367467312066827",
+  "https://x.com/i/trending/2117291068890763501"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "XRPL fixCleanup3_4_0 amendment may activate Nov 4 (routine security fix)",
+ "volume": 50000,
+ "buzz_level": 50000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

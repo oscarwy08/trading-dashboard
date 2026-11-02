@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T21:55:00Z",
+ "asset": "ETH",
+ "score": -0.1,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,250, -0.5% in 24h, briefly under $2,250 in the pre-midterm selloff. BitMine added 8,573 ETH (now 6.06M ETH, 4.9% of supply) keeping its weekly buying streak. No protocol catalyst.",
+ "sources": [
+  "https://x.com/i/trending/2117321780377641184",
+  "https://x.com/i/trending/2117268952678277285"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.5,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T21:55:00Z",
+ "asset": "HYPE",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "HYPE ~$83.8, -4.2% in 24h, pulling back from ~$87 after the ICE / Trade[XYZ] partnership to bring Hyperliquid perps to US traders (pending CFTC approval). ~$15.9M USDC yield from Circle expected to fund buybacks (~180k HYPE). Up ~13% on the week, 11-15% off ATH $97.96; trade.xyz GitBook breach noted.",
+ "sources": [
+  "https://x.com/i/trending/2117023504147124266",
+  "https://x.com/i/trending/2117308543934054618"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "ICE partnership with Trade[XYZ] for US Hyperliquid perps (pending CFTC); USDC-yield buyback",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -4.2,
+ "carried_over": false
+}

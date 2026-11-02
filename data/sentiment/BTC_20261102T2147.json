@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-11-02T21:55:00Z",
+ "asset": "BTC",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "BTC ~$76.7k, -1.4% in 24h, slipped under $77k with >$100M of longs liquidated in an hour ahead of Tuesday's US midterms. Longest streak of daily net realised losses since mid-August; ETF outflows continue ($643M on Oct 30). Support $76.0-76.6k then $75k. Offsets: Strategy bought 811 BTC and Strive 124 BTC last week. Mercado Bitcoin (~$40M) hack adds to exchange-safety worries.",
+ "sources": [
+  "https://x.com/i/trending/2117258463185457563",
+  "https://x.com/i/trending/2117321780377641184",
+  "https://x.com/i/trending/2117241748514844948",
+  "https://x.com/i/trending/2117260404883939594"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 110000,
+ "buzz_level": 110000,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": -1.4,
+ "carried_over": false
+}
