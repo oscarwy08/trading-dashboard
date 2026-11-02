@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-02T21:22:20+00:00",
+  "generated": "2026-11-02T22:31:06+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -21,10 +21,10 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 74,
-        "avg_dt_s": 122335.35135135135,
-        "avg_price_pct": -2.9491063776646707,
-        "missed": 50
+        "pairs": 75,
+        "avg_dt_s": 133811.65333333332,
+        "avg_price_pct": -3.4104185004881358,
+        "missed": 49
       },
       "entries": {
         "pairs": 36,
@@ -66,10 +66,10 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 74,
-        "avg_dt_s": 177827.43243243243,
-        "avg_price_pct": -3.7721739754685917,
-        "missed": 56
+        "pairs": 75,
+        "avg_dt_s": 188564.14666666667,
+        "avg_price_pct": -4.222511863654671,
+        "missed": 55
       },
       "entries": {
         "pairs": 34,
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 109,
-        "avg_dt_s": 206601.09174311926,
-        "avg_price_pct": -1.7906760437057883,
-        "missed": 66
+        "pairs": 110,
+        "avg_dt_s": 213660.87272727274,
+        "avg_price_pct": -2.1157382213941407,
+        "missed": 65
       },
       "entries": {
         "pairs": 48,
