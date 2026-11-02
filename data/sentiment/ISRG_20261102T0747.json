@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "ISRG",
+ "score": -0.15,
+ "confidence": 0.4,
+ "summary": "ISRG $432.01 at Friday's close (-3.7%) despite ~22% revenue growth, after a $450M antitrust settlement and a price cut on its own instruments; it also bought back $2.9B in the quarter. Slower US procedure growth weighs.",
+ "sources": [
+  "https://x.com/Morpheu5Watcher/status/2116548658837803043",
+  "https://x.com/trading_alerts_/status/2117096245453877677"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "$450M antitrust settlement and instrument price cut (reported with Q3)",
+ "volume": 300,
+ "buzz_level": 300,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -3.7,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "SOL",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "SOL ~$94, -2.3% in 24h. Solana's official account teased a 'big week' (unspecified, not counted as a catalyst); the network has led Ethereum mainnet on monthly DEX volume for 24 months, and tokenized-stock holders are near 1.7M. Validators told to patch a critical Linux kernel bug today. Mildly positive tone.",
+ "sources": [
+  "https://x.com/i/trending/2117133783837323745",
+  "https://x.com/i/trending/2117104662436286776"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.3,
+ "carried_over": false
+}

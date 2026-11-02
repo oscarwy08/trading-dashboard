@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "ETH",
+ "score": -0.1,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,280, +0.7% in 24h, briefly back near $2,300. A one-block Ethereum reorg on 31 Oct caused THORChain to pay out 10 ETH in error and halt ETH swaps (funds returned); a small knock to sentiment, not to ETH itself. Otherwise following BTC.",
+ "sources": [
+  "https://x.com/i/trending/2117071148303474696",
+  "https://x.com/i/trending/2117160346498814233"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "THORChain halted ETH swaps after a 31 Oct one-block reorg",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.7,
+ "carried_over": false
+}

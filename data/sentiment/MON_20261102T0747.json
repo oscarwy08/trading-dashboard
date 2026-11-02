@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "MON",
+ "score": -0.3,
+ "confidence": 0.5,
+ "summary": "MON ~$0.0187, -4.2% in 24h. The 24 Nov unlock (~$320M vs a ~$226M market cap) dominates chatter, with holders asking the team for a plan against selling pressure; some point to Category Labs' earlier 80M buyback. Positive: ~20% staked at ~9% APY. Mentions steady. More bearish than last night.",
+ "sources": [
+  "https://x.com/jaggadaku931/status/2117089780509077719",
+  "https://x.com/erdincsekerim/status/2117142531100291139",
+  "https://x.com/BSCNWire/status/2117062186681893108"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "Team/investor unlock 24 Nov (~$320M)",
+ "volume": 58,
+ "buzz_level": 58,
+ "buzz_change": 0.94,
+ "price_runup_24h_pct": -4.2,
+ "carried_over": false
+}

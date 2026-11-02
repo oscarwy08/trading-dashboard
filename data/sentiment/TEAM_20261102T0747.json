@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "TEAM",
+ "score": -0.2,
+ "confidence": 0.35,
+ "summary": "TEAM $191.72 at Friday's close (-6.1%), -13% in two days with no company news, caught in the tech de-grossing after more than tripling since April.",
+ "sources": [
+  "https://x.com/Morpheu5Watcher/status/2116548366897397883"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 1500,
+ "buzz_level": 1500,
+ "buzz_change": 0.75,
+ "price_runup_24h_pct": -6.1,
+ "carried_over": false
+}

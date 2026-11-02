@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "CRWD",
+ "score": -0.1,
+ "confidence": 0.35,
+ "summary": "CRWD $250.43 at Friday's close (-4.1%) in the broad high-multiple tech pullback. No company-specific news; joined the issuers objecting to tokenized shares on OKXICE (not price-relevant).",
+ "sources": [
+  "https://x.com/Lucky_m_X/status/2116852466901778591",
+  "https://x.com/The_NewsCrypto/status/2117152398561194025"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 300,
+ "buzz_level": 300,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -4.1,
+ "carried_over": false
+}

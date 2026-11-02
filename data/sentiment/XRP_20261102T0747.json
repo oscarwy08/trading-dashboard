@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.25, -0.3% in 24h. Ripple's scheduled 1B XRP escrow release on 1 Nov, with ~700M re-locked as usual. Community upbeat on RLUSD growth (~$1B on the ledger) and Ripple's ~$900M revenue run rate, but price action flat and holders frustrated. Unchanged lean.",
+ "sources": [
+  "https://x.com/i/trending/2116809724284817714",
+  "https://x.com/i/trending/2117018210935427460"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "Monthly escrow release 1 Nov (routine, mostly re-locked)",
+ "volume": 50000,
+ "buzz_level": 50000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.3,
+ "carried_over": false
+}

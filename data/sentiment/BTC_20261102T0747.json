@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "BTC",
+ "score": 0.0,
+ "confidence": 0.5,
+ "summary": "BTC ~$78.0k, +0.3% in 24h. Closed a seventh straight week above the 50-week average despite October's -7.3%. Binance withdrawals since 1 Nov total ~$4.6B (about 2% of assets), orderly. Fear still dominant; $79.5k is the resistance traders watch. Slightly less bearish than last night.",
+ "sources": [
+  "https://x.com/i/trending/2117160346498814233",
+  "https://x.com/i/trending/2116671503714361480"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 0.3,
+ "carried_over": false
+}

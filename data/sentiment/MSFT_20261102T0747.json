@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "MSFT",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "MSFT $521.91 at Friday's close (-1.6%). Big Tech Q3 capex hit a record ~$202B and the group's free cash flow turned negative, though Microsoft was the only one still positive, with Azure +48%. Hedge funds cut tech at the fastest pace since 2016. Mixed.",
+ "sources": [
+  "https://x.com/i/trending/2116908080252547152",
+  "https://x.com/i/trending/2117113744266535101"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 15000,
+ "buzz_level": 15000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.6,
+ "carried_over": false
+}

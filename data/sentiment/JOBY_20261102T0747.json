@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "JOBY",
+ "score": 0.2,
+ "confidence": 0.35,
+ "summary": "JOBY $4.91 at Friday's close (-3.4%). ARK bought ~2.24M shares on 26-29 Oct; air-taxi demo flights at Orlando airport start this week; Q3 earnings call chatter. Positive tone into the week.",
+ "sources": [
+  "https://x.com/JobySPCX/status/2116995542874296679",
+  "https://x.com/TerraPharma1/status/2116924870911213961"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "ARK purchases 26-29 Oct; Orlando demo flights from 2 Nov",
+ "volume": 1200,
+ "buzz_level": 1200,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -3.4,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-02T07:55:00Z",
+ "asset": "KITE",
+ "score": -0.4,
+ "confidence": 0.5,
+ "summary": "KITE ~$0.118, -3.8% in 24h after being a top gainer over the weekend (price-chase recaps ignored). Tomorrow, 3 Nov, ~$75M of KITE unlocks (~27% of circulating supply, the first founder/team and private tranche). Large near-term supply overhang.",
+ "sources": [
+  "https://x.com/Tokenomist_ai/status/2117149740412612785",
+  "https://x.com/bullmarketlover/status/2117060586299097291"
+ ],
+ "catalyst_score": -0.45,
+ "catalyst_note": "Unlock 3 Nov, ~$75M, ~27% of circulating supply",
+ "volume": 280,
+ "buzz_level": 280,
+ "buzz_change": 1.33,
+ "price_runup_24h_pct": -3.8,
+ "carried_over": false
+}
