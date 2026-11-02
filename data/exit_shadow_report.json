@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-02T17:57:07+00:00",
+  "generated": "2026-11-02T19:07:04+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -24,7 +24,7 @@
         "pairs": 74,
         "avg_dt_s": 122335.35135135135,
         "avg_price_pct": -2.9491063776646707,
-        "missed": 49
+        "missed": 50
       },
       "entries": {
         "pairs": 36,
@@ -69,7 +69,7 @@
         "pairs": 74,
         "avg_dt_s": 177827.43243243243,
         "avg_price_pct": -3.7721739754685917,
-        "missed": 55
+        "missed": 56
       },
       "entries": {
         "pairs": 34,
@@ -204,7 +204,7 @@
         "pairs": 109,
         "avg_dt_s": 206601.09174311926,
         "avg_price_pct": -1.7906760437057883,
-        "missed": 65
+        "missed": 66
       },
       "entries": {
         "pairs": 48,
