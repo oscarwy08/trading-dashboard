@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T22:00:00Z",
+ "asset": "ETH",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "ETH/BTC broke a multi-month downtrend above ~0.0295 (ETH $2,250-2,290); rotation-to-alts talk. mump2p block propagation now carries 8% of staked ETH. Mostly chart-driven optimism.",
+ "sources": [
+  "https://x.com/i/trending/2117674991420354917",
+  "https://x.com/i/trending/2117461704674353628"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 45000,
+ "buzz_level": 45000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 0.9,
+ "carried_over": false
+}

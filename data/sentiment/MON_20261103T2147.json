@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-03T22:00:00Z",
+ "asset": "MON",
+ "score": -0.15,
+ "confidence": 0.45,
+ "summary": "Category Labs published the Monad Private Settlement Domains whitepaper (Nov 3) for institutional private settlement, with community interest; price still weak (-5% 24h), so sentiment improves from very negative but stays below neutral.",
+ "sources": [
+  "https://x.com/i/trending/2117658205429936323"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "2026-11-03: Monad Private Settlement Domains technical whitepaper released",
+ "volume": 150,
+ "buzz_level": 150,
+ "buzz_change": 2.1,
+ "price_runup_24h_pct": -5.0,
+ "carried_over": false
+}

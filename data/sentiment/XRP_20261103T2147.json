@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T22:00:00Z",
+ "asset": "XRP",
+ "score": 0.05,
+ "confidence": 0.45,
+ "summary": "Broke out of a tight Bollinger squeeze to $1.27-1.29; XRPL added 7,934 new wallets on Nov 1. Offset by community frustration after a news-light Swell and resurfaced 2017 sell emails. Breakout is technical, not news-driven.",
+ "sources": [
+  "https://x.com/i/trending/2117624048901656988",
+  "https://x.com/i/trending/2117481294821249220"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 65000,
+ "buzz_level": 65000,
+ "buzz_change": 1.25,
+ "price_runup_24h_pct": 2.8,
+ "carried_over": false
+}

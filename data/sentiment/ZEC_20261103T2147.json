@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T22:00:00Z",
+ "asset": "ZEC",
+ "score": 0.2,
+ "confidence": 0.5,
+ "summary": "Privacy coins outperforming BTC; ZEC ~$1,200-1,230, top-10 by market cap, flat on the day. NU7 network upgrade scheduled for Nov 5 (faster blocks). Large YTD run-up means crowded positioning.",
+ "sources": [
+  "https://x.com/i/trending/2117648662549426623",
+  "https://x.com/i/trending/2117614474551341534"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "2026-11-05: scheduled NU7 network upgrade",
+ "volume": 10000,
+ "buzz_level": 10000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -0.1,
+ "carried_over": false
+}

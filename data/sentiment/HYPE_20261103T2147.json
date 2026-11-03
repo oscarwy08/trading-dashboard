@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-03T22:00:00Z",
+ "asset": "HYPE",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "Bloomberg profile of Hyperliquid: $713M trailing revenue funding buybacks, ICE and Kraken exploring its tech; HYPE ~$85-87. Some trader complaints about losses farming on Hyperliquid. No new dated catalyst.",
+ "sources": [
+  "https://x.com/i/trending/2117023504147124266"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 45000,
+ "buzz_level": 45000,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": -1.9,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T22:00:00Z",
+ "asset": "BTC",
+ "score": -0.15,
+ "confidence": 0.55,
+ "summary": "Dipped to ~$76.2k then bounced back above $77k on US midterm day; ETF outflows over $1B across two days (IBIT -$405M Nov 2) continue, but volume is subdued and traders frame it as accumulation; $76.5-77k support, W pattern toward $81k cited.",
+ "sources": [
+  "https://x.com/i/trending/2117707601987391865",
+  "https://x.com/i/trending/2117489380692504899"
+ ],
+ "catalyst_score": -0.15,
+ "catalyst_note": "2026-11-02: spot BTC ETFs -$399M net (IBIT -$405M), second big outflow day",
+ "volume": 125000,
+ "buzz_level": 125000,
+ "buzz_change": 1.24,
+ "price_runup_24h_pct": -0.5,
+ "carried_over": false
+}
