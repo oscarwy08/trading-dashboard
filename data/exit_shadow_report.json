@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-03T16:54:35+00:00",
+  "generated": "2026-11-03T18:00:25+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 80,
         "avg_dt_s": 230464.775,
         "avg_price_pct": 1.0832312195412095,
-        "missed": 71
+        "missed": 72
       },
       "entries": {
         "pairs": 20,
@@ -2756,6 +2756,20 @@
       "shadow_ts": "2026-11-03T16:03:35+00:00",
       "shadow_price": 0.06895332497808035,
       "trigger": "[burst 24h] trailing stop +1.4% (peak +2.6%, gives back 40% of the gain)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "KITE",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-03T17:17:55+00:00",
+      "shadow_price": 0.09143512494544781,
+      "trigger": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,

@@ -684,6 +684,10 @@ POL day
   shadow  2026-11-03T16:03:35+00:00  £0.0689533  [burst 24h] trailing stop +1.4% (peak +2.6%, gives back 40% of the gain)
   cycle   no sell yet
 
+KITE day
+  shadow  2026-11-03T17:17:55+00:00  £0.0914351  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)
+  cycle   no sell yet
+
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
 
@@ -1434,7 +1438,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 80 pairs, avg time gap 230465s, avg price gap +1.08%, missed moves 71
+  exits: 80 pairs, avg time gap 230465s, avg price gap +1.08%, missed moves 72
   entries: 20 pairs, avg time gap 657541s, avg price gap +3.54%, missed moves 115
 ev_exit
   exits: 76 pairs, avg time gap 132068s, avg price gap -2.22%, missed moves 49
