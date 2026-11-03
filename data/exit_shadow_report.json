@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-03T10:04:01+00:00",
+  "generated": "2026-11-03T11:17:18+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 72,
-        "avg_dt_s": 221966.98611111112,
-        "avg_price_pct": -2.0427527868583617,
-        "missed": 71
+        "pairs": 73,
+        "avg_dt_s": 226020.91780821918,
+        "avg_price_pct": -2.031681761027899,
+        "missed": 70
       },
       "entries": {
         "pairs": 19,
@@ -2350,13 +2350,13 @@
       "shadow_ts": "2026-10-28T10:13:44+00:00",
       "shadow_price": 0.2025,
       "trigger": "[momentum] stop-loss -6.5% <= -5.0% (ATR-scaled) [gap fill]",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-03T10:05:28+00:00",
+      "cycle_price": 0.19999999999999998,
+      "cycle_reason": "[momentum] stop-loss -3.7% <= -3.4% (ATR-scaled); P&L \u00a3-0.27",
+      "dt_s": 517904.0,
+      "price_diff": -0.00250000000000003,
+      "price_pct": -1.2345679012345825
     },
     {
       "asset": "HYPE",
