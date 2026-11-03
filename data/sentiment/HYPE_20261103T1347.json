@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "HYPE",
+ "score": 0.2,
+ "confidence": 0.5,
+ "summary": "Bloomberg profile of Hyperliquid co-founder Jeff Yan: $713M revenue last year funding HYPE buybacks; ICE deal for regulated 24/7 markets pending. HYPE ~$85, -3% 24h with the market.",
+ "sources": [
+  "https://x.com/i/trending/2117023504147124266"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Bloomberg profile (Nov 2-3); ICE deal pending",
+ "volume": 45000,
+ "buzz_level": 45000,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": -3.1,
+ "carried_over": false
+}

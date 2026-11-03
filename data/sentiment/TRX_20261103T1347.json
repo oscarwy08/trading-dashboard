@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "TRX",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "TRON passed 16B cumulative transactions, leads USDT supply ($92B vs ETH $87B); Canary staked TRX ETF and regulated TRX futures on Bitnomial drawing TradFi.",
+ "sources": [
+  "https://x.com/i/trending/2117512259005993060",
+  "https://x.com/i/trending/2117241745402667340"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "Q3 2026 stats; TRX futures listing on Bitnomial / staked TRX ETF",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": 2.8,
+ "carried_over": false
+}

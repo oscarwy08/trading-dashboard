@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "ZRO",
+ "score": -0.05,
+ "confidence": 0.4,
+ "summary": "LayerZero: minor protocol upgrade posts; STG-to-ZRO conversion window closes Dec 15; chartists flag bearish head and shoulders after bounce. Bounced ~4% in 24h on a burst entry.",
+ "sources": [
+  "https://x.com/7RWcrypto/status/2117335924602184145",
+  "https://x.com/cmcal_bot/status/2117499819753193685",
+  "https://x.com/cryptowithgopal/status/2117567889368838214"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "2026-12-15: STG conversion deadline (not near-term)",
+ "volume": 300,
+ "buzz_level": 300,
+ "buzz_change": 0.75,
+ "price_runup_24h_pct": 3.8,
+ "carried_over": false
+}

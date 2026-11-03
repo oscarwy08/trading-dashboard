@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "IRYS",
+ "score": -0.25,
+ "confidence": 0.35,
+ "summary": "IRYS down ~95% from its high; small bounce (+7% 24h). Posts talk of market-maker games and shorts; no fundamental news.",
+ "sources": [
+  "https://x.com/CryptoTavs/status/2117493652201300394",
+  "https://x.com/Trading247_BTC/status/2117606425652613474"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 750,
+ "buzz_level": 750,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 7.3,
+ "carried_over": false
+}

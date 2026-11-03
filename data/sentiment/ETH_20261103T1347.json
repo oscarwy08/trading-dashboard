@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "ETH",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "Followed BTC lower, under $2,250 at the low; mump2p faster block propagation adoption (3.36M ETH) is incremental tech news, not price-moving.",
+ "sources": [
+  "https://x.com/i/trending/2117258463185457563",
+  "https://x.com/i/trending/2117461704674353628"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 42000,
+ "buzz_level": 42000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.3,
+ "carried_over": false
+}

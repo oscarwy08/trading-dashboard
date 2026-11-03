@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "MON",
+ "score": -0.35,
+ "confidence": 0.55,
+ "summary": "MON ~ $0.0174, down ~9% in 24h and about half from ~$0.034. Talk centres on a large November anniversary token unlock (16B+ claimed) and airdrop resentment; small ecosystem raise (CRSHMARKET $3.5M seed). Some contrarian 'max buy' posts.",
+ "sources": [
+  "https://x.com/Jimmyy_yyyy/status/2117568278394720522",
+  "https://x.com/SiyamAhmed117/status/2117496432672563676",
+  "https://x.com/BSCNews/status/2117549990390439963"
+ ],
+ "catalyst_score": -0.3,
+ "catalyst_note": "November 2026 anniversary token unlock (size per X posts, unverified exact date)",
+ "volume": 120,
+ "buzz_level": 120,
+ "buzz_change": 1.8,
+ "price_runup_24h_pct": -9.0,
+ "carried_over": false
+}

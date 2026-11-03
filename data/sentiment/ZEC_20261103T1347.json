@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "ZEC",
+ "score": 0.15,
+ "confidence": 0.4,
+ "summary": "Zcash near $1,205 ($20B cap), +200% YTD; NU7 network upgrade scheduled Nov 5 to cut block times. Bullish chatter but coin has already run hard this year.",
+ "sources": [
+  "https://x.com/i/trending/2117614474551341534"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "2026-11-05: NU7 network upgrade",
+ "volume": 9000,
+ "buzz_level": 9000,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": -2.4,
+ "carried_over": false
+}

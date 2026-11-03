@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "XRP",
+ "score": -0.1,
+ "confidence": 0.55,
+ "summary": "Community let down after Ripple Swell: no big announcements; Garlinghouse denied abandoning XRP for RLUSD, cited $900M revenue run rate. Split reaction, price near $1.25-1.29.",
+ "sources": [
+  "https://x.com/i/trending/2117481294821249220"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "Ripple Swell conference (late Oct/early Nov): no major XRP announcements",
+ "volume": 60000,
+ "buzz_level": 60000,
+ "buzz_change": 1.15,
+ "price_runup_24h_pct": 3.0,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "BTC",
+ "score": -0.25,
+ "confidence": 0.6,
+ "summary": "Slid below $77k as US midterm polls opened; record IBIT outflow ($405M on Nov 2, ~$399M net across spot ETFs); testing $74-76.8k support after 5 red weeks. Historical post-midterm dips cited; holds above 50-week MA.",
+ "sources": [
+  "https://x.com/i/trending/2117258463185457563",
+  "https://x.com/i/trending/2117489380692504899"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "2026-11-02: largest IBIT outflow in 4+ months ($405M)",
+ "volume": 130000,
+ "buzz_level": 130000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -0.7,
+ "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "HOT",
+ "score": 0.05,
+ "confidence": 0.4,
+ "summary": "Holo up ~44% in 24h, trending on CoinGecko, after HoloFuel went live Nov 1 (HOT-to-HoloFuel swap). Mostly hype posts; skeptics say HoloFuel has little utility and expect a dump once swaps settle. Move has already happened.",
+ "sources": [
+  "https://x.com/yskqz_/status/2117584561529872720",
+  "https://x.com/RyanAtOpen/status/2117473324129571139",
+  "https://x.com/JBerkeleyClarke/status/2117490358389010560"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "2026-11-01: HoloFuel launch / HOT swap live",
+ "volume": 270,
+ "buzz_level": 270,
+ "buzz_change": 1.9,
+ "price_runup_24h_pct": 44.0,
+ "carried_over": false
+}

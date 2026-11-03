@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-03T13:58:00Z",
+ "asset": "SOL",
+ "score": -0.1,
+ "confidence": 0.45,
+ "summary": "SOL eased to ~$92-93 with the market; fee-capture debate; Samsung USDC sends on Galaxy devices noted as adoption.",
+ "sources": [
+  "https://x.com/i/trending/2117528835277430903"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -1.2,
+ "carried_over": false
+}
