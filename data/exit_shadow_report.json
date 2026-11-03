@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-03T08:52:14+00:00",
+  "generated": "2026-11-03T10:04:01+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 72,
         "avg_dt_s": 221966.98611111112,
         "avg_price_pct": -2.0427527868583617,
-        "missed": 70
+        "missed": 71
       },
       "entries": {
         "pairs": 19,
@@ -156,9 +156,9 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 22,
-        "avg_dt_s": 106847.27272727272,
-        "avg_price_pct": 0.06426360216783865,
+        "pairs": 23,
+        "avg_dt_s": 102208.30434782608,
+        "avg_price_pct": 0.046430869414046595,
         "missed": 27
       },
       "entries": {
@@ -381,10 +381,10 @@
     {
       "name": "risk_ev_fix",
       "exits": {
-        "pairs": 14,
-        "avg_dt_s": 1402.142857142857,
-        "avg_price_pct": -0.7356636708813332,
-        "missed": 1
+        "pairs": 15,
+        "avg_dt_s": 1430.4,
+        "avg_price_pct": -0.6731566429843895,
+        "missed": 0
       },
       "entries": {
         "pairs": 2,
@@ -2637,6 +2637,20 @@
       "dt_s": 16651.0,
       "price_diff": 0.006159999999999943,
       "price_pct": 0.26422572426158103
+    },
+    {
+      "asset": "RBW.L",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-03T09:41:29+00:00",
+      "shadow_price": 0.20010000000000006,
+      "trigger": "[momentum] stop-loss -3.7% <= -3.4% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -4589,6 +4603,13 @@
       "asset": "FTC.L",
       "price": 2.3365,
       "reason": "[momentum] DAY score 0.414 >= 0.35; target +5.1% / stop -2.4% (ATR 2.03%); EV +0.41%; 4h -1.2%, 24h +9.2%, EMA6/24 up, RSI 75, no fresh sentiment"
+    },
+    {
+      "ts": "2026-11-03T08:53:43+00:00",
+      "sleeve": "day",
+      "asset": "RBW.L",
+      "price": 0.20625000000000004,
+      "reason": "[momentum] DAY score 0.722 >= 0.35; target +7.2% / stop -3.4% (ATR 2.86%); EV +0.42%; 4h +3.0%, 24h +4.0%, EMA6/24 up, RSI 52, no fresh sentiment"
     }
   ]
 }
