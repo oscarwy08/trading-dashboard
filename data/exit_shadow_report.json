@@ -1,14 +1,14 @@
 {
   "status": "ok",
-  "generated": "2026-11-03T18:00:25+00:00",
+  "generated": "2026-11-03T19:14:28+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 80,
-        "avg_dt_s": 230464.775,
-        "avg_price_pct": 1.0832312195412095,
+        "pairs": 81,
+        "avg_dt_s": 227829.9012345679,
+        "avg_price_pct": 1.1023208886557865,
         "missed": 72
       },
       "entries": {
@@ -2700,13 +2700,13 @@
       "shadow_ts": "2026-11-03T14:02:27+00:00",
       "shadow_price": 0.0031164391870817276,
       "trigger": "[burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-03T18:46:27+00:00",
+      "cycle_price": 0.0031983857815408574,
+      "cycle_reason": "[burst 24h] max hold 6h reached (6.2h), +1.1%; P&L \u00a3+0.05",
+      "dt_s": 17040.0,
+      "price_diff": 8.194659445912977e-05,
+      "price_pct": 2.6294944178219497
     },
     {
       "asset": "HOT",
@@ -2769,6 +2769,20 @@
       "sleeve": "day",
       "shadow_ts": "2026-11-03T17:17:55+00:00",
       "shadow_price": 0.09143512494544781,
+      "trigger": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "ICP",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-03T19:01:02+00:00",
+      "shadow_price": 1.8449933816666753,
       "trigger": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)",
       "status": "no cycle sell",
       "cycle_ts": null,

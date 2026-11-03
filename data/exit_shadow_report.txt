@@ -663,7 +663,8 @@ ZRO day
 
 PUMP day
   shadow  2026-11-03T14:02:27+00:00  £0.00311644  [burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-11-03T18:46:27+00:00  £0.00319839  [burst 24h] max hold 6h reached (6.2h), +1.1%; P&L £+0.05
+  cycle was 17040s later, price £+8.19466e-05 (+2.63%)
 
 HOT day
   shadow  2026-11-03T14:18:49+00:00  £0.000220495  [momentum] stop-loss -44.1% <= -5.0% (ATR-scaled) [gap fill]
@@ -686,6 +687,10 @@ POL day
 
 KITE day
   shadow  2026-11-03T17:17:55+00:00  £0.0914351  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)
+  cycle   no sell yet
+
+ICP day
+  shadow  2026-11-03T19:01:02+00:00  £1.84499  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)
   cycle   no sell yet
 
 Cycle sells with no shadow exit
@@ -1438,7 +1443,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 80 pairs, avg time gap 230465s, avg price gap +1.08%, missed moves 72
+  exits: 81 pairs, avg time gap 227830s, avg price gap +1.10%, missed moves 72
   entries: 20 pairs, avg time gap 657541s, avg price gap +3.54%, missed moves 115
 ev_exit
   exits: 76 pairs, avg time gap 132068s, avg price gap -2.22%, missed moves 49
