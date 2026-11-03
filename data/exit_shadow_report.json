@@ -1,21 +1,21 @@
 {
   "status": "ok",
-  "generated": "2026-11-03T14:35:33+00:00",
+  "generated": "2026-11-03T15:44:26+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 75,
-        "avg_dt_s": 220125.34666666668,
-        "avg_price_pct": 0.23776929305396607,
+        "pairs": 77,
+        "avg_dt_s": 214488.8961038961,
+        "avg_price_pct": 0.2593373235528195,
         "missed": 73
       },
       "entries": {
-        "pairs": 19,
-        "avg_dt_s": 655246.2105263158,
-        "avg_price_pct": 3.712119458415762,
-        "missed": 93
+        "pairs": 20,
+        "avg_dt_s": 657541.0,
+        "avg_price_pct": 3.54463446010516,
+        "missed": 92
       }
     },
     {
@@ -159,7 +159,7 @@
         "pairs": 24,
         "avg_dt_s": 98002.875,
         "avg_price_pct": 3.677761885502838,
-        "missed": 28
+        "missed": 29
       },
       "entries": {
         "pairs": 0,
@@ -2686,13 +2686,13 @@
       "shadow_ts": "2026-11-03T13:22:38+00:00",
       "shadow_price": 1.355828012726003,
       "trigger": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-03T15:03:37+00:00",
+      "cycle_price": 1.3907388679245283,
+      "cycle_reason": "[burst 24h] trailing stop +0.9% (peak +3.1%, gives back 40% of the gain) [gap fill]; P&L \u00a3+0.05",
+      "dt_s": 6059.0,
+      "price_diff": 0.034910855198525326,
+      "price_pct": 2.5748734257477244
     },
     {
       "asset": "PUMP",
@@ -2714,6 +2714,34 @@
       "shadow_ts": "2026-11-03T14:18:49+00:00",
       "shadow_price": 0.00022049461935079166,
       "trigger": "[momentum] stop-loss -44.1% <= -5.0% (ATR-scaled) [gap fill]",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "FTC.L",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-03T15:00:32+00:00",
+      "shadow_price": 2.2800000000000002,
+      "trigger": "[momentum] stop-loss -2.6% <= -2.4% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-11-03T15:03:37+00:00",
+      "cycle_price": 2.27,
+      "cycle_reason": "[momentum] stop-loss -3.0% <= -2.4% (ATR-scaled); P&L \u00a3-0.23",
+      "dt_s": 185.0,
+      "price_diff": -0.010000000000000231,
+      "price_pct": -0.4385964912280803
+    },
+    {
+      "asset": "IRYS",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-03T15:16:00+00:00",
+      "shadow_price": 0.01624639245283019,
+      "trigger": "[momentum] stop-loss -4.1% <= -4.1% (ATR-scaled)",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
@@ -4167,13 +4195,13 @@
       "shadow_ts": "2026-10-26T12:45:57+00:00",
       "shadow_price": 0.06751194242899651,
       "trigger": "[momentum] price holds \u00a30.067497; score 0.498 >= 0.35",
-      "status": "cycle missed",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-03T15:31:39+00:00",
+      "cycle_price": 0.06775661886792454,
+      "cycle_reason": "[burst 24h] 24h-high break +0.40% (high $0.09024); vol x7.6, RSI 69, BTC 1h +0.22%, 4h +0.18%; confidence 0.67 >= 0.58, EV +0.35% after costs; target +3.0% / stop -1.5% / max 6h",
+      "dt_s": 701142.0,
+      "price_diff": 0.00024467643892803204,
+      "price_pct": 0.3624194922037127
     },
     {
       "asset": "JTO",
@@ -4736,6 +4764,13 @@
       "asset": "HOT",
       "price": 0.00039260723478107815,
       "reason": "[momentum] DAY score 0.768 >= 0.35; target +10.9% / stop -5.0% (ATR 4.37%); EV +0.53%; 4h +20.6%, 24h n/a, EMA6/24 up, RSI 67, sentiment +0.05 (conf 0.40, weight x0.97)"
+    },
+    {
+      "ts": "2026-11-03T15:03:37+00:00",
+      "sleeve": "day",
+      "asset": "ICP",
+      "price": 1.8682233962264152,
+      "reason": "[burst 24h] 24h-high break +0.20% (high $2.503); vol x4.5, RSI 73, BTC 1h +0.00%, 4h +0.32%; confidence 0.66 >= 0.57, EV +0.38% after costs; target +3.0% / stop -1.5% / max 6h"
     }
   ]
 }
