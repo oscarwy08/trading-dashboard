@@ -11,7 +11,8 @@ CAP risk
 
 POL day
   shadow  2026-10-12T13:32:47+00:00  £0.0786207  [burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-11-03T16:25:24+00:00  £0.0679844  [burst 24h] trailing stop -0.0% (peak +2.1%, gives back 40% of the gain) [gap fill]; P&L £-0.00
+  cycle was 1911157s later, price £-0.0106363 (-13.53%)
 
 RENDER day
   shadow  2026-10-12T14:24:25+00:00  £1.54521  [momentum] stop-loss -2.0% <= -2.0% (ATR-scaled)
@@ -666,7 +667,8 @@ PUMP day
 
 HOT day
   shadow  2026-11-03T14:18:49+00:00  £0.000220495  [momentum] stop-loss -44.1% <= -5.0% (ATR-scaled) [gap fill]
-  cycle   no sell yet
+  cycle   2026-11-03T16:25:24+00:00  £0.000399968  [momentum] signal -0.351 <= -0.2 (4h -5.9%, 24h n/a, EMA6/24 up, RSI 66, sentiment +0.05 (conf 0.40, weight x0.80)); P&L £+0.07
+  cycle was 7595s later, price £+0.000179473 (+81.40%)
 
 FTC.L day
   shadow  2026-11-03T15:00:32+00:00  £2.28  [momentum] stop-loss -2.6% <= -2.4% (ATR-scaled)
@@ -675,6 +677,11 @@ FTC.L day
 
 IRYS day
   shadow  2026-11-03T15:16:00+00:00  £0.0162464  [momentum] stop-loss -4.1% <= -4.1% (ATR-scaled)
+  cycle   2026-11-03T16:02:25+00:00  £0.0160551  [momentum] stop-loss -5.2% <= -4.1% (ATR-scaled) [gap fill]; P&L £-0.28
+  cycle was 2785s later, price £-0.000191321 (-1.18%)
+
+POL day
+  shadow  2026-11-03T16:03:35+00:00  £0.0689533  [burst 24h] trailing stop +1.4% (peak +2.6%, gives back 40% of the gain)
   cycle   no sell yet
 
 Cycle sells with no shadow exit
@@ -1150,6 +1157,98 @@ WLFI day
   shadow  2026-11-03T12:41:59+00:00  £0.0387848  [burst 24h] price breaks £0.0387489; volume x2
   cycle   no buy — the cycle missed this move
 
+AIOZ day
+  shadow  2026-11-03T15:45:47+00:00  £0.0695742  [momentum] price holds £0.0695742; score 0.493 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+ALGO day
+  shadow  2026-11-03T15:45:47+00:00  £0.0697157  [momentum] price holds £0.069455; score 0.358 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+AXS day
+  shadow  2026-11-03T15:45:47+00:00  £0.63466  [momentum] price holds £0.630935; score 0.378 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+BR day
+  shadow  2026-11-03T15:45:47+00:00  £0.478152  [momentum] price holds £0.343544; score 0.418 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+BTW day
+  shadow  2026-11-03T15:45:47+00:00  £0.78622  [momentum] price holds £0.781406; score 0.409 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+CFX day
+  shadow  2026-11-03T15:45:47+00:00  £0.0344444  [momentum] price holds £0.0344444; score 0.479 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+DYDX day
+  shadow  2026-11-03T15:45:47+00:00  £0.0767104  [momentum] price holds £0.0767104; score 0.376 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+FLUID day
+  shadow  2026-11-03T15:45:47+00:00  £1.44735  [momentum] price holds £1.44139; score 0.751 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+JASMY day
+  shadow  2026-11-03T15:45:47+00:00  £0.00280085  [momentum] price holds £0.00278595; score 0.434 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+KMNO day
+  shadow  2026-11-03T15:45:47+00:00  £0.0251182  [momentum] price holds £0.0245074; score 0.708 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+NMR day
+  shadow  2026-11-03T15:45:47+00:00  £7.1362  [momentum] price holds £7.12875; score 0.415 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+PEPE day
+  shadow  2026-11-03T15:45:47+00:00  £3.6329e-06  [momentum] price holds £3.62397e-06; score 0.492 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+PIEVERSE day
+  shadow  2026-11-03T15:45:47+00:00  £0.855897  [momentum] price holds £0.855897; score 0.367 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+PYTH day
+  shadow  2026-11-03T15:45:47+00:00  £0.0481284  [momentum] price holds £0.0477634; score 0.359 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+RUNE day
+  shadow  2026-11-03T15:45:47+00:00  £0.464821  [momentum] price holds £0.452158; score 0.727 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+SAND day
+  shadow  2026-11-03T15:45:47+00:00  £0.0344146  [momentum] price holds £0.0341912; score 0.46 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+STRK day
+  shadow  2026-11-03T15:45:47+00:00  £0.0327163  [momentum] price holds £0.0325002; score 0.774 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+SUI day
+  shadow  2026-11-03T15:45:47+00:00  £0.668478  [momentum] price holds £0.666467; score 0.409 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+UNI day
+  shadow  2026-11-03T15:45:47+00:00  £5.48131  [momentum] price holds £5.44593; score 0.36 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+VVV day
+  shadow  2026-11-03T15:45:47+00:00  £16.5533  [momentum] price holds £16.5228; score 0.582 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+WAL day
+  shadow  2026-11-03T15:45:47+00:00  £0.021349  [momentum] price holds £0.0212447; score 0.479 >= 0.35
+  cycle   no buy — the cycle missed this move
+
+XRP day
+  shadow  2026-11-03T15:45:47+00:00  £0.950738  [momentum] price holds £0.948585; score 0.324 >= 0.3
+  cycle   no buy — the cycle missed this move
+
+ZRO day
+  shadow  2026-11-03T15:45:47+00:00  £1.41681  [momentum] price holds £1.39595; score 0.554 >= 0.35
+  cycle   no buy — the cycle missed this move
+
 Moves the cycle missed
   KNTQ risk  2026-10-12T13:22:23+00:00  £0.266751  RISK dip: price holds £0.266751
   ZRO risk  2026-10-12T13:23:44+00:00  £1.81194  RISK dip: price holds £1.81043
@@ -1243,6 +1342,29 @@ Moves the cycle missed
   AAVE day  2026-10-31T16:12:02+00:00  £101.8  [burst 24h] price breaks £101.797; volume x2
   PONS day  2026-11-01T08:52:26+00:00  £0.183764  [burst 24h] price breaks £0.182975; volume x2
   WLFI day  2026-11-03T12:41:59+00:00  £0.0387848  [burst 24h] price breaks £0.0387489; volume x2
+  AIOZ day  2026-11-03T15:45:47+00:00  £0.0695742  [momentum] price holds £0.0695742; score 0.493 >= 0.35
+  ALGO day  2026-11-03T15:45:47+00:00  £0.0697157  [momentum] price holds £0.069455; score 0.358 >= 0.35
+  AXS day  2026-11-03T15:45:47+00:00  £0.63466  [momentum] price holds £0.630935; score 0.378 >= 0.35
+  BR day  2026-11-03T15:45:47+00:00  £0.478152  [momentum] price holds £0.343544; score 0.418 >= 0.35
+  BTW day  2026-11-03T15:45:47+00:00  £0.78622  [momentum] price holds £0.781406; score 0.409 >= 0.35
+  CFX day  2026-11-03T15:45:47+00:00  £0.0344444  [momentum] price holds £0.0344444; score 0.479 >= 0.35
+  DYDX day  2026-11-03T15:45:47+00:00  £0.0767104  [momentum] price holds £0.0767104; score 0.376 >= 0.35
+  FLUID day  2026-11-03T15:45:47+00:00  £1.44735  [momentum] price holds £1.44139; score 0.751 >= 0.35
+  JASMY day  2026-11-03T15:45:47+00:00  £0.00280085  [momentum] price holds £0.00278595; score 0.434 >= 0.35
+  KMNO day  2026-11-03T15:45:47+00:00  £0.0251182  [momentum] price holds £0.0245074; score 0.708 >= 0.35
+  NMR day  2026-11-03T15:45:47+00:00  £7.1362  [momentum] price holds £7.12875; score 0.415 >= 0.35
+  PEPE day  2026-11-03T15:45:47+00:00  £3.6329e-06  [momentum] price holds £3.62397e-06; score 0.492 >= 0.35
+  PIEVERSE day  2026-11-03T15:45:47+00:00  £0.855897  [momentum] price holds £0.855897; score 0.367 >= 0.35
+  PYTH day  2026-11-03T15:45:47+00:00  £0.0481284  [momentum] price holds £0.0477634; score 0.359 >= 0.35
+  RUNE day  2026-11-03T15:45:47+00:00  £0.464821  [momentum] price holds £0.452158; score 0.727 >= 0.35
+  SAND day  2026-11-03T15:45:47+00:00  £0.0344146  [momentum] price holds £0.0341912; score 0.46 >= 0.35
+  STRK day  2026-11-03T15:45:47+00:00  £0.0327163  [momentum] price holds £0.0325002; score 0.774 >= 0.35
+  SUI day  2026-11-03T15:45:47+00:00  £0.668478  [momentum] price holds £0.666467; score 0.409 >= 0.35
+  UNI day  2026-11-03T15:45:47+00:00  £5.48131  [momentum] price holds £5.44593; score 0.36 >= 0.35
+  VVV day  2026-11-03T15:45:47+00:00  £16.5533  [momentum] price holds £16.5228; score 0.582 >= 0.35
+  WAL day  2026-11-03T15:45:47+00:00  £0.021349  [momentum] price holds £0.0212447; score 0.479 >= 0.35
+  XRP day  2026-11-03T15:45:47+00:00  £0.950738  [momentum] price holds £0.948585; score 0.324 >= 0.3
+  ZRO day  2026-11-03T15:45:47+00:00  £1.41681  [momentum] price holds £1.39595; score 0.554 >= 0.35
 
 Cycle buys with no shadow entry
   CARDS day  2026-10-19T07:11:51+00:00  £0.220091  [momentum] DAY score 0.8 >= 0.35; target +5.5% / stop -2.6% (ATR 2.20%); EV +0.33%; 4h +8.3%, 24h +9.1%, EMA6/24 up, RSI 78, no fresh sentiment
@@ -1312,8 +1434,8 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 77 pairs, avg time gap 214489s, avg price gap +0.26%, missed moves 73
-  entries: 20 pairs, avg time gap 657541s, avg price gap +3.54%, missed moves 92
+  exits: 80 pairs, avg time gap 230465s, avg price gap +1.08%, missed moves 71
+  entries: 20 pairs, avg time gap 657541s, avg price gap +3.54%, missed moves 115
 ev_exit
   exits: 76 pairs, avg time gap 132068s, avg price gap -2.22%, missed moves 49
   entries: 36 pairs, avg time gap 669486s, avg price gap +12.31%, missed moves 349
@@ -1330,35 +1452,35 @@ everything
   exits: 53 pairs, avg time gap 88861s, avg price gap -0.94%, missed moves 43
   entries: 25 pairs, avg time gap 586929s, avg price gap +13.19%, missed moves 228
 midnight_crypto
-  exits: 87 pairs, avg time gap 154055s, avg price gap -2.10%, missed moves 62
+  exits: 88 pairs, avg time gap 152442s, avg price gap -2.16%, missed moves 61
   entries: 52 pairs, avg time gap 452598s, avg price gap +6.98%, missed moves 465
 entry_watch
-  exits: 67 pairs, avg time gap 138568s, avg price gap -1.04%, missed moves 42
-  entries: 27 pairs, avg time gap 383498s, avg price gap +9.75%, missed moves 344
+  exits: 69 pairs, avg time gap 134664s, avg price gap +0.17%, missed moves 41
+  entries: 28 pairs, avg time gap 412876s, avg price gap +9.72%, missed moves 343
 risk_giveback_15
-  exits: 67 pairs, avg time gap 154304s, avg price gap -0.42%, missed moves 54
-  entries: 30 pairs, avg time gap 470553s, avg price gap +6.97%, missed moves 403
+  exits: 69 pairs, avg time gap 149944s, avg price gap +0.77%, missed moves 53
+  entries: 31 pairs, avg time gap 494281s, avg price gap +7.03%, missed moves 402
 day_trail_arm
   exits: 48 pairs, avg time gap 132236s, avg price gap +1.21%, missed moves 36
   entries: 26 pairs, avg time gap 484347s, avg price gap +11.40%, missed moves 434
 day_ev_blend
-  exits: 24 pairs, avg time gap 98003s, avg price gap +3.68%, missed moves 29
+  exits: 25 pairs, avg time gap 94284s, avg price gap +3.61%, missed moves 28
   entries: 0 pairs, avg time gap n/a, avg price gap n/a, missed moves 31
 no_risk_clock
-  exits: 67 pairs, avg time gap 154328s, avg price gap -0.42%, missed moves 54
-  entries: 29 pairs, avg time gap 483263s, avg price gap +7.28%, missed moves 398
+  exits: 69 pairs, avg time gap 149967s, avg price gap +0.77%, missed moves 53
+  entries: 30 pairs, avg time gap 507358s, avg price gap +7.33%, missed moves 397
 day_capital_caution
-  exits: 60 pairs, avg time gap 164875s, avg price gap +0.76%, missed moves 55
-  entries: 22 pairs, avg time gap 525392s, avg price gap +9.50%, missed moves 370
+  exits: 62 pairs, avg time gap 159682s, avg price gap +2.04%, missed moves 54
+  entries: 23 pairs, avg time gap 532641s, avg price gap +9.55%, missed moves 369
 partial_take
   exits: 111 pairs, avg time gap 211748s, avg price gap -1.31%, missed moves 65
   entries: 48 pairs, avg time gap 500554s, avg price gap +2.33%, missed moves 182
 sent_split
-  exits: 62 pairs, avg time gap 145441s, avg price gap +0.60%, missed moves 51
-  entries: 24 pairs, avg time gap 426091s, avg price gap +14.50%, missed moves 431
+  exits: 64 pairs, avg time gap 141019s, avg price gap +1.85%, missed moves 50
+  entries: 25 pairs, avg time gap 474133s, avg price gap +14.12%, missed moves 430
 best_of
-  exits: 61 pairs, avg time gap 21581s, avg price gap +2.60%, missed moves 9
-  entries: 19 pairs, avg time gap 333799s, avg price gap +19.67%, missed moves 343
+  exits: 63 pairs, avg time gap 21020s, avg price gap +3.81%, missed moves 8
+  entries: 20 pairs, avg time gap 377417s, avg price gap +19.13%, missed moves 342
 btc_trend
   exits: no shadow rows
   entries: no shadow rows
