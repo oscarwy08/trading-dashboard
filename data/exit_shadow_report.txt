@@ -691,7 +691,8 @@ KITE day
 
 ICP day
   shadow  2026-11-03T19:01:02+00:00  £1.84499  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-11-03T20:33:41+00:00  £1.84598  [burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled); P&L £-0.08
+  cycle was 5559s later, price £+0.000989366 (+0.05%)
 
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
@@ -1443,7 +1444,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 81 pairs, avg time gap 227830s, avg price gap +1.10%, missed moves 72
+  exits: 82 pairs, avg time gap 225119s, avg price gap +1.09%, missed moves 71
   entries: 20 pairs, avg time gap 657541s, avg price gap +3.54%, missed moves 115
 ev_exit
   exits: 76 pairs, avg time gap 132068s, avg price gap -2.22%, missed moves 49
@@ -1473,7 +1474,7 @@ day_trail_arm
   exits: 48 pairs, avg time gap 132236s, avg price gap +1.21%, missed moves 36
   entries: 26 pairs, avg time gap 484347s, avg price gap +11.40%, missed moves 434
 day_ev_blend
-  exits: 25 pairs, avg time gap 94284s, avg price gap +3.61%, missed moves 29
+  exits: 26 pairs, avg time gap 90712s, avg price gap +3.45%, missed moves 28
   entries: 0 pairs, avg time gap n/a, avg price gap n/a, missed moves 31
 no_risk_clock
   exits: 69 pairs, avg time gap 149967s, avg price gap +0.77%, missed moves 53
