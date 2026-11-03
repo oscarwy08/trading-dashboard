@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-03T11:17:18+00:00",
+  "generated": "2026-11-03T12:20:38+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 73,
         "avg_dt_s": 226020.91780821918,
         "avg_price_pct": -2.031681761027899,
-        "missed": 70
+        "missed": 71
       },
       "entries": {
         "pairs": 19,
@@ -36,9 +36,9 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 51,
-        "avg_dt_s": 142719.74509803922,
-        "avg_price_pct": -0.8420166163192317,
+        "pairs": 52,
+        "avg_dt_s": 140018.09615384616,
+        "avg_price_pct": -0.8409033519537741,
         "missed": 41
       },
       "entries": {
@@ -51,9 +51,9 @@
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 51,
-        "avg_dt_s": 92221.60784313726,
-        "avg_price_pct": -0.9540891084380851,
+        "pairs": 52,
+        "avg_dt_s": 90491.44230769231,
+        "avg_price_pct": -0.9508206038395725,
         "missed": 43
       },
       "entries": {
@@ -81,9 +81,9 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 51,
-        "avg_dt_s": 92236.49019607843,
-        "avg_price_pct": -0.9540891084380851,
+        "pairs": 52,
+        "avg_dt_s": 90506.32692307692,
+        "avg_price_pct": -0.9508206038395725,
         "missed": 43
       },
       "entries": {
@@ -102,10 +102,10 @@
         "missed": 61
       },
       "entries": {
-        "pairs": 50,
-        "avg_dt_s": 460730.32,
-        "avg_price_pct": 7.2948189827144985,
-        "missed": 467
+        "pairs": 51,
+        "avg_dt_s": 458025.3137254902,
+        "avg_price_pct": 7.104555846629978,
+        "missed": 466
       }
     },
     {
@@ -114,7 +114,7 @@
         "pairs": 65,
         "avg_dt_s": 142679.75384615385,
         "avg_price_pct": -3.6285752076879447,
-        "missed": 41
+        "missed": 42
       },
       "entries": {
         "pairs": 27,
@@ -129,7 +129,7 @@
         "pairs": 65,
         "avg_dt_s": 158900.4923076923,
         "avg_price_pct": -2.9904513959418004,
-        "missed": 53
+        "missed": 54
       },
       "entries": {
         "pairs": 30,
@@ -174,7 +174,7 @@
         "pairs": 65,
         "avg_dt_s": 158924.38461538462,
         "avg_price_pct": -2.9904513959418004,
-        "missed": 53
+        "missed": 54
       },
       "entries": {
         "pairs": 29,
@@ -189,7 +189,7 @@
         "pairs": 58,
         "avg_dt_s": 170389.9827586207,
         "avg_price_pct": -2.0803948234352534,
-        "missed": 54
+        "missed": 55
       },
       "entries": {
         "pairs": 22,
@@ -219,7 +219,7 @@
         "pairs": 60,
         "avg_dt_s": 150155.01666666666,
         "avg_price_pct": -2.1330426916477743,
-        "missed": 50
+        "missed": 51
       },
       "entries": {
         "pairs": 24,
@@ -234,7 +234,7 @@
         "pairs": 59,
         "avg_dt_s": 22175.728813559323,
         "avg_price_pct": -0.10438659677294748,
-        "missed": 8
+        "missed": 9
       },
       "entries": {
         "pairs": 19,
@@ -2651,6 +2651,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "HOT",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-03T11:33:58+00:00",
+      "shadow_price": 0.00021945808767277473,
+      "trigger": "[momentum] stop-loss -45.2% <= -4.1% (ATR-scaled) [gap fill]",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -4610,6 +4624,13 @@
       "asset": "RBW.L",
       "price": 0.20625000000000004,
       "reason": "[momentum] DAY score 0.722 >= 0.35; target +7.2% / stop -3.4% (ATR 2.86%); EV +0.42%; 4h +3.0%, 24h +4.0%, EMA6/24 up, RSI 52, no fresh sentiment"
+    },
+    {
+      "ts": "2026-11-03T11:33:42+00:00",
+      "sleeve": "day",
+      "asset": "HOT",
+      "price": 0.0003988166731115295,
+      "reason": "[momentum] DAY score 0.9 >= 0.35; target +8.6% / stop -4.1% (ATR 3.44%); EV +0.37%; 4h +25.2%, 24h n/a, EMA6/24 up, RSI 68, no fresh sentiment"
     }
   ]
 }
