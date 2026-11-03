@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-03T07:58:00Z",
+ "asset": "RUNE",
+ "score": -0.3,
+ "confidence": 0.45,
+ "summary": "THORChain halted swaps on ~10 chains (ETH, BTC, SOL...) after an Oct 31 Ethereum one-block reorg caused a 10 ETH payout from an empty vault; user returned funds, fixes in progress, trading live only on AVAX, BASE, RUNE, XRPL as of Nov 2. RUNE fell ~18% to ~$0.51, now ~$0.574. Momentum score 0.9 is a rebound from the drop, not news-driven.",
+ "sources": [
+  "https://x.com/i/trending/2117071148303474696"
+ ],
+ "catalyst_score": -0.4,
+ "catalyst_note": "2026-10-31/11-02: swaps halted after ETH reorg double-payout; fix pending",
+ "volume": 6000,
+ "buzz_level": 6000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 2.3,
+ "carried_over": false
+}

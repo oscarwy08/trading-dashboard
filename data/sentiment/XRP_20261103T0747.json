@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-03T07:58:00Z",
+ "asset": "XRP",
+ "score": 0.0,
+ "confidence": 0.45,
+ "summary": "XRP ~$1.25, flat. Holders frustrated after Ripple Swell (no price catalyst, RLUSD focus) though Garlinghouse reaffirmed XRP's role; 7,934 new wallets on Nov 1. XRPL fixCleanup3_4_0 amendment (token-mint loophole fix) has 33/35 validators, could activate Nov 4 - routine fix, not price-moving.",
+ "sources": [
+  "https://x.com/i/trending/2117481294821249220",
+  "https://x.com/i/trending/2116759042400080022",
+  "https://x.com/i/trending/2117291068890763501"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "XRPL fixCleanup3_4_0 amendment may activate 2026-11-04 (routine security fix)",
+ "volume": 55000,
+ "buzz_level": 55000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 0.2,
+ "carried_over": false
+}

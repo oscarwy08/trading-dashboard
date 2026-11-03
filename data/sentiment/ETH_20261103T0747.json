@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-03T07:58:00Z",
+ "asset": "ETH",
+ "score": -0.15,
+ "confidence": 0.45,
+ "summary": "ETH ~$2,250 (-1% 24h), dipped under $2,250 in the midterm-eve selloff. ETH ETFs lost ~$140M on Nov 2 (led by BlackRock). Tron now exceeds Ethereum in USDT supply; Scroll L2 pivot/shutdown talk is minor ecosystem noise.",
+ "sources": [
+  "https://x.com/i/trending/2117489380692504899",
+  "https://x.com/i/trending/2117258463185457563",
+  "https://x.com/i/trending/2117512259005993060"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "2026-11-02: ~$140M ETH ETF outflows",
+ "volume": 42000,
+ "buzz_level": 42000,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": -1.0,
+ "carried_over": false
+}

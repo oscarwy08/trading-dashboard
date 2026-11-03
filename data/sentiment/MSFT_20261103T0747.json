@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T07:58:00Z",
+ "asset": "MSFT",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "MSFT ~$507 (-2.8% 24h) caught in AI-bubble selloff talk (AI chip/networking names down >20%), though Microsoft's last quarter (Azure +48% to $33.2B, $36.6B net income) is cited as the counter-argument. SPY closed -0.48% Nov 2 near 750 support; midterms today.",
+ "sources": [
+  "https://x.com/i/trending/2117434362513789374",
+  "https://x.com/i/trending/2117504666624008677"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 15000,
+ "buzz_level": 15000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.8,
+ "carried_over": false
+}

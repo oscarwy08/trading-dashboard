@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-11-03T07:58:00Z",
+ "asset": "BTC",
+ "score": -0.2,
+ "confidence": 0.5,
+ "summary": "BTC ~$76.7k (-2% 24h), testing $76-76.4k support after 74 days ranging $75-86k. Record $405M outflow from BlackRock's IBIT on Nov 2 (spot ETFs net -$399M), >$100M longs liquidated on the midterm-eve dip; Mercado Bitcoin $40M hack. Offsets: Strategy +811 BTC, Strive +124 BTC; prediction markets 71% for Nov close >$80k. Midterms today = event risk.",
+ "sources": [
+  "https://x.com/i/trending/2117523173511954684",
+  "https://x.com/i/trending/2117489380692504899",
+  "https://x.com/i/trending/2117258463185457563",
+  "https://x.com/i/trending/2117241748514844948"
+ ],
+ "catalyst_score": -0.2,
+ "catalyst_note": "2026-11-02: record single-day IBIT outflow ($405M) ahead of US midterms (Nov 3)",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -2.0,
+ "carried_over": false
+}

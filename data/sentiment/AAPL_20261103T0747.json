@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T07:58:00Z",
+ "asset": "AAPL",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "Apple FQ4 (reported Nov 2 after close): revenue $114.5B (+12%, beat $113.4B), EPS $2.10 (beat $1.99), iPhone $57.6B, services record $31.6B, Mac +24%. But Greater China $17.5B missed, iPhone Duo supply constraints push some deliveries to January, cautious holiday outlook; shares dipped after hours. Rich valuation.",
+ "sources": [
+  "https://x.com/i/trending/2117370803503415560",
+  "https://x.com/i/trending/2117358121823740393"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "2026-11-02: FQ4 earnings beat on revenue/EPS, China miss, cautious guide",
+ "volume": 20000,
+ "buzz_level": 20000,
+ "buzz_change": 6.7,
+ "price_runup_24h_pct": -1.8,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-03T07:58:00Z",
+ "asset": "HYPE",
+ "score": 0.25,
+ "confidence": 0.5,
+ "summary": "HYPE ~$83.6 (-4.7% 24h with the market). Hyperliquid sent another $15.9M USDC to buy back HYPE (second AQAv2 reserve-yield payment, $30.5M total); ICE strategic investment with Trade[XYZ] to build regulated perps on Hyperliquid tech (pending CFTC). Daily revenue ~$1.23M.",
+ "sources": [
+  "https://x.com/i/trending/2117521435665256838",
+  "https://x.com/i/trending/2117512260335603899"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "2026-11-02/03: $15.9M buyback payment; ICE strategic investment with Trade[XYZ] (pending CFTC)",
+ "volume": 45000,
+ "buzz_level": 45000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": -4.7,
+ "carried_over": false
+}
