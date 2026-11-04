@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T21:58:00Z",
+ "asset": "ETH",
+ "score": 0.25,
+ "confidence": 0.55,
+ "summary": "ETH climbed from $2,220 to about $2,430, breaking a 4h descending channel, and ETH/BTC broke a long downtrend; spot ETFs still saw $85M outflows on Nov 3, so confirmation above $2,450 is pending.",
+ "sources": [
+  "https://x.com/i/trending/2118083612046143838",
+  "https://x.com/i/trending/2118015150665936979"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "",
+ "volume": 54000,
+ "buzz_level": 54000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 5.4,
+ "carried_over": false
+}

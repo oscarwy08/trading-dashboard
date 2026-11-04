@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T21:58:00Z",
+ "asset": "BTC",
+ "score": 0.15,
+ "confidence": 0.6,
+ "summary": "BTC broke above $81k after Democrats won both chambers in the midterms, liquidating ~$320M of shorts; holding near $80k with analysts calling sellers exhausted, despite the Binance and Mercado Bitcoin breaches still in the background.",
+ "sources": [
+  "https://x.com/i/trending/2117976148323762207",
+  "https://x.com/i/trending/2118076585333170457"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "2026-11-04 US midterm result (Democratic House and Senate) removed policy uncertainty; risk-on rally",
+ "volume": 158000,
+ "buzz_level": 158000,
+ "buzz_change": 1.3,
+ "price_runup_24h_pct": 2.8,
+ "carried_over": false
+}
