@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-04T17:57:21+00:00",
+  "generated": "2026-11-04T19:04:45+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 94,
-        "avg_dt_s": 215381.37234042553,
-        "avg_price_pct": 0.9101951964257586,
-        "missed": 71
+        "pairs": 95,
+        "avg_dt_s": 213116.97894736842,
+        "avg_price_pct": 0.9006141943581191,
+        "missed": 74
       },
       "entries": {
         "pairs": 26,
@@ -24,7 +24,7 @@
         "pairs": 83,
         "avg_dt_s": 179851.97590361445,
         "avg_price_pct": -2.696092204950934,
-        "missed": 49
+        "missed": 50
       },
       "entries": {
         "pairs": 41,
@@ -69,7 +69,7 @@
         "pairs": 83,
         "avg_dt_s": 205448.2048192771,
         "avg_price_pct": -3.288237677253365,
-        "missed": 55
+        "missed": 56
       },
       "entries": {
         "pairs": 39,
@@ -159,7 +159,7 @@
         "pairs": 35,
         "avg_dt_s": 222383.74285714285,
         "avg_price_pct": 2.496502420628083,
-        "missed": 27
+        "missed": 28
       },
       "entries": {
         "pairs": 0,
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 116,
-        "avg_dt_s": 237510.1379310345,
-        "avg_price_pct": -1.4269586605454376,
+        "pairs": 117,
+        "avg_dt_s": 235487.11111111112,
+        "avg_price_pct": -1.3570038986629915,
         "missed": 65
       },
       "entries": {
@@ -2959,6 +2959,62 @@
       "dt_s": 206.0,
       "price_diff": 0.0015000000000001679,
       "price_pct": 0.1869158878504882
+    },
+    {
+      "asset": "META",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-04T18:11:38+00:00",
+      "shadow_price": 3.270755115244944,
+      "trigger": "[burst 24h] stop-loss -2.3% <= -1.5% (ATR-scaled) [gap fill]",
+      "status": "matched",
+      "cycle_ts": "2026-11-04T18:16:02+00:00",
+      "cycle_price": 3.270755115244944,
+      "cycle_reason": "[burst 24h] stop-loss -2.3% <= -1.5% (ATR-scaled) [gap fill]; P&L \u00a3-0.12",
+      "dt_s": 264.0,
+      "price_diff": 0.0,
+      "price_pct": 0.0
+    },
+    {
+      "asset": "FLUID",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-04T18:19:13+00:00",
+      "shadow_price": 1.7248093686928183,
+      "trigger": "[burst 24h] trailing stop +1.4% (peak +2.4%, gives back 40% of the gain)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "MET",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-04T18:34:09+00:00",
+      "shadow_price": 0.22658532713507637,
+      "trigger": "[burst 24h] take-profit 4.6% >= 4.2% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "DGAI",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-04T18:58:38+00:00",
+      "shadow_price": 0.5636071900941717,
+      "trigger": "[momentum] trailing stop +2.2% (peak +10.0%, gives back 20% of the gain) [gap fill]",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
