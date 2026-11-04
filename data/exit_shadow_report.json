@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-04T20:15:38+00:00",
+  "generated": "2026-11-04T21:20:50+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 97,
-        "avg_dt_s": 208769.01030927835,
-        "avg_price_pct": 0.8466759447832513,
-        "missed": 72
+        "pairs": 98,
+        "avg_dt_s": 206710.88775510204,
+        "avg_price_pct": 0.8835426558830859,
+        "missed": 71
       },
       "entries": {
         "pairs": 26,
@@ -2980,13 +2980,13 @@
       "shadow_ts": "2026-11-04T18:19:13+00:00",
       "shadow_price": 1.7248093686928183,
       "trigger": "[burst 24h] trailing stop +1.4% (peak +2.4%, gives back 40% of the gain)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-04T20:17:06+00:00",
+      "cycle_price": 1.8017292024348368,
+      "cycle_reason": "[burst 24h] take-profit 5.9% >= 5.8% (ATR-scaled); P&L \u00a3+0.30",
+      "dt_s": 7073.0,
+      "price_diff": 0.0769198337420185,
+      "price_pct": 4.459613632567044
     },
     {
       "asset": "MET",

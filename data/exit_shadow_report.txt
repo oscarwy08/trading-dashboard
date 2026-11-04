@@ -761,7 +761,8 @@ META day
 
 FLUID day
   shadow  2026-11-04T18:19:13+00:00  £1.72481  [burst 24h] trailing stop +1.4% (peak +2.4%, gives back 40% of the gain)
-  cycle   no sell yet
+  cycle   2026-11-04T20:17:06+00:00  £1.80173  [burst 24h] take-profit 5.9% >= 5.8% (ATR-scaled); P&L £+0.30
+  cycle was 7073s later, price £+0.0769198 (+4.46%)
 
 MET day
   shadow  2026-11-04T18:34:09+00:00  £0.226585  [burst 24h] take-profit 4.6% >= 4.2% (ATR-scaled)
@@ -1613,7 +1614,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 97 pairs, avg time gap 208769s, avg price gap +0.85%, missed moves 72
+  exits: 98 pairs, avg time gap 206711s, avg price gap +0.88%, missed moves 71
   entries: 26 pairs, avg time gap 559458s, avg price gap +2.76%, missed moves 125
 ev_exit
   exits: 84 pairs, avg time gap 177717s, avg price gap -2.66%, missed moves 49
