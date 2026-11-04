@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-04T07:58:00Z",
+ "asset": "INJ",
+ "score": 0.15,
+ "confidence": 0.4,
+ "summary": "Institutional Rail went live for select users, a real adoption step; price already up ~8% in 24h.",
+ "sources": [
+  "https://x.com/i/trending/2117302253258441151"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "2026-11-02: Injective Institutional Rail launched (Google Cloud, Kraken, BitGo validators)",
+ "volume": 1500,
+ "buzz_level": 1500,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 8.5,
+ "carried_over": false
+}

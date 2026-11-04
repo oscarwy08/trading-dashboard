@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-04T07:58:00Z",
+ "asset": "ZEC",
+ "score": 0.2,
+ "confidence": 0.5,
+ "summary": "Privacy coins outperforming; NU7 upgrade due Nov 5. Offsets: dev-fund infighting, EU 2027 AML ban on privacy coins at licensed providers. Already up ~13% in 24h with rising buzz, so upgrade may be priced in.",
+ "sources": [
+  "https://x.com/i/trending/2117748879307473001",
+  "https://x.com/i/trending/2117803388771393642",
+  "https://x.com/i/trending/2116992848155324469"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "2026-11-05: NU7 network upgrade (block time 75s to 25s)",
+ "volume": 7800,
+ "buzz_level": 7800,
+ "buzz_change": 1.3,
+ "price_runup_24h_pct": 12.6,
+ "carried_over": false
+}

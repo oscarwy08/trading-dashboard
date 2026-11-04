@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T07:58:00Z",
+ "asset": "HYPE",
+ "score": 0.2,
+ "confidence": 0.45,
+ "summary": "Bloomberg profile highlights $713M trailing revenue funding buybacks; Elysium L2 (HYPE gas) mainnet Nov 9 with OpenSea support.",
+ "sources": [
+  "https://x.com/i/trending/2117023504147124266",
+  "https://x.com/i/trending/2117637471941079449"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "2026-11-09: Elysium L2 mainnet launches using HYPE as gas",
+ "volume": 45000,
+ "buzz_level": 45000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.7,
+ "carried_over": false
+}

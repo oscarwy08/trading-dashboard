@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T07:58:00Z",
+ "asset": "BTC",
+ "score": -0.15,
+ "confidence": 0.5,
+ "summary": "BTC whipsawed on US midterm-election night, dipping under $76k on Nov 4 before reclaiming ~$78k; heavy ETF outflows and a reported Binance security issue weigh, stablecoin supply at a 1-year low.",
+ "sources": [
+  "https://x.com/i/trending/2117774846369132635",
+  "https://x.com/i/trending/2117711313279299845"
+ ],
+ "catalyst_score": 0,
+ "catalyst_note": "",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 0.96,
+ "price_runup_24h_pct": 1.8,
+ "carried_over": false
+}

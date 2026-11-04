@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T07:58:00Z",
+ "asset": "AAPL",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "Record quarter and services, but shares dipped on margin guidance; Nvidia retook the top market-cap spot.",
+ "sources": [
+  "https://x.com/i/trending/2117370803503415560",
+  "https://x.com/i/trending/2117645876692947019"
+ ],
+ "catalyst_score": -0.05,
+ "catalyst_note": "Q4 FY26 earnings: record $114.5B revenue but gross margin guide cut to 45-46% on memory costs",
+ "volume": 25000,
+ "buzz_level": 25000,
+ "buzz_change": 1.25,
+ "price_runup_24h_pct": -1.9,
+ "carried_over": false
+}

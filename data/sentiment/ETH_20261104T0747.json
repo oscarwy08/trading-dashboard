@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T07:58:00Z",
+ "asset": "ETH",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "ETH/BTC broke a multi-month downtrend (above ~0.0295); treasury holders exploring yield beyond staking. Constructive but driven by technicals.",
+ "sources": [
+  "https://x.com/i/trending/2117674991420354917",
+  "https://x.com/i/trending/2117704169918509551"
+ ],
+ "catalyst_score": 0,
+ "catalyst_note": "",
+ "volume": 45000,
+ "buzz_level": 45000,
+ "buzz_change": 1.04,
+ "price_runup_24h_pct": 2.1,
+ "carried_over": false
+}

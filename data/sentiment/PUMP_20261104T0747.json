@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-04T07:58:00Z",
+ "asset": "PUMP",
+ "score": -0.15,
+ "confidence": 0.35,
+ "summary": "Pump.fun facing insider-promotion allegations over the $AMD meme coin; copycat $PUMP rebrand rug warnings add noise. Price up ~12% in 24h on momentum, not news.",
+ "sources": [
+  "https://x.com/i/trending/2117789431566336458"
+ ],
+ "catalyst_score": 0,
+ "catalyst_note": "",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 11.3,
+ "carried_over": false
+}
