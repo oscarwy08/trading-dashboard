@@ -1259,7 +1259,8 @@ DYDX day
 
 FLUID day
   shadow  2026-11-03T15:45:47+00:00  £1.44735  [momentum] price holds £1.44139; score 0.751 >= 0.35
-  cycle   no buy — the cycle missed this move
+  cycle   2026-11-04T17:08:01+00:00  £1.69139  [burst 24h] 24h-high break +1.11% (high $2.256); vol x3.6, RSI 74, BTC 1h +0.10%, 4h +2.68%; confidence 0.67 >= 0.56, EV +0.59% after costs; target +5.8% / stop -1.9% / max 6h
+  cycle was 91334s later, price £+0.244034 (+16.86%)
 
 JASMY day
   shadow  2026-11-03T15:45:47+00:00  £0.00280085  [momentum] price holds £0.00278595; score 0.434 >= 0.35
@@ -1384,6 +1385,10 @@ BMNR day
   shadow  2026-11-04T15:37:05+00:00  £16.4301  [burst 24h] price breaks £16.4205; volume x2
   cycle   no buy — the cycle missed this move
 
+FLUID day
+  shadow  2026-11-04T16:54:50+00:00  £1.68916  [burst 24h] price breaks £1.67673; volume x2
+  cycle   no buy — the cycle missed this move
+
 Moves the cycle missed
   KNTQ risk  2026-10-12T13:22:23+00:00  £0.266751  RISK dip: price holds £0.266751
   ZRO risk  2026-10-12T13:23:44+00:00  £1.81194  RISK dip: price holds £1.81043
@@ -1482,7 +1487,6 @@ Moves the cycle missed
   BR day  2026-11-03T15:45:47+00:00  £0.478152  [momentum] price holds £0.343544; score 0.418 >= 0.35
   CFX day  2026-11-03T15:45:47+00:00  £0.0344444  [momentum] price holds £0.0344444; score 0.479 >= 0.35
   DYDX day  2026-11-03T15:45:47+00:00  £0.0767104  [momentum] price holds £0.0767104; score 0.376 >= 0.35
-  FLUID day  2026-11-03T15:45:47+00:00  £1.44735  [momentum] price holds £1.44139; score 0.751 >= 0.35
   JASMY day  2026-11-03T15:45:47+00:00  £0.00280085  [momentum] price holds £0.00278595; score 0.434 >= 0.35
   KMNO day  2026-11-03T15:45:47+00:00  £0.0251182  [momentum] price holds £0.0245074; score 0.708 >= 0.35
   NMR day  2026-11-03T15:45:47+00:00  £7.1362  [momentum] price holds £7.12875; score 0.415 >= 0.35
@@ -1510,6 +1514,7 @@ Moves the cycle missed
   ZBCN day  2026-11-04T12:09:01+00:00  £0.00147573  [momentum] price holds £0.00147378; score 0.554 >= 0.35
   BMNR day  2026-11-04T15:17:22+00:00  £16.4665  [burst 24h] price breaks £16.4273; volume x2
   BMNR day  2026-11-04T15:37:05+00:00  £16.4301  [burst 24h] price breaks £16.4205; volume x2
+  FLUID day  2026-11-04T16:54:50+00:00  £1.68916  [burst 24h] price breaks £1.67673; volume x2
 
 Cycle buys with no shadow entry
   CARDS day  2026-10-19T07:11:51+00:00  £0.220091  [momentum] DAY score 0.8 >= 0.35; target +5.5% / stop -2.6% (ATR 2.20%); EV +0.33%; 4h +8.3%, 24h +9.1%, EMA6/24 up, RSI 78, no fresh sentiment
@@ -1590,22 +1595,22 @@ Per book
 
 main
   exits: 94 pairs, avg time gap 215381s, avg price gap +0.91%, missed moves 71
-  entries: 25 pairs, avg time gap 578183s, avg price gap +2.19%, missed moves 125
+  entries: 26 pairs, avg time gap 559458s, avg price gap +2.76%, missed moves 125
 ev_exit
   exits: 83 pairs, avg time gap 179852s, avg price gap -2.70%, missed moves 49
   entries: 41 pairs, avg time gap 738187s, avg price gap +10.18%, missed moves 349
 review_leftovers
   exits: 54 pairs, avg time gap 146499s, avg price gap -1.58%, missed moves 41
-  entries: 23 pairs, avg time gap 593431s, avg price gap +14.66%, missed moves 245
+  entries: 23 pairs, avg time gap 593431s, avg price gap +14.66%, missed moves 246
 all_combined
   exits: 54 pairs, avg time gap 98807s, avg price gap -1.69%, missed moves 43
-  entries: 25 pairs, avg time gap 586920s, avg price gap +13.21%, missed moves 256
+  entries: 25 pairs, avg time gap 586920s, avg price gap +13.21%, missed moves 257
 burst_runner
   exits: 83 pairs, avg time gap 205448s, avg price gap -3.29%, missed moves 55
   entries: 39 pairs, avg time gap 674182s, avg price gap +8.93%, missed moves 297
 everything
   exits: 54 pairs, avg time gap 98822s, avg price gap -1.69%, missed moves 43
-  entries: 25 pairs, avg time gap 586929s, avg price gap +13.19%, missed moves 239
+  entries: 25 pairs, avg time gap 586929s, avg price gap +13.19%, missed moves 240
 midnight_crypto
   exits: 95 pairs, avg time gap 169735s, avg price gap -1.49%, missed moves 61
   entries: 53 pairs, avg time gap 466194s, avg price gap +6.69%, missed moves 473
@@ -1635,7 +1640,7 @@ sent_split
   entries: 30 pairs, avg time gap 509827s, avg price gap +8.61%, missed moves 438
 best_of
   exits: 71 pairs, avg time gap 18849s, avg price gap +4.51%, missed moves 8
-  entries: 25 pairs, avg time gap 439595s, avg price gap +11.51%, missed moves 350
+  entries: 25 pairs, avg time gap 439595s, avg price gap +11.51%, missed moves 351
 btc_trend
   exits: no shadow rows
   entries: no shadow rows

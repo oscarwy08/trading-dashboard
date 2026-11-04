@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-04T16:50:06+00:00",
+  "generated": "2026-11-04T17:57:21+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -12,9 +12,9 @@
         "missed": 71
       },
       "entries": {
-        "pairs": 25,
-        "avg_dt_s": 578183.0,
-        "avg_price_pct": 2.1916331716872213,
+        "pairs": 26,
+        "avg_dt_s": 559458.0384615385,
+        "avg_price_pct": 2.7558285034374963,
         "missed": 125
       }
     },
@@ -45,7 +45,7 @@
         "pairs": 23,
         "avg_dt_s": 593430.7826086957,
         "avg_price_pct": 14.655819167502909,
-        "missed": 245
+        "missed": 246
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 25,
         "avg_dt_s": 586920.32,
         "avg_price_pct": 13.20926642062034,
-        "missed": 256
+        "missed": 257
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 25,
         "avg_dt_s": 586928.56,
         "avg_price_pct": 13.185574818372473,
-        "missed": 239
+        "missed": 240
       }
     },
     {
@@ -240,7 +240,7 @@
         "pairs": 25,
         "avg_dt_s": 439594.56,
         "avg_price_pct": 11.51340695008525,
-        "missed": 350
+        "missed": 351
       }
     },
     {
@@ -4643,13 +4643,13 @@
       "shadow_ts": "2026-11-03T15:45:47+00:00",
       "shadow_price": 1.4473516981132075,
       "trigger": "[momentum] price holds \u00a31.44139; score 0.751 >= 0.35",
-      "status": "cycle missed",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-04T17:08:01+00:00",
+      "cycle_price": 1.6913854966238742,
+      "cycle_reason": "[burst 24h] 24h-high break +1.11% (high $2.256); vol x3.6, RSI 74, BTC 1h +0.10%, 4h +2.68%; confidence 0.67 >= 0.56, EV +0.59% after costs; target +5.8% / stop -1.9% / max 6h",
+      "dt_s": 91334.0,
+      "price_diff": 0.24403379851066664,
+      "price_pct": 16.860711797194373
     },
     {
       "asset": "JASMY",
@@ -5063,6 +5063,20 @@
       "shadow_ts": "2026-11-04T15:37:05+00:00",
       "shadow_price": 16.4300792395783,
       "trigger": "[burst 24h] price breaks \u00a316.4205; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "FLUID",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-04T16:54:50+00:00",
+      "shadow_price": 1.6891580354781885,
+      "trigger": "[burst 24h] price breaks \u00a31.67673; volume x2",
       "status": "cycle missed",
       "cycle_ts": null,
       "cycle_price": null,
