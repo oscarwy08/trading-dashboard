@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T13:52:00Z",
+ "asset": "ETH",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "ETH rebounded toward $2,320 with BTC; Devcon Mumbai demos of RollupX synchronous composability and Robinhood Chain (Arbitrum L2) hitting $100B Uniswap volume add constructive ecosystem news.",
+ "sources": [
+  "https://x.com/i/trending/2117918131415044200",
+  "https://x.com/i/trending/2117685614023774452"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Devcon Mumbai RollupX launch (Gnosis/EEZ), Nov 4",
+ "volume": 73300,
+ "buzz_level": 73300,
+ "buzz_change": 1.03,
+ "price_runup_24h_pct": 1.1,
+ "carried_over": false
+}

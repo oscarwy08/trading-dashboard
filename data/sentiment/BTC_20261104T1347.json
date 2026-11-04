@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T13:52:00Z",
+ "asset": "BTC",
+ "score": -0.05,
+ "confidence": 0.5,
+ "summary": "BTC made a V-shaped recovery above $78k after the midterm-night dip under $76k as US futures turned green on post-election gridlock; still weighed by the Binance hack fallout and a new ~$40M Mercado Bitcoin breach.",
+ "sources": [
+  "https://x.com/i/trending/2117774846369132635",
+  "https://x.com/i/trending/2117260404883939594"
+ ],
+ "catalyst_score": 0,
+ "catalyst_note": "",
+ "volume": 120000,
+ "buzz_level": 120000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 1.1,
+ "carried_over": false
+}

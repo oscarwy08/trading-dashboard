@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-04T13:52:00Z",
+ "asset": "ZEC",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "ZEC rebounded to ~$1,285 ahead of the NU7 upgrade on Nov 5 (25s blocks, fee reserve, Sprout retirement); privacy coins outperforming, but much of the move is pre-upgrade run-up and buzz is spiking.",
+ "sources": [
+  "https://x.com/i/trending/2117915611233993034",
+  "https://x.com/i/trending/2117648662549426623"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "NU7 network upgrade scheduled Nov 5 at block 3,543,405",
+ "volume": 9300,
+ "buzz_level": 9300,
+ "buzz_change": 1.42,
+ "price_runup_24h_pct": 6.8,
+ "carried_over": false
+}
