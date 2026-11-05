@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T21:57:00Z",
+ "asset": "HYPE",
+ "score": -0.1,
+ "confidence": 0.5,
+ "summary": "HYPE dropped below $78 (from a $97 peak) and ~-6.7% today; Binance has reopened withdrawals in phases after its hack but still restricts HYPE, leaving ~$200M stuck. Elysium L2 (HYPE gas) mainnet still set for Nov 9. X mentions have cooled sharply.",
+ "sources": [
+  "https://x.com/i/trending/2118349218666398042",
+  "https://x.com/i/trending/2118035834385702916"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "Binance HYPE withdrawals still restricted post-hack (as of 2026-11-05); Elysium mainnet 2026-11-09",
+ "volume": 2160,
+ "buzz_level": 2160,
+ "buzz_change": 0.46,
+ "price_runup_24h_pct": -6.7,
+ "carried_over": false
+}

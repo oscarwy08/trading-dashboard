@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-05T21:57:00Z",
+ "asset": "SOL",
+ "score": 0.2,
+ "confidence": 0.55,
+ "summary": "SOL ~-5.6% with the market, but fresh adoption news: Samsung Wallet launched USDC on Solana for eligible US Galaxy users (about 82M devices) on Nov 5, after Schroders' tokenized EM bond fund earlier today. Breakpoint London runs Nov 15-17.",
+ "sources": [
+  "https://x.com/i/trending/2118336304614408344",
+  "https://x.com/i/trending/2117979573182972344",
+  "https://x.com/i/trending/2117758950162526357"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "2026-11-05 Samsung Wallet USDC-on-Solana launch; Breakpoint London Nov 15-17",
+ "volume": 295154,
+ "buzz_level": 295154,
+ "buzz_change": 0.97,
+ "price_runup_24h_pct": -5.6,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T21:57:00Z",
+ "asset": "ETH",
+ "score": 0.05,
+ "confidence": 0.55,
+ "summary": "ETH lost $2,300 and is ~-8% on the day in the broad crypto/tech selloff, underperforming BTC and giving back the ETH/BTC breakout. Offsetting real news: Amundi (EUR 2.4T AUM) launched a tokenized STOXX Europe 600 fund share class on Ethereum.",
+ "sources": [
+  "https://x.com/i/trending/2118366529175855363",
+  "https://x.com/i/trending/2118420615116013640"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "2026-11-05 Amundi tokenized STOXX Europe 600 fund share class on Ethereum",
+ "volume": 70152,
+ "buzz_level": 70152,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -8.0,
+ "carried_over": false
+}

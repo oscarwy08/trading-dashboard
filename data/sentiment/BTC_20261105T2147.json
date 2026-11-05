@@ -1,0 +1,20 @@
+{
+ "timestamp": "2026-11-05T21:57:00Z",
+ "asset": "BTC",
+ "score": 0.0,
+ "confidence": 0.6,
+ "summary": "Sharp risk-off evening: BTC fell ~5-6% from above $80k to a $75.6k range low with ~$400M of longs liquidated in an hour, tracking a Nasdaq drop of over 3% on AI-spend worries after the midterms. Range $75k-$81k still intact. White House began reviewing an SEC proposal easing crypto broker-dealer rules (mild positive). US jobs report Fri 13:30 UK is the next swing factor.",
+ "sources": [
+  "https://x.com/i/trending/2118366529175855363",
+  "https://x.com/i/trending/2118437895396573364",
+  "https://x.com/i/trending/2118424043120431593",
+  "https://x.com/i/trending/2118369272619762075"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "2026-11-05 White House review of SEC crypto broker-dealer rule proposal (RIN 3235-AN48); Nov 6 US payrolls due",
+ "volume": 94504,
+ "buzz_level": 94504,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": -5.4,
+ "carried_over": false
+}

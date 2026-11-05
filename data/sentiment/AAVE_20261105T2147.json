@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T21:57:00Z",
+ "asset": "AAVE",
+ "score": 0.3,
+ "confidence": 0.55,
+ "summary": "Payward (Kraken's parent) bought AAVE on the open market via its affiliated fund, framed by Aave's CEO as a partnership to expand onchain lending. AAVE held roughly flat (~-0.4%) on a day the market fell 5-8%.",
+ "sources": [
+  "https://x.com/i/trending/2118351759395475587"
+ ],
+ "catalyst_score": 0.25,
+ "catalyst_note": "2026-11-05 Payward/Kraken fund open-market AAVE purchase announced",
+ "volume": 2623,
+ "buzz_level": 2623,
+ "buzz_change": 0.8,
+ "price_runup_24h_pct": -0.4,
+ "carried_over": false
+}
