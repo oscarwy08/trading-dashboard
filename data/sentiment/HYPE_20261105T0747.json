@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T07:58:00Z",
+ "asset": "HYPE",
+ "score": 0.1,
+ "confidence": 0.4,
+ "summary": "HYPE consolidating near $83-84 with crowded longs; Kinetiq's Elysium L2 (HYPE as gas) launches mainnet Nov 9; token unlocks noted as overhang.",
+ "sources": [
+  "https://x.com/i/trending/2118090650566479926",
+  "https://x.com/i/trending/2118035834385702916"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "2026-11-09 Elysium L2 mainnet launch using HYPE gas",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": -2.3,
+ "carried_over": false
+}

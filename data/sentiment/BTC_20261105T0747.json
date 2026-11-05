@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T07:58:00Z",
+ "asset": "BTC",
+ "score": 0.2,
+ "confidence": 0.6,
+ "summary": "Spot Bitcoin ETFs flipped to a $74.6M net inflow on Nov 4 after three days of outflows; BTC holding near $80.5k after the post-midterm rally. Moscow Exchange to list BTC spot trading from Dec 1.",
+ "sources": [
+  "https://x.com/i/trending/2118235382823412121",
+  "https://x.com/i/trending/2118110189291524534"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "2026-11-04 spot BTC ETF net inflow $74.6M ending 3-day outflow streak",
+ "volume": 160000,
+ "buzz_level": 160000,
+ "buzz_change": 1.25,
+ "price_runup_24h_pct": 3.7,
+ "carried_over": false
+}

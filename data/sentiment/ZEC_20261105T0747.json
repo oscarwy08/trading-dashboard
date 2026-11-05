@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T07:58:00Z",
+ "asset": "ZEC",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "Zcash NU7 network upgrade activates at block 3,543,405 around Nov 5, cutting block time 75s to 25s; price already ran ~7-13% into it, with heavy long/short positioning, so sell-the-news risk.",
+ "sources": [
+  "https://x.com/i/trending/2117915611233993034"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "2026-11-05 Zcash NU7 upgrade activation (block 3,543,405)",
+ "volume": 14000,
+ "buzz_level": 14000,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": 7.3,
+ "carried_over": false
+}

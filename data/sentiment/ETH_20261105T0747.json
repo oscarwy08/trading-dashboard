@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T07:58:00Z",
+ "asset": "ETH",
+ "score": 0.3,
+ "confidence": 0.6,
+ "summary": "Ethereum ETFs snapped a seven-day outflow streak with $53M net inflow on Nov 4 (ETHA led); ETH/BTC broke its multi-month downtrend line and ETH is up ~6% in 24h near $2,420.",
+ "sources": [
+  "https://x.com/i/trending/2118238999135277192",
+  "https://x.com/i/trending/2117674991420354917"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "2026-11-04 ETH ETF net inflow $53M ending 7-day outflow streak",
+ "volume": 60000,
+ "buzz_level": 60000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 6.2,
+ "carried_over": false
+}

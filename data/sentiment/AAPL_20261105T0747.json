@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T07:58:00Z",
+ "asset": "AAPL",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "Apple carried by the broad Nov 4 post-midterm rally (S&P +1.6% to a record); prior quarter revenue record $114.5B but management flagged rising memory costs from AI demand.",
+ "sources": [
+  "https://x.com/i/trending/2118169755735453803",
+  "https://x.com/i/trending/2117370803503415560"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "2026-11-04 US midterm result; broad market record close",
+ "volume": 25000,
+ "buzz_level": 25000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 5.3,
+ "carried_over": false
+}

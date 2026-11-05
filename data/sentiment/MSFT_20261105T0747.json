@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T07:58:00Z",
+ "asset": "MSFT",
+ "score": 0.3,
+ "confidence": 0.55,
+ "summary": "Microsoft rose ~7% on Nov 4 to a record ~$555 ($4.1T cap) as markets rallied on the Democratic midterm sweep, building on Azure +48% last quarter. Partly a post-rally recap.",
+ "sources": [
+  "https://x.com/i/trending/2118072726833307855",
+  "https://x.com/i/trending/2118169755735453803"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "2026-11-04 US midterm result; broad market record close",
+ "volume": 30000,
+ "buzz_level": 30000,
+ "buzz_change": 2.0,
+ "price_runup_24h_pct": 6.7,
+ "carried_over": false
+}
