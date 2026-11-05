@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "CARDS",
+ "score": 0.35,
+ "confidence": 0.55,
+ "summary": "Upbit listed Collector Crypt CARDS (KRW/BTC/USDT) with trading from 16:30 KST Nov 5 \u2014 a real exchange catalyst. Token already +~16% 24h into/around the listing, so some of the move is priced; still the clearest mid-cap catalyst today.",
+ "sources": [
+  "https://x.com/i/trending/2118246678981640229"
+ ],
+ "catalyst_score": 0.4,
+ "catalyst_note": "2026-11-05 Upbit lists CARDS (Collector Crypt) KRW/BTC/USDT",
+ "volume": 2500,
+ "buzz_level": 2500,
+ "buzz_change": 2.0,
+ "price_runup_24h_pct": 15.9,
+ "carried_over": false
+}

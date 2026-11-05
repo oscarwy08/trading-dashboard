@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "PRE.L",
+ "score": 0.05,
+ "confidence": 0.3,
+ "summary": "Premier African Minerals (PRE.L) green on LSE scanners; no verified catalyst found. Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2118328477485240356"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No PRE.L-specific catalyst verified",
+ "volume": 1000,
+ "buzz_level": 1000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 2.7,
+ "carried_over": false
+}

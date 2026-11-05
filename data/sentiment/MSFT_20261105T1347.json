@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "MSFT",
+ "score": 0.15,
+ "confidence": 0.5,
+ "summary": "MSFT still digesting the Nov 4 ~7% surge to ~$555 / $4.1T; Thursday US futures mixed with Nasdaq soft on chip weakness (Qualcomm guide). Azure strength intact, but post-rally fade risk into the US open (14:30 UK).",
+ "sources": [
+  "https://x.com/i/trending/2118072726833307855",
+  "https://x.com/i/trending/2118328477485240356"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Post-midterm record close; Thursday futures mixed / chip drag",
+ "volume": 28000,
+ "buzz_level": 28000,
+ "buzz_change": 1.4,
+ "price_runup_24h_pct": 6.7,
+ "carried_over": false
+}

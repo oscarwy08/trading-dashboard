@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "FLUID",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "FLUID has real recent catalysts (DEX v2 limited beta Oct 29; 50% JupLend revenue to DAO) but also India's ED naming Instadapp/Fluid in a FEMA probe (~$40M alleged). Token already +23% 24h \u2014 buzz is chasing the move; net only mildly positive.",
+ "sources": [
+  "https://thedefiant.io/news/defi/fluid-opens-dex-v2-beta-with-custom-collateral-and-debt-ranges",
+  "https://www.medianama.com/2026/11/223-enforcement-directorate-fema-cryptocurrency-payments/"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "DEX v2 beta + JupLend revenue share vs ED FEMA probe overhang",
+ "volume": 6000,
+ "buzz_level": 6000,
+ "buzz_change": 1.5,
+ "price_runup_24h_pct": 23.1,
+ "carried_over": false
+}

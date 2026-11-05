@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "HYPE",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "Kinetiq Elysium L2 (HYPE gas) still targeting Nov 9 mainnet with day-one builder support; HYPE consolidating ~$82 after crowded longs / unlock chatter. Mildly constructive into the launch, not a chase.",
+ "sources": [
+  "https://x.com/i/trending/2118035834385702916",
+  "https://x.com/i/trending/2118090650566479926"
+ ],
+ "catalyst_score": 0.2,
+ "catalyst_note": "2026-11-09 Elysium L2 mainnet (HYPE as gas) approaching",
+ "volume": 90000,
+ "buzz_level": 90000,
+ "buzz_change": 0.95,
+ "price_runup_24h_pct": -3.0,
+ "carried_over": false
+}

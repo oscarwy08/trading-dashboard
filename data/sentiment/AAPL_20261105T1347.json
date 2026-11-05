@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "AAPL",
+ "score": 0.1,
+ "confidence": 0.45,
+ "summary": "Apple rode the Nov 4 broad rally; no company-specific catalyst midday. US futures mixed after the election surge \u2014 score dialled back vs morning as the move digests. Quote still prior close until US cash open.",
+ "sources": [
+  "https://x.com/i/trending/2118169755735453803",
+  "https://x.com/i/trending/2118328477485240356"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No fresh AAPL-specific catalyst; market digest day",
+ "volume": 22000,
+ "buzz_level": 22000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 5.3,
+ "carried_over": false
+}

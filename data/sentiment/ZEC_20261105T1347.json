@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "ZEC",
+ "score": 0.05,
+ "confidence": 0.5,
+ "summary": "Zcash NU7 (faster 25s blocks) is the Nov 5 activation event; price already ran hard into it (+high-single to low-double digits earlier) and is only +~1% now \u2014 classic sell-the-news risk dominates over the upgrade itself.",
+ "sources": [
+  "https://x.com/i/trending/2117915611233993034"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "2026-11-05 Zcash NU7 activation (block 3,543,405) \u2014 event day, post-runup",
+ "volume": 15000,
+ "buzz_level": 15000,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": 1.1,
+ "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "SPOT",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "No Spotify-specific catalyst; shares still marked from the Nov 4 risk-on session. Neutral-to-slightly positive on residual market tone only.",
+ "sources": [
+  "https://x.com/i/trending/2118169755735453803"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No SPOT-specific catalyst this slot",
+ "volume": 4000,
+ "buzz_level": 4000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 4.6,
+ "carried_over": false
+}

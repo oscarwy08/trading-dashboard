@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "EDGE",
+ "score": 0.0,
+ "confidence": 0.4,
+ "summary": "EDGE already up ~39% in 24h on pure volume/FOMO \u2014 Korean coverage notes no listing/partnership catalyst today; Nov 2 unlock (~4.25% mcap) remains an overhang and price rejected near $0.114. Do not treat the runup as bullish news.",
+ "sources": [
+  "https://www.ainvest.com/news/edgex-spikes-50-hits-wall-2611/",
+  "https://coinmarketcap.com/cmc-ai/definitive/latest-updates/"
+ ],
+ "catalyst_score": -0.1,
+ "catalyst_note": "2026-11-02 EDGE unlock ~4.25% of mcap; no fresh catalyst on the 39% spike",
+ "volume": 5000,
+ "buzz_level": 5000,
+ "buzz_change": 1.8,
+ "price_runup_24h_pct": 38.8,
+ "carried_over": false
+}

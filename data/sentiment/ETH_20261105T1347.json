@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "ETH",
+ "score": 0.3,
+ "confidence": 0.6,
+ "summary": "ETH ETFs snapped outflows with $53M on Nov 4; ETH/BTC broke its multi-month downtrend; Vitalik at Devcon 8 pushing trustless hardware/AI. ETH ~$2,385 (+~3% 24h). Institutional options/perps access via Coinbase-Deribit is a mild structural positive.",
+ "sources": [
+  "https://x.com/i/trending/2118235382823412121",
+  "https://x.com/i/trending/2117674991420354917",
+  "https://x.com/i/trending/2117512259387682997"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "2026-11-04 ETH ETF net inflow $53M; Devcon 8 ongoing Mumbai",
+ "volume": 65000,
+ "buzz_level": 65000,
+ "buzz_change": 1.05,
+ "price_runup_24h_pct": 2.9,
+ "carried_over": false
+}

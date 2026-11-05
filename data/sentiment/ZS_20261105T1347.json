@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "ZS",
+ "score": 0.0,
+ "confidence": 0.3,
+ "summary": "No fresh Zscaler news midday; holding prior-close quote ahead of US cash open. Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2118328477485240356"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No ZS-specific catalyst this slot",
+ "volume": 3000,
+ "buzz_level": 3000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -0.3,
+ "carried_over": false
+}

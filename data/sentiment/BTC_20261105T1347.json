@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "BTC",
+ "score": 0.25,
+ "confidence": 0.6,
+ "summary": "Spot BTC ETFs still showing the Nov 4 $74.6M inflow flip; Bitcoin Amsterdam 2026 opens today with packed halls; price holding ~$79.5k after the midterm bounce. Tom Lee argues Democrat crypto softening could help, but five-day ETF totals remain deeply negative.",
+ "sources": [
+  "https://x.com/i/trending/2118235382823412121",
+  "https://x.com/i/trending/2118271011242078333",
+  "https://x.com/i/trending/2118193898468053362"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "2026-11-05 Bitcoin Amsterdam day 1; prior-day spot ETF net inflow $74.6M",
+ "volume": 160000,
+ "buzz_level": 160000,
+ "buzz_change": 0.9,
+ "price_runup_24h_pct": 1.5,
+ "carried_over": false
+}

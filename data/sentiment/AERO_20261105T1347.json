@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "AERO",
+ "score": 0.05,
+ "confidence": 0.3,
+ "summary": "Aerodrome mild green; no fresh catalyst midday. Low-confidence neutral.",
+ "sources": [
+  "https://x.com/i/trending/2118235382823412121"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No AERO-specific catalyst this slot",
+ "volume": 5000,
+ "buzz_level": 5000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 4.4,
+ "carried_over": false
+}

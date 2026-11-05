@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "RENDER",
+ "score": 0.05,
+ "confidence": 0.3,
+ "summary": "RENDER slightly green; AI-narrative tape but no new Render Network announcement found this slot.",
+ "sources": [
+  "https://x.com/i/trending/2118326513674403903"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No RENDER-specific catalyst this slot",
+ "volume": 5000,
+ "buzz_level": 5000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 3.4,
+ "carried_over": false
+}

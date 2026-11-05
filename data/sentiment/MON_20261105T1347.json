@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "MON",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "Monad remains a focus coin; Pump.fun called out Monad among its multichain additions, but no fresh Monad-specific mainnet/listing catalyst midday. Price soft.",
+ "sources": [
+  "https://x.com/i/trending/2118153359102509086"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "Pump.fun multichain mention includes Monad (weak, not a new launch)",
+ "volume": 12000,
+ "buzz_level": 12000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -3.4,
+ "carried_over": false
+}

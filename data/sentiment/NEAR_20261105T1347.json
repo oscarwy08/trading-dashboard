@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "NEAR",
+ "score": 0.05,
+ "confidence": 0.35,
+ "summary": "NEAR soft on the day; Pump.fun multichain mention is not NEAR-specific news. Neutral.",
+ "sources": [
+  "https://x.com/i/trending/2118153359102509086"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No NEAR-specific catalyst this slot",
+ "volume": 8000,
+ "buzz_level": 8000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -2.2,
+ "carried_over": false
+}

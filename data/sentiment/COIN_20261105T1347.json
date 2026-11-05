@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "COIN",
+ "score": 0.25,
+ "confidence": 0.5,
+ "summary": "Coinbase opened CFTC-regulated options/perps access for eligible US institutions via Prime/Deribit \u2014 a concrete product catalyst beyond the election rally.",
+ "sources": [
+  "https://x.com/i/trending/2118022294962581644"
+ ],
+ "catalyst_score": 0.3,
+ "catalyst_note": "Coinbase Prime: regulated crypto options/perps for US institutions (Deribit)",
+ "volume": 12000,
+ "buzz_level": 12000,
+ "buzz_change": 1.3,
+ "price_runup_24h_pct": 4.2,
+ "carried_over": false
+}

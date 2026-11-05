@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "ZIL",
+ "score": 0.1,
+ "confidence": 0.5,
+ "summary": "Zilliqa announced a pivot from standalone L1 to an Ethereum L2 'Institutional Layer' (permissioned marketplace, LEI identity; LTIN sequencer). Structural reset after low usage \u2014 mixed: constructive for survival/liquidity, but community unease and DEX wind-down.",
+ "sources": [
+  "https://x.com/i/trending/2118338564555526522"
+ ],
+ "catalyst_score": 0.15,
+ "catalyst_note": "2026-11-05 Zilliqa pivots to Ethereum L2 institutional layer",
+ "volume": 8000,
+ "buzz_level": 8000,
+ "buzz_change": 2.5,
+ "price_runup_24h_pct": 0.0,
+ "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "MSTR",
+ "score": 0.15,
+ "confidence": 0.45,
+ "summary": "MicroStrategy tracks BTC's hold near $80k and the post-midterm risk-on tape; +~5% 24h. No company-specific filing midday \u2014 beta to BTC/sentiment.",
+ "sources": [
+  "https://x.com/i/trending/2118235382823412121",
+  "https://x.com/i/trending/2118169755735453803"
+ ],
+ "catalyst_score": 0.05,
+ "catalyst_note": "BTC hold + residual post-midterm risk-on (no MSTR-specific catalyst)",
+ "volume": 15000,
+ "buzz_level": 15000,
+ "buzz_change": 1.2,
+ "price_runup_24h_pct": 5.1,
+ "carried_over": false
+}

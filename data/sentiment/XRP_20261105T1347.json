@@ -1,0 +1,19 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "XRP",
+ "score": 0.2,
+ "confidence": 0.5,
+ "summary": "Whale wallets \u22651M XRP at a 2026 high (2,147); Garlinghouse reaffirmed XRP centrality post-Swell; Ripple/C2FO/BNY trade-finance push on XRPL. Price ~$1.31 with heavy price-target chatter \u2014 treat hype as noise.",
+ "sources": [
+  "https://x.com/i/trending/2118083610443935873",
+  "https://x.com/i/trending/2118080202022498706",
+  "https://x.com/i/trending/2117805940259074309"
+ ],
+ "catalyst_score": 0.1,
+ "catalyst_note": "Ripple Instant Pay / trade finance on XRPL with BNY Mellon & C2FO (announced late Oct, still circulating)",
+ "volume": 55000,
+ "buzz_level": 55000,
+ "buzz_change": 0.85,
+ "price_runup_24h_pct": 1.8,
+ "carried_over": false
+}

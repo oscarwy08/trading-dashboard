@@ -1,0 +1,18 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "SOL",
+ "score": 0.3,
+ "confidence": 0.55,
+ "summary": "Schroders ($1.1T AUM) launched a tokenized emerging-markets bond fund share class on Solana via Centrifuge \u2014 real TradFi RWA signal. Coinbase institutional options/perps also cover SOL. Mildly constructive beyond price noise.",
+ "sources": [
+  "https://x.com/i/trending/2117979573182972344",
+  "https://x.com/i/trending/2118022294962581644"
+ ],
+ "catalyst_score": 0.35,
+ "catalyst_note": "2026-11-05 Schroders tokenized EM bond fund on Solana (Centrifuge)",
+ "volume": 40000,
+ "buzz_level": 40000,
+ "buzz_change": 1.1,
+ "price_runup_24h_pct": 2.7,
+ "carried_over": false
+}

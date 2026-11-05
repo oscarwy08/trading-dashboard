@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "CAP",
+ "score": 0.05,
+ "confidence": 0.3,
+ "summary": "CAP screening as a Day momentum setup (+~14% 24h) but no verifiable news catalyst found midday \u2014 treat as price/volume only, not sentiment-led.",
+ "sources": [
+  "https://x.com/i/trending/2118235382823412121"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No CAP-specific catalyst; price-driven setup only",
+ "volume": 2000,
+ "buzz_level": 2000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": 14.1,
+ "carried_over": false
+}

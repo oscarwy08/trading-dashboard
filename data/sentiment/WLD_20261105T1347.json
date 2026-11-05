@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "WLD",
+ "score": 0.0,
+ "confidence": 0.35,
+ "summary": "No fresh Worldcoin catalyst midday; price soft ~\u22123% over 24h while majors hold. Score stays neutral pending verifiable news.",
+ "sources": [
+  "https://x.com/i/trending/2118235382823412121"
+ ],
+ "catalyst_score": 0.0,
+ "catalyst_note": "No new WLD-specific catalyst this slot",
+ "volume": 8000,
+ "buzz_level": 8000,
+ "buzz_change": 1.0,
+ "price_runup_24h_pct": -3.0,
+ "carried_over": false
+}

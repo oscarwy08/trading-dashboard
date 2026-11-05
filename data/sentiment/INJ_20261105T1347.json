@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-11-05T13:58:00Z",
+ "asset": "INJ",
+ "score": 0.4,
+ "confidence": 0.6,
+ "summary": "Nasdaq approved listing for Canary's staked Injective ETF (INJC) \u2014 stakes \u226590% of INJ, BitGo custodian, 1.10% fee; still needs final S-1 before trading. Buzz elevated vs prior days; INJ +~7.5% 24h. Strongest structural crypto catalyst this slot.",
+ "sources": [
+  "https://x.com/i/trending/2118046930106527991"
+ ],
+ "catalyst_score": 0.5,
+ "catalyst_note": "2026-11-03/05 Nasdaq listing approval for Canary staked INJ ETF (INJC)",
+ "volume": 12000,
+ "buzz_level": 12000,
+ "buzz_change": 1.6,
+ "price_runup_24h_pct": 7.5,
+ "carried_over": false
+}
