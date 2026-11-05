@@ -1693,7 +1693,7 @@ day_trail_arm
   exits: 53 pairs, avg time gap 150674s, avg price gap +1.80%, missed moves 36
   entries: 28 pairs, avg time gap 556683s, avg price gap +9.55%, missed moves 436
 day_ev_blend
-  exits: 49 pairs, avg time gap 159403s, avg price gap +1.19%, missed moves 27
+  exits: 50 pairs, avg time gap 156215s, avg price gap +1.16%, missed moves 27
   entries: 3 pairs, avg time gap 1385574s, avg price gap -91.58%, missed moves 28
 no_risk_clock
   exits: 81 pairs, avg time gap 189175s, avg price gap -0.25%, missed moves 53
