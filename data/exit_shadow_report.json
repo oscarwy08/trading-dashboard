@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-05T09:25:40+00:00",
+  "generated": "2026-11-05T10:35:51+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,13 +9,13 @@
         "pairs": 99,
         "avg_dt_s": 204626.59595959596,
         "avg_price_pct": 0.8740957081416705,
-        "missed": 71
+        "missed": 72
       },
       "entries": {
         "pairs": 28,
         "avg_dt_s": 598069.3214285715,
         "avg_price_pct": 0.8961868001899109,
-        "missed": 123
+        "missed": 124
       }
     },
     {
@@ -24,7 +24,7 @@
         "pairs": 85,
         "avg_dt_s": 176472.38823529411,
         "avg_price_pct": -2.539628496819396,
-        "missed": 49
+        "missed": 50
       },
       "entries": {
         "pairs": 42,
@@ -69,7 +69,7 @@
         "pairs": 85,
         "avg_dt_s": 201466.9176470588,
         "avg_price_pct": -3.1178411344794172,
-        "missed": 55
+        "missed": 56
       },
       "entries": {
         "pairs": 40,
@@ -114,7 +114,7 @@
         "pairs": 75,
         "avg_dt_s": 160102.49333333335,
         "avg_price_pct": -0.427836062680866,
-        "missed": 41
+        "missed": 42
       },
       "entries": {
         "pairs": 31,
@@ -129,7 +129,7 @@
         "pairs": 75,
         "avg_dt_s": 193963.17333333334,
         "avg_price_pct": -0.3814639510409156,
-        "missed": 53
+        "missed": 54
       },
       "entries": {
         "pairs": 34,
@@ -159,7 +159,7 @@
         "pairs": 39,
         "avg_dt_s": 199622.4358974359,
         "avg_price_pct": 1.730407167986304,
-        "missed": 27
+        "missed": 28
       },
       "entries": {
         "pairs": 0,
@@ -174,7 +174,7 @@
         "pairs": 75,
         "avg_dt_s": 193986.98666666666,
         "avg_price_pct": -0.382950712081457,
-        "missed": 53
+        "missed": 54
       },
       "entries": {
         "pairs": 33,
@@ -189,7 +189,7 @@
         "pairs": 68,
         "avg_dt_s": 191276.91176470587,
         "avg_price_pct": 2.0664238218224797,
-        "missed": 54
+        "missed": 55
       },
       "entries": {
         "pairs": 27,
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 118,
-        "avg_dt_s": 233495.83050847458,
-        "avg_price_pct": -1.345942045034636,
-        "missed": 65
+        "pairs": 119,
+        "avg_dt_s": 231536.2100840336,
+        "avg_price_pct": -1.35119193998956,
+        "missed": 66
       },
       "entries": {
         "pairs": 52,
@@ -219,7 +219,7 @@
         "pairs": 73,
         "avg_dt_s": 157574.54794520547,
         "avg_price_pct": 1.9257133641205273,
-        "missed": 50
+        "missed": 51
       },
       "entries": {
         "pairs": 32,
@@ -234,7 +234,7 @@
         "pairs": 72,
         "avg_dt_s": 18594.805555555555,
         "avg_price_pct": 4.443274475236474,
-        "missed": 8
+        "missed": 9
       },
       "entries": {
         "pairs": 27,
@@ -3029,6 +3029,20 @@
       "dt_s": 366.0,
       "price_diff": -0.00010472720969761928,
       "price_pct": -0.051705170517051195
+    },
+    {
+      "asset": "CARDS",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-05T10:16:19+00:00",
+      "shadow_price": 0.2193040717760436,
+      "trigger": "[momentum] trailing stop +7.8% (peak +10.2%, gives back 20% of the gain)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -5147,6 +5161,20 @@
       "shadow_ts": "2026-11-04T16:54:50+00:00",
       "shadow_price": 1.6891580354781885,
       "trigger": "[burst 24h] price breaks \u00a31.67673; volume x2",
+      "status": "cycle missed",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "INJ",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-05T10:11:36+00:00",
+      "shadow_price": 6.358704862866808,
+      "trigger": "[burst 24h] price breaks \u00a36.3242; volume x2",
       "status": "cycle missed",
       "cycle_ts": null,
       "cycle_price": null,
