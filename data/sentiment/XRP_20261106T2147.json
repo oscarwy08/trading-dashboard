@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "XRP",
+  "score": 0.05,
+  "confidence": 0.5,
+  "summary": "XRP still soft on price (~\u22124\u201310% depending on window) after failing the $1.30 area. GateHub MiCA EURGH on XRPL remains the concrete positive from earlier today; no fresh listing/ruling tonight. Buzz steady-to-soft.",
+  "sources": [
+    "https://x.com/i/trending/2118110189291524534"
+  ],
+  "catalyst_score": 0.15,
+  "catalyst_note": "GateHub MiCA-regulated EURGH on XRPL (earlier Nov 6); no new XRP catalyst tonight",
+  "volume": 32000,
+  "buzz_level": 32000,
+  "buzz_change": 0.93,
+  "price_runup_24h_pct": -4.0,
+  "carried_over": false
+}

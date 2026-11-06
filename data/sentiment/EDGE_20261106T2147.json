@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "EDGE",
+  "score": -0.1,
+  "confidence": 0.4,
+  "summary": "EDGE still digesting the prior FOMO spike/reversal; no listing catalyst verified. Soft.",
+  "sources": [],
+  "catalyst_score": -0.05,
+  "catalyst_note": "No dated EDGE listing; prior FOMO unwind",
+  "volume": 2500,
+  "buzz_level": 2500,
+  "buzz_change": 0.7,
+  "price_runup_24h_pct": -10.1,
+  "carried_over": false
+}

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "INJ",
+  "score": 0.15,
+  "confidence": 0.45,
+  "summary": "Injective still screening firm on 7d strength; afternoon\u2019s stronger catalyst print cooled \u2014 no fresh exchange listing/upgrade verified tonight. Mild positive carry of prior setup, not a new headline.",
+  "sources": [],
+  "catalyst_score": 0.05,
+  "catalyst_note": "No new dated INJ catalyst tonight vs afternoon print",
+  "volume": 8000,
+  "buzz_level": 8000,
+  "buzz_change": 0.85,
+  "price_runup_24h_pct": 2.7,
+  "carried_over": false
+}

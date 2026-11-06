@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "FLUID",
+  "score": 0.05,
+  "confidence": 0.35,
+  "summary": "Prior FLUID catalysts (DEX v2 beta / JupLend revenue share) still background; no new dated headline tonight. Soft with DeFi.",
+  "sources": [],
+  "catalyst_score": 0.05,
+  "catalyst_note": "Prior DEX v2 / JupLend catalysts still current; nothing new Nov 6 night",
+  "volume": 4000,
+  "buzz_level": 4000,
+  "buzz_change": 0.9,
+  "price_runup_24h_pct": -2.1,
+  "carried_over": false
+}

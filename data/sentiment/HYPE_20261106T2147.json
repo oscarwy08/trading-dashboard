@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "HYPE",
+  "score": 0.1,
+  "confidence": 0.55,
+  "summary": "Forward catalysts intact: Elysium L2 mainnet still dated Nov 9 (HYPE gas) and Hyperliquid Strategies FCM/CFTC filing narrative. Price ~$78 after the slide from ~$97; Binance withdrawal restrictions from the prior incident still a hangover. Mild positive on dated events, not on price.",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787",
+    "https://x.com/i/trending/2118468671219577088"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "Elysium mainnet 2026-11-09; Hyperliquid Strategies FCM filing (disclosed ~Nov 5/6)",
+  "volume": 12000,
+  "buzz_level": 12000,
+  "buzz_change": 0.92,
+  "price_runup_24h_pct": -6.6,
+  "carried_over": false
+}

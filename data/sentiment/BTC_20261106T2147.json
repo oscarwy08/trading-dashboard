@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "BTC",
+  "score": -0.15,
+  "confidence": 0.7,
+  "summary": "Still risk-off into Friday night: Nov 5 spot BTC ETFs ~$430M net outflows (FBTC/IBIT led); Lookonchain Friday update still shows heavy weekly redemptions (~$1.5B class). BTC recovered the ~$76k area after a ~$74.7\u201375k dip with >$1B liquidations, but whale Binance withdrawal chatter is anecdote not a dated catalyst. Soft bias.",
+  "sources": [
+    "https://www.coindesk.com/markets/2026/11/06/bitcoin-recovers-usd76-000-level-as-etfs-shed-usd430-million-after-tech-rout",
+    "https://x.com/i/trending/2118719828877877698",
+    "https://x.com/i/trending/2118633353234559368"
+  ],
+  "catalyst_score": -0.25,
+  "catalyst_note": "2026-11-05 spot BTC ETF net outflow ~$430M; ongoing weekly ETF redemptions into Nov 6",
+  "volume": 140000,
+  "buzz_level": 140000,
+  "buzz_change": 0.94,
+  "price_runup_24h_pct": -5.9,
+  "carried_over": false
+}

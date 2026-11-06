@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "BTW",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "BTW was the day\u2019s active Day momentum name (multiple stop/trail rounds); still no fundamental catalyst. Flat \u2014 do not treat the +20% class range as bullish news.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated BTW catalyst",
+  "volume": 1000,
+  "buzz_level": 1000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 21.4,
+  "carried_over": false
+}

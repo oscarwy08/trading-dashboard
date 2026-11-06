@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "SOL",
+  "score": 0.15,
+  "confidence": 0.55,
+  "summary": "Solana Labs Leap (Dialect) mobile trading app still the main fresh catalyst; offset by Pump.fun depositing ~76k SOL (~$6.9M) to Kraken after a 15-day pause (treasury pattern, not a protocol exploit). Net mildly constructive but tape soft with majors.",
+  "sources": [
+    "https://x.com/i/trending/2118544554773377430",
+    "https://x.com/i/trending/2118679336639164900"
+  ],
+  "catalyst_score": 0.2,
+  "catalyst_note": "Solana Labs Leap app live (TestFlight); Pump.fun 76k SOL\u2192Kraken treasury move Nov 6",
+  "volume": 65000,
+  "buzz_level": 65000,
+  "buzz_change": 0.95,
+  "price_runup_24h_pct": -6.0,
+  "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "MON",
+  "score": 0.0,
+  "confidence": 0.4,
+  "summary": "Monad community conviction posts continue (Keone Hon narrative) but no dated listing/mainnet/Cards Session 2 catalyst overnight. $MON ~$0.017 \u2014 speculation only, score flat.",
+  "sources": [
+    "https://x.com/i/trending/2118654092687843804"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated MON catalyst; Cards/airdrop chatter unverified",
+  "volume": 3800,
+  "buzz_level": 3800,
+  "buzz_change": 1.02,
+  "price_runup_24h_pct": -7.0,
+  "carried_over": false
+}

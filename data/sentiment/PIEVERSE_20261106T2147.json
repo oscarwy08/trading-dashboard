@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "PIEVERSE",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "Top risk/day scanner name (+~9\u201316% windows) but no verifiable listing/unlock/upgrade found tonight. Price-only \u2014 score flat, not bullish on the run-up.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated PIEVERSE catalyst; scanner strength only",
+  "volume": 2000,
+  "buzz_level": 2000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 8.7,
+  "carried_over": false
+}

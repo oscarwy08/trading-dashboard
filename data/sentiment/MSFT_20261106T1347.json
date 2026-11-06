@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "MSFT",
+  "score": -0.18,
+  "confidence": 0.58,
+  "summary": "Microsoft remains in the AI/tech washout narrative (Chanos noted rotation out of pricey AI names). Hot NFP + Democratic AI-regulation fears still dominate into the US open. No company-specific catalyst midday. Prior close only until 14:30 UK.",
+  "sources": [
+    "https://x.com/i/trending/2118540138095718543",
+    "https://www.cnbc.com/2026/11/06/jobs-report-october-2026.html"
+  ],
+  "catalyst_score": -0.1,
+  "catalyst_note": "AI/tech regulation & valuation hangover; hot NFP; no MSFT-specific event",
+  "volume": 28000,
+  "buzz_level": 28000,
+  "buzz_change": 1.14,
+  "price_runup_24h_pct": -3.58,
+  "carried_over": true
+}

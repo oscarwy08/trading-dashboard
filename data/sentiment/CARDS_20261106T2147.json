@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "CARDS",
+  "score": 0.25,
+  "confidence": 0.6,
+  "summary": "Real catalyst: Coinbase opened spot trading for Collector Crypt (CARD/CARDS) on Nov 6 after liquidity checks. Price already cooled on the day (~\u22126\u20138% in our marks) so this is event-driven, not a \u201ctop gainer\u201d chase. Buzz elevated around the listing.",
+  "sources": [
+    "https://x.com/i/trending/2118780727491772832"
+  ],
+  "catalyst_score": 0.45,
+  "catalyst_note": "Coinbase spot listing for Collector Crypt CARD/CARDS on 2026-11-06",
+  "volume": 18000,
+  "buzz_level": 18000,
+  "buzz_change": 1.8,
+  "price_runup_24h_pct": -5.7,
+  "carried_over": false
+}

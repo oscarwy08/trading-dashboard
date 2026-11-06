@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "RAY",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "Raydium firm in scanners; no new Ray listing/fee-switch headline verified tonight. Neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated RAY catalyst",
+  "volume": 3000,
+  "buzz_level": 3000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 6.0,
+  "carried_over": false
+}

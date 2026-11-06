@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "APR",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "APR Day-momentum print only; no verified news catalyst.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated APR catalyst",
+  "volume": 1500,
+  "buzz_level": 1500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 6.0,
+  "carried_over": false
+}

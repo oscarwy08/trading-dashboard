@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "KNTQ",
+  "score": 0.2,
+  "confidence": 0.5,
+  "summary": "Kinetiq/Elysium Nov 9 mainnet is the dated catalyst (sequencer revenue framed toward KNTQ buybacks). Token already ripped on the day in scanners \u2014 score reflects the dated event, not the +20% tape print.",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787"
+  ],
+  "catalyst_score": 0.35,
+  "catalyst_note": "Elysium mainnet 2026-11-09; KNTQ buyback/burn tokenomics narrative tied to sequencer revenue",
+  "volume": 6000,
+  "buzz_level": 6000,
+  "buzz_change": 1.5,
+  "price_runup_24h_pct": 23.5,
+  "carried_over": false
+}

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "AKE",
+  "score": 0.0,
+  "confidence": 0.25,
+  "summary": "AKE showing extreme range expansion in Day scans (+60% class moves) with no verifiable fundamental catalyst. Explicitly not scored bullish on the price chase.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated AKE catalyst; price-expansion only",
+  "volume": 1500,
+  "buzz_level": 1500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 64.5,
+  "carried_over": false
+}

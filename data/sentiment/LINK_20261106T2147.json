@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "LINK",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "Chainlink quiet tonight on fundamentals; tracking majors. Neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated LINK catalyst",
+  "volume": 8000,
+  "buzz_level": 8000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -5.1,
+  "carried_over": false
+}

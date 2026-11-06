@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "AAVE",
+  "score": 0.15,
+  "confidence": 0.5,
+  "summary": "Payward/Kraken AAVE partnership framing and Aave Horizon RWA still the background positive; no new dated catalyst tonight. Soft with DeFi beta.",
+  "sources": [],
+  "catalyst_score": 0.15,
+  "catalyst_note": "Prior Payward/Kraken AAVE open-market/partnership framing (still current; no new Nov 6 filing)",
+  "volume": 2200,
+  "buzz_level": 2200,
+  "buzz_change": 0.9,
+  "price_runup_24h_pct": -1.0,
+  "carried_over": false
+}

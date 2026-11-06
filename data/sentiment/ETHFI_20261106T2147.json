@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "ETHFI",
+  "score": 0.05,
+  "confidence": 0.35,
+  "summary": "ether.fi mentioned among mump2p adopters (ETH staking infra) \u2014 thin, second-hand catalyst. Mild flat/soft positive only.",
+  "sources": [
+    "https://x.com/i/trending/2118596941743636755"
+  ],
+  "catalyst_score": 0.05,
+  "catalyst_note": "ether.fi listed among mump2p operator adopters (Nov 6 coverage)",
+  "volume": 2500,
+  "buzz_level": 2500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 8.9,
+  "carried_over": false
+}

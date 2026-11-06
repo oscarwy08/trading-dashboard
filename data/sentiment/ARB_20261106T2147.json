@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "ARB",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "Arbitrum mild green with L2 beta; no fresh ARB unlock/governance catalyst verified tonight.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated ARB catalyst",
+  "volume": 5000,
+  "buzz_level": 5000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 4.3,
+  "carried_over": false
+}

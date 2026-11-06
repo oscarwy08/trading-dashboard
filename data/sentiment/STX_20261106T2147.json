@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "STX",
+  "score": 0.15,
+  "confidence": 0.5,
+  "summary": "Stacks Bitcoin staking bond #3 sold out with ~1,005 BTC locked (Bullish/21Shares cited); Bond 4 eyed ~Dec 3. Concrete dated institutional demand for BTC-native yield \u2014 mild positive for STX.",
+  "sources": [
+    "https://x.com/i/trending/2118107132436582565"
+  ],
+  "catalyst_score": 0.3,
+  "catalyst_note": "Stacks BTC staking bond #3 filled ~1,005 BTC (announced/covered Nov 6); Bond 4 ~Dec 3",
+  "volume": 5000,
+  "buzz_level": 5000,
+  "buzz_change": 1.3,
+  "price_runup_24h_pct": -4.8,
+  "carried_over": false
+}

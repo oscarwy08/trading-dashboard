@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "ZEC",
+  "score": 0.2,
+  "confidence": 0.55,
+  "summary": "Zcash keeps relative-strength and privacy-narrative buzz while BTC/ETH dumped; Project Tachyon / quantum-scaling chatter and top-10 mcap talk. NU7 already activated Nov 5 \u2014 tonight is follow-through narrative, not a new dated upgrade. Mild positive; do not chase solely because it held up.",
+  "sources": [
+    "https://x.com/i/trending/2118451606303994089"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "Post-NU7 (activated ~2026-11-05) relative-strength narrative; no new dated upgrade tonight",
+  "volume": 15000,
+  "buzz_level": 15000,
+  "buzz_change": 1.32,
+  "price_runup_24h_pct": 6.5,
+  "carried_over": false
+}

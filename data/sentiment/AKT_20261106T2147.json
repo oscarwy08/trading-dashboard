@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "AKT",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "Akash quiet tonight \u2014 no new GPU marketplace/partnership headline. Scanner green only.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated AKT catalyst",
+  "volume": 2000,
+  "buzz_level": 2000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 5.4,
+  "carried_over": false
+}

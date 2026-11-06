@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "ETH",
+  "score": 0.05,
+  "confidence": 0.6,
+  "summary": "ETH soft with majors (~$2.22k) after ETH ETF outflows on the Nov 5 risk-off day, but constructive building news: Vitalik at Devcon 8 Mumbai framed ETH as money/SoV, and mump2p now cited on ~8% of staked ETH for faster block propagation. Not enough to flip the tape bullish overnight.",
+  "sources": [
+    "https://x.com/i/trending/2118646070993391723",
+    "https://x.com/i/trending/2118596941743636755"
+  ],
+  "catalyst_score": 0.2,
+  "catalyst_note": "Devcon 8 Mumbai closed Nov 3\u20136; mump2p adoption update Nov 6 (~8% staked ETH)",
+  "volume": 70000,
+  "buzz_level": 70000,
+  "buzz_change": 0.93,
+  "price_runup_24h_pct": -8.2,
+  "carried_over": false
+}

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T21:58:00Z",
+  "asset": "DOGE",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "No DOGE-specific catalyst; tracking broad risk-off. Neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated DOGE catalyst",
+  "volume": 12000,
+  "buzz_level": 12000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -5.8,
+  "carried_over": false
+}
