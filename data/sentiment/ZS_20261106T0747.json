@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "ZS",
+  "score": -0.1,
+  "confidence": 0.4,
+  "summary": "Zscaler had no company-specific news; rides the Nov 5 growth/tech selloff as a high-beta software name. Prior US close only \u2014 expected pre-open, not stale feed.",
+  "sources": [
+    "https://x.com/i/trending/2118484469627920778"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No ZS-specific catalyst; tech risk-off tape",
+  "volume": 2500,
+  "buzz_level": 2500,
+  "buzz_change": 0.83,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

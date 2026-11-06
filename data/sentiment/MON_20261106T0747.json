@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "MON",
+  "score": 0.0,
+  "confidence": 0.4,
+  "summary": "Monad community still guessing on Cards Session 2 / airdrop appreciation with $MON ~$0.017 after the dump \u2014 speculation only, no dated listing or mainnet catalyst overnight. Buzz cooled vs the midday spike.",
+  "sources": [
+    "https://x.com/i/trending/2118437887771390024"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated MON catalyst; Cards/airdrop chatter unverified",
+  "volume": 3700,
+  "buzz_level": 3700,
+  "buzz_change": 1.2,
+  "price_runup_24h_pct": -7.0,
+  "carried_over": false
+}

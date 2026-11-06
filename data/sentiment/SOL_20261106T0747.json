@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "SOL",
+  "score": 0.25,
+  "confidence": 0.6,
+  "summary": "Fresh: Solana Labs launched Leap (Dialect) \u2014 mobile onchain trading of tokenized stocks/ETFs/crypto via Jupiter, fees later buy/burn SOL. Breakpoint London still Nov 15\u201317; prior Schroders EM-bond + Samsung Wallet USDC-on-Solana catalysts intact. Price ~$89 soft with the tape, buzz cooled hard after the night spike.",
+  "sources": [
+    "https://x.com/i/trending/2118544554773377430",
+    "https://x.com/i/trending/2117758950162526357",
+    "https://x.com/i/trending/2117979573182972344"
+  ],
+  "catalyst_score": 0.35,
+  "catalyst_note": "2026-11-06 Solana Labs Leap app launch; Breakpoint London Nov 15-17",
+  "volume": 83000,
+  "buzz_level": 83000,
+  "buzz_change": 0.91,
+  "price_runup_24h_pct": -8.0,
+  "carried_over": false
+}

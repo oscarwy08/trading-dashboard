@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "ZEC",
+  "score": 0.15,
+  "confidence": 0.5,
+  "summary": "Zcash showed relative strength through the Nov 5/6 dump (held near ~$1.25k while BTC ~\u22126%), helped by the fresh NU7 upgrade (25s blocks, fee redirection) and Tachyon scaling narrative. Constructive vs majors, not a blind chase of the earlier spike.",
+  "sources": [
+    "https://x.com/i/trending/2118451606303994089",
+    "https://x.com/i/trending/2117915611233993034"
+  ],
+  "catalyst_score": 0.2,
+  "catalyst_note": "2026-11-05 NU7 upgrade (25s blocks); relative strength in risk-off tape",
+  "volume": 8600,
+  "buzz_level": 8600,
+  "buzz_change": 0.79,
+  "price_runup_24h_pct": -6.3,
+  "carried_over": false
+}

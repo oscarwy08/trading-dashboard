@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "MSFT",
+  "score": -0.15,
+  "confidence": 0.55,
+  "summary": "Microsoft sat in the Nov 5 AI/tech washout (Nasdaq \u22125.5%); Chanos flagged dumping of names like MSFT/Nvidia into pricey defensives. No fresh Azure/company catalyst overnight \u2014 prior-close print, US still shut.",
+  "sources": [
+    "https://x.com/i/trending/2118484469627920778",
+    "https://x.com/i/trending/2118540138095718543"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No MSFT-specific catalyst; Nov 5 AI/tech selloff",
+  "volume": 25000,
+  "buzz_level": 25000,
+  "buzz_change": 1.14,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

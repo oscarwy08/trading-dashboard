@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "RBLX",
+  "score": 0.05,
+  "confidence": 0.35,
+  "summary": "Roblox had no fresh product/earnings catalyst overnight; mild Day-setup presence only. Prior US close.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No RBLX-specific catalyst this slot",
+  "volume": 4000,
+  "buzz_level": 4000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

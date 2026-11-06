@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "MSTR",
+  "score": -0.1,
+  "confidence": 0.5,
+  "summary": "MicroStrategy tracks BTC; with spot near $75.2k and Nov 5 ETF outflows, bias soft into the US open. No fresh treasury-purchase headline overnight.",
+  "sources": [
+    "https://x.com/i/trending/2118579923468136793"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No MSTR-specific catalyst; BTC beta drag",
+  "volume": 12000,
+  "buzz_level": 12000,
+  "buzz_change": 0.8,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

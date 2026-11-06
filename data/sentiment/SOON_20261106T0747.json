@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "SOON",
+  "score": 0.05,
+  "confidence": 0.3,
+  "summary": "SOON on Day scans without a verified news catalyst this morning. Low-confidence, non-chase.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No SOON-specific catalyst verified",
+  "volume": 1500,
+  "buzz_level": 1500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -0.6,
+  "carried_over": false
+}

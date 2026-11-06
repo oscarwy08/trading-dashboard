@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "PEPE",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "No PEPE-specific catalyst; general memecoin \u201cattention = price\u201d chatter from Pump.fun does not count as a dated PEPE event. Price mixed with alts.",
+  "sources": [
+    "https://x.com/i/trending/2118474982280081502"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No PEPE-specific dated catalyst",
+  "volume": 8000,
+  "buzz_level": 8000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 1.2,
+  "carried_over": false
+}

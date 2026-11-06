@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "RGLD",
+  "score": 0.1,
+  "confidence": 0.4,
+  "summary": "Royal Gold quietly constructive as a gold royalty name into a risk-off equity tape; no company-specific headline. Prior close.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No RGLD-specific catalyst; gold-proxy bid in risk-off",
+  "volume": 1500,
+  "buzz_level": 1500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

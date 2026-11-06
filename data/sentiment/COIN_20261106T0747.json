@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "COIN",
+  "score": 0.05,
+  "confidence": 0.5,
+  "summary": "Coinbase\u2019s regulated options/perps-for-institutions catalyst still on the board, but the name is tightly coupled to the crypto dump (BTC ~$75k) after Nov 5\u2019s risk-off session. Prior close; score dialled back.",
+  "sources": [
+    "https://x.com/i/trending/2118579923468136793"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "Prior Coinbase Prime options/perps launch; Nov 5 crypto/ETF outflow drag",
+  "volume": 10000,
+  "buzz_level": 10000,
+  "buzz_change": 0.83,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

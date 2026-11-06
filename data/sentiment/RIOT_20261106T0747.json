@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "RIOT",
+  "score": 0.2,
+  "confidence": 0.55,
+  "summary": "Riot\u2019s ~$28B / up-to-$54B Corsicana AI data-center lease (910 MW) from Nov 4 remains the live catalyst; miner-to-AI pivot narrative intact even as AI-infra names sold off Nov 5. Prior close only ahead of US open.",
+  "sources": [
+    "https://x.com/i/trending/2117979574025994242",
+    "https://x.com/i/trending/2118484469627920778"
+  ],
+  "catalyst_score": 0.35,
+  "catalyst_note": "2026-11-04 Riot $28B+ AI data-center lease at Corsicana",
+  "volume": 8000,
+  "buzz_level": 8000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

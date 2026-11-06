@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "XRP",
+  "score": 0.1,
+  "confidence": 0.55,
+  "summary": "GateHub launched MiCA-regulated euro stablecoin EURGH on the XRP Ledger (1:1 bank-backed, free SEPA mint/redeem) \u2014 a concrete XRPL payments catalyst. Price still soft near $1.18 after the risk-off session; community breakout chatter from earlier looks overtaken by the dump.",
+  "sources": [
+    "https://x.com/i/trending/2118458543724732709",
+    "https://x.com/i/trending/2118493641572294831"
+  ],
+  "catalyst_score": 0.3,
+  "catalyst_note": "2026-11-05 GateHub EURGH MiCA euro stablecoin live on XRPL",
+  "volume": 38400,
+  "buzz_level": 38400,
+  "buzz_change": 0.71,
+  "price_runup_24h_pct": -11.0,
+  "carried_over": false
+}

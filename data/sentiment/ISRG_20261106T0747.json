@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "ISRG",
+  "score": 0.05,
+  "confidence": 0.35,
+  "summary": "Intuitive Surgical quiet overnight with no earnings/product catalyst; light Day-setup print only. Prior US close.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No ISRG-specific catalyst this slot",
+  "volume": 2500,
+  "buzz_level": 2500,
+  "buzz_change": 1.52,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

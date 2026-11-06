@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "EDGE",
+  "score": -0.15,
+  "confidence": 0.45,
+  "summary": "EDGE reversed hard overnight (~near 24h lows after the prior FOMO spike) with still no listing/partnership catalyst and the Nov 2 unlock overhang. Classic post-spike fade \u2014 score negative, not a bounce chase.",
+  "sources": [
+    "https://x.com/i/trending/2118579923468136793"
+  ],
+  "catalyst_score": -0.1,
+  "catalyst_note": "2026-11-02 EDGE unlock overhang; no fresh catalyst on the failed spike",
+  "volume": 3000,
+  "buzz_level": 3000,
+  "buzz_change": 0.6,
+  "price_runup_24h_pct": -32.7,
+  "carried_over": false
+}

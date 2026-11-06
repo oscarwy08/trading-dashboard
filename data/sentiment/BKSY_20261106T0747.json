@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "BKSY",
+  "score": 0.1,
+  "confidence": 0.35,
+  "summary": "BlackSky prints as a top Day stock setup on momentum; no company-specific headline overnight. Prior US close only \u2014 expected pre-open.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No BKSY-specific catalyst this slot",
+  "volume": 1500,
+  "buzz_level": 1500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

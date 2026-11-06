@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "AAPL",
+  "score": -0.1,
+  "confidence": 0.5,
+  "summary": "US tech/AI sold off hard Nov 5 (Nasdaq ~\u22125.5%) on data-center cost and post-midterm policy worries; Apple had no company-specific catalyst and is still prior close pre-US open. Soft tape into Friday payrolls.",
+  "sources": [
+    "https://x.com/i/trending/2118484469627920778",
+    "https://x.com/i/trending/2118540138095718543"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No AAPL-specific catalyst; Nov 5 broad AI/tech selloff context",
+  "volume": 20000,
+  "buzz_level": 20000,
+  "buzz_change": 0.87,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

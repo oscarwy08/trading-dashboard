@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "HYPE",
+  "score": 0.0,
+  "confidence": 0.55,
+  "summary": "Mixed: Hyperliquid Strategies filed to offer regulated US futures (FCM path) and Elysium L2 (HYPE gas) still targets Nov 9 mainnet \u2014 but Binance HYPE withdrawals remain restricted post-hack (~$200M stuck) and price holds ~$77 after the slide from $97. Buzz partially rebounded from the night collapse but still well below midday.",
+  "sources": [
+    "https://x.com/i/trending/2118468671219577088",
+    "https://x.com/i/trending/2118349218666398042",
+    "https://x.com/i/trending/2118035834385702916"
+  ],
+  "catalyst_score": 0.05,
+  "catalyst_note": "Hyperliquid Strategies FCM filing (2026-11-05/06); Elysium mainnet 2026-11-09; Binance HYPE withdrawals still restricted",
+  "volume": 9100,
+  "buzz_level": 9100,
+  "buzz_change": 0.21,
+  "price_runup_24h_pct": -8.0,
+  "carried_over": false
+}

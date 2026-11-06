@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "NEE",
+  "score": 0.05,
+  "confidence": 0.35,
+  "summary": "NextEra quiet; Day-setup momentum only, no fresh utility/AI-power headline this morning. Prior close.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No NEE-specific catalyst this slot",
+  "volume": 2000,
+  "buzz_level": 2000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

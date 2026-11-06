@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "AAVE",
+  "score": 0.25,
+  "confidence": 0.55,
+  "summary": "Payward (Kraken parent) open-market AAVE buy / partnership framing still the lead catalyst; Aave Horizon keeps showing up in the RWA-collateral DeFi narrative (~$4.1B RWA in lending). AAVE held up better than many alts near $129.",
+  "sources": [
+    "https://x.com/i/trending/2118351759395475587",
+    "https://x.com/i/trending/2118380412875751680"
+  ],
+  "catalyst_score": 0.3,
+  "catalyst_note": "2026-11-05 Payward/Kraken fund open-market AAVE purchase",
+  "volume": 2400,
+  "buzz_level": 2400,
+  "buzz_change": 0.91,
+  "price_runup_24h_pct": 1.0,
+  "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "SPOT",
+  "score": -0.05,
+  "confidence": 0.4,
+  "summary": "Spotify quiet overnight with no product/earnings catalyst; soft with the growth-stock tape after Nov 5. Prior close only ahead of US cash open.",
+  "sources": [
+    "https://x.com/i/trending/2118484469627920778"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No SPOT-specific catalyst this slot",
+  "volume": 3500,
+  "buzz_level": 3500,
+  "buzz_change": 0.88,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

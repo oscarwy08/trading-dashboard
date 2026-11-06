@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "ETH",
+  "score": 0.05,
+  "confidence": 0.6,
+  "summary": "Amundi (Europe\u2019s largest AM) launched a tokenized Core STOXX Europe 600 share class on Ethereum \u2014 real TradFi RWA signal. Offset by ~$100M ETH ETF outflows Nov 5 and ETH sitting near the $2.21k 24h low with the broader dump. Validators adopting mump2p for faster blocks is a mild infra plus.",
+  "sources": [
+    "https://x.com/i/trending/2118420615116013640",
+    "https://x.com/i/trending/2118579923468136793",
+    "https://x.com/i/trending/2118596941743636755"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "2026-11-05/06 Amundi tokenized Europe 600 fund on Ethereum; ETH ETF ~$100M Nov 5 outflow",
+  "volume": 75000,
+  "buzz_level": 75000,
+  "buzz_change": 1.45,
+  "price_runup_24h_pct": -8.8,
+  "carried_over": false
+}

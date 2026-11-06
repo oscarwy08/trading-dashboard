@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "BTC",
+  "score": -0.1,
+  "confidence": 0.65,
+  "summary": "Risk-off hangover: Nov 5 spot BTC ETFs saw ~$430M net outflows (Fidelity/BlackRock led) as BTC slid to a ~$75.2k low with heavy liquidations, tracking the Nasdaq dump. Mild offset from White House review of an SEC crypto broker-dealer rule proposal. US payrolls due later today (13:30 UK) are the next swing factor.",
+  "sources": [
+    "https://x.com/i/trending/2118579923468136793",
+    "https://x.com/i/trending/2118424043120431593"
+  ],
+  "catalyst_score": -0.15,
+  "catalyst_note": "2026-11-05 spot BTC ETF net outflow ~$430M; Nov 6 US payrolls due",
+  "volume": 149000,
+  "buzz_level": 149000,
+  "buzz_change": 1.32,
+  "price_runup_24h_pct": -6.6,
+  "carried_over": false
+}

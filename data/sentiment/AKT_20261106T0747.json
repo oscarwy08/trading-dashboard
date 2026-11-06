@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "AKT",
+  "score": 0.05,
+  "confidence": 0.35,
+  "summary": "Akash (AKT) quiet overnight \u2014 no new GPU marketplace or partnership headline. Mild Day-setup presence only.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No AKT-specific catalyst this slot",
+  "volume": 2000,
+  "buzz_level": 2000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 0.4,
+  "carried_over": false
+}

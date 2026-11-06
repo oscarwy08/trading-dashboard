@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "APR",
+  "score": 0.05,
+  "confidence": 0.3,
+  "summary": "APR still printing as a Day momentum setup; no separate news catalyst verified this morning. Low-confidence neutral/slightly constructive on structure only.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No APR-specific catalyst verified",
+  "volume": 1500,
+  "buzz_level": 1500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 7.0,
+  "carried_over": false
+}

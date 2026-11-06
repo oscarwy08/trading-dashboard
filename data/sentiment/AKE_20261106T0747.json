@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "AKE",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "AKE shows a huge range expansion off the 24h low in Day scans, but no verifiable listing/partnership/unlock news overnight. Score stays flat \u2014 price-chase \u201ctop gainer\u201d recaps are ignored.",
+  "sources": [
+    "https://x.com/i/trending/2118579923468136793"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No AKE-specific dated catalyst verified",
+  "volume": 2000,
+  "buzz_level": 2000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 163.8,
+  "carried_over": false
+}

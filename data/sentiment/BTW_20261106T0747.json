@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T07:58:00Z",
+  "asset": "BTW",
+  "score": 0.05,
+  "confidence": 0.3,
+  "summary": "BTW on Day scans with an elevated 24h range; no verified fundamental catalyst this slot. Not treated as a chase.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No BTW-specific catalyst verified",
+  "volume": 1200,
+  "buzz_level": 1200,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 19.4,
+  "carried_over": false
+}
