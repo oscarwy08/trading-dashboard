@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-06T10:05:16+00:00",
+  "generated": "2026-11-06T11:15:11+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 106,
-        "avg_dt_s": 198814.9150943396,
-        "avg_price_pct": 0.6970641419032519,
-        "missed": 72
+        "pairs": 107,
+        "avg_dt_s": 196981.98130841122,
+        "avg_price_pct": 0.6892339867426684,
+        "missed": 71
       },
       "entries": {
         "pairs": 30,
@@ -3134,13 +3134,13 @@
       "shadow_ts": "2026-11-06T09:39:05+00:00",
       "shadow_price": 3.781097691465273e-06,
       "trigger": "[burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-06T10:23:56+00:00",
+      "cycle_price": 3.775775325329207e-06,
+      "cycle_reason": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled); P&L \u00a3-0.08",
+      "dt_s": 2691.0,
+      "price_diff": -5.322366136065894e-09,
+      "price_pct": -0.14076246027918257
     }
   ],
   "main_exit_missed": [

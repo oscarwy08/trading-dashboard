@@ -816,7 +816,8 @@ AKE day
 
 PEPE day
   shadow  2026-11-06T09:39:05+00:00  £3.7811e-06  [burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-11-06T10:23:56+00:00  £3.77578e-06  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled); P&L £-0.08
+  cycle was 2691s later, price £-5.32237e-09 (-0.14%)
 
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
@@ -1669,7 +1670,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 106 pairs, avg time gap 198815s, avg price gap +0.70%, missed moves 72
+  exits: 107 pairs, avg time gap 196982s, avg price gap +0.69%, missed moves 71
   entries: 30 pairs, avg time gap 563648s, avg price gap +2.64%, missed moves 122
 ev_exit
   exits: 91 pairs, avg time gap 165017s, avg price gap -2.45%, missed moves 50
