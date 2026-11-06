@@ -14,5 +14,5 @@
   "buzz_level": 22000,
   "buzz_change": 0.98,
   "price_runup_24h_pct": -1.53,
-  "carried_over": false
+  "carried_over": true
 }
