@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "ZEC",
+  "score": 0.15,
+  "confidence": 0.5,
+  "summary": "Zcash keeps relative-strength chatter (held up better through the majors dump; privacy + Tachyon/NU7 roadmap narrative). No brand-new dated listing/ETF catalyst midday \u2014 score reflects resilience narrative, not a FOMO chase of already-strong relative performance.",
+  "sources": [
+    "https://x.com/i/trending/2118451606303994089"
+  ],
+  "catalyst_score": 0.15,
+  "catalyst_note": "Relative strength + privacy/Tachyon narrative; no new dated exchange/ETF event midday",
+  "volume": 9000,
+  "buzz_level": 9000,
+  "buzz_change": 0.85,
+  "price_runup_24h_pct": 0.73,
+  "carried_over": false
+}

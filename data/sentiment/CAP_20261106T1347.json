@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "CAP",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "CAP still screening as momentum but no verifiable news catalyst \u2014 treat as price/volume only.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated verifiable catalyst; setup/price only",
+  "volume": 2000,
+  "buzz_level": 2000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 2.34,
+  "carried_over": false
+}

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "INJ",
+  "score": 0.32,
+  "confidence": 0.65,
+  "summary": "Canary staked Injective ETF (INJC) live on Nasdaq remains the standout catalyst (BitGo custody, \u226590% staked). Buzz still elevated vs early-week baseline though cooling vs the launch spike. Price roughly flat 24h \u2014 score slightly tempered vs morning as the billboard news ages, not as a chase.",
+  "sources": [
+    "https://x.com/i/trending/2118046930106527991"
+  ],
+  "catalyst_score": 0.45,
+  "catalyst_note": "Canary INJC staked INJ ETF live on Nasdaq (BitGo; \u226590% staked)",
+  "volume": 11000,
+  "buzz_level": 11000,
+  "buzz_change": 1.56,
+  "price_runup_24h_pct": 0.21,
+  "carried_over": false
+}

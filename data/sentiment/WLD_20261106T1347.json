@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "WLD",
+  "score": -0.05,
+  "confidence": 0.4,
+  "summary": "No fresh Worldcoin product/Orb/partnership catalyst midday; price soft (~\u22127% 24h) with majors. Held Core position \u2014 score stays near-neutral/slightly soft pending a verifiable event.",
+  "sources": [
+    "https://www.coindesk.com/markets/2026/11/06/bitcoin-recovers-usd76-000-level-as-etfs-shed-usd430-million-after-tech-rout"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated WLD catalyst this slot",
+  "volume": 7500,
+  "buzz_level": 7500,
+  "buzz_change": 0.94,
+  "price_runup_24h_pct": -6.7,
+  "carried_over": false
+}

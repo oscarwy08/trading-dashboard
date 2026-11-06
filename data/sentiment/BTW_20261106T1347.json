@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "BTW",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "BTW is the open Day momentum hold after a trail sell (+\u00a30.16) and re-buy; 24h ~+18%. No verifiable fundamental catalyst found \u2014 treat as price/volume action only. Explicitly NOT scored bullish on the run-up.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated news catalyst; price-runup only",
+  "volume": 800,
+  "buzz_level": 800,
+  "buzz_change": 0.67,
+  "price_runup_24h_pct": 17.65,
+  "carried_over": false
+}

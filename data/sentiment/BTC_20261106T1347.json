@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "BTC",
+  "score": -0.12,
+  "confidence": 0.7,
+  "summary": "Still risk-off: Nov 5 spot BTC ETFs ~$430M net outflows (FBTC/IBIT led); BTC recovered ~$76k midday after the ~$75.2k low but 24h still ~\u22125%. Fresh: Oct payrolls crushed (165k vs ~59k exp, UE 4.1%) \u2014 hotter labor keeps rate-cut hopes in check. Mild constructive offset: Moscow Exchange plans BTC/ETH/USDT trading from Dec 1. Do not treat the bounce as new bullish news.",
+  "sources": [
+    "https://www.coindesk.com/markets/2026/11/06/bitcoin-recovers-usd76-000-level-as-etfs-shed-usd430-million-after-tech-rout",
+    "https://www.cnbc.com/2026/11/06/jobs-report-october-2026.html",
+    "https://x.com/i/trending/2118110189291524534"
+  ],
+  "catalyst_score": -0.2,
+  "catalyst_note": "2026-11-05 ETF \u2212$430M; 2026-11-06 NFP +165k hot; Moscow Exchange BTC pilot Dec 1",
+  "volume": 145000,
+  "buzz_level": 145000,
+  "buzz_change": 1.08,
+  "price_runup_24h_pct": -4.74,
+  "carried_over": false
+}

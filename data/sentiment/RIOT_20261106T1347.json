@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "RIOT",
+  "score": 0.18,
+  "confidence": 0.55,
+  "summary": "Riot\u2019s Corsicana AI data-center lease (~910 MW / up-to-$54B framing from Nov 4) remains the live miner-to-AI pivot catalyst. Name is still a Day stock setup on momentum into the US open; score reflects the dated lease, not overnight price alone.",
+  "sources": [
+    "https://x.com/i/trending/2118686649173340639"
+  ],
+  "catalyst_score": 0.35,
+  "catalyst_note": "Riot Corsicana AI data-center lease catalyst (Nov 4) still live",
+  "volume": 7500,
+  "buzz_level": 7500,
+  "buzz_change": 0.94,
+  "price_runup_24h_pct": -4.12,
+  "carried_over": false
+}

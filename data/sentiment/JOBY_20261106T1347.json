@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "JOBY",
+  "score": 0.05,
+  "confidence": 0.35,
+  "summary": "Joby Aviation top Day stock setup on momentum into US open; no company-specific headline midday. Prior close.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No company-specific dated catalyst midday",
+  "volume": 4000,
+  "buzz_level": 4000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 4.64,
+  "carried_over": false
+}

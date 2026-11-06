@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "XRP",
+  "score": 0.08,
+  "confidence": 0.55,
+  "summary": "GateHub MiCA-regulated EURGH euro stablecoin on XRPL still the concrete catalyst; no newer XRP-specific headline midday. Token remains soft (~\u22129% 24h) with the broad risk-off tape after ETF outflows and hot NFP.",
+  "sources": [
+    "https://x.com/i/trending/2118458543724732709",
+    "https://www.coindesk.com/markets/2026/11/06/bitcoin-recovers-usd76-000-level-as-etfs-shed-usd430-million-after-tech-rout"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "GateHub EURGH MiCA euro stablecoin on XRPL (Nov 5); no newer dated XRP event midday",
+  "volume": 35000,
+  "buzz_level": 35000,
+  "buzz_change": 0.63,
+  "price_runup_24h_pct": -9.32,
+  "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "SOL",
+  "score": 0.22,
+  "confidence": 0.6,
+  "summary": "Solana Labs Leap (Dialect) mobile app for tokenized stocks/ETFs/crypto via Jupiter still the fresh product catalyst; Breakpoint London in ~10 days keeps calendar buzz. Unruggable raised $500k for a Solana hardware wallet. Price soft with majors (~\u22125% 24h) \u2014 catalyst intact, not a chase of price.",
+  "sources": [
+    "https://x.com/i/trending/2118544554773377430",
+    "https://x.com/i/trending/2117758950162526357",
+    "https://x.com/i/trending/2118465190073393223"
+  ],
+  "catalyst_score": 0.35,
+  "catalyst_note": "Solana Labs Leap app launch; Breakpoint London Nov 15\u201317; Unruggable $500k raise",
+  "volume": 70000,
+  "buzz_level": 70000,
+  "buzz_change": 0.61,
+  "price_runup_24h_pct": -5.26,
+  "carried_over": false
+}

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "PYTH",
+  "score": 0.05,
+  "confidence": 0.3,
+  "summary": "Pyth on Day scans with mild green 24h; no fresh oracle/partnership headline verified midday.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated verifiable catalyst; setup/price only",
+  "volume": 3500,
+  "buzz_level": 3500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 1.65,
+  "carried_over": false
+}

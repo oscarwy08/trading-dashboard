@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "HYPE",
+  "score": 0.0,
+  "confidence": 0.55,
+  "summary": "Hyperliquid Strategies FCM/futures-broker path (CFTC filing disclosed with Q3) still the constructive regulatory catalyst, but $HYPE remains soft after the post-announcement fade and earlier Binance withdrawal friction chatter. Mixed \u2014 catalyst \u2260 chase the token.",
+  "sources": [
+    "https://x.com/i/trending/2118468671219577088",
+    "https://x.com/i/trending/2118349218666398042"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "Hyperliquid Strategies CFTC FCM filing / US futures path (Q3 disclosure Nov 5)",
+  "volume": 8500,
+  "buzz_level": 8500,
+  "buzz_change": 0.21,
+  "price_runup_24h_pct": -3.84,
+  "carried_over": false
+}

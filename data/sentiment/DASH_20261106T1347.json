@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "DASH",
+  "score": 0.0,
+  "confidence": 0.3,
+  "summary": "DASH screening on momentum; no new Dash-specific news. Not treated as bullish on scan alone.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated verifiable catalyst; setup/price only",
+  "volume": 3000,
+  "buzz_level": 3000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -3.69,
+  "carried_over": false
+}

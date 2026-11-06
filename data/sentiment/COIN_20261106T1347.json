@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "COIN",
+  "score": -0.05,
+  "confidence": 0.5,
+  "summary": "Coinbase still coupled to BTC/ETF risk-off (Nov 5 outflows) and the soft crypto tape; regulated options/perps institutional path remains a background positive. Prior close into US open.",
+  "sources": [
+    "https://www.coindesk.com/markets/2026/11/06/bitcoin-recovers-usd76-000-level-as-etfs-shed-usd430-million-after-tech-rout"
+  ],
+  "catalyst_score": 0.05,
+  "catalyst_note": "Background institutional options/perps path; dominated by BTC/ETF risk-off",
+  "volume": 11000,
+  "buzz_level": 11000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -9.69,
+  "carried_over": false
+}

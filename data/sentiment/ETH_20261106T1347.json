@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "ETH",
+  "score": 0.05,
+  "confidence": 0.6,
+  "summary": "Amundi\u2019s tokenized Core STOXX Europe 600 share class on Ethereum remains the lead TradFi RWA catalyst; Devcon 8 wrapped in Mumbai with builder energy. Price still soft (~\u22126% 24h) with majors. Hot NFP is a mild macro headwind for risk. mump2p validator latency tooling adoption is nice but not a price catalyst.",
+  "sources": [
+    "https://x.com/i/trending/2118420615116013640",
+    "https://x.com/i/trending/2118646070993391723",
+    "https://www.cnbc.com/2026/11/06/jobs-report-october-2026.html"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "Amundi tokenized STOXX 600 on ETH; Devcon 8 ends Mumbai; hot NFP macro offset",
+  "volume": 72000,
+  "buzz_level": 72000,
+  "buzz_change": 1.26,
+  "price_runup_24h_pct": -6.31,
+  "carried_over": false
+}

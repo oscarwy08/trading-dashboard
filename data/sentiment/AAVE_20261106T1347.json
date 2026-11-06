@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "AAVE",
+  "score": 0.2,
+  "confidence": 0.5,
+  "summary": "Payward/Kraken AAVE partnership framing and Aave Horizon RWA still the background catalyst; no newer headline midday. Mild positive carry of that narrative.",
+  "sources": [
+    "https://x.com/i/trending/2118380412875751680"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "Payward/Kraken AAVE buy/partnership + Aave Horizon (background; no newer dated event midday)",
+  "volume": 2400,
+  "buzz_level": 2400,
+  "buzz_change": 0.96,
+  "price_runup_24h_pct": 0.29,
+  "carried_over": false
+}

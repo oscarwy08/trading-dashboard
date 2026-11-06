@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "SEE.L",
+  "score": 0.05,
+  "confidence": 0.3,
+  "summary": "SEE.L top LSE momentum setup while London is open; no separate company catalyst verified. Low-confidence.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated verifiable catalyst; setup/price only",
+  "volume": 1200,
+  "buzz_level": 1200,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -2.15,
+  "carried_over": false
+}

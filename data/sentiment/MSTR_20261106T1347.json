@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "MSTR",
+  "score": -0.12,
+  "confidence": 0.5,
+  "summary": "MicroStrategy tracks BTC; with spot ~$76k and fresh hot NFP + prior ETF outflows, bias soft into the US open. No new treasury-purchase headline midday.",
+  "sources": [
+    "https://www.coindesk.com/markets/2026/11/06/bitcoin-recovers-usd76-000-level-as-etfs-shed-usd430-million-after-tech-rout"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No new MSTR treasury headline; BTC beta",
+  "volume": 12000,
+  "buzz_level": 12000,
+  "buzz_change": 0.89,
+  "price_runup_24h_pct": -9.29,
+  "carried_over": false
+}

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "WAL",
+  "score": 0.05,
+  "confidence": 0.3,
+  "summary": "WAL on Day momentum scans; no dated fundamental catalyst found. Neutral/low-confidence.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated verifiable catalyst; setup/price only",
+  "volume": 2000,
+  "buzz_level": 2000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 1.71,
+  "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-06T13:58:00Z",
+  "asset": "MON",
+  "score": 0.0,
+  "confidence": 0.4,
+  "summary": "Monad community still debating Cards Session 2 / airdrop vs price appreciation with $MON ~$0.017 after the dump \u2014 speculation only, no dated official drop. Conviction posts from co-founder circle; no verifiable listing/partnership catalyst midday. Neutral.",
+  "sources": [
+    "https://x.com/i/trending/2118654092687843804",
+    "https://x.com/i/trending/2118437887771390024"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated official Cards/airdrop event; community speculation only",
+  "volume": 4000,
+  "buzz_level": 4000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -3.26,
+  "carried_over": false
+}
