@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-06T18:18:15+00:00",
+  "generated": "2026-11-06T19:30:56+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 112,
-        "avg_dt_s": 222134.5625,
-        "avg_price_pct": -0.1115373555430162,
-        "missed": 73
+        "pairs": 113,
+        "avg_dt_s": 230979.58407079647,
+        "avg_price_pct": -0.38516000110740484,
+        "missed": 72
       },
       "entries": {
         "pairs": 31,
@@ -21,10 +21,10 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 94,
-        "avg_dt_s": 186225.18085106384,
-        "avg_price_pct": -3.0060697360803887,
-        "missed": 51
+        "pairs": 95,
+        "avg_dt_s": 193362.0,
+        "avg_price_pct": -3.246468461084157,
+        "missed": 50
       },
       "entries": {
         "pairs": 43,
@@ -36,9 +36,9 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 58,
-        "avg_dt_s": 136644.27586206896,
-        "avg_price_pct": -1.6773054854265108,
+        "pairs": 59,
+        "avg_dt_s": 134332.2711864407,
+        "avg_price_pct": -1.6467008211862366,
         "missed": 42
       },
       "entries": {
@@ -51,9 +51,9 @@
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 58,
-        "avg_dt_s": 92243.43103448275,
-        "avg_price_pct": -1.7758519871172267,
+        "pairs": 59,
+        "avg_dt_s": 90684.40677966102,
+        "avg_price_pct": -1.7435770431872792,
         "missed": 44
       },
       "entries": {
@@ -66,10 +66,10 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 94,
-        "avg_dt_s": 214228.68085106384,
-        "avg_price_pct": -3.1011494933852517,
-        "missed": 57
+        "pairs": 95,
+        "avg_dt_s": 224949.66315789474,
+        "avg_price_pct": -3.4231240064468076,
+        "missed": 56
       },
       "entries": {
         "pairs": 41,
@@ -81,9 +81,9 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 58,
-        "avg_dt_s": 92258.94827586207,
-        "avg_price_pct": -1.7758519871172267,
+        "pairs": 59,
+        "avg_dt_s": 90700.06779661016,
+        "avg_price_pct": -1.7435770431872792,
         "missed": 44
       },
       "entries": {
@@ -144,7 +144,7 @@
         "pairs": 53,
         "avg_dt_s": 150673.7358490566,
         "avg_price_pct": 1.7982075390979684,
-        "missed": 36
+        "missed": 37
       },
       "entries": {
         "pairs": 28,
@@ -186,10 +186,10 @@
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 75,
-        "avg_dt_s": 210646.05333333334,
-        "avg_price_pct": 0.8167155452747318,
-        "missed": 56
+        "pairs": 76,
+        "avg_dt_s": 225208.76315789475,
+        "avg_price_pct": 0.4194788659392709,
+        "missed": 55
       },
       "entries": {
         "pairs": 29,
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 130,
-        "avg_dt_s": 250350.4923076923,
-        "avg_price_pct": -2.583256819284547,
-        "missed": 64
+        "pairs": 131,
+        "avg_dt_s": 248472.66412213742,
+        "avg_price_pct": -2.5583755887952564,
+        "missed": 63
       },
       "entries": {
         "pairs": 54,
@@ -2112,13 +2112,13 @@
       "shadow_ts": "2026-10-23T15:34:01+00:00",
       "shadow_price": 1.292197057851568,
       "trigger": "[momentum] signal -0.238 <= -0.2 (4h -3.7%, 24h -2.2%, EMA6/24 up, RSI 47, sentiment -0.10 (conf 0.20, weight x0.79))",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-06T18:54:23+00:00",
+      "cycle_price": 0.8912167287821878,
+      "cycle_reason": "[momentum] trailing stop +2.4% (peak +4.8%, gives back 40% of the gain); P&L \u00a3+0.12",
+      "dt_s": 1221622.0,
+      "price_diff": -0.4009803290693802,
+      "price_pct": -31.030896304318933
     },
     {
       "asset": "TRAC",
