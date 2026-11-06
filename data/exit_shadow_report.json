@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-06T08:57:04+00:00",
+  "generated": "2026-11-06T10:05:16+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 106,
         "avg_dt_s": 198814.9150943396,
         "avg_price_pct": 0.6970641419032519,
-        "missed": 71
+        "missed": 72
       },
       "entries": {
         "pairs": 30,
@@ -24,7 +24,7 @@
         "pairs": 91,
         "avg_dt_s": 165017.43956043955,
         "avg_price_pct": -2.452116864713974,
-        "missed": 49
+        "missed": 50
       },
       "entries": {
         "pairs": 42,
@@ -69,7 +69,7 @@
         "pairs": 91,
         "avg_dt_s": 193854.6923076923,
         "avg_price_pct": -2.592065102208025,
-        "missed": 55
+        "missed": 56
       },
       "entries": {
         "pairs": 40,
@@ -204,7 +204,7 @@
         "pairs": 122,
         "avg_dt_s": 225905.15573770492,
         "avg_price_pct": -1.5079222327028803,
-        "missed": 65
+        "missed": 66
       },
       "entries": {
         "pairs": 53,
@@ -225,7 +225,7 @@
         "pairs": 34,
         "avg_dt_s": 561820.7941176471,
         "avg_price_pct": 7.664117418880604,
-        "missed": 435
+        "missed": 436
       }
     },
     {
@@ -240,7 +240,7 @@
         "pairs": 29,
         "avg_dt_s": 510240.8965517241,
         "avg_price_pct": 9.967329871410563,
-        "missed": 348
+        "missed": 349
       }
     },
     {
@@ -3127,6 +3127,20 @@
       "dt_s": 983.0,
       "price_diff": -9.352427360207935e-05,
       "price_pct": -4.675980037476118
+    },
+    {
+      "asset": "PEPE",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-06T09:39:05+00:00",
+      "shadow_price": 3.781097691465273e-06,
+      "trigger": "[burst 24h] stop-loss -1.5% <= -1.5% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -5807,6 +5821,20 @@
       "asset": "AKE",
       "price": 0.0021026931372324646,
       "reason": "[momentum] DAY score 0.9 >= 0.35; target +12.0% / stop -5.0% (ATR 6.95%); EV +0.69%; 4h +14.8%, 24h +12.5%, EMA6/24 up, RSI 61, no fresh sentiment"
+    },
+    {
+      "ts": "2026-11-06T09:32:50+00:00",
+      "sleeve": "day",
+      "asset": "PEPE",
+      "price": 3.828128126719431e-06,
+      "reason": "[burst 24h] 24h-high break +1.82% (high $5.052e-06); vol x2.6, RSI 78, BTC 1h +0.69%, 4h +0.85%; confidence 0.64 >= 0.55, EV +0.37% after costs; target +3.4% / stop -1.5% / max 6h"
+    },
+    {
+      "ts": "2026-11-06T09:47:55+00:00",
+      "sleeve": "day",
+      "asset": "BTW",
+      "price": 0.8435617751936344,
+      "reason": "[momentum] DAY score 0.814 >= 0.35; target +7.0% / stop -3.4% (ATR 2.79%); EV +0.38%; 4h +4.6%, 24h +10.1%, EMA6/24 up, RSI 53, sentiment +0.05 (conf 0.30, weight x0.85)"
     }
   ]
 }
