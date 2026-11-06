@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-06T13:32:49+00:00",
+  "generated": "2026-11-06T14:40:28+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -204,7 +204,7 @@
         "pairs": 124,
         "avg_dt_s": 241365.40322580645,
         "avg_price_pct": -1.9555480116519652,
-        "missed": 64
+        "missed": 65
       },
       "entries": {
         "pairs": 54,
@@ -5849,6 +5849,13 @@
       "asset": "BTW",
       "price": 0.8435617751936344,
       "reason": "[momentum] DAY score 0.814 >= 0.35; target +7.0% / stop -3.4% (ATR 2.79%); EV +0.38%; 4h +4.6%, 24h +10.1%, EMA6/24 up, RSI 53, sentiment +0.05 (conf 0.30, weight x0.85)"
+    },
+    {
+      "ts": "2026-11-06T13:33:48+00:00",
+      "sleeve": "day",
+      "asset": "BTW",
+      "price": 0.8975804729375226,
+      "reason": "[momentum] DAY score 0.846 >= 0.35; target +6.4% / stop -3.1% (ATR 2.56%); EV +0.52%; 4h +8.1%, 24h +17.6%, EMA6/24 up, RSI 66, sentiment +0.05 (conf 0.30, weight x0.53)"
     }
   ]
 }
