@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-07T13:06:16+00:00",
+  "generated": "2026-11-07T14:15:57+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 115,
         "avg_dt_s": 227092.94782608695,
         "avg_price_pct": -0.4621320638644108,
-        "missed": 72
+        "missed": 74
       },
       "entries": {
         "pairs": 31,
@@ -45,7 +45,7 @@
         "pairs": 24,
         "avg_dt_s": 615359.125,
         "avg_price_pct": 13.195254238881377,
-        "missed": 247
+        "missed": 248
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 26,
         "avg_dt_s": 607413.0769230769,
         "avg_price_pct": 11.91668928446518,
-        "missed": 258
+        "missed": 259
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 26,
         "avg_dt_s": 607421.9615384615,
         "avg_price_pct": 11.893908897688384,
-        "missed": 241
+        "missed": 242
       }
     },
     {
@@ -225,7 +225,7 @@
         "pairs": 34,
         "avg_dt_s": 561820.7941176471,
         "avg_price_pct": 7.664117418880604,
-        "missed": 437
+        "missed": 438
       }
     },
     {
@@ -240,7 +240,7 @@
         "pairs": 29,
         "avg_dt_s": 510240.8965517241,
         "avg_price_pct": 9.967329871410563,
-        "missed": 350
+        "missed": 351
       }
     },
     {
@@ -3267,6 +3267,34 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "MET",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-07T13:12:44+00:00",
+      "shadow_price": 0.22210479547972584,
+      "trigger": "[burst 24h] stop-loss -1.7% <= -1.5% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
+    },
+    {
+      "asset": "CAP",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-07T14:07:18+00:00",
+      "shadow_price": 0.08031389769367238,
+      "trigger": "[burst 24h] stop-loss -2.7% <= -2.4% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -6045,6 +6073,13 @@
       "asset": "MET",
       "price": 0.22457678814442433,
       "reason": "[burst 24h] 24h-high break +0.17% (high $0.2993); vol x8.0, RSI 76, BTC 1h -0.19%, 4h -0.33%; confidence 0.63 >= 0.57, EV +0.30% after costs; target +4.3% / stop -1.5% / max 6h"
+    },
+    {
+      "ts": "2026-11-07T14:00:16+00:00",
+      "sleeve": "day",
+      "asset": "CAP",
+      "price": 0.08203535925487876,
+      "reason": "[burst 24h] 24h-high break +0.80% (high $0.10942); vol x12.4, RSI 67, BTC 1h +0.08%, 4h -0.13%; confidence 0.69 >= 0.57, EV +0.99% after costs; target +7.3% / stop -2.4% / max 6h"
     }
   ]
 }
