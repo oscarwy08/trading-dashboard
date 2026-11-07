@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-07T07:15:29+00:00",
+  "generated": "2026-11-07T08:27:00+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -162,10 +162,10 @@
         "missed": 27
       },
       "entries": {
-        "pairs": 3,
-        "avg_dt_s": 1385573.6666666667,
-        "avg_price_pct": -91.57900381361208,
-        "missed": 28
+        "pairs": 4,
+        "avg_dt_s": 1405488.5,
+        "avg_price_pct": -89.68029115937705,
+        "missed": 27
       }
     },
     {
@@ -5996,6 +5996,13 @@
       "asset": "BTW",
       "price": 0.8677130279608126,
       "reason": "[momentum] DAY score 0.771 >= 0.35; target +7.5% / stop -3.6% (ATR 3.00%); EV +0.54%; 4h +2.7%, 24h +16.0%, EMA6/24 up, RSI 52, sentiment +0.00 (conf 0.30, weight x0.86)"
+    },
+    {
+      "ts": "2026-11-07T08:08:08+00:00",
+      "sleeve": "day",
+      "asset": "AKE",
+      "price": 0.004417773192689433,
+      "reason": "[momentum] DAY score 0.886 >= 0.35; target +12.0% / stop -5.0% (ATR 7.56%); EV +1.28%; 4h +17.8%, 24h +19.4%, EMA6/24 up, RSI 71, sentiment +0.00 (conf 0.25, weight x0.15)"
     }
   ]
 }
