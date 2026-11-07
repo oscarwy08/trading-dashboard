@@ -866,7 +866,8 @@ AKE day
 
 MET day
   shadow  2026-11-07T13:12:44+00:00  £0.222105  [burst 24h] stop-loss -1.7% <= -1.5% (ATR-scaled)
-  cycle   no sell yet
+  cycle   2026-11-07T16:21:10+00:00  £0.228833  [burst 24h] trailing stop +1.3% (peak +2.3%, gives back 40% of the gain); P&L £+0.07
+  cycle was 11306s later, price £+0.00672794 (+3.03%)
 
 CAP day
   shadow  2026-11-07T14:07:18+00:00  £0.0803139  [burst 24h] stop-loss -2.7% <= -2.4% (ATR-scaled)
@@ -1742,22 +1743,22 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 116 pairs, avg time gap 226579s, avg price gap -0.50%, missed moves 73
+  exits: 117 pairs, avg time gap 224739s, avg price gap -0.47%, missed moves 72
   entries: 31 pairs, avg time gap 545485s, avg price gap +2.69%, missed moves 123
 ev_exit
   exits: 97 pairs, avg time gap 189530s, avg price gap -3.28%, missed moves 50
   entries: 43 pairs, avg time gap 761555s, avg price gap +9.19%, missed moves 347
 review_leftovers
-  exits: 61 pairs, avg time gap 130174s, avg price gap -1.75%, missed moves 41
+  exits: 61 pairs, avg time gap 130174s, avg price gap -1.75%, missed moves 42
   entries: 24 pairs, avg time gap 615359s, avg price gap +13.20%, missed moves 248
 all_combined
-  exits: 61 pairs, avg time gap 87958s, avg price gap -1.84%, missed moves 43
+  exits: 61 pairs, avg time gap 87958s, avg price gap -1.84%, missed moves 44
   entries: 26 pairs, avg time gap 607413s, avg price gap +11.92%, missed moves 259
 burst_runner
   exits: 97 pairs, avg time gap 220467s, avg price gap -3.45%, missed moves 56
   entries: 41 pairs, avg time gap 690973s, avg price gap +8.01%, missed moves 295
 everything
-  exits: 61 pairs, avg time gap 87974s, avg price gap -1.84%, missed moves 43
+  exits: 61 pairs, avg time gap 87974s, avg price gap -1.84%, missed moves 44
   entries: 26 pairs, avg time gap 607422s, avg price gap +11.89%, missed moves 242
 midnight_crypto
   exits: 97 pairs, avg time gap 166463s, avg price gap -1.48%, missed moves 61

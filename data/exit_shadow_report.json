@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-07T15:27:35+00:00",
+  "generated": "2026-11-07T16:36:29+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 116,
-        "avg_dt_s": 226579.31896551725,
-        "avg_price_pct": -0.5012982366756443,
-        "missed": 73
+        "pairs": 117,
+        "avg_dt_s": 224739.37606837606,
+        "avg_price_pct": -0.47112324724391635,
+        "missed": 72
       },
       "entries": {
         "pairs": 31,
@@ -39,7 +39,7 @@
         "pairs": 61,
         "avg_dt_s": 130174.14754098361,
         "avg_price_pct": -1.7504500929386628,
-        "missed": 41
+        "missed": 42
       },
       "entries": {
         "pairs": 24,
@@ -54,7 +54,7 @@
         "pairs": 61,
         "avg_dt_s": 87958.18032786885,
         "avg_price_pct": -1.844150045365901,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 26,
@@ -84,7 +84,7 @@
         "pairs": 61,
         "avg_dt_s": 87974.11475409837,
         "avg_price_pct": -1.844150045365901,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 26,
@@ -3274,13 +3274,13 @@
       "shadow_ts": "2026-11-07T13:12:44+00:00",
       "shadow_price": 0.22210479547972584,
       "trigger": "[burst 24h] stop-loss -1.7% <= -1.5% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-07T16:21:10+00:00",
+      "cycle_price": 0.228832739588328,
+      "cycle_reason": "[burst 24h] trailing stop +1.3% (peak +2.3%, gives back 40% of the gain); P&L \u00a3+0.07",
+      "dt_s": 11306.0,
+      "price_diff": 0.0067279441086021685,
+      "price_pct": 3.0291755268365237
     },
     {
       "asset": "CAP",
