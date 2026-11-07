@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T21:55:00Z",
+  "asset": "INJ",
+  "score": -0.05,
+  "confidence": 0.5,
+  "summary": "Keplr wallet paused Google/Apple logins after Web3Auth breach drained >=$6M from social-login accounts across Cosmos chains incl. Injective. Wallet-provider exploit, not an Injective protocol bug, but negative headline for the ecosystem. Price -4% 24h.",
+  "sources": [
+    "https://x.com/i/trending/2118960935272669668"
+  ],
+  "catalyst_score": -0.15,
+  "catalyst_note": "2026-11-07 Keplr/Web3Auth social-login exploit, >=$6M drained across Cosmos chains incl. Injective",
+  "volume": 7500,
+  "buzz_level": 7500,
+  "buzz_change": 0.87,
+  "price_runup_24h_pct": -4.2,
+  "carried_over": false
+}

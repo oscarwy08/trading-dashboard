@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T21:55:00Z",
+  "asset": "XRP",
+  "score": 0.0,
+  "confidence": 0.55,
+  "summary": "Slipped to ~$1.16 (-2% 24h, -3.5% intraday low). Long-time holder 'King Solomon' publicly exiting; community split. Ripple trust-bank charter for RLUSD is older news. Tone softened from mild positive to neutral; no new dated catalyst.",
+  "sources": [
+    "https://x.com/i/trending/2119120560391127313",
+    "https://x.com/i/trending/2118960938296676819"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "none new",
+  "volume": 31000,
+  "buzz_level": 31000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -2.1,
+  "carried_over": false
+}

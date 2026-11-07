@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T21:55:00Z",
+  "asset": "AKE",
+  "score": 0.0,
+  "confidence": 0.5,
+  "summary": "Up ~+33% 24h, X mentions ~6-7k/day and rising all week, still no verifiable fundamental catalyst - chatter is top-gainer/TA lists. Price-chasing not scored bullish; buzz spike on an already-run coin = caution.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "none",
+  "volume": 6500,
+  "buzz_level": 6500,
+  "buzz_change": 1.4,
+  "price_runup_24h_pct": 32.6,
+  "carried_over": false
+}

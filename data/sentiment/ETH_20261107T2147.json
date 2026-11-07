@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T21:55:00Z",
+  "asset": "ETH",
+  "score": 0.05,
+  "confidence": 0.65,
+  "summary": "ETH holding $2,200-2,250 band above 200DMA (~$2,157); spot ETH ETFs -$93M on Nov 6. Devcon 8 wrap: Vitalik prioritising quantum safety and cheaper private txs (roadmap, not dated). Unchanged mild tone.",
+  "sources": [
+    "https://x.com/i/trending/2119049525193245006",
+    "https://x.com/i/trending/2119123332071342086"
+  ],
+  "catalyst_score": 0.05,
+  "catalyst_note": "2026-11-06 spot ETH ETF outflow $93M (-); Russia retail access 2026-11-17 (+)",
+  "volume": 66000,
+  "buzz_level": 66000,
+  "buzz_change": 0.96,
+  "price_runup_24h_pct": -0.2,
+  "carried_over": false
+}

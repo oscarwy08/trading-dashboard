@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-07T21:55:00Z",
+  "asset": "BTC",
+  "score": -0.12,
+  "confidence": 0.7,
+  "summary": "Risk-off tone holds: ~$75.6k, YTD -13.8% and worst major asset of 2026 alongside gold; back-to-back red weekly closes. Offsets: Russia retail BTC/ETH/USDT access from Nov 17; DoL crypto-in-401(k) final rule at OIRA (sent Nov 5). No new ETF flow print on Saturday.",
+  "sources": [
+    "https://x.com/i/trending/2119134437699137594",
+    "https://x.com/i/trending/2119084654015971370",
+    "https://x.com/i/trending/2118717263465370099"
+  ],
+  "catalyst_score": -0.1,
+  "catalyst_note": "2026-11-05 DoL 401(k) crypto rule sent to OIRA (+); Nov MTD spot ETF outflows ~$1.3B (-); Russia retail from 2026-11-17 (+)",
+  "volume": 125000,
+  "buzz_level": 125000,
+  "buzz_change": 0.93,
+  "price_runup_24h_pct": -0.3,
+  "carried_over": false
+}

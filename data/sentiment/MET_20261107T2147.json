@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T21:55:00Z",
+  "asset": "MET",
+  "score": 0.0,
+  "confidence": 0.45,
+  "summary": "Meteora +18% 24h with no new dated catalyst found tonight; earlier notes of falling 30d volume/fees stand. Runup not counted as news; trimmed to neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "none",
+  "volume": 1100,
+  "buzz_level": 1100,
+  "buzz_change": 1.2,
+  "price_runup_24h_pct": 17.7,
+  "carried_over": false
+}

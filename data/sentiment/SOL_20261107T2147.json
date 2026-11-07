@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T21:55:00Z",
+  "asset": "SOL",
+  "score": 0.05,
+  "confidence": 0.55,
+  "summary": "ZetaChain governance passed migrating ZETA from its L1 to native Solana tokens (L1 halt ~Dec 9) - small ecosystem positive. Robinhood Chain memes competing for retail attention. Price ~$88.7, -1.4% 24h with majors.",
+  "sources": [
+    "https://x.com/i/trending/2119105536247439589"
+  ],
+  "catalyst_score": 0.05,
+  "catalyst_note": "2026-11-07 ZetaChain vote to migrate ZETA to Solana (L1 halt ~2026-12-09)",
+  "volume": 60000,
+  "buzz_level": 60000,
+  "buzz_change": 0.95,
+  "price_runup_24h_pct": -1.4,
+  "carried_over": false
+}

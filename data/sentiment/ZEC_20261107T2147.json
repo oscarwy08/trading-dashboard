@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T21:55:00Z",
+  "asset": "ZEC",
+  "score": 0.1,
+  "confidence": 0.6,
+  "summary": "Fifth rejection at ~$1,370 resistance; price eased to ~$1,240 (-7% 24h). Traders split $2,000 vs sub-$1,000; crowded-trade warnings. Relative-strength narrative intact but momentum fading.",
+  "sources": [
+    "https://x.com/i/trending/2119056137815220568"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "none new",
+  "volume": 15000,
+  "buzz_level": 15000,
+  "buzz_change": 0.98,
+  "price_runup_24h_pct": -7.4,
+  "carried_over": false
+}
