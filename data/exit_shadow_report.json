@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-07T11:56:37+00:00",
+  "generated": "2026-11-07T13:06:16+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -45,7 +45,7 @@
         "pairs": 24,
         "avg_dt_s": 615359.125,
         "avg_price_pct": 13.195254238881377,
-        "missed": 246
+        "missed": 247
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 26,
         "avg_dt_s": 607413.0769230769,
         "avg_price_pct": 11.91668928446518,
-        "missed": 257
+        "missed": 258
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 26,
         "avg_dt_s": 607421.9615384615,
         "avg_price_pct": 11.893908897688384,
-        "missed": 240
+        "missed": 241
       }
     },
     {
@@ -6038,6 +6038,13 @@
       "asset": "AKE",
       "price": 0.0044012306961421135,
       "reason": "[momentum] DAY score 0.708 >= 0.35; target +12.0% / stop -5.0% (ATR 8.71%); EV +0.76%; 4h +1.4%, 24h +19.2%, EMA6/24 up, RSI 67, no fresh sentiment"
+    },
+    {
+      "ts": "2026-11-07T12:50:49+00:00",
+      "sleeve": "day",
+      "asset": "MET",
+      "price": 0.22457678814442433,
+      "reason": "[burst 24h] 24h-high break +0.17% (high $0.2993); vol x8.0, RSI 76, BTC 1h -0.19%, 4h -0.33%; confidence 0.63 >= 0.57, EV +0.30% after costs; target +4.3% / stop -1.5% / max 6h"
     }
   ]
 }
