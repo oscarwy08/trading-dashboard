@@ -801,7 +801,8 @@ FLUID day
 
 CAP day
   shadow  2026-11-05T15:45:15+00:00  £0.0805949  [momentum] trailing stop +1.8% (peak +4.1%, gives back 40% of the gain)
-  cycle   no sell yet
+  cycle   2026-11-07T14:17:07+00:00  £0.0765608  [burst 24h] stop-loss -7.2% <= -2.4% (ATR-scaled) [gap fill]; P&L £-0.36
+  cycle was 167512s later, price £-0.00403411 (-5.01%)
 
 AKE day
   shadow  2026-11-05T17:01:52+00:00  £0.00231123  [momentum] stop-loss -7.5% <= -5.0% (ATR-scaled) [gap fill]
@@ -1741,7 +1742,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 115 pairs, avg time gap 227093s, avg price gap -0.46%, missed moves 74
+  exits: 116 pairs, avg time gap 226579s, avg price gap -0.50%, missed moves 73
   entries: 31 pairs, avg time gap 545485s, avg price gap +2.69%, missed moves 123
 ev_exit
   exits: 97 pairs, avg time gap 189530s, avg price gap -3.28%, missed moves 50

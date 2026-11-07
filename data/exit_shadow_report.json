@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-07T14:15:57+00:00",
+  "generated": "2026-11-07T15:27:35+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 115,
-        "avg_dt_s": 227092.94782608695,
-        "avg_price_pct": -0.4621320638644108,
-        "missed": 74
+        "pairs": 116,
+        "avg_dt_s": 226579.31896551725,
+        "avg_price_pct": -0.5012982366756443,
+        "missed": 73
       },
       "entries": {
         "pairs": 31,
@@ -3078,13 +3078,13 @@
       "shadow_ts": "2026-11-05T15:45:15+00:00",
       "shadow_price": 0.0805949478663042,
       "trigger": "[momentum] trailing stop +1.8% (peak +4.1%, gives back 40% of the gain)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-07T14:17:07+00:00",
+      "cycle_price": 0.07656084180958013,
+      "cycle_reason": "[burst 24h] stop-loss -7.2% <= -2.4% (ATR-scaled) [gap fill]; P&L \u00a3-0.36",
+      "dt_s": 167512.0,
+      "price_diff": -0.0040341060567240655,
+      "price_pct": -5.0054081099674965
     },
     {
       "asset": "AKE",
