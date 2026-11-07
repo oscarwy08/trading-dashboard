@@ -1,14 +1,14 @@
 {
   "status": "ok",
-  "generated": "2026-11-07T09:35:31+00:00",
+  "generated": "2026-11-07T10:47:45+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 114,
-        "avg_dt_s": 229060.83333333334,
-        "avg_price_pct": -0.330123572249612,
+        "pairs": 115,
+        "avg_dt_s": 227092.94782608695,
+        "avg_price_pct": -0.4621320638644108,
         "missed": 72
       },
       "entries": {
@@ -21,9 +21,9 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 96,
-        "avg_dt_s": 191475.45833333334,
-        "avg_price_pct": -3.151307405357437,
+        "pairs": 97,
+        "avg_dt_s": 189530.0,
+        "avg_price_pct": -3.2787279486831484,
         "missed": 50
       },
       "entries": {
@@ -36,10 +36,10 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 60,
-        "avg_dt_s": 132297.61666666667,
-        "avg_price_pct": -1.5211059260217825,
-        "missed": 42
+        "pairs": 61,
+        "avg_dt_s": 130174.14754098361,
+        "avg_price_pct": -1.7504500929386628,
+        "missed": 41
       },
       "entries": {
         "pairs": 24,
@@ -51,10 +51,10 @@
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 60,
-        "avg_dt_s": 89377.65,
-        "avg_price_pct": -1.6163675443228078,
-        "missed": 44
+        "pairs": 61,
+        "avg_dt_s": 87958.18032786885,
+        "avg_price_pct": -1.844150045365901,
+        "missed": 43
       },
       "entries": {
         "pairs": 26,
@@ -66,9 +66,9 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 96,
-        "avg_dt_s": 222734.35416666666,
-        "avg_price_pct": -3.3261227887892257,
+        "pairs": 97,
+        "avg_dt_s": 220466.8969072165,
+        "avg_price_pct": -3.4517411116671872,
         "missed": 56
       },
       "entries": {
@@ -81,10 +81,10 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 60,
-        "avg_dt_s": 89393.45,
-        "avg_price_pct": -1.6163675443228078,
-        "missed": 44
+        "pairs": 61,
+        "avg_dt_s": 87974.11475409837,
+        "avg_price_pct": -1.844150045365901,
+        "missed": 43
       },
       "entries": {
         "pairs": 26,
@@ -156,10 +156,10 @@
     {
       "name": "day_ev_blend",
       "exits": {
-        "pairs": 50,
-        "avg_dt_s": 156215.44,
-        "avg_price_pct": 1.1588813886101839,
-        "missed": 28
+        "pairs": 51,
+        "avg_dt_s": 153208.431372549,
+        "avg_price_pct": 0.8320190063246609,
+        "missed": 27
       },
       "entries": {
         "pairs": 4,
@@ -186,9 +186,9 @@
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 77,
-        "avg_dt_s": 222444.6883116883,
-        "avg_price_pct": 0.49051151558526745,
+        "pairs": 78,
+        "avg_dt_s": 219629.73076923078,
+        "avg_price_pct": 0.2853626486168476,
         "missed": 55
       },
       "entries": {
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 132,
-        "avg_dt_s": 246596.38636363635,
-        "avg_price_pct": -2.5405346604668564,
+        "pairs": 133,
+        "avg_dt_s": 244764.12781954888,
+        "avg_price_pct": -2.6628226941674864,
         "missed": 64
       },
       "entries": {
@@ -3246,6 +3246,20 @@
       "shadow_ts": "2026-11-07T09:08:57+00:00",
       "shadow_price": 0.004689874035033716,
       "trigger": "[momentum] trailing stop +5.5% (peak +9.8%, gives back 40% of the gain)",
+      "status": "matched",
+      "cycle_ts": "2026-11-07T09:54:51+00:00",
+      "cycle_price": 0.003962422978522812,
+      "cycle_reason": "[momentum] stop-loss -10.8% <= -5.0% (ATR-scaled) [gap fill]; P&L \u00a3-0.54",
+      "dt_s": 2754.0,
+      "price_diff": -0.0007274510565109032,
+      "price_pct": -15.511100107951483
+    },
+    {
+      "asset": "AKE",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-07T10:35:41+00:00",
+      "shadow_price": 0.00451111052765331,
+      "trigger": "[momentum] trailing stop +1.9% (peak +3.4%, gives back 40% of the gain)",
       "status": "no cycle sell",
       "cycle_ts": null,
       "cycle_price": null,
@@ -6017,6 +6031,13 @@
       "asset": "AKE",
       "price": 0.004417773192689433,
       "reason": "[momentum] DAY score 0.886 >= 0.35; target +12.0% / stop -5.0% (ATR 7.56%); EV +1.28%; 4h +17.8%, 24h +19.4%, EMA6/24 up, RSI 71, sentiment +0.00 (conf 0.25, weight x0.15)"
+    },
+    {
+      "ts": "2026-11-07T10:16:19+00:00",
+      "sleeve": "day",
+      "asset": "AKE",
+      "price": 0.0044012306961421135,
+      "reason": "[momentum] DAY score 0.708 >= 0.35; target +12.0% / stop -5.0% (ATR 8.71%); EV +0.76%; 4h +1.4%, 24h +19.2%, EMA6/24 up, RSI 67, no fresh sentiment"
     }
   ]
 }
