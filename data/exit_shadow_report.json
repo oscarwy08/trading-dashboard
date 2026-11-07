@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-07T08:27:00+00:00",
+  "generated": "2026-11-07T09:35:31+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 114,
         "avg_dt_s": 229060.83333333334,
         "avg_price_pct": -0.330123572249612,
-        "missed": 71
+        "missed": 72
       },
       "entries": {
         "pairs": 31,
@@ -24,7 +24,7 @@
         "pairs": 96,
         "avg_dt_s": 191475.45833333334,
         "avg_price_pct": -3.151307405357437,
-        "missed": 49
+        "missed": 50
       },
       "entries": {
         "pairs": 43,
@@ -39,7 +39,7 @@
         "pairs": 60,
         "avg_dt_s": 132297.61666666667,
         "avg_price_pct": -1.5211059260217825,
-        "missed": 41
+        "missed": 42
       },
       "entries": {
         "pairs": 24,
@@ -54,7 +54,7 @@
         "pairs": 60,
         "avg_dt_s": 89377.65,
         "avg_price_pct": -1.6163675443228078,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 26,
@@ -69,7 +69,7 @@
         "pairs": 96,
         "avg_dt_s": 222734.35416666666,
         "avg_price_pct": -3.3261227887892257,
-        "missed": 55
+        "missed": 56
       },
       "entries": {
         "pairs": 41,
@@ -84,7 +84,7 @@
         "pairs": 60,
         "avg_dt_s": 89393.45,
         "avg_price_pct": -1.6163675443228078,
-        "missed": 43
+        "missed": 44
       },
       "entries": {
         "pairs": 26,
@@ -159,7 +159,7 @@
         "pairs": 50,
         "avg_dt_s": 156215.44,
         "avg_price_pct": 1.1588813886101839,
-        "missed": 27
+        "missed": 28
       },
       "entries": {
         "pairs": 4,
@@ -189,7 +189,7 @@
         "pairs": 77,
         "avg_dt_s": 222444.6883116883,
         "avg_price_pct": 0.49051151558526745,
-        "missed": 54
+        "missed": 55
       },
       "entries": {
         "pairs": 29,
@@ -204,7 +204,7 @@
         "pairs": 132,
         "avg_dt_s": 246596.38636363635,
         "avg_price_pct": -2.5405346604668564,
-        "missed": 63
+        "missed": 64
       },
       "entries": {
         "pairs": 54,
@@ -3239,6 +3239,20 @@
       "dt_s": 12242.0,
       "price_diff": 0.12995146345411523,
       "price_pct": 5.8889928886809875
+    },
+    {
+      "asset": "AKE",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-07T09:08:57+00:00",
+      "shadow_price": 0.004689874035033716,
+      "trigger": "[momentum] trailing stop +5.5% (peak +9.8%, gives back 40% of the gain)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [

@@ -854,6 +854,10 @@ SERV day
   cycle   2026-11-06T19:31:30+00:00  £2.33664  [momentum] trailing stop +7.6% (peak +11.6%, gives back 20% of the gain) [gap fill]; P&L £+0.54
   cycle was 12242s later, price £+0.129951 (+5.89%)
 
+AKE day
+  shadow  2026-11-07T09:08:57+00:00  £0.00468987  [momentum] trailing stop +5.5% (peak +9.8%, gives back 40% of the gain)
+  cycle   no sell yet
+
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
 
@@ -1721,22 +1725,22 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 114 pairs, avg time gap 229061s, avg price gap -0.33%, missed moves 71
+  exits: 114 pairs, avg time gap 229061s, avg price gap -0.33%, missed moves 72
   entries: 31 pairs, avg time gap 545485s, avg price gap +2.69%, missed moves 123
 ev_exit
-  exits: 96 pairs, avg time gap 191475s, avg price gap -3.15%, missed moves 49
+  exits: 96 pairs, avg time gap 191475s, avg price gap -3.15%, missed moves 50
   entries: 43 pairs, avg time gap 761555s, avg price gap +9.19%, missed moves 347
 review_leftovers
-  exits: 60 pairs, avg time gap 132298s, avg price gap -1.52%, missed moves 41
+  exits: 60 pairs, avg time gap 132298s, avg price gap -1.52%, missed moves 42
   entries: 24 pairs, avg time gap 615359s, avg price gap +13.20%, missed moves 246
 all_combined
-  exits: 60 pairs, avg time gap 89378s, avg price gap -1.62%, missed moves 43
+  exits: 60 pairs, avg time gap 89378s, avg price gap -1.62%, missed moves 44
   entries: 26 pairs, avg time gap 607413s, avg price gap +11.92%, missed moves 257
 burst_runner
-  exits: 96 pairs, avg time gap 222734s, avg price gap -3.33%, missed moves 55
+  exits: 96 pairs, avg time gap 222734s, avg price gap -3.33%, missed moves 56
   entries: 41 pairs, avg time gap 690973s, avg price gap +8.01%, missed moves 295
 everything
-  exits: 60 pairs, avg time gap 89393s, avg price gap -1.62%, missed moves 43
+  exits: 60 pairs, avg time gap 89393s, avg price gap -1.62%, missed moves 44
   entries: 26 pairs, avg time gap 607422s, avg price gap +11.89%, missed moves 240
 midnight_crypto
   exits: 97 pairs, avg time gap 166463s, avg price gap -1.48%, missed moves 61
@@ -1751,16 +1755,16 @@ day_trail_arm
   exits: 54 pairs, avg time gap 147929s, avg price gap +1.74%, missed moves 36
   entries: 28 pairs, avg time gap 556683s, avg price gap +9.55%, missed moves 436
 day_ev_blend
-  exits: 50 pairs, avg time gap 156215s, avg price gap +1.16%, missed moves 27
+  exits: 50 pairs, avg time gap 156215s, avg price gap +1.16%, missed moves 28
   entries: 4 pairs, avg time gap 1405488s, avg price gap -89.68%, missed moves 27
 no_risk_clock
   exits: 82 pairs, avg time gap 187019s, avg price gap -0.18%, missed moves 53
   entries: 35 pairs, avg time gap 563314s, avg price gap +6.19%, missed moves 400
 day_capital_caution
-  exits: 77 pairs, avg time gap 222445s, avg price gap +0.49%, missed moves 54
+  exits: 77 pairs, avg time gap 222445s, avg price gap +0.49%, missed moves 55
   entries: 29 pairs, avg time gap 575701s, avg price gap +3.54%, missed moves 378
 partial_take
-  exits: 132 pairs, avg time gap 246596s, avg price gap -2.54%, missed moves 63
+  exits: 132 pairs, avg time gap 246596s, avg price gap -2.54%, missed moves 64
   entries: 54 pairs, avg time gap 548176s, avg price gap +1.41%, missed moves 179
 sent_split
   exits: 80 pairs, avg time gap 144155s, avg price gap +1.76%, missed moves 50
