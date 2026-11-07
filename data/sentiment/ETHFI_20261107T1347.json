@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "ETHFI",
+  "score": 0.05,
+  "confidence": 0.4,
+  "summary": "ether.fi still tied to mump2p validator infra story (shared with ETH); no separate ETHFI dated event today.",
+  "sources": [
+    "https://x.com/i/trending/2118596941743636755"
+  ],
+  "catalyst_score": 0.05,
+  "catalyst_note": "Indirect: mump2p adoption includes ether.fi operators",
+  "volume": 2300,
+  "buzz_level": 2300,
+  "buzz_change": 0.92,
+  "price_runup_24h_pct": 0.8,
+  "carried_over": false
+}

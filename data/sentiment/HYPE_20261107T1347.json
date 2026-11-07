@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "HYPE",
+  "score": 0.1,
+  "confidence": 0.65,
+  "summary": "Elysium L2 (HYPE as gas) still dated Nov 9; ongoing buyback/burn. Drag: Binance HYPE withdrawal overhang. Price ~$77.6, \u22120.9% 24h \u2014 catalyst partly known since morning.",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787",
+    "https://x.com/i/trending/2118917615540432995"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "Elysium mainnet 2026-11-09; ongoing HYPE buyback/burn",
+  "volume": 10500,
+  "buzz_level": 10500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -0.9,
+  "carried_over": false
+}

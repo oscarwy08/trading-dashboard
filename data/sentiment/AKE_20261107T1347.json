@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "AKE",
+  "score": 0.0,
+  "confidence": 0.55,
+  "summary": "HELD Day momentum: +23% 24h / ~+35% from entry with NO verifiable fundamental catalyst \u2014 X is almost entirely top-gainer / TA / gaming-mcap lists. Per rules, price-chasing is NOT scored bullish. Buzz up vs prior prints on an already-run coin \u2014 caution.",
+  "sources": [
+    "https://x.com/WealthBranch/status/2119054571204997523",
+    "https://x.com/TxnXray/status/2119053291476631897"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated AKE catalyst; price-expansion / gainer lists only",
+  "volume": 4200,
+  "buzz_level": 4200,
+  "buzz_change": 2.4,
+  "price_runup_24h_pct": 23.1,
+  "carried_over": false
+}

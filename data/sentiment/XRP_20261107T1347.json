@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "XRP",
+  "score": 0.05,
+  "confidence": 0.5,
+  "summary": "No new XRP listing/ruling since GateHub MiCA EURGH (Nov 6). Price \u22122% 24h. Soft carry of prior mild positive catalyst with fading buzz.",
+  "sources": [
+    "https://x.com/search?q=XRP%20OR%20Ripple"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "GateHub MiCA EURGH on XRPL (2026-11-06); no new midday catalyst",
+  "volume": 30000,
+  "buzz_level": 30000,
+  "buzz_change": 0.85,
+  "price_runup_24h_pct": -2.0,
+  "carried_over": false
+}

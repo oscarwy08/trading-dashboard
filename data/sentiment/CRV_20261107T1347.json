@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "CRV",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "On risk screen; no Curve DAO catalyst today. Neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated CRV catalyst",
+  "volume": 4000,
+  "buzz_level": 4000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 0.8,
+  "carried_over": false
+}

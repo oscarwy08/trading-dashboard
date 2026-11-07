@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "STRK",
+  "score": 0.0,
+  "confidence": 0.5,
+  "summary": "No new midday catalyst; unlock ~Nov 13\u201315 (~2.95% circ) still the dated overhang. Quantum-readiness research tone unchanged.",
+  "sources": [],
+  "catalyst_score": -0.15,
+  "catalyst_note": "STRK unlock ~2026-11-13/15 ~2.95% of circulating",
+  "volume": 3800,
+  "buzz_level": 3800,
+  "buzz_change": 0.95,
+  "price_runup_24h_pct": 1.5,
+  "carried_over": false
+}

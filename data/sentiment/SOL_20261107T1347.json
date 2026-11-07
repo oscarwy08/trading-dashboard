@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "SOL",
+  "score": 0.05,
+  "confidence": 0.55,
+  "summary": "Leap app buyback narrative still known; fresh mild negative: Pump.fun deposited ~76k SOL (~$6.85M) to Kraken after a 15-day pause (treasury pattern). Price ~$89.7, soft with majors.",
+  "sources": [
+    "https://x.com/i/trending/2118679336639164900"
+  ],
+  "catalyst_score": -0.05,
+  "catalyst_note": "Pump.fun ~76k SOL deposit to Kraken ~2026-11-06 (treasury); Leap TestFlight still dated ~Nov 6",
+  "volume": 62000,
+  "buzz_level": 62000,
+  "buzz_change": 0.93,
+  "price_runup_24h_pct": -0.6,
+  "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "ZEC",
+  "score": 0.15,
+  "confidence": 0.6,
+  "summary": "NU7 live + quantum-vs-BTC narrative still dominating X; buzz elevated vs midweek. Price eased to ~$1,269 (\u22123% 24h) after the run \u2014 relative-strength story intact but not new this morning.",
+  "sources": [
+    "https://x.com/i/trending/2118928417424839116",
+    "https://x.com/i/trending/2118259368647163959"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "NU7 activated ~2026-11-05; post-quantum roadmap early 2027",
+  "volume": 15500,
+  "buzz_level": 15500,
+  "buzz_change": 1.16,
+  "price_runup_24h_pct": -3.2,
+  "carried_over": false
+}

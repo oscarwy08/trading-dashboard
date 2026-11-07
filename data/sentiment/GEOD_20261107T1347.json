@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "GEOD",
+  "score": 0.0,
+  "confidence": 0.4,
+  "summary": "Risk-screen gainer (+12% 24h class) with no verified fundamental catalyst \u2014 treat as price expansion, not bullish news.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated GEOD catalyst; 24h expansion only",
+  "volume": 2500,
+  "buzz_level": 2500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 12.2,
+  "carried_over": false
+}

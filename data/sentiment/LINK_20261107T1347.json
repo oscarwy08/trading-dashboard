@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "LINK",
+  "score": 0.0,
+  "confidence": 0.4,
+  "summary": "No fresh Chainlink catalyst into Saturday midday; price soft with majors.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated LINK catalyst",
+  "volume": 7500,
+  "buzz_level": 7500,
+  "buzz_change": 0.94,
+  "price_runup_24h_pct": -0.5,
+  "carried_over": false
+}

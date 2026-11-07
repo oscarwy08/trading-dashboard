@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "CAP",
+  "score": 0.0,
+  "confidence": 0.4,
+  "summary": "In Day cand list with mixed EV; no dated fundamental news. \u22124% 24h. Neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated CAP catalyst",
+  "volume": 1800,
+  "buzz_level": 1800,
+  "buzz_change": 0.9,
+  "price_runup_24h_pct": -4.1,
+  "carried_over": false
+}

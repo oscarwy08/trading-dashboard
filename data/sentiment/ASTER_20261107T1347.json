@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "ASTER",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "Large-cap risk-screen name; no dated news midday. Soft 24h.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated ASTER catalyst",
+  "volume": 3000,
+  "buzz_level": 3000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -1.3,
+  "carried_over": false
+}

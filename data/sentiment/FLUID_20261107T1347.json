@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "FLUID",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "Watch window expired midday; no fresh Instadapp/Fluid catalyst. Neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated FLUID catalyst",
+  "volume": 3500,
+  "buzz_level": 3500,
+  "buzz_change": 0.7,
+  "price_runup_24h_pct": 0.0,
+  "carried_over": false
+}

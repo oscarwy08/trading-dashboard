@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "WLD",
+  "score": -0.05,
+  "confidence": 0.45,
+  "summary": "No fresh Worldcoin Orb/product/partnership catalyst into midday; price \u22122.3% 24h with soft alts. Mild negative from tape only, low confidence.",
+  "sources": [
+    "https://x.com/search?q=Worldcoin%20OR%20WLD"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated WLD catalyst this midday",
+  "volume": 6500,
+  "buzz_level": 6500,
+  "buzz_change": 0.87,
+  "price_runup_24h_pct": -2.3,
+  "carried_over": false
+}

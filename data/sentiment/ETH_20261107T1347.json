@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "ETH",
+  "score": 0.05,
+  "confidence": 0.65,
+  "summary": "Unchanged tone: Russia retail includes ETH from Nov 17; mump2p on ~8% of staked ETH (infra). Holding ~$2,240 after failed bounce toward $2,400. No new dated catalyst since morning.",
+  "sources": [
+    "https://x.com/i/trending/2119049525193245006",
+    "https://x.com/i/trending/2118596941743636755",
+    "https://x.com/i/trending/2118824975025221955"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "Russia retail ETH access from 2026-11-17; mump2p validator adoption ~8% stake",
+  "volume": 68000,
+  "buzz_level": 68000,
+  "buzz_change": 0.96,
+  "price_runup_24h_pct": 0.2,
+  "carried_over": false
+}

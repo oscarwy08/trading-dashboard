@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "INJ",
+  "score": 0.05,
+  "confidence": 0.45,
+  "summary": "Injective still on risk screen (+15% 7d class) but no new dated catalyst today; buzz cooler than yesterday's prints.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated INJ catalyst this midday",
+  "volume": 7000,
+  "buzz_level": 7000,
+  "buzz_change": 0.66,
+  "price_runup_24h_pct": -1.0,
+  "carried_over": false
+}

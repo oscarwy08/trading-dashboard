@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "MON",
+  "score": -0.25,
+  "confidence": 0.7,
+  "summary": "Same dated overhang: 2026-11-24 one-year cliff unlock ~16.6\u201317.1B MON (~145% of circulating). Price softer ~$0.0164 (\u22125% 24h). Unlock chatter still the dominant fundamental; no new positive catalyst.",
+  "sources": [
+    "https://defillama.com/unlocks/monad",
+    "https://www.coindaro.com/events/monad-unlock-november-2026/"
+  ],
+  "catalyst_score": -0.5,
+  "catalyst_note": "2026-11-24 MON cliff unlock ~16.6\u201317.1B tokens, ~145% of circulating supply",
+  "volume": 2800,
+  "buzz_level": 2800,
+  "buzz_change": 0.78,
+  "price_runup_24h_pct": -5.0,
+  "carried_over": false
+}

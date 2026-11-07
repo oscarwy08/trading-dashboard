@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "1INCH",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "Top of risk screen by score but flat 24h and no dated catalyst. Neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated 1INCH catalyst",
+  "volume": 2500,
+  "buzz_level": 2500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -0.6,
+  "carried_over": false
+}

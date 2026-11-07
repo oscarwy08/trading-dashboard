@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "RUNE",
+  "score": -0.05,
+  "confidence": 0.4,
+  "summary": "THORChain on risk/Day screens with elevated volume but soft 7d; no dated catalyst found midday. Mild caution.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated RUNE catalyst",
+  "volume": 5000,
+  "buzz_level": 5000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -1.7,
+  "carried_over": false
+}

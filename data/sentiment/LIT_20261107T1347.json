@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "LIT",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "On risk_watch; no new Lighter catalyst midday. Soft 24h.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated LIT catalyst",
+  "volume": 2200,
+  "buzz_level": 2200,
+  "buzz_change": 0.88,
+  "price_runup_24h_pct": -4.5,
+  "carried_over": false
+}

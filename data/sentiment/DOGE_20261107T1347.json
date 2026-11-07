@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "DOGE",
+  "score": 0.0,
+  "confidence": 0.4,
+  "summary": "No Dogecoin catalyst midday; flat-to-soft with majors.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated DOGE catalyst",
+  "volume": 11000,
+  "buzz_level": 11000,
+  "buzz_change": 0.92,
+  "price_runup_24h_pct": -1.0,
+  "carried_over": false
+}

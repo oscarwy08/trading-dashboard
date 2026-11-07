@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "ZRO",
+  "score": -0.1,
+  "confidence": 0.55,
+  "summary": "No fresh project news; LayerZero unlock ~Nov 19 (~5.9% circ) remains the dated overhang.",
+  "sources": [],
+  "catalyst_score": -0.3,
+  "catalyst_note": "ZRO unlock ~2026-11-19 ~5.9% of circulating",
+  "volume": 2800,
+  "buzz_level": 2800,
+  "buzz_change": 0.93,
+  "price_runup_24h_pct": -0.9,
+  "carried_over": false
+}

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "ENA",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "No Ethena catalyst found; soft 24h. Neutral.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated ENA catalyst",
+  "volume": 3500,
+  "buzz_level": 3500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -2.3,
+  "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "MET",
+  "score": 0.05,
+  "confidence": 0.5,
+  "summary": "HELD Day burst: Meteora still a top Solana DEX; traders float Breakpoint + DLMM Pro expectations, but 30d volume/fees reported down sharply. Price already +7.5% 24h / ~+33% from entry \u2014 do not treat runup as news. Mild product-tone only.",
+  "sources": [
+    "https://x.com/Leoaraiz_BTW/status/2119064595247902854",
+    "https://x.com/Mahirazmol1/status/2119029599351034317"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated MET listing/unlock today; forward-looking Breakpoint/DLMM chatter only",
+  "volume": 900,
+  "buzz_level": 900,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 7.5,
+  "carried_over": false
+}

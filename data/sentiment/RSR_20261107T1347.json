@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "RSR",
+  "score": 0.0,
+  "confidence": 0.35,
+  "summary": "Day 4h-break candidate; no fundamental news. Neutral/low confidence.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No dated RSR catalyst",
+  "volume": 1500,
+  "buzz_level": 1500,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -1.4,
+  "carried_over": false
+}

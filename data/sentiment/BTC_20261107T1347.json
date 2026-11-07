@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "BTC",
+  "score": -0.12,
+  "confidence": 0.75,
+  "summary": "Still risk-off: Nov MTD spot BTC ETF outflows ~$1.28\u20131.3B (Fri \u2212$411.9M, IBIT \u2212$403M). Fear ~25. Offsets: dormant whale withdrew ~3,009 BTC (~$228M) from Binance; Russia retail BTC/ETH/USDT from Nov 17. Price ~$75.8k, flat on day.",
+  "sources": [
+    "https://x.com/i/trending/2119063068034433025",
+    "https://x.com/i/trending/2118633353234559368",
+    "https://www.investing.com/news/cryptocurrency-news/bitcoin-rebounds-to-76000-but-13-billion-etf-exodus-tests-recovery-5009767"
+  ],
+  "catalyst_score": -0.2,
+  "catalyst_note": "2026-11-06 IBIT-led spot BTC ETF outflow $411.9M; Nov MTD ~$1.28\u20131.3B; Russia retail access starts 2026-11-17",
+  "volume": 128000,
+  "buzz_level": 128000,
+  "buzz_change": 0.91,
+  "price_runup_24h_pct": -0.1,
+  "carried_over": false
+}

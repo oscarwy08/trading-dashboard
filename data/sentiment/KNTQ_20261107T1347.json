@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "KNTQ",
+  "score": 0.1,
+  "confidence": 0.65,
+  "summary": "Elysium (Kinetiq) mainnet Nov 9 with 50% sequencer revenue to KNTQ buyback/burn still the dated positive; unlock ~Nov 27 (~4% circ) remains the offset. Already ran hard earlier; +5.8% 24h.",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787"
+  ],
+  "catalyst_score": 0.2,
+  "catalyst_note": "Elysium mainnet 2026-11-09 (+); KNTQ unlock ~2026-11-27 ~4% circ (\u2212)",
+  "volume": 7500,
+  "buzz_level": 7500,
+  "buzz_change": 1.15,
+  "price_runup_24h_pct": 5.8,
+  "carried_over": false
+}

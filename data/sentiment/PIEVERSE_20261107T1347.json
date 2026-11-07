@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-07T13:55:00Z",
+  "asset": "PIEVERSE",
+  "score": -0.05,
+  "confidence": 0.4,
+  "summary": "Still no verified catalyst for the week-long run; X remains trader/OI chatter. Unverified unlock claim ~Nov 14 not treated as confirmed. \u22124% 24h cooling.",
+  "sources": [],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No verified dated catalyst; unverified unlock claim ~2026-11-14 ignored",
+  "volume": 2200,
+  "buzz_level": 2200,
+  "buzz_change": 1.1,
+  "price_runup_24h_pct": -4.3,
+  "carried_over": false
+}
