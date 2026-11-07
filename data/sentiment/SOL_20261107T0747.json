@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "SOL",
+  "score": 0.1,
+  "confidence": 0.5,
+  "summary": "Solana Labs' Leap trading app (TestFlight, fees to fund SOL buybacks) remains the main fresh positive; price flat ~$90 with the market.",
+  "sources": [
+    "https://x.com/i/trending/2118544554773377430"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "Leap app launch (TestFlight) ~2026-11-06",
+  "volume": 65000,
+  "buzz_level": 65000,
+  "buzz_change": 0.9,
+  "price_runup_24h_pct": 0.5,
+  "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "ETH",
+  "score": 0.05,
+  "confidence": 0.6,
+  "summary": "Neutral-slight positive: included in Russia's retail approval (from Nov 17); Optimum mump2p now on ~8% of staked ETH (infra, not price-moving). Price flat ~$2,240.",
+  "sources": [
+    "https://x.com/i/trending/2118824975025221955",
+    "https://x.com/i/trending/2118596941743636755"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "Russia retail access to ETH from 2026-11-17; mump2p validator adoption (~8% of stake)",
+  "volume": 70000,
+  "buzz_level": 70000,
+  "buzz_change": 0.97,
+  "price_runup_24h_pct": 0.5,
+  "carried_over": false
+}

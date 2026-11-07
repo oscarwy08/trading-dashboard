@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "QNT",
+  "score": 0.05,
+  "confidence": 0.4,
+  "summary": "Up ~7% on the day; X has hype posts about Quant CEO 'confirming' bank adoption but no dated announcement found. Some DCA mentions near $180. Mild positive tone, no catalyst.",
+  "sources": [
+    "https://x.com/CryptoXAiMan/status/2118872546758025464"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "",
+  "volume": 3000,
+  "buzz_level": 3000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 7.2,
+  "carried_over": false
+}

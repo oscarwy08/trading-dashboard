@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "STRK",
+  "score": 0.0,
+  "confidence": 0.5,
+  "summary": "Quantum-readiness news flow (cheaper Falcon-512 verification, L1 research) is positive tone but not price-moving; offset by scheduled unlock ~Nov 13-15 (~2.95% of circulating).",
+  "sources": [
+    "https://x.com/i/trending/2118764669997367368",
+    "https://cryptolunar.com/token-unlocks/"
+  ],
+  "catalyst_score": -0.15,
+  "catalyst_note": "STRK unlock ~2026-11-13/15 ~2.95% of circulating",
+  "volume": 4000,
+  "buzz_level": 4000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 4.6,
+  "carried_over": false
+}

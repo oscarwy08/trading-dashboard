@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "MON",
+  "score": -0.25,
+  "confidence": 0.7,
+  "summary": "Newly logged dated negative: one-year cliff unlock on 2026-11-24 releases ~16.6-17.1B MON to team, investors and treasury, ~145% of circulating supply (DefiLlama; team ~10.7B is the Foundation's own figure). X chatter is unlock-pressure focused; price flat ~$0.0169.",
+  "sources": [
+    "https://defillama.com/unlocks/monad",
+    "https://www.coindaro.com/events/monad-unlock-november-2026/",
+    "https://monad.xyz/blog/mon-tokenomics-overview"
+  ],
+  "catalyst_score": -0.5,
+  "catalyst_note": "2026-11-24 MON cliff unlock ~16.6-17.1B tokens, ~145% of circulating supply",
+  "volume": 3000,
+  "buzz_level": 3000,
+  "buzz_change": 0.79,
+  "price_runup_24h_pct": 0.2,
+  "carried_over": false
+}

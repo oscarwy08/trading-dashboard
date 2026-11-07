@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "ZEC",
+  "score": 0.2,
+  "confidence": 0.6,
+  "summary": "Keeps relative-strength narrative: NU7 live (25s blocks, fee burn), quantum-risk framing vs BTC, trading ~$1,350. Buzz up again; note it has already outperformed.",
+  "sources": [
+    "https://x.com/i/trending/2118928417424839116",
+    "https://x.com/i/trending/2118259368647163959"
+  ],
+  "catalyst_score": 0.1,
+  "catalyst_note": "NU7 upgrade activated ~2026-11-05 (already known)",
+  "volume": 16000,
+  "buzz_level": 16000,
+  "buzz_change": 1.34,
+  "price_runup_24h_pct": 4.0,
+  "carried_over": false
+}

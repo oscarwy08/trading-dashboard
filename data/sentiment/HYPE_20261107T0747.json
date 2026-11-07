@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "HYPE",
+  "score": 0.1,
+  "confidence": 0.6,
+  "summary": "Elysium L2 mainnet still dated Nov 9 (HYPE as gas); ~21k HYPE bought back and burned in 24h. Drag: ~$200M HYPE still stuck behind Binance withdrawal delays after its hack. Price ~$79.",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787",
+    "https://x.com/i/trending/2118917615540432995",
+    "https://x.com/i/trending/2118349218666398042"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "Elysium mainnet 2026-11-09; daily buyback/burn",
+  "volume": 11000,
+  "buzz_level": 11000,
+  "buzz_change": 1.1,
+  "price_runup_24h_pct": 2.3,
+  "carried_over": false
+}

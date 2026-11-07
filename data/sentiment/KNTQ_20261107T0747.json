@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "KNTQ",
+  "score": 0.1,
+  "confidence": 0.5,
+  "summary": "Elysium (built by Kinetiq) mainnet Nov 9 with 50% of sequencer revenue to KNTQ buyback/burn. Already +14% in 24h, so partly priced; separate KNTQ unlock ~Nov 27 (~4% of circulating per DefiLlama).",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787",
+    "https://cryptolunar.com/token-unlocks/"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "Elysium mainnet 2026-11-09 (positive); KNTQ unlock ~2026-11-27 ~4% circ (negative)",
+  "volume": 7000,
+  "buzz_level": 7000,
+  "buzz_change": 1.17,
+  "price_runup_24h_pct": 14.3,
+  "carried_over": false
+}

@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "PIEVERSE",
+  "score": -0.05,
+  "confidence": 0.4,
+  "summary": "Up ~40% in a week with no identifiable news; X buzz is trader calls, open-interest and 'why is it exploding' posts, i.e. price-chasing. One researcher claims team/investor tokens unlock around Nov 14 (not verified). Treat as momentum-only with late-crowd risk.",
+  "sources": [
+    "https://x.com/NoorScreens/status/2118968206467682507",
+    "https://x.com/OfficialZero_X/status/2118968531844808993"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "No verified dated catalyst; unverified claim of team/investor unlock ~2026-11-14",
+  "volume": 2500,
+  "buzz_level": 2500,
+  "buzz_change": 1.5,
+  "price_runup_24h_pct": 8.4,
+  "carried_over": false
+}

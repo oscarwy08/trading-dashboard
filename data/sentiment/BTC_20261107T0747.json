@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "BTC",
+  "score": -0.1,
+  "confidence": 0.7,
+  "summary": "Still cautious: US spot BTC ETFs logged ~$1.28B net weekly outflow to Nov 6 (largest since June, IBIT -$403M on Friday). Price steadied ~$75.9k overnight; fear index ~28. Small offset: Russia's central bank approved retail BTC/ETH/USDT trading from Nov 17 (capped ~$3.7k/yr).",
+  "sources": [
+    "https://x.com/i/trending/2118962543402131782",
+    "https://x.com/i/trending/2118824975025221955",
+    "https://x.com/i/trending/2118719828877877698"
+  ],
+  "catalyst_score": -0.15,
+  "catalyst_note": "2026-11-06 weekly spot BTC ETF net outflow ~$1.28B; Russia retail crypto access approved, starts 2026-11-17",
+  "volume": 135000,
+  "buzz_level": 135000,
+  "buzz_change": 0.96,
+  "price_runup_24h_pct": 0.4,
+  "carried_over": false
+}

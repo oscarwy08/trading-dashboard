@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-07T07:58:00Z",
+  "asset": "ZRO",
+  "score": -0.1,
+  "confidence": 0.5,
+  "summary": "No fresh project news; LayerZero unlock ~Nov 19 (~5.9% of circulating, core contributors and partners) is a meaningful dated overhang.",
+  "sources": [
+    "https://cryptolunar.com/token-unlocks/"
+  ],
+  "catalyst_score": -0.3,
+  "catalyst_note": "ZRO unlock ~2026-11-19 ~5.9% of circulating",
+  "volume": 3000,
+  "buzz_level": 3000,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": 2.1,
+  "carried_over": false
+}
