@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "ZEC",
+  "score": 0.0,
+  "confidence": 0.58,
+  "summary": "Privacy-narrative bid keeps fading: ~$1,262 (-4.1% 24h) after five failures near $1,370. New flow prints: Grayscale Zcash ETF (ZCSH) ~-$11M on Nov 5 (partially offset by +$1.8M on Nov 6); weekly ZEC products ~-$13M; ~$4.1M longs liquidated. Among the weakest large caps this morning. Relative-strength story intact versus 2025 lows, but ETF tailwind has flipped and crowded-trade warnings stand.",
+  "sources": [
+    "https://x.com/i/trending/2119056137815220568",
+    "https://cryptoticker.io/en/zcash-gives-back-nu7-gains-liquidations-etf-outflow/"
+  ],
+  "catalyst_score": -0.1,
+  "catalyst_note": "2026-11-05 Grayscale ZCSH ~-$11M (-); week to 2026-11-06 ZEC ETF products ~-$13M (-)",
+  "volume": 14000,
+  "buzz_level": 14000,
+  "buzz_change": 0.9,
+  "price_runup_24h_pct": -4.09,
+  "carried_over": false
+}

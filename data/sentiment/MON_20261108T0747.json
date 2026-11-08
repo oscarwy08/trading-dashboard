@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "MON",
+  "score": -0.22,
+  "confidence": 0.68,
+  "summary": "Focus coin ~$0.0165 (-2.2% 24h). Dominant dated overhang unchanged: 2026-11-24 one-year cliff unlock, with trackers still disagreeing on size (~6.7B\u201316.6B MON / ~56\u2013145% of float). Thin new positive this morning: NullMask announced privacy-layer support for Monad \u2014 a small integration, not enough to offset the unlock. No official supply clarification from the Foundation.",
+  "sources": [
+    "https://defillama.com/unlocks/monad",
+    "https://www.ainvest.com/news/monad-trending-reason-agree-2611/",
+    "https://cryptopanic.com/news/33669002/Monad-just-got-its-own-privacy-layer-Privacy-protocol-NullMaskio-has-extended-support-to-the-high-performance-Monad-blockchain-The-expansion-means-that-users-on-MON-can-leverage-the-blockchains-capabilities-while-maintaining-full-privacy-and-confidentialit"
+  ],
+  "catalyst_score": -0.45,
+  "catalyst_note": "2026-11-24 Monad cliff unlock, size still disputed ~6.7\u201316.6B MON (-); 2026-11-08 NullMask privacy-layer support announced (+, thin)",
+  "volume": 2500,
+  "buzz_level": 2500,
+  "buzz_change": 0.78,
+  "price_runup_24h_pct": -2.19,
+  "carried_over": false
+}

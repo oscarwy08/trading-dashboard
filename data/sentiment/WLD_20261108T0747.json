@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "WLD",
+  "score": -0.1,
+  "confidence": 0.5,
+  "summary": "HELD Core. ~$0.331 (-3.1% 24h). No new Orb/product listing overnight. Dated supply pressure: daily unlocks (~$34M/month class) plus reports of ~56M WLD (~$26M) moved to exchanges over ~10 days through Nov 6. Korean trading interest remains relatively strong \u2014 demand offset, not a catalyst. Score softened on the verified supply headlines.",
+  "sources": [
+    "https://coinmarketcap.com/cmc-ai/worldcoin-org/latest-updates/"
+  ],
+  "catalyst_score": -0.15,
+  "catalyst_note": "Ongoing daily WLD unlocks (-); ~56.15M WLD (~$25.9M) exchanged-bound transfers reported through 2026-11-06 (-)",
+  "volume": 6000,
+  "buzz_level": 6000,
+  "buzz_change": 0.86,
+  "price_runup_24h_pct": -3.13,
+  "carried_over": false
+}

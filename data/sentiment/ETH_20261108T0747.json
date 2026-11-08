@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "ETH",
+  "score": 0.0,
+  "confidence": 0.62,
+  "summary": "ETH ~$2,232 (-0.5% 24h) still above the ~$2,157 200DMA. New caution: Glamsterdam gas-reprice EIPs drew auditor warnings and a Hoodi testnet delay; community is also debating issuance cuts. A wallet linked to the April Drift exploit opened a large BTC-long/ETH-short on Hyperliquid. Weekly spot ETH ETF outflows ~$365M (sixth week). Older mild positives stand: Russia retail access from Nov 17; Devcon 8 wrap (quantum safety / cheaper private txs) is roadmap, not dated.",
+  "sources": [
+    "https://x.com/i/trending/2119076419527696559",
+    "https://x.com/i/trending/2119278608284041701",
+    "https://x.com/i/trending/2119233483469971794"
+  ],
+  "catalyst_score": -0.05,
+  "catalyst_note": "Week to 2026-11-06 spot ETH ETF ~-$365M (-); Glamsterdam/Hoodi testnet delay on contract-risk warnings (-); Russia retail 2026-11-17 (+)",
+  "volume": 52000,
+  "buzz_level": 52000,
+  "buzz_change": 0.76,
+  "price_runup_24h_pct": -0.48,
+  "carried_over": false
+}

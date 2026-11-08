@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "BTC",
+  "score": -0.15,
+  "confidence": 0.72,
+  "summary": "Still risk-off around $75.8k (24h ~-0.2%). Weekly US spot BTC ETF outflows ~$1.28B through Nov 6 flipped 2026 YTD flows negative; BTC remains among the weakest major assets this year. New overnight drag: Sen. Warren is in line to chair Senate Banking after the midterms and warned crypto could destabilize the economy. Offsets unchanged: Russia retail BTC/ETH/USDT access from Nov 17; DoL crypto-in-401(k) final rule at OIRA (sent Nov 5). Strategy/MSTR sits near its ~$75.5k BTC cost basis with an MSCI index decision due Nov 11 \u2014 treasury headline, not a BTC protocol catalyst.",
+  "sources": [
+    "https://x.com/i/trending/2119321096100950058",
+    "https://x.com/i/trending/2119231180956426534",
+    "https://x.com/i/trending/2119063068034433025"
+  ],
+  "catalyst_score": -0.12,
+  "catalyst_note": "Week to 2026-11-06 US spot BTC ETF ~-$1.28B (-); post-midterm Warren likely Senate Banking chair (-); Russia retail from 2026-11-17 (+); 2026-11-05 DoL 401(k) crypto rule at OIRA (+)",
+  "volume": 100000,
+  "buzz_level": 100000,
+  "buzz_change": 0.77,
+  "price_runup_24h_pct": -0.19,
+  "carried_over": false
+}

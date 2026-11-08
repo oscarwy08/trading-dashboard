@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "HYPE",
+  "score": 0.08,
+  "confidence": 0.62,
+  "summary": "Elysium L2 mainnet still dated tomorrow (2026-11-09); HYPE is the gas token, with KNTQ buyback/burn from sequencer/fee share. New drag: Hyperliquid-related ETFs saw ~$15.6M net outflows in the week to Nov 6 (fifth week). Price ~$77.2 (-2.3% 24h). A Drift-linked wallet using Hyperliquid for a BTC/ETH pair trade is usage color, not a protocol catalyst. Net slightly softer than yesterday\u2019s +0.10.",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787",
+    "https://www.kucoin.com/news/insight/BTC/6af014cdabae5e0007c56aee"
+  ],
+  "catalyst_score": 0.18,
+  "catalyst_note": "2026-11-09 Elysium mainnet, HYPE as gas (+); week to 2026-11-06 Hyperliquid ETFs ~-$15.6M (-)",
+  "volume": 11000,
+  "buzz_level": 11000,
+  "buzz_change": 0.99,
+  "price_runup_24h_pct": -2.33,
+  "carried_over": false
+}

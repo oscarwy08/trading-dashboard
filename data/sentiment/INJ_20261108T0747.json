@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "INJ",
+  "score": 0.0,
+  "confidence": 0.55,
+  "summary": "Two dated items now balanced. Negative: Keplr/Web3Auth social-login breach still updating this morning (~$6M, ~44k Cosmos wallets plus ~7.6k Injective addresses); not an Injective protocol bug, but an ecosystem headline. Positive that last night\u2019s file missed: Canary Staked INJ ETF (INJC) began Nasdaq trading on Nov 5 (modest day-one volume, ~$15M AUM) with a Nasdaq bell on Nov 6. Price ~$8.10 (-2.2% 24h). Net moved from slight negative to neutral.",
+  "sources": [
+    "https://x.com/i/trending/2118960935272669668",
+    "https://x.com/i/trending/2118764668210573770"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "2026-11-07 Keplr/Web3Auth social-login exploit, Injective wallets among those hit (-); 2026-11-05 Canary Staked INJ ETF INJC listed on Nasdaq (+)",
+  "volume": 8000,
+  "buzz_level": 8000,
+  "buzz_change": 1.07,
+  "price_runup_24h_pct": -2.21,
+  "carried_over": false
+}

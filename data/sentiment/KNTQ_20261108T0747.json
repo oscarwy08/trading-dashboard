@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "KNTQ",
+  "score": 0.12,
+  "confidence": 0.62,
+  "summary": "Top Day momentum name (+4.7% 24h) into a real dated event: Elysium (Kinetiq) mainnet tomorrow, with ~50% sequencer revenue framed as KNTQ buyback/burn. Offset unchanged: unlock ~Nov 27 (~4% circ). Buzz is up into the launch, but this is not an empty top-gainer chase \u2014 the Nov 9 date is verifiable. Still, the coin has already run into the event, so treat the extra +5% as partly priced.",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "2026-11-09 Elysium mainnet / KNTQ fee-share buyback-burn (+); ~2026-11-27 KNTQ unlock ~4% circ (-)",
+  "volume": 8000,
+  "buzz_level": 8000,
+  "buzz_change": 1.17,
+  "price_runup_24h_pct": 4.74,
+  "carried_over": false
+}

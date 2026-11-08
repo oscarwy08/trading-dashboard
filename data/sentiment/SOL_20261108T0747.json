@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-08T08:00:00Z",
+  "asset": "SOL",
+  "score": 0.0,
+  "confidence": 0.55,
+  "summary": "SOL ~$89.0 (-1.2% 24h). Last night\u2019s ZetaChain vote to migrate ZETA onto Solana (L1 halt ~Dec 9) still stands as a small ecosystem positive. New offset: US spot Solana ETFs ~-$25\u201326M in the week to Nov 6. OTC Labs\u2019 Anti-Vamp ticker-protection update is a niche memecoin-pad item, not a Solana-protocol catalyst. Net trimmed from +0.05 to neutral.",
+  "sources": [
+    "https://x.com/i/trending/2119105536247439589",
+    "https://coinspress.com/crypto-etfs-lose-1-7b-as-bitcoin-ethereum-outflows-deepen/"
+  ],
+  "catalyst_score": 0.0,
+  "catalyst_note": "2026-11-07 ZetaChain vote to migrate ZETA to Solana, L1 halt ~2026-12-09 (+); week to 2026-11-06 SOL spot ETFs ~-$25\u201326M (-)",
+  "volume": 55000,
+  "buzz_level": 55000,
+  "buzz_change": 0.88,
+  "price_runup_24h_pct": -1.24,
+  "carried_over": false
+}
