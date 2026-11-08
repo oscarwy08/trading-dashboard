@@ -1795,7 +1795,7 @@ day_capital_caution
   exits: 80 pairs, avg time gap 214452s, avg price gap +0.16%, missed moves 54
   entries: 29 pairs, avg time gap 575701s, avg price gap +3.54%, missed moves 378
 partial_take
-  exits: 136 pairs, avg time gap 239557s, avg price gap -2.68%, missed moves 63
+  exits: 136 pairs, avg time gap 239557s, avg price gap -2.68%, missed moves 64
   entries: 54 pairs, avg time gap 548176s, avg price gap +1.41%, missed moves 179
 sent_split
   exits: 80 pairs, avg time gap 144155s, avg price gap +1.76%, missed moves 50
