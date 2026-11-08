@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-08T14:00:00Z",
+  "asset": "ZEC",
+  "score": 0.0,
+  "confidence": 0.55,
+  "summary": "Price bounced to ~$1,286 (24h +0.7%) after this morning's slide; do not read the bounce as news. New flow color: the Drift-linked exploit wallet that opened a BTC-long/ETH-short also bought ~2,959 ZEC (sold ~1,670 ETH) \u2014 on-chain color, not a protocol catalyst. Dated drag unchanged: Grayscale ZCSH ~-$11M on Nov 5 and weekly ZEC products ~-$13M to Nov 6. Relative-strength vs 2025 lows is intact, but the ETF tailwind remains flipped.",
+  "sources": [
+    "https://x.com/i/trending/2119278608284041701",
+    "https://cryptoticker.io/en/zcash-gives-back-nu7-gains-liquidations-etf-outflow/"
+  ],
+  "catalyst_score": -0.1,
+  "catalyst_note": "2026-11-05 Grayscale ZCSH ~-$11M (-); week to 2026-11-06 ZEC ETF products ~-$13M (-); exploit-wallet ZEC purchase is flow color, not a dated protocol catalyst (0)",
+  "volume": 11600,
+  "buzz_level": 11600,
+  "buzz_change": 0.78,
+  "price_runup_24h_pct": 0.65,
+  "carried_over": false
+}

@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-08T14:00:00Z",
+  "asset": "KNTQ",
+  "score": 0.1,
+  "confidence": 0.62,
+  "summary": "Elysium (Kinetiq) mainnet still dated tomorrow (2026-11-09), with ~50% sequencer revenue framed as KNTQ buyback/burn; more day-one venues (Markets.xyz, Bitget wallet support) are repeating the same launch, not a second catalyst. Price ~$0.500 (24h +5.7%), extended from this morning's +4.7% \u2014 the extra push looks partly priced into the Nov 9 event, so this is not an empty top-gainer chase but the run-up should be treated as already in the price. Offset unchanged: unlock ~Nov 27 (~4% circ).",
+  "sources": [
+    "https://x.com/i/trending/2118787809968627787",
+    "https://kinetiq.xyz/blog/elysium-mainnet-launch",
+    "https://www.pickaxe.io/resources/news/pudgy-penguins-retail-surge-kinetiq-elysium-launch-buzz-crypto-nov-8"
+  ],
+  "catalyst_score": 0.25,
+  "catalyst_note": "2026-11-09 Elysium mainnet / KNTQ fee-share buyback-burn (+); ~2026-11-27 KNTQ unlock ~4% circ (-)",
+  "volume": 7800,
+  "buzz_level": 7800,
+  "buzz_change": 1.04,
+  "price_runup_24h_pct": 5.72,
+  "carried_over": false
+}

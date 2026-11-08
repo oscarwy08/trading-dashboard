@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-11-08T14:00:00Z",
+  "asset": "APT",
+  "score": 0.1,
+  "confidence": 0.55,
+  "summary": "New dated item: Binance restored APT withdrawals on 2026-11-08 alongside HYPE, continuing phased recovery after the Oct 29 breach (INJ/NEAR/LTC from the same Nov 6 target list were not confirmed restored today). No Aptos protocol listing, upgrade or unlock found midday. Price ~$0.597 (24h -1.0%). The restore is an exchange-access positive, not an Aptos-chain catalyst.",
+  "sources": [
+    "https://crypto.news/binance-restores-hype-apt-withdrawals-after-hack/",
+    "https://x.com/i/trending/2119359785409872092"
+  ],
+  "catalyst_score": 0.15,
+  "catalyst_note": "2026-11-08 Binance restored APT withdrawals after the Oct 29 hack (+)",
+  "volume": 7300,
+  "buzz_level": 7300,
+  "buzz_change": 1.0,
+  "price_runup_24h_pct": -0.96,
+  "carried_over": false
+}

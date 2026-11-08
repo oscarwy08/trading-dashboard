@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-08T14:00:00Z",
+  "asset": "HYPE",
+  "score": 0.12,
+  "confidence": 0.64,
+  "summary": "New dated positive today: Binance restored HYPE withdrawals on 2026-11-08 (9:32 UTC notice) as part of post-Oct 29 hack recovery, alongside APT. Elysium L2 mainnet is still tomorrow (2026-11-09), with HYPE as the gas token and KNTQ buyback/burn from sequencer/fee share. Offset unchanged: Hyperliquid-related ETFs ~-$15.6M in the week to Nov 6 (fifth week). Price ~$78.0 (24h +0.3%). Hyperliquid whale BTC shorts and the Drift-linked wallet using the venue are usage color, not protocol catalysts.",
+  "sources": [
+    "https://crypto.news/binance-restores-hype-apt-withdrawals-after-hack/",
+    "https://x.com/i/trending/2119359785409872092",
+    "https://x.com/i/trending/2118787809968627787"
+  ],
+  "catalyst_score": 0.22,
+  "catalyst_note": "2026-11-08 Binance restored HYPE withdrawals after the Oct 29 hack (+); 2026-11-09 Elysium mainnet, HYPE as gas (+); week to 2026-11-06 Hyperliquid ETFs ~-$15.6M (-)",
+  "volume": 8500,
+  "buzz_level": 8500,
+  "buzz_change": 0.78,
+  "price_runup_24h_pct": 0.26,
+  "carried_over": false
+}

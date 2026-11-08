@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-11-08T14:00:00Z",
+  "asset": "BTC",
+  "score": -0.12,
+  "confidence": 0.7,
+  "summary": "HELD Core. Hovering ~$76.1k (24h +0.3%). Dated drag unchanged: US spot BTC ETF outflows still the story (The Block ~$1.28B in the week to Nov 6, flipping 2026 YTD negative; some Nov 8 recaps cite ~$1.47B weekly / ~$1.92B over six days). Sen. Warren still in line to chair Senate Banking. New today: Glassnode shows Hyperliquid whales flipped net-short for the first time in seven months, with shorts at extremes some traders read as a squeeze setup \u2014 positioning, not a protocol catalyst. Michael Saylor posted his usual Sunday Strategy chart (849,327 BTC, ~$75.5k cost); a possible next buy is speculation until an SEC filing. Do not treat the small bounce as bullish news.",
+  "sources": [
+    "https://x.com/i/trending/2119321096100950058",
+    "https://x.com/i/trending/2119399090727633013",
+    "https://x.com/i/trending/2119424389859201534",
+    "https://www.theblock.co/news/markets/2026-11-07-bitcoin-etfs-flip-negative-for-2026-after-1-28-billion-outflow-week-worst-since-june-435984"
+  ],
+  "catalyst_score": -0.1,
+  "catalyst_note": "Week to 2026-11-06 US spot BTC ETF outflows ~-$1.28B, YTD now negative (-); post-midterm Warren likely Senate Banking chair (-); Russia retail 2026-11-17 and DoL 401(k) rule at OIRA still pending (+); Saylor/Strategy Sunday chart is treasury color, not a BTC catalyst (0)",
+  "volume": 86000,
+  "buzz_level": 86000,
+  "buzz_change": 0.73,
+  "price_runup_24h_pct": 0.26,
+  "carried_over": false
+}

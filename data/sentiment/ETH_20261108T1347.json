@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-08T14:00:00Z",
+  "asset": "ETH",
+  "score": 0.0,
+  "confidence": 0.6,
+  "summary": "HELD Core. ~$2,242 (24h -0.1%). New midday color: Vitalik argued ETH is stronger as a store of value than as a fee-burn token \u2014 founder commentary, not a dated listing/upgrade/unlock. Unchanged dated items: spot ETH ETF outflows ~$365\u2013391M in the week to Nov 6 (sixth negative week); Glamsterdam gas-reprice EIPs still carrying auditor warnings and a Hoodi testnet delay; Russia retail access from Nov 17. The Drift-linked wallet's BTC-long/ETH-short on Hyperliquid remains usage color.",
+  "sources": [
+    "https://x.com/i/trending/2119403589760364617",
+    "https://x.com/i/trending/2119278608284041701",
+    "https://econotimes.com/Bitcoin-BTC-Ether-ETH-ETFs-Post-1-86-Billion-in-Weekly-Outflows-1773207"
+  ],
+  "catalyst_score": -0.05,
+  "catalyst_note": "Week to 2026-11-06 spot ETH ETF outflows ~-$365M to -$391M (-); Glamsterdam/Hoodi testnet delay on contract-risk warnings (-); Russia retail 2026-11-17 (+); Vitalik SoV-vs-burn thread is commentary, not a dated catalyst (0)",
+  "volume": 43000,
+  "buzz_level": 43000,
+  "buzz_change": 0.69,
+  "price_runup_24h_pct": -0.13,
+  "carried_over": false
+}
