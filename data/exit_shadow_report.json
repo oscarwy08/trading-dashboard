@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-08T15:08:08+00:00",
+  "generated": "2026-11-08T16:22:13+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -12,10 +12,10 @@
         "missed": 71
       },
       "entries": {
-        "pairs": 31,
-        "avg_dt_s": 545485.1935483871,
-        "avg_price_pct": 2.6910662231583267,
-        "missed": 123
+        "pairs": 32,
+        "avg_dt_s": 541938.65625,
+        "avg_price_pct": 3.611494348321575,
+        "missed": 122
       }
     },
     {
@@ -45,7 +45,7 @@
         "pairs": 24,
         "avg_dt_s": 615359.125,
         "avg_price_pct": 13.195254238881377,
-        "missed": 248
+        "missed": 249
       }
     },
     {
@@ -60,7 +60,7 @@
         "pairs": 26,
         "avg_dt_s": 607413.0769230769,
         "avg_price_pct": 11.91668928446518,
-        "missed": 259
+        "missed": 260
       }
     },
     {
@@ -90,7 +90,7 @@
         "pairs": 26,
         "avg_dt_s": 607421.9615384615,
         "avg_price_pct": 11.893908897688384,
-        "missed": 242
+        "missed": 243
       }
     },
     {
@@ -5084,13 +5084,13 @@
       "shadow_ts": "2026-11-03T15:45:47+00:00",
       "shadow_price": 0.8558966037735849,
       "trigger": "[momentum] price holds \u00a30.855897; score 0.367 >= 0.35",
-      "status": "cycle missed",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-08T15:45:43+00:00",
+      "cycle_price": 1.1310225662132671,
+      "cycle_reason": "[burst 24h] 24h-high break +0.23% (high $1.5051); vol x10.3, RSI 73, BTC 1h +0.11%, 4h +0.15%; confidence 0.65 >= 0.56, EV +0.31% after costs; target +4.0% / stop -1.5% / max 6h",
+      "dt_s": 431996.0,
+      "price_diff": 0.27512596243968224,
+      "price_pct": 32.14476622838228
     },
     {
       "asset": "PYTH",
