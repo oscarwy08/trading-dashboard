@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-08T09:08:24+00:00",
+  "generated": "2026-11-08T10:21:25+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -21,10 +21,10 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 98,
-        "avg_dt_s": 187849.9387755102,
-        "avg_price_pct": -3.3389389714118862,
-        "missed": 50
+        "pairs": 99,
+        "avg_dt_s": 185968.22222222222,
+        "avg_price_pct": -3.361121135837975,
+        "missed": 49
       },
       "entries": {
         "pairs": 43,
@@ -66,10 +66,10 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 98,
-        "avg_dt_s": 218471.39795918367,
-        "avg_price_pct": -3.5101866939573125,
-        "missed": 56
+        "pairs": 99,
+        "avg_dt_s": 216280.62626262626,
+        "avg_price_pct": -3.530639083408195,
+        "missed": 55
       },
       "entries": {
         "pairs": 41,
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 134,
-        "avg_dt_s": 243124.64925373133,
-        "avg_price_pct": -2.7216410591095737,
-        "missed": 64
+        "pairs": 135,
+        "avg_dt_s": 241331.5037037037,
+        "avg_price_pct": -2.703556057117864,
+        "missed": 63
       },
       "entries": {
         "pairs": 54,
@@ -6080,6 +6080,13 @@
       "asset": "CAP",
       "price": 0.08203535925487876,
       "reason": "[burst 24h] 24h-high break +0.80% (high $0.10942); vol x12.4, RSI 67, BTC 1h +0.08%, 4h -0.13%; confidence 0.69 >= 0.57, EV +0.99% after costs; target +7.3% / stop -2.4% / max 6h"
+    },
+    {
+      "ts": "2026-11-08T10:04:03+00:00",
+      "sleeve": "day",
+      "asset": "AKE",
+      "price": 0.0042837331810633315,
+      "reason": "[momentum] DAY score 0.882 >= 0.35; target +11.1% / stop -5.0% (ATR 4.43%); EV +0.82%; 4h +9.9%, 24h +7.6%, EMA6/24 up, RSI 56, no fresh sentiment"
     }
   ]
 }
