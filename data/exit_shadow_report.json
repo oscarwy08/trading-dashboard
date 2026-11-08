@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-08T13:57:29+00:00",
+  "generated": "2026-11-08T15:08:08+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -201,10 +201,10 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 136,
-        "avg_dt_s": 239556.97794117648,
-        "avg_price_pct": -2.683418005790945,
-        "missed": 64
+        "pairs": 139,
+        "avg_dt_s": 234405.45323741008,
+        "avg_price_pct": -2.794813751845669,
+        "missed": 63
       },
       "entries": {
         "pairs": 54,
@@ -3332,6 +3332,13 @@
       "asset": "SEE.L",
       "price": 0.0375,
       "reason": "[momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L \u00a3-0.12"
+    },
+    {
+      "ts": "2026-11-08T14:52:13+00:00",
+      "sleeve": "day",
+      "asset": "HOT",
+      "price": 0.0003410014599163795,
+      "reason": "[momentum] trailing stop -0.6% (peak +4.7%, gives back 40% of the gain) [gap fill]; P&L \u00a3-0.03"
     }
   ],
   "main_entries": [
@@ -6122,6 +6129,13 @@
       "asset": "BEAM",
       "price": 0.0031796690127087546,
       "reason": "[burst 24h] 24h-high break +1.44% (high $0.004159); vol x5.7, RSI 74, BTC 1h -0.08%, 4h +0.16%; confidence 0.67 >= 0.55, EV +0.30% after costs; target +4.2% / stop -1.5% / max 6h"
+    },
+    {
+      "ts": "2026-11-08T14:15:09+00:00",
+      "sleeve": "day",
+      "asset": "HOT",
+      "price": 0.00034134617834016986,
+      "reason": "[momentum] DAY score 0.9 >= 0.35; target +9.4% / stop -4.5% (ATR 3.76%); EV +0.61%; 4h +22.4%, 24h +24.8%, EMA6/24 up, RSI 75, no fresh sentiment"
     }
   ]
 }

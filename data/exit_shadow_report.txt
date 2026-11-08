@@ -886,6 +886,7 @@ AKE day
 
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
+  HOT day  2026-11-08T14:52:13+00:00  £0.000341001  [momentum] trailing stop -0.6% (peak +4.7%, gives back 40% of the gain) [gap fill]; P&L £-0.03
 
 Shadow entries vs the 5-minute cycle
 
@@ -1752,6 +1753,7 @@ Cycle buys with no shadow entry
   CAP day  2026-11-07T14:00:16+00:00  £0.0820354  [burst 24h] 24h-high break +0.80% (high $0.10942); vol x12.4, RSI 67, BTC 1h +0.08%, 4h -0.13%; confidence 0.69 >= 0.57, EV +0.99% after costs; target +7.3% / stop -2.4% / max 6h
   AKE day  2026-11-08T10:04:03+00:00  £0.00428373  [momentum] DAY score 0.882 >= 0.35; target +11.1% / stop -5.0% (ATR 4.43%); EV +0.82%; 4h +9.9%, 24h +7.6%, EMA6/24 up, RSI 56, no fresh sentiment
   BEAM day  2026-11-08T10:56:25+00:00  £0.00317967  [burst 24h] 24h-high break +1.44% (high $0.004159); vol x5.7, RSI 74, BTC 1h -0.08%, 4h +0.16%; confidence 0.67 >= 0.55, EV +0.30% after costs; target +4.2% / stop -1.5% / max 6h
+  HOT day  2026-11-08T14:15:09+00:00  £0.000341346  [momentum] DAY score 0.9 >= 0.35; target +9.4% / stop -4.5% (ATR 3.76%); EV +0.61%; 4h +22.4%, 24h +24.8%, EMA6/24 up, RSI 75, no fresh sentiment
 
 Per book
 
@@ -1795,7 +1797,7 @@ day_capital_caution
   exits: 80 pairs, avg time gap 214452s, avg price gap +0.16%, missed moves 54
   entries: 29 pairs, avg time gap 575701s, avg price gap +3.54%, missed moves 378
 partial_take
-  exits: 136 pairs, avg time gap 239557s, avg price gap -2.68%, missed moves 64
+  exits: 139 pairs, avg time gap 234405s, avg price gap -2.79%, missed moves 63
   entries: 54 pairs, avg time gap 548176s, avg price gap +1.41%, missed moves 179
 sent_split
   exits: 80 pairs, avg time gap 144155s, avg price gap +1.76%, missed moves 50
