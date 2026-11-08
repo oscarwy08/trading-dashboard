@@ -1,15 +1,15 @@
 {
   "status": "ok",
-  "generated": "2026-11-08T11:31:55+00:00",
+  "generated": "2026-11-08T12:45:12+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 118,
-        "avg_dt_s": 223045.60169491524,
-        "avg_price_pct": -0.5449222720647262,
-        "missed": 72
+        "pairs": 120,
+        "avg_dt_s": 222125.36666666667,
+        "avg_price_pct": -0.5736022863797489,
+        "missed": 71
       },
       "entries": {
         "pairs": 31,
@@ -21,9 +21,9 @@
     {
       "name": "ev_exit",
       "exits": {
-        "pairs": 99,
-        "avg_dt_s": 185968.22222222222,
-        "avg_price_pct": -3.361121135837975,
+        "pairs": 100,
+        "avg_dt_s": 184108.51,
+        "avg_price_pct": -3.326304986030369,
         "missed": 49
       },
       "entries": {
@@ -36,9 +36,9 @@
     {
       "name": "review_leftovers",
       "exits": {
-        "pairs": 62,
-        "avg_dt_s": 128093.14516129032,
-        "avg_price_pct": -1.723973243930913,
+        "pairs": 63,
+        "avg_dt_s": 126059.85714285714,
+        "avg_price_pct": -1.6946959885522852,
         "missed": 41
       },
       "entries": {
@@ -51,9 +51,9 @@
     {
       "name": "all_combined",
       "exits": {
-        "pairs": 62,
-        "avg_dt_s": 86558.43548387097,
-        "avg_price_pct": -1.816161906802873,
+        "pairs": 63,
+        "avg_dt_s": 85184.49206349206,
+        "avg_price_pct": -1.7899811268158587,
         "missed": 43
       },
       "entries": {
@@ -66,9 +66,9 @@
     {
       "name": "burst_runner",
       "exits": {
-        "pairs": 99,
-        "avg_dt_s": 216280.62626262626,
-        "avg_price_pct": -3.530639083408195,
+        "pairs": 100,
+        "avg_dt_s": 214117.82,
+        "avg_price_pct": -3.4970004202503224,
         "missed": 55
       },
       "entries": {
@@ -81,9 +81,9 @@
     {
       "name": "everything",
       "exits": {
-        "pairs": 62,
-        "avg_dt_s": 86574.45161290323,
-        "avg_price_pct": -1.816161906802873,
+        "pairs": 63,
+        "avg_dt_s": 85200.25396825396,
+        "avg_price_pct": -1.786774909498968,
         "missed": 43
       },
       "entries": {
@@ -186,9 +186,9 @@
     {
       "name": "day_capital_caution",
       "exits": {
-        "pairs": 79,
-        "avg_dt_s": 217166.13924050634,
-        "avg_price_pct": 0.16555542298752715,
+        "pairs": 80,
+        "avg_dt_s": 214451.525,
+        "avg_price_pct": 0.16392621674197236,
         "missed": 54
       },
       "entries": {
@@ -201,9 +201,9 @@
     {
       "name": "partial_take",
       "exits": {
-        "pairs": 135,
-        "avg_dt_s": 241331.5037037037,
-        "avg_price_pct": -2.703556057117864,
+        "pairs": 136,
+        "avg_dt_s": 239556.97794117648,
+        "avg_price_pct": -2.683418005790945,
         "missed": 63
       },
       "entries": {
@@ -2896,13 +2896,13 @@
       "shadow_ts": "2026-11-04T14:19:24+00:00",
       "shadow_price": 0.0032332348342394637,
       "trigger": "[momentum] stop-loss -3.7% <= -3.6% (ATR-scaled)",
-      "status": "no cycle sell",
-      "cycle_ts": null,
-      "cycle_price": null,
-      "cycle_reason": null,
-      "dt_s": null,
-      "price_diff": null,
-      "price_pct": null
+      "status": "matched",
+      "cycle_ts": "2026-11-08T11:33:28+00:00",
+      "cycle_price": 0.0030867225352038314,
+      "cycle_reason": "[burst 24h] stop-loss -3.4% <= -1.5% (ATR-scaled) [gap fill]; P&L \u00a3-0.17",
+      "dt_s": 335644.0,
+      "price_diff": -0.0001465122990356323,
+      "price_pct": -4.53144626193215
     },
     {
       "asset": "CRV",
@@ -3309,6 +3309,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "AKE",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-08T12:26:23+00:00",
+      "shadow_price": 0.004176107255979102,
+      "trigger": "[momentum] signal -0.292 <= -0.2 (4h -1.8%, 24h -6.5%, EMA6/24 up, RSI 51, no fresh sentiment)",
+      "status": "matched",
+      "cycle_ts": "2026-11-08T12:26:42+00:00",
+      "cycle_price": 0.004176107255979102,
+      "cycle_reason": "[momentum] signal -0.292 <= -0.2 (4h -1.8%, 24h -6.5%, EMA6/24 up, RSI 51, no fresh sentiment); P&L \u00a3-0.16",
+      "dt_s": 19.0,
+      "price_diff": 0.0,
+      "price_pct": 0.0
     }
   ],
   "main_exit_missed": [
