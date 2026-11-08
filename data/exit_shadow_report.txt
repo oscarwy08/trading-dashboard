@@ -884,6 +884,11 @@ AKE day
   cycle   2026-11-08T12:26:42+00:00  £0.00417611  [momentum] signal -0.292 <= -0.2 (4h -1.8%, 24h -6.5%, EMA6/24 up, RSI 51, no fresh sentiment); P&L £-0.16
   cycle was 19s later, price £+0 (+0.00%)
 
+PIEVERSE day
+  shadow  2026-11-08T16:51:10+00:00  £1.11787  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)
+  cycle   2026-11-08T16:56:29+00:00  £1.11787  [burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled); P&L £-0.08
+  cycle was 319s later, price £+0 (+0.00%)
+
 Cycle sells with no shadow exit
   SEE.L day  2026-10-26T14:38:37+00:00  £0.0375  [momentum] signal -0.314 <= -0.2 (4h -2.0%, 24h +2.7%, EMA6/24 down, RSI 41, no fresh sentiment); P&L £-0.12
   HOT day  2026-11-08T14:52:13+00:00  £0.000341001  [momentum] trailing stop -0.6% (peak +4.7%, gives back 40% of the gain) [gap fill]; P&L £-0.03
@@ -1758,7 +1763,7 @@ Cycle buys with no shadow entry
 Per book
 
 main
-  exits: 120 pairs, avg time gap 222125s, avg price gap -0.57%, missed moves 71
+  exits: 121 pairs, avg time gap 220292s, avg price gap -0.57%, missed moves 71
   entries: 32 pairs, avg time gap 541939s, avg price gap +3.61%, missed moves 122
 ev_exit
   exits: 100 pairs, avg time gap 184109s, avg price gap -3.33%, missed moves 49

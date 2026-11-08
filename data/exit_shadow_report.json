@@ -1,14 +1,14 @@
 {
   "status": "ok",
-  "generated": "2026-11-08T16:22:13+00:00",
+  "generated": "2026-11-08T17:31:30+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
       "name": "main",
       "exits": {
-        "pairs": 120,
-        "avg_dt_s": 222125.36666666667,
-        "avg_price_pct": -0.5736022863797489,
+        "pairs": 121,
+        "avg_dt_s": 220292.2561983471,
+        "avg_price_pct": -0.5688617716162798,
         "missed": 71
       },
       "entries": {
@@ -3321,6 +3321,20 @@
       "cycle_price": 0.004176107255979102,
       "cycle_reason": "[momentum] signal -0.292 <= -0.2 (4h -1.8%, 24h -6.5%, EMA6/24 up, RSI 51, no fresh sentiment); P&L \u00a3-0.16",
       "dt_s": 19.0,
+      "price_diff": 0.0,
+      "price_pct": 0.0
+    },
+    {
+      "asset": "PIEVERSE",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-08T16:51:10+00:00",
+      "shadow_price": 1.1178690176183081,
+      "trigger": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)",
+      "status": "matched",
+      "cycle_ts": "2026-11-08T16:56:29+00:00",
+      "cycle_price": 1.1178690176183081,
+      "cycle_reason": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled); P&L \u00a3-0.08",
+      "dt_s": 319.0,
       "price_diff": 0.0,
       "price_pct": 0.0
     }
