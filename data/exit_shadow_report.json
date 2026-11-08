@@ -1,6 +1,6 @@
 {
   "status": "ok",
-  "generated": "2026-11-08T10:21:25+00:00",
+  "generated": "2026-11-08T11:31:55+00:00",
   "path": "/home/bot/exit_shadow/exit_shadow.db",
   "books": [
     {
@@ -9,7 +9,7 @@
         "pairs": 118,
         "avg_dt_s": 223045.60169491524,
         "avg_price_pct": -0.5449222720647262,
-        "missed": 71
+        "missed": 72
       },
       "entries": {
         "pairs": 31,
@@ -3295,6 +3295,20 @@
       "dt_s": null,
       "price_diff": null,
       "price_pct": null
+    },
+    {
+      "asset": "BEAM",
+      "sleeve": "day",
+      "shadow_ts": "2026-11-08T11:02:39+00:00",
+      "shadow_price": 0.0031466880045618465,
+      "trigger": "[burst 24h] stop-loss -1.6% <= -1.5% (ATR-scaled)",
+      "status": "no cycle sell",
+      "cycle_ts": null,
+      "cycle_price": null,
+      "cycle_reason": null,
+      "dt_s": null,
+      "price_diff": null,
+      "price_pct": null
     }
   ],
   "main_exit_missed": [
@@ -6087,6 +6101,13 @@
       "asset": "AKE",
       "price": 0.0042837331810633315,
       "reason": "[momentum] DAY score 0.882 >= 0.35; target +11.1% / stop -5.0% (ATR 4.43%); EV +0.82%; 4h +9.9%, 24h +7.6%, EMA6/24 up, RSI 56, no fresh sentiment"
+    },
+    {
+      "ts": "2026-11-08T10:56:25+00:00",
+      "sleeve": "day",
+      "asset": "BEAM",
+      "price": 0.0031796690127087546,
+      "reason": "[burst 24h] 24h-high break +1.44% (high $0.004159); vol x5.7, RSI 74, BTC 1h -0.08%, 4h +0.16%; confidence 0.67 >= 0.55, EV +0.30% after costs; target +4.2% / stop -1.5% / max 6h"
     }
   ]
 }
